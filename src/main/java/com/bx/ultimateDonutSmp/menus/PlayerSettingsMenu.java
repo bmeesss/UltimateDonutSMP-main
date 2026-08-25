@@ -1,0 +1,590 @@
+package com.bx.ultimateDonutSmp.menus;
+
+import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.models.ThreeChoice;
+import com.bx.ultimateDonutSmp.models.TwoChoice;
+import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.PermissionUtils;
+import com.bx.ultimateDonutSmp.utils.PlayerSettingDefaults;
+import com.bx.ultimateDonutSmp.utils.SoundUtils;
+import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Monster;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+public final class PlayerSettingsMenu extends BaseMenu {
+
+    private static final String MENU_PATH = "SETTINGS-MENU";
+
+    private static final Set<String> VALID_SETTINGS = new java.util.LinkedHashSet<>(java.util.Arrays.asList(
+            "PUBLIC_CHAT",  "PRIVATE_MESSAGES",  "SERVER_BROADCASTS",  "TEAM_CHAT_VISIBILITY", 
+            "LUNAR_TEAMMATES",  "TPA_CONFIRM_MENUS",  "QUICK_AUCTION_PURCHASE",  "DESTROY_PEARL_ON_DEATH", 
+            "PAY_CONFIRM_MENUS",  "AUTO_CONFIRM_TPAS",  "HOTBAR_MESSAGES",  "NOTIFICATION_SOUNDS", 
+            "FOLLOW_ALERT_SETTINGS",  "DISPLAY_DONUT_PLUS",  "CHAINMAIL_ON_RESPAWN",  "EXPLOSION_PARTICLES", 
+            "EXPLOSION_SOUNDS",  "TELEPORT_ALERTS",  "FAST_CRYSTALS",  "RANDOMIZED_COORDS", 
+            "TPA_REQUESTS",  "TPA_HERE_REQUESTS",  "PAYMENTS",  "WORTH_DISPLAY",  "MONEY_NAMETAGS", 
+            "JOIN_LEAVE_MESSAGES",  "PAY_ALERTS",  "ADVANCEMENT_MESSAGES",  "AUCTION_NOTIFICATIONS", 
+            "AMETHYST_BREAK_MESSAGES",  "DUEL_REQUESTS",  "DEATH_MESSAGES",  "KEY_ALL_NOTIFICATIONS", 
+            "QUICK_AUCTION_SELL",  "ORDER_NOTIFICATIONS",  "DISABLE_MOB_SPAWN",  "DISABLE_PHANTOM_SPAWN", 
+            "NIGHT_VISION",  "BOUNTY_ALERTS"
+    ));
+
+    private final Map<Integer, String> clickableButtons = new HashMap<>();
+    private UUID preferencePlayerId;
+    private Boolean quickBuyEnabled;
+    private Boolean quickSellEnabled;
+    private boolean preferenceLoading;
+
+    public PlayerSettingsMenu(UltimateDonutSmp plugin) {
+        super(
+                plugin,
+                plugin.getConfigManager().getMenus().getString(MENU_PATH + ".TITLE", "&8Settings"),
+                plugin.getConfigManager().getMenus().getInt(MENU_PATH + ".SIZE", 54)
+        );
+    }
+
+    @Override
+    public void build(Player player) {
+        clear();
+        clickableButtons.clear();
+
+        PlayerData data = plugin.getPlayerDataManager().get(player);
+        if (data == null) {
+            return;
+        }
+
+        ConfigurationSection buttons = plugin.getConfigManager().getMenus()
+                .getConfigurationSection(MENU_PATH + ".BUTTONS");
+        if (buttons == null) {
+            return;
+        }
+        if (containsEnabledButton(buttons, "QUICK_AUCTION_PURCHASE")
+                || containsEnabledButton(buttons, "QUICK_AUCTION_SELL")) {
+            loadPreference(player);
+        }
+
+        for (String key : buttons.getKeys(false)) {
+            ConfigurationSection section = buttons.getConfigurationSection(key);
+            if (section == null || !shouldRenderButton(key, section)) {
+                continue;
+            }
+            renderButton(player, data, key, section);
+        }
+    }
+
+    @Override
+    public void handleClick(int slot, Player player) {
+        String key = clickableButtons.get(slot);
+        if (key == null) {
+            return;
+        }
+        PlayerData data = plugin.getPlayerDataManager().get(player);
+        if (data == null) {
+            return;
+        }
+
+        ConfigurationSection section = plugin.getConfigManager().getMenus()
+                .getConfigurationSection(MENU_PATH + ".BUTTONS." + key);
+        if (!PlayerSettingDefaults.isOptionEnabled(section)) {
+            return;
+        }
+
+        SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
+
+        if (section != null && section.contains("COMMAND")) {
+            String commandStr = section.getString("COMMAND");
+            if (commandStr != null && !commandStr.isBlank()) {
+                commandStr = commandStr.replace("{player}", player.getName()).replace("%player%", player.getName());
+                if (commandStr.toLowerCase(java.util.Locale.ROOT).startsWith("[console] ")) {
+                    String cmd = commandStr.substring(10).trim();
+                    plugin.getSpigotScheduler().dispatchConsoleCommand(cmd);
+                } else if (commandStr.toLowerCase(java.util.Locale.ROOT).startsWith("[player] ")) {
+                    String cmd = commandStr.substring(9).trim();
+                    if (cmd.startsWith("/")) cmd = cmd.substring(1);
+                    plugin.getSpigotScheduler().dispatchPlayerCommand(player, cmd);
+                } else {
+                    String cmd = commandStr.startsWith("/") ? commandStr.substring(1) : commandStr;
+                    plugin.getSpigotScheduler().dispatchPlayerCommand(player, cmd);
+                }
+                plugin.getSpigotScheduler().runEntity(player, () -> {
+                    if (player.isOnline()) {
+                        build(player);
+                    }
+                });
+                return;
+            }
+        }
+
+        switch (key) {        case "PUBLIC_CHAT": toggle(player, "Public Chat",
+                    !data.isPublicChatEnabled(), data::setPublicChatEnabled)            break;        case "PRIVATE_MESSAGES": {
+
+                            data.setPrivateMessagesChoice(nextThreeChoice(data.getPrivateMessagesChoice()));
+                            sendChoiceMessage(player, "Private Messages", formatThreeChoice(data.getPrivateMessagesChoice()));
+                        break;        }        case "SERVER_BROADCASTS": toggle(player, "Server Broadcasts",
+                    !data.isServerBroadcastsEnabled(), data::setServerBroadcastsEnabled)            break;        case "HOTBAR_MESSAGES": toggle(player, "Hotbar Notifications",
+                    !data.isHotbarMessagesEnabled(), data::setHotbarMessagesEnabled)            break;        case "PAY_ALERTS": toggle(player, "Pay Alerts",
+                    !data.isPayAlertsEnabled(), data::setPayAlertsEnabled)            break;        case "BOUNTY_ALERTS": toggle(player, "Bounty Alerts",
+                    !data.isBountyAlertsEnabled(), data::setBountyAlertsEnabled)            break;        case "AUCTION_NOTIFICATIONS": toggle(player, "Auction Notifications",
+                    !data.isAuctionNotificationsEnabled(), data::setAuctionNotificationsEnabled)            break;        case "FAST_CRYSTALS": {
+
+                            data.setFastCrystalsEnabled(!data.isFastCrystalsEnabled());
+                            plugin.getFastCrystalManager().applyCrystalCooldown(player);
+                            sendToggleMessage(player, "Fast Crystals", data.isFastCrystalsEnabled());
+                        break;        }        case "TOTEM_PARTICLES": toggle(player, "Totem Particles",
+                    !data.isTotemParticlesEnabled(), data::setTotemParticlesEnabled)            break;        case "EXPLOSION_PARTICLES": toggle(player, "Explosion Particles",
+                    !data.isExplosionParticlesEnabled(), data::setExplosionParticlesEnabled)            break;        case "QUICK_AUCTION_PURCHASE": toggleQuickBuy(player)            break;        case "QUICK_AUCTION_SELL": toggleQuickSell(player)            break;        case "CHAINMAIL_ON_RESPAWN": toggle(player, "Automatic Respawn Kit",
+                    !data.isChainmailOnRespawnEnabled(), data::setChainmailOnRespawnEnabled)            break;        case "DISABLE_MOB_SPAWN": {
+
+                            data.setMobSpawnEnabled(!data.isMobSpawnEnabled());
+                            if (!data.isMobSpawnEnabled()) {
+                                long limitSeconds = plugin.getConfigManager().getConfig().getLong("SETTINGS.DISABLE-MOB-SPAWN-LIMIT-SECONDS", -1L);
+                                if (limitSeconds > 0) {
+                                    data.setMobSpawnDisabledUntil(System.currentTimeMillis() + (limitSeconds * 1000L));
+                                } else {
+                                    data.setMobSpawnDisabledUntil(0L);
+                                }
+                            } else {
+                                data.setMobSpawnDisabledUntil(0L);
+                            }
+                            sendToggleMessage(player, "Nearby Mob Spawn Prevention", !data.isMobSpawnEnabled());
+                        break;        }        case "HIDE_ALL_PLAYERS": {
+
+                            data.setHideAllPlayersEnabled(!data.isHideAllPlayersEnabled());
+                            plugin.getPlayerVisibilityManager().applyViewerPreference(player);
+                            sendToggleMessage(player, "Hide All Players", data.isHideAllPlayersEnabled());
+                        break;        }        case "SCOREBOARD_VISIBILITY": {
+
+                            data.setScoreboardVisible(!data.isScoreboardVisible());
+                            plugin.getScoreboardManager().applyVisibility(player);
+                            sendToggleMessage(player, "Scoreboard Visibility", data.isScoreboardVisible());
+                        break;        }        case "AUTO_CONFIRM_TPAS": {
+
+                            boolean enabled = !(data.isTpauto() && data.isAutoTpaHereEnabled());
+                            data.setTpauto(enabled);
+                            data.setAutoTpaHereEnabled(enabled);
+                            if (enabled) {
+                                plugin.getTPAManager().processQueuedAutoRequests(player.getUniqueId());
+                            }
+                            sendToggleMessage(player, "Auto-Confirm TPAs", enabled);
+                        break;        }        case "NOTIFICATION_SOUNDS": toggle(player, "Notification Sounds",
+                    !data.isNotificationSoundsEnabled(), data::setNotificationSoundsEnabled)            break;        case "RTP_COORDINATES": toggle(player, "RTP Coordinates",
+                    !data.isRtpCoordinatesEnabled(), data::setRtpCoordinatesEnabled)            break;        case "ORDER_NOTIFICATIONS": toggle(player, "Order Notifications",
+                    !data.isOrderNotificationsEnabled(), data::setOrderNotificationsEnabled)            break;        case "DUEL_REQUESTS": toggle(player, "Duel Requests",
+                    !data.isDuelRequestsEnabled(), data::setDuelRequestsEnabled)            break;        case "TPA_REQUESTS": {
+
+                            data.setTpaRequestsChoice(nextThreeChoice(data.getTpaRequestsChoice()));
+                            sendChoiceMessage(player, "TPA Requests", formatThreeChoice(data.getTpaRequestsChoice()));
+                        break;        }        case "TEAM_INVITES": toggle(player, "Team Invites",
+                    !data.isTeamInvitesEnabled(), data::setTeamInvitesEnabled)            break;        case "PAYMENTS": {
+
+                            data.setPaymentsChoice(nextThreeChoice(data.getPaymentsChoice()));
+                            sendChoiceMessage(player, "Payments", formatThreeChoice(data.getPaymentsChoice()));
+                        break;        }        case "TEAM_CHAT_VISIBILITY": toggle(player, "Team Chat Visibility",
+                    !data.isTeamChatVisible(), data::setTeamChatVisible)            break;        case "WORTH_DISPLAY": {
+
+                            data.setWorthDisplayEnabled(!data.isWorthDisplayEnabled());
+                            if (data.isWorthDisplayEnabled()) {
+                                plugin.getWorthManager().syncWorthDisplay(player);
+                            } else {
+                                plugin.getWorthManager().clearWorthDisplay(player);
+                            }
+                            sendToggleMessage(player, "Worth Display", data.isWorthDisplayEnabled());
+                        break;        }        case "MONEY_NAMETAGS": {
+
+                            data.setMoneyNametagsEnabled(!data.isMoneyNametagsEnabled());
+                            plugin.getMoneyNametagManager().refreshViewer(player);
+                            sendToggleMessage(player, "Money Nametags", data.isMoneyNametagsEnabled());
+                        break;        }        case "DUEL_MUSIC": toggle(player, "Duel Music",
+                    !data.isDuelMusicEnabled(), data::setDuelMusicEnabled)            break;        case "QUIET_SPAWN": toggle(player, "Quiet Spawn Teleportation",
+                    !data.isQuietSpawnEnabled(), data::setQuietSpawnEnabled)            break;        case "CLEAR_ENTITIES_MESSAGES": toggle(player, "Clear Entities Messages",
+                    !data.isClearEntitiesMessagesEnabled(), data::setClearEntitiesMessagesEnabled)            break;        case "AMETHYST_BREAK_MESSAGES": toggle(player, "Amethyst Break Messages",
+                    !data.isAmethystBreakMessagesEnabled(), data::setAmethystBreakMessagesEnabled)            break;        case "KEY_ALL_NOTIFICATIONS": toggle(player, "Key-All Notifications",
+                    !data.isKeyAllNotificationsEnabled(), data::setKeyAllNotificationsEnabled)            break;        case "TPA_CONFIRM_MENUS": toggle(player, "TPA Confirmation Menus",
+                    !data.isTpaConfirmMenuEnabled(), data::setTpaConfirmMenuEnabled)            break;        case "LUNAR_TEAMMATES": toggle(player, "Lunar Teammates",
+                    !data.isLunarTeammatesEnabled(), data::setLunarTeammatesEnabled)            break;        case "TPA_HERE_REQUESTS": {
+
+                            data.setTpaHereRequestsChoice(nextThreeChoice(data.getTpaHereRequestsChoice()));
+                            sendChoiceMessage(player, "TPA Here Requests", formatThreeChoice(data.getTpaHereRequestsChoice()));
+                        break;        }        case "DISABLE_PHANTOM_SPAWN": {
+
+                            data.setPhantomEnabled(!data.isPhantomEnabled());
+                            if (!data.isPhantomEnabled()) {
+                                long limitSeconds = plugin.getConfigManager().getConfig().getLong("SETTINGS.DISABLE-PHANTOM-SPAWN-LIMIT-SECONDS", -1L);
+                                if (limitSeconds > 0) {
+                                    data.setPhantomDisabledUntil(System.currentTimeMillis() + (limitSeconds * 1000L));
+                                } else {
+                                    data.setPhantomDisabledUntil(0L);
+                                }
+                            } else {
+                                data.setPhantomDisabledUntil(0L);
+                            }
+                            sendToggleMessage(player, "Phantom Spawn Prevention", !data.isPhantomEnabled());
+                        break;        }        case "PAY_CONFIRM_MENUS": toggle(player, "Pay Confirmation Menus",
+                    !data.isPayConfirmMenuEnabled(), data::setPayConfirmMenuEnabled)            break;        case "TEAM_CHAT": toggleTeamChat(player)            break;        case "DESTROY_PEARL_ON_DEATH": toggle(player, "Destroy Pearl on Death",
+                    !data.isDestroyPearlOnDeath(), data::setDestroyPearlOnDeath)            break;        case "RANDOMIZED_COORDS": {
+
+                            boolean nextVal = !data.isRandomizedCoords();
+                            data.setRandomizedCoords(nextVal);
+                            plugin.getDatabaseManager().savePlayer(data);
+                            player.kickPlayer(ColorUtils.colorize("&cThe setting has been changed. Please rejoin."));
+                        break;        }        case "DEATH_MESSAGES": {
+
+                            data.setDeathMessagesChoice(nextTwoChoice(data.getDeathMessagesChoice()));
+                            sendChoiceMessage(player, "Death Messages", formatTwoChoice(data.getDeathMessagesChoice()));
+                        break;        }        case "ADVANCEMENT_MESSAGES": {
+
+                            data.setAdvancementMessagesChoice(nextThreeChoice(data.getAdvancementMessagesChoice()));
+                            sendChoiceMessage(player, "Advancement Messages", formatThreeChoice(data.getAdvancementMessagesChoice()));
+                        break;        }        case "JOIN_LEAVE_MESSAGES": {
+
+                            data.setJoinLeaveMessagesChoice(nextThreeChoice(data.getJoinLeaveMessagesChoice()));
+                            sendChoiceMessage(player, "Join/Leave Messages", formatThreeChoice(data.getJoinLeaveMessagesChoice()));
+                        break;        }        case "TELEPORT_ALERTS": toggle(player, "Teleport Alerts",
+                    !data.isTeleportAlertsEnabled(), data::setTeleportAlertsEnabled)            break;        case "FOLLOW_ALERT_SETTINGS": toggle(player, "Follow Alerts",
+                    !data.isFollowAlertsEnabled(), data::setFollowAlertsEnabled)            break;        case "EXPLOSION_SOUNDS": toggle(player, "Explosion Sounds",
+                    !data.isExplosionSoundsEnabled(), data::setExplosionSoundsEnabled)            break;        case "DISPLAY_DONUT_PLUS": toggle(player, "Display Donut+",
+                    !data.isDisplayDonutPlusEnabled(), data::setDisplayDonutPlusEnabled)            break;        case "NIGHT_VISION": {
+
+                            boolean enabled = com.bx.ultimateDonutSmp.utils.NightVisionUtils.toggle(plugin, player);
+                            sendToggleMessage(player, "Night Vision", enabled);
+                        break;        }        default: {
+
+                            return;
+                        break;        }
+        }
+
+        build(player);
+    }
+
+    private void renderButton(Player player, PlayerData data, String key, ConfigurationSection section) {
+        int slot = section.getInt("SLOT", -1);
+        if (slot < 0 || slot >= inventory.getSize()) {
+            return;
+        }
+
+        ButtonState state = buttonState(player, data, key, section);
+        List<String> lore = new ArrayList<>();
+        for (String line : section.getStringList("LORE")) {
+            lore.add(ColorUtils.colorize(line.replace("{status}", state.status()), player));
+        }
+        Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
+        String displayName = ColorUtils.colorize(section.getString("DISPLAY-NAME", "&fSetting"), player);
+        ItemStack item = ItemUtils.createItem(
+                material,
+                displayName,
+                lore
+        );
+        if ("NIGHT_VISION".equals(key)) {
+            item = toNightVisionPotion(item);
+        }
+        set(slot, item);
+        if (state.clickable()) {
+            clickableButtons.put(slot, key);
+        }
+    }
+
+    private ItemStack toNightVisionPotion(ItemStack item) {
+        if (!(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta meta)) {
+            return item;
+        }
+        meta.setBasePotionType(org.bukkit.potion.PotionType.NIGHT_VISION);
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    private ButtonState buttonState(Player player, PlayerData data, String key, ConfigurationSection section) {
+        if (section != null && section.contains("STATUS-PLACEHOLDER")) {
+            String placeholder = section.getString("STATUS-PLACEHOLDER");
+            if (placeholder != null && !placeholder.isBlank()) {
+                String evaluated = ColorUtils.colorize(placeholder, player).trim();
+                if (evaluated.startsWith("%") && evaluated.endsWith("%")) {
+                    if (placeholder.equalsIgnoreCase("%player_is_flying%") || placeholder.equalsIgnoreCase("%player_flying%")) {
+                        boolean flying = player.isFlying() || player.getAllowFlight();
+                        return new ButtonState(flying ? "&aEnabled" : "&cDisabled", true);
+                    }
+                    if (placeholder.equalsIgnoreCase("%player_is_op%")) {
+                        return new ButtonState(player.isOp() ? "&aEnabled" : "&cDisabled", true);
+                    }
+                    if (placeholder.equalsIgnoreCase("%player_is_sneaking%")) {
+                        return new ButtonState(player.isSneaking() ? "&aEnabled" : "&cDisabled", true);
+                    }
+                    return new ButtonState("&cDisabled", true);
+                }
+                String lower = evaluated.toLowerCase(java.util.Locale.ROOT);
+                if (lower.equals("true") || lower.equals("enabled") || lower.equals("yes") || lower.equals("on") || lower.equals("1")) {
+                    return new ButtonState("&aEnabled", true);
+                } else if (lower.equals("false") || lower.equals("disabled") || lower.equals("no") || lower.equals("off") || lower.equals("0")) {
+                    return new ButtonState("&cDisabled", true);
+                } else {
+                    return new ButtonState(evaluated, true);
+                }
+            }
+        }
+        if (section != null && section.contains("COMMAND")) {
+            String cmd = section.getString("COMMAND", "").toLowerCase(java.util.Locale.ROOT);
+            if (cmd.contains("fly")) {
+                boolean flying = player.isFlying() || player.getAllowFlight();
+                return new ButtonState(flying ? "&aEnabled" : "&cDisabled", true);
+            }
+            return new ButtonState("&aEnabled", true);
+        }
+        return switch (key) {        case "PUBLIC_CHAT": state(data.isPublicChatEnabled())            break;        case "PRIVATE_MESSAGES": new ButtonState(formatThreeChoice(data.getPrivateMessagesChoice()), true)            break;        case "SERVER_BROADCASTS": state(data.isServerBroadcastsEnabled())            break;        case "HOTBAR_MESSAGES": state(data.isHotbarMessagesEnabled())            break;        case "PAY_ALERTS": state(data.isPayAlertsEnabled())            break;        case "BOUNTY_ALERTS": state(data.isBountyAlertsEnabled())            break;        case "AUCTION_NOTIFICATIONS": state(data.isAuctionNotificationsEnabled())            break;        case "FAST_CRYSTALS": state(data.isFastCrystalsEnabled())            break;        case "TOTEM_PARTICLES": state(data.isTotemParticlesEnabled())            break;        case "EXPLOSION_PARTICLES": explosionState(data)            break;        case "QUICK_AUCTION_PURCHASE": quickBuyState(player)            break;        case "QUICK_AUCTION_SELL": quickSellState(player)            break;        case "CHAINMAIL_ON_RESPAWN": state(data.isChainmailOnRespawnEnabled())            break;        case "DISABLE_MOB_SPAWN": {
+
+                            boolean disabled = !data.isMobSpawnEnabled();
+                            if (disabled && data.getMobSpawnDisabledUntil() > 0) {
+                                long remainingSecs = (data.getMobSpawnDisabledUntil() - System.currentTimeMillis()) / 1000L;
+                                if (remainingSecs > 0) {
+                                    new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
+                                }
+                            }
+                            state(disabled);
+                        break;        }        case "HIDE_ALL_PLAYERS": state(data.isHideAllPlayersEnabled())            break;        case "SCOREBOARD_VISIBILITY": state(data.isScoreboardVisible())            break;        case "AUTO_CONFIRM_TPAS": state(data.isTpauto() && data.isAutoTpaHereEnabled())            break;        case "NOTIFICATION_SOUNDS": state(data.isNotificationSoundsEnabled())            break;        case "RTP_COORDINATES": state(data.isRtpCoordinatesEnabled())            break;        case "ORDER_NOTIFICATIONS": state(data.isOrderNotificationsEnabled())            break;        case "DUEL_REQUESTS": state(data.isDuelRequestsEnabled())            break;        case "TPA_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaRequestsChoice()), true)            break;        case "TEAM_INVITES": state(data.isTeamInvitesEnabled())            break;        case "PAYMENTS": new ButtonState(formatThreeChoice(data.getPaymentsChoice()), true)            break;        case "TEAM_CHAT_VISIBILITY": state(data.isTeamChatVisible())            break;        case "WORTH_DISPLAY": state(data.isWorthDisplayEnabled())            break;        case "MONEY_NAMETAGS": state(data.isMoneyNametagsEnabled())            break;        case "DUEL_MUSIC": state(data.isDuelMusicEnabled())            break;        case "QUIET_SPAWN": state(data.isQuietSpawnEnabled())            break;        case "CLEAR_ENTITIES_MESSAGES": state(data.isClearEntitiesMessagesEnabled())            break;        case "AMETHYST_BREAK_MESSAGES": state(data.isAmethystBreakMessagesEnabled())            break;        case "KEY_ALL_NOTIFICATIONS": state(data.isKeyAllNotificationsEnabled())            break;        case "TPA_CONFIRM_MENUS": state(data.isTpaConfirmMenuEnabled())            break;        case "LUNAR_TEAMMATES": state(data.isLunarTeammatesEnabled())            break;        case "TPA_HERE_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaHereRequestsChoice()), true)            break;        case "DISABLE_PHANTOM_SPAWN": {
+
+                            boolean disabled = !data.isPhantomEnabled();
+                            if (disabled && data.getPhantomDisabledUntil() > 0) {
+                                long remainingSecs = (data.getPhantomDisabledUntil() - System.currentTimeMillis()) / 1000L;
+                                if (remainingSecs > 0) {
+                                    new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
+                                }
+                            }
+                            state(disabled);
+                        break;        }        case "PAY_CONFIRM_MENUS": state(data.isPayConfirmMenuEnabled())            break;        case "TEAM_CHAT": state(plugin.getTeamManager().isTeamChatEnabled(player.getUniqueId()))            break;        case "DESTROY_PEARL_ON_DEATH": state(data.isDestroyPearlOnDeath())            break;        case "RANDOMIZED_COORDS": state(data.isRandomizedCoords())            break;        case "DEATH_MESSAGES": new ButtonState(formatTwoChoice(data.getDeathMessagesChoice()), true)            break;        case "ADVANCEMENT_MESSAGES": new ButtonState(formatThreeChoice(data.getAdvancementMessagesChoice()), true)            break;        case "JOIN_LEAVE_MESSAGES": new ButtonState(formatThreeChoice(data.getJoinLeaveMessagesChoice()), true)            break;        case "TELEPORT_ALERTS": state(data.isTeleportAlertsEnabled())            break;        case "FOLLOW_ALERT_SETTINGS": state(data.isFollowAlertsEnabled())            break;        case "EXPLOSION_SOUNDS": state(data.isExplosionSoundsEnabled())            break;        case "DISPLAY_DONUT_PLUS": state(data.isDisplayDonutPlusEnabled())            break;        case "NIGHT_VISION": state(com.bx.ultimateDonutSmp.utils.NightVisionUtils.isEnabled(plugin, player))            break;        default: new ButtonState("", false)            break;
+        };
+    }
+
+    private ButtonState explosionState(PlayerData data) {
+        return plugin.getExplosionParticleFilter() != null
+                && plugin.getExplosionParticleFilter().isAvailable()
+                ? state(data.isExplosionParticlesEnabled())
+                : new ButtonState("&cUnavailable", false);
+    }
+
+    private ButtonState quickBuyState(Player player) {
+        if (!PermissionUtils.has(player, "ultimatedonutsmp.auctionhouse.fastbuy")
+                && !PermissionUtils.has(player, "donutauction.fastbuy")) {
+            return new ButtonState("&cNo permission", false);
+        }
+        if (preferenceLoading || quickBuyEnabled == null) {
+            return new ButtonState("&eLoading...", false);
+        }
+        return state(quickBuyEnabled);
+    }
+
+    private ButtonState quickSellState(Player player) {
+        if (!PermissionUtils.has(player, "ultimatedonutsmp.auctionhouse.fastsell")
+                && !PermissionUtils.has(player, "donutauction.fastsell")) {
+            return new ButtonState("&cNo permission", false);
+        }
+        if (preferenceLoading || quickSellEnabled == null) {
+            return new ButtonState("&eLoading...", false);
+        }
+        return state(quickSellEnabled);
+    }
+
+    private void loadPreference(Player player) {
+        UUID playerId = player.getUniqueId();
+        if (!playerId.equals(preferencePlayerId)) {
+            preferencePlayerId = playerId;
+            quickBuyEnabled = null;
+            quickSellEnabled = null;
+            preferenceLoading = false;
+        }
+        if (quickBuyEnabled != null || quickSellEnabled != null || preferenceLoading
+                || plugin.getAuctionHouseManager() == null) {
+            return;
+        }
+        preferenceLoading = true;
+        plugin.getAuctionHouseManager().getPreferenceAsync(playerId).whenComplete((preference, error) ->
+                runPlayer(player, () -> {
+                    preferenceLoading = false;
+                    quickBuyEnabled = error == null && preference != null
+                            ? preference.fastBuyEnabled()
+                            : Boolean.FALSE;
+                    quickSellEnabled = error == null && preference != null
+                            ? preference.fastSellEnabled()
+                            : Boolean.FALSE;
+                    rebuildIfOpen(player);
+                }));
+    }
+
+    private void toggleQuickBuy(Player player) {
+        if (quickBuyEnabled == null || plugin.getAuctionHouseManager() == null) {
+            return;
+        }
+        boolean previous = quickBuyEnabled;
+        boolean enabled = !previous;
+        quickBuyEnabled = enabled;
+        plugin.getAuctionHouseManager().getPreferenceAsync(player.getUniqueId())
+                .thenCompose(preference -> {
+                    preference.fastBuyEnabled(enabled);
+                    return plugin.getAuctionHouseManager().savePreference(preference);
+                })
+                .whenComplete((ignored, error) -> runPlayer(player, () -> {
+                    if (error != null) {
+                        quickBuyEnabled = previous;
+                        player.sendMessage(ColorUtils.toComponent(
+                                "&cUnable to save quick auction purchase setting."
+                        ));
+                    } else {
+                        sendToggleMessage(player, "Quick auction purchases", enabled);
+                    }
+                    rebuildIfOpen(player);
+                }));
+    }
+
+    private void toggleQuickSell(Player player) {
+        if (quickSellEnabled == null || plugin.getAuctionHouseManager() == null) {
+            return;
+        }
+        boolean previous = quickSellEnabled;
+        boolean enabled = !previous;
+        quickSellEnabled = enabled;
+        plugin.getAuctionHouseManager().getPreferenceAsync(player.getUniqueId())
+                .thenCompose(preference -> {
+                    preference.fastSellEnabled(enabled);
+                    return plugin.getAuctionHouseManager().savePreference(preference);
+                })
+                .whenComplete((ignored, error) -> runPlayer(player, () -> {
+                    if (error != null) {
+                        quickSellEnabled = previous;
+                        player.sendMessage(ColorUtils.toComponent(
+                                "&cUnable to save quick auction sell setting."
+                        ));
+                    } else {
+                        sendToggleMessage(player, "Quick auction sells", enabled);
+                    }
+                    rebuildIfOpen(player);
+                }));
+    }
+
+    private void toggleTeamChat(Player player) {
+        var team = plugin.getTeamManager().getTeam(player);
+        if (team == null) {
+            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("TEAM.NO-TEAM")));
+            return;
+        }
+        if (!plugin.getTeamManager().canUseTeamChat(team, player.getUniqueId())) {
+            player.sendMessage(ColorUtils.toComponent(
+                    plugin.getConfigManager().getMessage("TEAM.NO-TEAM-CHAT-PERMISSION")
+            ));
+            return;
+        }
+        plugin.getTeamManager().toggleTeamChat(player.getUniqueId());
+        sendToggleMessage(
+                player,
+                "Team chat sending mode",
+                plugin.getTeamManager().isTeamChatEnabled(player.getUniqueId())
+        );
+    }
+
+    private void toggle(Player player, String label, boolean enabled, BooleanSetter setter) {
+        setter.set(enabled);
+        sendToggleMessage(player, label, enabled);
+    }
+
+    private void sendToggleMessage(Player player, String label, boolean enabled) {
+        player.sendMessage(ColorUtils.toComponent(
+                "&7" + label + " is now " + (enabled ? "&aEnabled" : "&cDisabled") + "&7."
+        ));
+    }
+
+    private void sendChoiceMessage(Player player, String label, String choiceText) {
+        player.sendMessage(ColorUtils.toComponent(
+                "&7" + label + " is now set to " + choiceText + "&7."
+        ));
+    }
+
+    private ButtonState state(boolean enabled) {
+        return new ButtonState(enabled ? "&aEnabled" : "&cDisabled", true);
+    }
+
+    private String formatThreeChoice(ThreeChoice choice) {
+        return switch (choice) {        case OFF: "&cOff"; break;        case ANYONE: "&aAnyone"; break;        case FRIENDS_FOLLOWED: "&dFriends/Followed"; break;
+        };
+    }
+
+    private String formatTwoChoice(TwoChoice choice) {
+        return switch (choice) {        case OFF: "&cOff"; break;        case FRIENDS_FOLLOWED: "&dFriends/Followed"; break;
+        };
+    }
+
+    private ThreeChoice nextThreeChoice(ThreeChoice current) {
+        int nextOrdinal = (current.ordinal() + 1) % ThreeChoice.values().length;
+        return ThreeChoice.values()[nextOrdinal];
+    }
+
+    private TwoChoice nextTwoChoice(TwoChoice current) {
+        int nextOrdinal = (current.ordinal() + 1) % TwoChoice.values().length;
+        return TwoChoice.values()[nextOrdinal];
+    }
+
+    private boolean containsEnabledButton(ConfigurationSection buttons, String key) {
+        return buttons.contains(key) && PlayerSettingDefaults.isOptionEnabled(buttons, key);
+    }
+
+    private boolean shouldRenderButton(String key, ConfigurationSection section) {
+        if (!PlayerSettingDefaults.isOptionEnabled(section)) {
+            return false;
+        }
+        if (section != null && (section.contains("COMMAND") || section.contains("STATUS-PLACEHOLDER"))) {
+            return true;
+        }
+        if (!VALID_SETTINGS.contains(key)) {
+            return false;
+        }
+        return !"DUEL_REQUESTS".equals(key)
+                || (plugin.getDuelManager() != null && plugin.getDuelManager().isEnabled());
+    }
+
+    private void rebuildIfOpen(Player player) {
+        if (player.isOnline() && player.getOpenInventory().getTopInventory().getHolder() == this) {
+            build(player);
+        }
+    }
+
+    private void runPlayer(Player player, Runnable action) {
+        plugin.getSpigotScheduler().runEntity(player, action);
+    }
+
+    @FunctionalInterface
+    private interface BooleanSetter {
+        void set(boolean value);
+    }
+
+public final class ButtonState {
+    private final String status;
+    private final boolean clickable;
+
+    public ButtonState(String status, boolean clickable) {
+        this.status = status;
+        this.clickable = clickable;
+    }
+
+    public String status() { return status; }
+    public boolean clickable() { return clickable; }
+
+    @Override public String toString() {
+        return "ButtonState[status=+status, clickable=+clickable]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ButtonState that = (ButtonState) o;
+        return java.util.Objects.equals(status, that.status) && java.util.Objects.equals(clickable, that.clickable);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(status, clickable);
+    }
+}
+}

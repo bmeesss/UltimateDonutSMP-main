@@ -1,0 +1,2337 @@
+package com.bx.ultimateDonutSmp.managers;
+
+import com.bx.ultimateDonutSmp.utils.PermissionUtils;
+
+import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
+import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.NumberUtils;
+import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
+import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
+import org.bukkit.block.Block;
+import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Level;
+
+public class CrateManager {
+
+    private final UltimateDonutSmp plugin;
+    private final Map<String, CrateDefinition> crates = new LinkedHashMap<>();
+    private final Map<UUID, CrateOpenSession> activeSessions = new HashMap<>();
+    private final Map<CrateBlockKey, String> boundBlocks = new HashMap<>();
+    private final Map<UUID, String> pendingBindCrates = new HashMap<>();
+    private final Map<UUID, Map<String, Integer>> keyBalanceCache = new HashMap<>();
+
+    private ListMenuSettings listMenuSettings = ListMenuSettings.defaults();
+    private ConfirmMenuSettings confirmMenuSettings = ConfirmMenuSettings.defaults();
+    private GachaSettings gachaDefaults = GachaSettings.defaults();
+
+    public CrateManager(UltimateDonutSmp plugin) {
+        this.plugin = plugin;
+        reload();
+    }
+
+    public void reload() {
+        crates.clear();
+        activeSessions.clear();
+        boundBlocks.clear();
+        pendingBindCrates.clear();
+        keyBalanceCache.clear();
+        listMenuSettings = loadListMenuSettings();
+        confirmMenuSettings = loadConfirmMenuSettings();
+        gachaDefaults = loadGachaDefaults();
+        loadCrates();
+        loadBoundBlocks();
+    }
+
+    public Collection<CrateDefinition> getCrates() {
+        return Collections.unmodifiableCollection(crates.values());
+    }
+
+    public List<CrateDefinition> getAccessibleCrates(Player player) {
+        List<CrateDefinition> accessible = new ArrayList<>();
+        for (CrateDefinition crate : crates.values()) {
+            if (hasAccess(player, crate)) {
+                accessible.add(crate);
+            }
+        }
+        return accessible;
+    }
+
+    public CrateDefinition getCrate(String crateId) {
+        return crates.get(normalizeCrateId(crateId));
+    }
+
+    public ActionResult createCrate(String crateId) {
+        String normalized = normalizeCrateId(crateId);
+        if (normalized == null || !normalized.matches("[a-z0-9_-]+")) {
+            return new ActionResult(false, "&ccrate id may only contain lowercase letters, numbers, '-' and '_'.");
+        }
+        if (crates.containsKey(normalized)) {
+            return new ActionResult(false, "&ca crate with id '&f" + normalized + "&c' already exists.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        String path = "CRATES." + normalized;
+        cratesConfig.set(path + ".ENABLED", true);
+        cratesConfig.set(path + ".DISPLAY.MATERIAL", Material.CHEST.name());
+        cratesConfig.set(path + ".DISPLAY.DISPLAY-NAME", "&f" + prettifyId(normalized) + " Crate");
+        cratesConfig.set(path + ".DISPLAY.LORE", new java.util.ArrayList<>(java.util.Arrays.asList(
+                "&7Keys: &f{keys}", 
+                "&aClick to open and choose 1 reward."
+        )));
+        cratesConfig.set(path + ".KEY-ITEM.MATERIAL", Material.TRIPWIRE_HOOK.name());
+        cratesConfig.set(path + ".KEY-ITEM.DISPLAY-NAME", "&f" + prettifyId(normalized) + " Key");
+        cratesConfig.set(path + ".KEY-ITEM.LORE", java.util.Collections.singletonList(
+                "&7Opens the &f" + prettifyId(normalized) + " crate&7."
+        ));
+        cratesConfig.set(path + ".OPEN-TYPE", OpenType.CHOOSE_ONE.name());
+        cratesConfig.set(path + ".PERMISSION", "");
+        cratesConfig.set(path + ".BROADCAST-ON-CLAIM", false);
+        cratesConfig.set(path + ".MENU.OPEN-TITLE", "&8" + prettifyId(normalized) + " crate");
+        cratesConfig.set(path + ".MENU.CONFIRM-TITLE", "&8Confirm Reward");
+        cratesConfig.set(path + ".MENU.SIZE", 27);
+        cratesConfig.set(path + ".MENU.FILLER", Material.BLACK_STAINED_GLASS_PANE.name());
+        cratesConfig.set(path + ".MENU.BACK-SLOT", 26);
+        cratesConfig.set(path + ".MENU.BACK-BUTTON.MATERIAL", Material.BARRIER.name());
+        cratesConfig.set(path + ".MENU.BACK-BUTTON.DISPLAY-NAME", "&cBack");
+        cratesConfig.set(path + ".MENU.BACK-BUTTON.LORE", java.util.Collections.singletonList("&7Return to the crate list."));
+        cratesConfig.createSection(path + ".REWARDS");
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while creating that crate.");
+        }
+
+        reload();
+        return new ActionResult(true, "&acreated crate &f" + normalized + "&a with a default key config.");
+    }
+
+    public ActionResult deleteCrate(String crateId) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        cratesConfig.set("CRATES." + crate.id(), null);
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while deleting that crate.");
+        }
+
+        plugin.getDatabaseManager().deleteCrateKeyBalances(crate.id());
+        plugin.getDatabaseManager().deleteCrateBlocksByCrateId(crate.id());
+        reload();
+        return new ActionResult(true, "&adeleted crate &f" + crate.id() + "&a, its key balances, and bound crate chests.");
+    }
+
+    public ActionResult setOpenType(String crateId, OpenType openType) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (openType == null) {
+            return new ActionResult(false, "&copen type is invalid.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        String path = "CRATES." + crate.id();
+        cratesConfig.set(path + ".OPEN-TYPE", openType.name());
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while updating crate type.");
+        }
+
+        reload();
+        return new ActionResult(true, "&aset crate &f" + crate.id() + "&a to &f" + openType.name() + "&a.");
+    }
+
+    public ActionResult addItemReward(String crateId, int slot, ItemStack item) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+        if (crate.findRewardBySlot(slot) != null) {
+            return new ActionResult(false, "&cthat slot already has a reward. use &f/crate edit " + crate.id() + " " + slot + "&c.");
+        }
+
+        return saveItemReward(crate, slot, item, false);
+    }
+
+    public ActionResult editItemReward(String crateId, int slot, ItemStack item) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+        if (crate.findRewardBySlot(slot) == null) {
+            return new ActionResult(false, "&cthat slot does not have a reward yet. use &f/crate add " + crate.id() + " " + slot + "&c.");
+        }
+
+        return saveItemReward(crate, slot, item, true);
+    }
+
+    public ActionResult upsertItemReward(String crateId, int slot, ItemStack item) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+
+        CrateReward existingReward = crate.findRewardBySlot(slot);
+        if (existingReward != null && existingReward.grant().type() != GrantType.ITEM) {
+            return new ActionResult(false, "&cthat slot contains a non-item reward and cannot be edited from the gui.");
+        }
+
+        return saveItemReward(crate, slot, item, existingReward != null);
+    }
+
+    public ActionResult removeReward(String crateId, int slot) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+
+        ConfigurationSection rewardsSection = plugin.getConfigManager().getOriginalCrates()
+                .getConfigurationSection("CRATES." + crate.id() + ".REWARDS");
+        if (rewardsSection == null) {
+            return new ActionResult(false, "&cthat crate does not have any rewards configured.");
+        }
+
+        String rewardKey = findRewardKeyBySlot(rewardsSection, slot);
+        if (rewardKey == null) {
+            return new ActionResult(false, "&cno reward was found in slot &f" + slot + "&c.");
+        }
+
+        rewardsSection.set(rewardKey, null);
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while removing that reward.");
+        }
+
+        reload();
+        return new ActionResult(true, "&aremoved reward in slot &f" + slot + "&a from crate &f" + crate.id() + "&a.");
+    }
+
+    public ActionResult addCommandReward(String crateId, int slot, List<String> commands) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+        if (crate.findRewardBySlot(slot) != null) {
+            return new ActionResult(false, "&cthat slot already has a reward. use &f/crate edit " + crate.id() + " " + slot + "&c.");
+        }
+        if (commands == null || commands.isEmpty()) {
+            return new ActionResult(false, "&cno command provided. usage: /crate add <crate> <slot> command <console command...>");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        ConfigurationSection rewardsSection = cratesConfig.getConfigurationSection("CRATES." + crate.id() + ".REWARDS");
+        if (rewardsSection == null) {
+            rewardsSection = cratesConfig.createSection("CRATES." + crate.id() + ".REWARDS");
+        }
+
+        String rewardKey = findRewardKeyBySlot(rewardsSection, slot);
+        if (rewardKey == null) {
+            rewardKey = "reward_" + slot;
+        }
+
+        String basePath = "CRATES." + crate.id() + ".REWARDS." + rewardKey;
+        writeCommandReward(cratesConfig, basePath, slot, commands);
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while adding that reward.");
+        }
+
+        reload();
+        return new ActionResult(true, "&aadded command reward in slot &f" + slot + "&a for crate &f" + crate.id() + "&a.");
+    }
+
+    private void writeCommandReward(FileConfiguration cratesConfig, String basePath, int slot, List<String> commands) {
+        cratesConfig.set(basePath + ".SLOT", slot);
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.PAPER.name());
+        cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fCommand reward");
+        cratesConfig.set(basePath + ".DISPLAY.LORE", java.util.Collections.singletonList("&7Command reward"));
+        cratesConfig.set(basePath + ".DISPLAY.AMOUNT", 1);
+        cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", java.util.Collections.emptyList());
+
+        cratesConfig.set(basePath + ".GRANT.TYPE", "COMMAND");
+        cratesConfig.set(basePath + ".GRANT.COMMANDS", commands);
+        cratesConfig.set(basePath + ".GRANT.REQUIRES-INVENTORY-SPACE", false);
+        cratesConfig.set(basePath + ".WEIGHT", 1);
+    }
+
+    public ActionResult addMoneyReward(String crateId, int slot, double amount) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+        if (crate.findRewardBySlot(slot) != null) {
+            return new ActionResult(false, "&cthat slot already has a reward. use &f/crate edit " + crate.id() + " " + slot + "&c.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        ConfigurationSection rewardsSection = cratesConfig.getConfigurationSection("CRATES." + crate.id() + ".REWARDS");
+        if (rewardsSection == null) {
+            rewardsSection = cratesConfig.createSection("CRATES." + crate.id() + ".REWARDS");
+        }
+
+        String rewardKey = findRewardKeyBySlot(rewardsSection, slot);
+        if (rewardKey == null) {
+            rewardKey = "reward_" + slot;
+        }
+
+        String basePath = "CRATES." + crate.id() + ".REWARDS." + rewardKey;
+        writeMoneyReward(cratesConfig, basePath, slot, amount);
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while adding that reward.");
+        }
+
+        reload();
+        return new ActionResult(true, "&aadded money reward in slot &f" + slot + "&a for crate &f" + crate.id() + "&a.");
+    }
+
+    private void writeMoneyReward(FileConfiguration cratesConfig, String basePath, int slot, double amount) {
+        cratesConfig.set(basePath + ".SLOT", slot);
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.SUNFLOWER.name());
+        cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fMoney reward");
+        cratesConfig.set(basePath + ".DISPLAY.LORE", java.util.Collections.singletonList("&7Money reward"));
+        cratesConfig.set(basePath + ".DISPLAY.AMOUNT", 1);
+        cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", java.util.Collections.emptyList());
+
+        cratesConfig.set(basePath + ".GRANT.TYPE", "MONEY");
+        cratesConfig.set(basePath + ".GRANT.AMOUNT", amount);
+        cratesConfig.set(basePath + ".WEIGHT", 1);
+    }
+
+    public ActionResult addShardsReward(String crateId, int slot, long amount) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new ActionResult(false, "&ccrate '&f" + crateId + "&c' was not found.");
+        }
+        if (!isValidRewardSlot(crate, slot)) {
+            return new ActionResult(false, "&cslot &f" + slot + "&c is not valid for this crate menu.");
+        }
+        if (crate.findRewardBySlot(slot) != null) {
+            return new ActionResult(false, "&cthat slot already has a reward. use &f/crate edit " + crate.id() + " " + slot + "&c.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        ConfigurationSection rewardsSection = cratesConfig.getConfigurationSection("CRATES." + crate.id() + ".REWARDS");
+        if (rewardsSection == null) {
+            rewardsSection = cratesConfig.createSection("CRATES." + crate.id() + ".REWARDS");
+        }
+
+        String rewardKey = findRewardKeyBySlot(rewardsSection, slot);
+        if (rewardKey == null) {
+            rewardKey = "reward_" + slot;
+        }
+
+        String basePath = "CRATES." + crate.id() + ".REWARDS." + rewardKey;
+        writeShardsReward(cratesConfig, basePath, slot, amount);
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while adding that reward.");
+        }
+
+        reload();
+        return new ActionResult(true, "&aadded shards reward in slot &f" + slot + "&a for crate &f" + crate.id() + "&a.");
+    }
+
+    private void writeShardsReward(FileConfiguration cratesConfig, String basePath, int slot, long amount) {
+        cratesConfig.set(basePath + ".SLOT", slot);
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.AMETHYST_SHARD.name());
+        cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fShards reward");
+        cratesConfig.set(basePath + ".DISPLAY.LORE", java.util.Collections.singletonList("&7Shards reward"));
+        cratesConfig.set(basePath + ".DISPLAY.AMOUNT", 1);
+        cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", java.util.Collections.emptyList());
+
+        cratesConfig.set(basePath + ".GRANT.TYPE", "SHARDS");
+        cratesConfig.set(basePath + ".GRANT.AMOUNT", amount);
+        cratesConfig.set(basePath + ".WEIGHT", 1);
+    }
+
+    public boolean isBindableBlock(Material material) {
+        return material == Material.CHEST
+                || material == Material.TRAPPED_CHEST
+                || material == Material.BARREL
+                || material == Material.ENDER_CHEST
+                || Tag.SHULKER_BOXES.isTagged(material);
+    }
+
+    public void startPendingBind(UUID uuid, String crateId) {
+        String normalized = normalizeCrateId(crateId);
+        if (uuid == null || normalized == null || !crates.containsKey(normalized)) {
+            return;
+        }
+        pendingBindCrates.put(uuid, normalized);
+    }
+
+    public String getPendingBindCrateId(UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
+        return pendingBindCrates.get(uuid);
+    }
+
+    public void clearPendingBind(UUID uuid) {
+        if (uuid != null) {
+            pendingBindCrates.remove(uuid);
+        }
+    }
+
+    public String getBoundCrateId(Block block) {
+        if (block == null || block.getWorld() == null) {
+            return null;
+        }
+        return boundBlocks.get(new CrateBlockKey(
+                block.getWorld().getName(),
+                block.getX(),
+                block.getY(),
+                block.getZ()
+        ));
+    }
+
+    public CrateDefinition getBoundCrate(Block block) {
+        return getCrate(getBoundCrateId(block));
+    }
+
+    public Map<CrateBlockKey, String> getBoundBlockIds() {
+        return Collections.unmodifiableMap(boundBlocks);
+    }
+
+    public boolean bindCrateBlock(Block block, String crateId) {
+        if (block == null || block.getWorld() == null || !isBindableBlock(block.getType())) {
+            return false;
+        }
+
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return false;
+        }
+
+        boolean saved = plugin.getDatabaseManager().saveCrateBlock(
+                block.getWorld().getName(),
+                block.getX(),
+                block.getY(),
+                block.getZ(),
+                crate.id()
+        );
+        if (saved) {
+            boundBlocks.put(new CrateBlockKey(block.getWorld().getName(), block.getX(), block.getY(), block.getZ()), crate.id());
+        }
+        return saved;
+    }
+
+    public boolean unbindCrateBlock(Block block) {
+        if (block == null || block.getWorld() == null) {
+            return false;
+        }
+
+        boolean deleted = plugin.getDatabaseManager().deleteCrateBlock(
+                block.getWorld().getName(),
+                block.getX(),
+                block.getY(),
+                block.getZ()
+        );
+        boundBlocks.remove(new CrateBlockKey(block.getWorld().getName(), block.getX(), block.getY(), block.getZ()));
+        return deleted;
+    }
+
+    public boolean unbindCrateBlock(String worldName, int x, int y, int z) {
+        if (worldName == null || worldName.isBlank()) {
+            return false;
+        }
+
+        boolean deleted = plugin.getDatabaseManager().deleteCrateBlock(
+                worldName,
+                x,
+                y,
+                z
+        );
+        boundBlocks.remove(new CrateBlockKey(worldName, x, y, z));
+        return deleted;
+    }
+
+
+    public boolean hasAccess(Player player, CrateDefinition crate) {
+        if (player == null || crate == null || !crate.enabled()) {
+            return false;
+        }
+        return crate.permission() == null
+                || crate.permission().isBlank()
+                || PermissionUtils.has(player, crate.permission());
+    }
+
+    public int getKeyBalance(Player player, String crateId) {
+        return player == null ? 0 : getKeyBalance(player.getUniqueId(), crateId);
+    }
+
+    public int getKeyBalance(UUID uuid, String crateId) {
+        String normalized = normalizeCrateId(crateId);
+        if (uuid == null || normalized == null) {
+            return 0;
+        }
+        return getCachedKeyBalances(uuid).getOrDefault(normalized, 0);
+    }
+
+    public int addKeys(UUID uuid, String crateId, int amount) {
+        String normalized = normalizeCrateId(crateId);
+        CrateDefinition crate = getCrate(normalized);
+        if (uuid == null || crate == null || amount <= 0) {
+            return getKeyBalance(uuid, normalized);
+        }
+        int balance = plugin.getDatabaseManager().addCrateKeys(uuid, crate.id(), amount);
+        cacheKeyBalance(uuid, crate.id(), balance);
+        return balance;
+    }
+
+    public int setKeys(UUID uuid, String crateId, int amount) {
+        String normalized = normalizeCrateId(crateId);
+        CrateDefinition crate = getCrate(normalized);
+        if (uuid == null || crate == null) {
+            return 0;
+        }
+        boolean success = plugin.getDatabaseManager().setCrateKeyAmount(uuid, crate.id(), amount);
+        if (success) {
+            cacheKeyBalance(uuid, crate.id(), amount);
+            return amount;
+        } else {
+            return getKeyBalance(uuid, crate.id());
+        }
+    }
+
+    public boolean takeKeys(UUID uuid, String crateId, int amount) {
+        String normalized = normalizeCrateId(crateId);
+        CrateDefinition crate = getCrate(normalized);
+        if (uuid == null || crate == null) {
+            return false;
+        }
+        if (amount <= 0) {
+            return true;
+        }
+
+        int currentBalance = getKeyBalance(uuid, crate.id());
+        if (!plugin.getDatabaseManager().removeCrateKeys(uuid, crate.id(), amount)) {
+            return false;
+        }
+
+        cacheKeyBalance(uuid, crate.id(), currentBalance - amount);
+        return true;
+    }
+
+    public void unloadKeyBalanceCache(UUID uuid) {
+        if (uuid != null) {
+            keyBalanceCache.remove(uuid);
+        }
+    }
+
+    public Map<CrateDefinition, Integer> getKeySummary(UUID uuid) {
+        Map<CrateDefinition, Integer> summary = new LinkedHashMap<>();
+        for (CrateDefinition crate : crates.values()) {
+            summary.put(crate, getKeyBalance(uuid, crate.id()));
+        }
+        return summary;
+    }
+
+    public OpenResult startOpening(Player player, String crateId) {
+        return startOpening(player, crateId, true);
+    }
+
+    /**
+     * Starts a crate session. With {@code requireKey} false the menu opens without a key —
+     * the key is still checked and consumed at claim time ({@code claimSelectedReward}), so
+     * keyless browsing cannot grant rewards.
+     */
+    public OpenResult startOpening(Player player, String crateId, boolean requireKey) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null) {
+            return new OpenResult(false, FailureReason.CRATE_NOT_FOUND,
+                    "&ccrate '&f" + crateId + "&c' was not found.", null);
+        }
+        if (!crate.enabled()) {
+            return new OpenResult(false, FailureReason.CRATE_DISABLED,
+                    "&cthis crate is currently disabled.", crate);
+        }
+        if (!hasAccess(player, crate)) {
+            return new OpenResult(false, FailureReason.NO_PERMISSION,
+                    "&cyou do not have permission to open this crate.", crate);
+        }
+        CrateOpenSession existing = activeSessions.get(player.getUniqueId());
+        // reopening the same crate before picking a reward is not an error — block clicks
+        // can double-fire and menu close clears the session a tick late
+        if (existing != null && existing.crate() != null
+                && existing.crate().id().equalsIgnoreCase(crate.id())
+                && existing.selectedReward() == null) {
+            activeSessions.remove(player.getUniqueId());
+        } else if (existing != null) {
+            return new OpenResult(false, FailureReason.ALREADY_OPENING,
+                    "&cyou are already opening a crate.", crate);
+        }
+        if (crate.rewards().isEmpty()) {
+            return new OpenResult(false, FailureReason.INVALID_CRATE,
+                    "&cthis crate has no valid rewards configured.", crate);
+        }
+        if (requireKey && getKeyBalance(player, crate.id()) <= 0) {
+            return new OpenResult(false, FailureReason.NO_KEYS,
+                    "&cyou do not have any " + getReadableCrateName(crate) + " keys.", crate);
+        }
+
+        activeSessions.put(player.getUniqueId(), new CrateOpenSession(crate, null));
+        return new OpenResult(true, null, "", crate);
+    }
+
+    public boolean selectReward(Player player, String rewardId) {
+        if (player == null) {
+            return false;
+        }
+
+        CrateOpenSession session = activeSessions.get(player.getUniqueId());
+        if (session == null) {
+            return false;
+        }
+
+        CrateReward reward = session.crate().findReward(rewardId);
+        if (reward == null) {
+            return false;
+        }
+
+        activeSessions.put(player.getUniqueId(), session.withSelectedReward(reward));
+        return true;
+    }
+
+    public CrateOpenSession getSession(UUID uuid) {
+        return uuid == null ? null : activeSessions.get(uuid);
+    }
+
+    public void clearSession(UUID uuid) {
+        if (uuid != null) {
+            activeSessions.remove(uuid);
+        }
+    }
+
+    public void clearAllSessions() {
+        activeSessions.clear();
+        pendingBindCrates.clear();
+    }
+
+    public void prepareForServerWipe() {
+        activeSessions.clear();
+        pendingBindCrates.clear();
+        keyBalanceCache.clear();
+    }
+
+    public ClaimResult claimSelectedReward(Player player) {
+        if (player == null) {
+            return new ClaimResult(false, FailureReason.NO_PLAYER_DATA, "&cplayer is not available.", null, null, 0);
+        }
+
+        CrateOpenSession session = activeSessions.get(player.getUniqueId());
+        if (session == null) {
+            return new ClaimResult(false, FailureReason.NO_SESSION, "&cno active crate session was found.", null, null, 0);
+        }
+
+        CrateDefinition crate = session.crate();
+        CrateReward reward = session.selectedReward();
+        if (crate == null) {
+            clearSession(player.getUniqueId());
+            return new ClaimResult(false, FailureReason.INVALID_CRATE, "&cthis crate session is no longer valid.", null, null, 0);
+        }
+        if (reward == null) {
+            return new ClaimResult(false, FailureReason.NO_REWARD_SELECTED, "&cselect a reward first.", crate, null,
+                    getKeyBalance(player, crate.id()));
+        }
+        if (getKeyBalance(player, crate.id()) <= 0) {
+            clearSession(player.getUniqueId());
+            return new ClaimResult(false, FailureReason.NO_KEYS,
+                    "&cyou no longer have a key for " + getReadableCrateName(crate) + ".", crate, reward, 0);
+        }
+
+        ItemStack preparedItem = null;
+        if (reward.grant().type() == GrantType.ITEM) {
+            preparedItem = createGrantItem(player, crate, reward);
+            ItemStack rewardItem = preparedItem;
+            if (rewardItem == null || rewardItem.getType().isAir()) {
+                return new ClaimResult(false, FailureReason.INVALID_REWARD,
+                        "&cthat reward is no longer valid.", crate, reward, getKeyBalance(player, crate.id()));
+            }
+            if (!plugin.getCrashProtectionManager()
+                    .validateOrNotify(player, rewardItem, CrashProtectionManager.Context.CRATES)
+                    .allowed()) {
+                return new ClaimResult(false, FailureReason.INVALID_REWARD,
+                        "&cthat reward is no longer valid.", crate, reward, getKeyBalance(player, crate.id()));
+            }
+            if (reward.grant().requiresInventorySpace() && !canFitItem(player, rewardItem)) {
+                return new ClaimResult(false, FailureReason.INVENTORY_FULL,
+                        "&cyour inventory is full. clear space before claiming this reward.", crate, reward,
+                        getKeyBalance(player, crate.id()));
+            }
+        }
+
+        if ((reward.grant().type() == GrantType.MONEY || reward.grant().type() == GrantType.SHARDS)
+                && plugin.getPlayerDataManager().get(player) == null) {
+            return new ClaimResult(false, FailureReason.NO_PLAYER_DATA,
+                    "&cyour player data could not be loaded. try again in a moment.", crate, reward,
+                    getKeyBalance(player, crate.id()));
+        }
+
+        if (!takeKeys(player.getUniqueId(), crate.id(), 1)) {
+            clearSession(player.getUniqueId());
+            return new ClaimResult(false, FailureReason.NO_KEYS,
+                    "&cyou no longer have a key for " + getReadableCrateName(crate) + ".", crate, reward, 0);
+        }
+
+        boolean granted = false;
+        try {
+            granted = grantReward(player, crate, reward, preparedItem);
+        } catch (Exception exception) {
+            plugin.getLogger().log(Level.WARNING, "Failed to grant crate reward " + reward.id()
+                    + " from crate " + crate.id() + " to " + player.getName(), exception);
+        }
+
+        if (!granted) {
+            addKeys(player.getUniqueId(), crate.id(), 1);
+            return new ClaimResult(false, FailureReason.REWARD_GRANT_FAILED,
+                    "&cfailed to grant that reward. your key has been returned.", crate, reward,
+                    getKeyBalance(player, crate.id()));
+        }
+
+        String crateName = ColorUtils.strip(getReadableCrateName(crate));
+        String rewardName = ColorUtils.strip(getReadableRewardName(reward));
+        plugin.getPlayerLogsManager().log(
+                player.getUniqueId(),
+                player.getName(),
+                "Crates",
+                "CRATE_OPEN",
+                "Opened " + crateName + " crate and received " + rewardName
+        );
+
+        clearSession(player.getUniqueId());
+        if (shouldBroadcastClaim(crate, reward)) {
+            var broadcast = ColorUtils.toComponent(buildClaimBroadcast(player, crate, reward));
+            Bukkit.getOnlinePlayers().stream()
+                    .filter(viewer -> PlayerSettingUtils.notificationEnabled(
+                            plugin,
+                            viewer,
+                            PlayerSettingUtils.NotificationChannel.SERVER_BROADCAST
+                    ))
+                    .forEach(viewer -> viewer.sendMessage(broadcast));
+        }
+
+        return new ClaimResult(true, null,
+                "&7you claimed &f" + getReadableRewardName(reward)
+                        + "&7 from &b" + getReadableCrateName(crate) + "&7.",
+                crate,
+                reward,
+                getKeyBalance(player, crate.id()));
+    }
+
+    public ClaimResult claimReward(Player player, CrateReward reward) {
+        if (reward == null) {
+            return new ClaimResult(false, FailureReason.INVALID_REWARD, "&cthat reward is no longer valid.", null, null, 0);
+        }
+        if (!selectReward(player, reward.id())) {
+            return new ClaimResult(false, FailureReason.INVALID_REWARD, "&cthat reward is no longer valid.", null, reward, 0);
+        }
+        return claimSelectedReward(player);
+    }
+
+    public CrateReward rollReward(CrateDefinition crate) {
+        if (crate == null || crate.rewards().isEmpty()) {
+            return null;
+        }
+
+        long totalWeight = 0L;
+        for (CrateReward reward : crate.rewards()) {
+            totalWeight += Math.max(1, reward.weight());
+        }
+
+        if (totalWeight <= 0L) {
+            return crate.rewards().get(ThreadLocalRandom.current().nextInt(crate.rewards().size()));
+        }
+
+        long roll = ThreadLocalRandom.current().nextLong(totalWeight);
+        long cursor = 0L;
+        for (CrateReward reward : crate.rewards()) {
+            cursor += Math.max(1, reward.weight());
+            if (roll < cursor) {
+                return reward;
+            }
+        }
+        return crate.rewards().get(crate.rewards().size() - 1);
+    }
+
+    public List<Player> grantKeysToPlayers(Collection<? extends Player> players, String crateId, int amount) {
+        CrateDefinition crate = getCrate(crateId);
+        if (crate == null || !crate.enabled() || amount <= 0) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<Player> granted = new ArrayList<>();
+        for (Player player : players) {
+            if (!hasAccess(player, crate)) {
+                continue;
+            }
+            addKeys(player.getUniqueId(), crate.id(), amount);
+            granted.add(player);
+        }
+        return granted;
+    }
+
+    public int grantKeysToOnlinePlayers(String crateId, int amount) {
+        return grantKeysToPlayers(Bukkit.getOnlinePlayers(), crateId, amount).size();
+    }
+
+    private Map<String, Integer> getCachedKeyBalances(UUID uuid) {
+        return keyBalanceCache.computeIfAbsent(uuid, playerId ->
+                new HashMap<>(plugin.getDatabaseManager().loadCrateKeyBalances(playerId))
+        );
+    }
+
+    private void cacheKeyBalance(UUID uuid, String crateId, int amount) {
+        String normalized = normalizeCrateId(crateId);
+        if (uuid == null || normalized == null) {
+            return;
+        }
+
+        Map<String, Integer> balances = getCachedKeyBalances(uuid);
+        int normalizedAmount = Math.max(0, amount);
+        if (normalizedAmount == 0) {
+            balances.remove(normalized);
+        } else {
+            balances.put(normalized, normalizedAmount);
+        }
+    }
+
+    public String getReadableCrateName(String crateId) {
+        return getReadableCrateName(getCrate(crateId));
+    }
+
+    public String getReadableCrateName(CrateDefinition crate) {
+        if (crate == null) {
+            return "crate";
+        }
+
+        String stripped = ColorUtils.strip(crate.display().displayName());
+        return stripped == null || stripped.isBlank() ? prettifyId(crate.id()) : stripped;
+    }
+
+    public String getReadableRewardName(CrateReward reward) {
+        if (reward == null) {
+            return "reward";
+        }
+
+        if (reward.grant().type() == GrantType.MONEY) {
+            return ColorUtils.strip(plugin.getCurrencyManager().formatMoney(reward.grant().moneyAmount()));
+        }
+        if (reward.grant().type() == GrantType.SHARDS) {
+            return ColorUtils.strip(plugin.getCurrencyManager().formatShards(reward.grant().shardAmount()));
+        }
+
+        String stripped = ColorUtils.strip(reward.display().displayName());
+        if (stripped == null || stripped.isBlank()) {
+            stripped = ColorUtils.strip(reward.grant().item().displayName());
+        }
+        return stripped == null || stripped.isBlank() ? reward.id() : stripped;
+    }
+
+    public ItemStack createCrateListItem(Player player, CrateDefinition crate) {
+        int keyCount = getKeyBalance(player, crate.id());
+        DisplayItem display = crate.display();
+        ItemStack item = createDisplayItem(display, Math.max(1, Math.min(display.amount(), display.material().getMaxStackSize())));
+        if (keyCount > 1) {
+            item.setAmount(Math.min(keyCount, item.getMaxStackSize()));
+        }
+
+        var meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorUtils.toComponent(applyPlaceholders(display.displayName(), player, crate, null)));
+            meta.setLore(ColorUtils.toComponentList(applyPlaceholders(display.lore(), player, crate, null)));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    public ItemStack createRewardDisplayItem(Player player, CrateDefinition crate, CrateReward reward) {
+        ItemStack item = null;
+        if (reward.grant().type() == GrantType.ITEM && reward.grant().serializedItemData() != null && !reward.grant().serializedItemData().isBlank()) {
+            item = deserializeGrantItem(reward.grant().serializedItemData(), crate, reward);
+        }
+        if (item == null) {
+            item = createDisplayItem(reward.display(), reward.display().amount());
+        } else {
+            item = item.clone();
+            item.setAmount(Math.max(1, Math.min(reward.display().amount(), item.getMaxStackSize())));
+        }
+        if (plugin.getAmethystToolsManager().hasAmethystMetadata(item)) {
+            item = plugin.getAmethystToolsManager().createDisplayCopy(item, reward.grant().amethystDurationSeconds());
+        } else if (ShulkerBoxSupport.isShulkerBox(item)) {
+            plugin.getAmethystToolsManager().prepareCrateDisplayShulker(item, reward.grant().amethystDurationSeconds());
+        }
+
+        var meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ColorUtils.toComponent(applyPlaceholders(reward.display().displayName(), player, crate, reward)));
+            meta.setLore(ColorUtils.toComponentList(applyPlaceholders(reward.display().lore(), player, crate, reward)));
+            item.setItemMeta(meta);
+        }
+
+        if (plugin.getAmethystToolsManager().hasAmethystMetadata(item)) {
+            plugin.getAmethystToolsManager().updateLoreCountdown(item);
+        }
+
+        return item;
+    }
+
+    public ItemStack createRewardPreviewItem(Player player, CrateDefinition crate, CrateReward reward) {
+        return createRewardDisplayItem(player, crate, reward);
+    }
+
+    public ListMenuSettings getListMenuSettings() {
+        return listMenuSettings;
+    }
+
+    public ConfirmMenuSettings getConfirmMenuSettings() {
+        return confirmMenuSettings;
+    }
+
+    public GachaSettings getGachaDefaults() {
+        return gachaDefaults;
+    }
+
+    public String applyPlaceholders(String text, Player player, CrateDefinition crate, CrateReward reward) {
+        if (text == null) {
+            return "";
+        }
+
+        int keys = player == null || crate == null ? 0 : getKeyBalance(player, crate.id());
+        String result = text
+                .replace("{crate}", crate == null ? "crate" : getReadableCrateName(crate))
+                .replace("{crate_id}", crate == null ? "" : crate.id())
+                .replace("{reward}", reward == null ? "reward" : getReadableRewardName(reward))
+                .replace("{reward_id}", reward == null ? "" : reward.id())
+                .replace("{keys}", String.valueOf(keys))
+                .replace("{player}", player == null ? "" : player.getName());
+
+        if (reward != null) {
+            GrantDefinition grant = reward.grant();
+            result = result
+                    .replace("{money_amount}", NumberUtils.format(grant.moneyAmount()))
+                    .replace("{money_formatted}", plugin.getCurrencyManager().formatMoney(grant.moneyAmount()))
+                    .replace("{money_short_formatted}", plugin.getCurrencyManager().formatMoneyCompact(grant.moneyAmount()))
+                    .replace("{shards_amount}", String.valueOf(grant.shardAmount()))
+                    .replace("{shards_formatted}", plugin.getCurrencyManager().formatShards(grant.shardAmount()))
+                    .replace("{shards_short_formatted}", plugin.getCurrencyManager().formatShardsCompact(grant.shardAmount()));
+        }
+
+        return result;
+    }
+
+    public List<String> applyPlaceholders(List<String> lines, Player player, CrateDefinition crate, CrateReward reward) {
+        List<String> replaced = new ArrayList<>();
+        for (String line : lines) {
+            replaced.add(applyPlaceholders(line, player, crate, reward));
+        }
+        return replaced;
+    }
+
+    private boolean grantReward(Player player, CrateDefinition crate, CrateReward reward, ItemStack preparedItem) {
+        GrantDefinition grant = reward.grant();
+        return switch (grant.type()) {        case ITEM: grantItemReward(player, grant, preparedItem); break;        case MONEY: grantMoneyReward(player, grant); break;        case SHARDS: grantShardReward(player, grant); break;        case COMMAND: grantCommandReward(player, crate, reward, grant); break;
+        };
+    }
+
+    private boolean grantItemReward(Player player, GrantDefinition grant, ItemStack rewardItem) {
+        if (rewardItem == null || rewardItem.getType().isAir()) {
+            return false;
+        }
+
+        if (grant.requiresInventorySpace() && !canFitItem(player, rewardItem)) {
+            return false;
+        }
+
+        ItemStack[] snapshot = cloneContents(player.getInventory().getStorageContents());
+        Map<Integer, ItemStack> leftovers = player.getInventory().addItem(rewardItem);
+        if (!leftovers.isEmpty()) {
+            player.getInventory().setStorageContents(snapshot);
+            player.updateInventory();
+            return false;
+        }
+
+        plugin.getSpigotScheduler().runEntity(player, () -> {
+            if (!player.isOnline()) {
+                return;
+            }
+
+            plugin.getWorthManager().syncWorthDisplay(player);
+            player.updateInventory();
+        });
+        return true;
+    }
+
+    private boolean grantMoneyReward(Player player, GrantDefinition grant) {
+        PlayerData data = plugin.getPlayerDataManager().get(player);
+        if (data == null) {
+            return false;
+        }
+        data.addMoney(grant.moneyAmount());
+        return true;
+    }
+
+    private boolean grantShardReward(Player player, GrantDefinition grant) {
+        PlayerData data = plugin.getPlayerDataManager().get(player);
+        if (data == null) {
+            return false;
+        }
+        data.addShards(grant.shardAmount());
+        return true;
+    }
+
+    private boolean grantCommandReward(Player player, CrateDefinition crate, CrateReward reward, GrantDefinition grant) {
+        for (String command : grant.commands()) {
+            if (command == null || command.isBlank()) {
+                continue;
+            }
+
+            String resolved = command
+                    .replace("{player}", player.getName())
+                    .replace("{username}", player.getName())
+                    .replace("{crate}", crate.id())
+                    .replace("{crate_name}", getReadableCrateName(crate))
+                    .replace("{reward}", reward.id())
+                    .replace("{reward_name}", getReadableRewardName(reward))
+                    .replace("{amount}", String.valueOf(Math.max(1, grant.item().amount())));
+            plugin.getSpigotScheduler().dispatchConsoleCommand(resolved);
+        }
+        return true;
+    }
+
+    private ItemStack createGrantItem(Player player, CrateDefinition crate, CrateReward reward) {
+        GrantDefinition grant = reward.grant();
+        DisplayItem item = grant.item();
+        if (item == null || item.material() == null || item.material().isAir()) {
+            return null;
+        }
+
+        ItemStack grantedItem = deserializeGrantItem(grant.serializedItemData(), crate, reward);
+        if (grantedItem == null || grantedItem.getType().isAir()) {
+            grantedItem = createDisplayItem(item, item.amount());
+        }
+        stripPreviewLore(grantedItem);
+
+        if (plugin.getAmethystToolsManager().hasAmethystMetadata(grantedItem)) {
+            ItemStack amethystReward = plugin.getAmethystToolsManager().createRewardCopy(
+                    grantedItem,
+                    player.getUniqueId(),
+                    grant.amethystDurationSeconds()
+            );
+            if (amethystReward == null) {
+                plugin.getLogger().warning("Failed to prepare Amethyst crate reward '" + reward.id()
+                        + "' in crate '" + crate.id() + "' because its metadata is invalid.");
+                return null;
+            }
+            grantedItem = amethystReward;
+        } else if (ShulkerBoxSupport.isShulkerBox(grantedItem)) {
+            plugin.getAmethystToolsManager().refreshAmethystItemsInShulker(
+                    grantedItem,
+                    player.getUniqueId(),
+                    grant.amethystDurationSeconds()
+            );
+        }
+
+        return grantedItem;
+    }
+
+    private ItemStack deserializeGrantItem(String encoded, CrateDefinition crate, CrateReward reward) {
+        if (encoded == null || encoded.isBlank()) {
+            return null;
+        }
+
+        try {
+            return ItemSerializationUtils.deserialize(encoded);
+        } catch (Exception exception) {
+            plugin.getLogger().log(Level.WARNING, "Failed to deserialize item data for crate reward '"
+                    + reward.id() + "' in crate '" + crate.id() + "'. Falling back to legacy item fields.", exception);
+            return null;
+        }
+    }
+
+    private ItemStack createDisplayItem(DisplayItem display, int amount) {
+        ItemStack item = ItemUtils.createItem(
+                display.material(),
+                display.displayName(),
+                display.lore()
+        );
+        item.setAmount(Math.max(1, Math.min(amount, item.getMaxStackSize())));
+        ItemUtils.addEnchantments(item, display.enchantments());
+        return item;
+    }
+
+    private boolean canFitItem(Player player, ItemStack item) {
+        ItemStack[] storage = player.getInventory().getStorageContents();
+        int remaining = item.getAmount();
+        ItemStack probe = item.clone();
+        probe.setAmount(1);
+
+        for (ItemStack current : storage) {
+            if (current == null || current.getType().isAir()) {
+                remaining -= item.getMaxStackSize();
+            } else if (current.isSimilar(probe) && current.getAmount() < current.getMaxStackSize()) {
+                remaining -= Math.max(0, current.getMaxStackSize() - current.getAmount());
+            }
+
+            if (remaining <= 0) {
+                return true;
+            }
+        }
+        return remaining <= 0;
+    }
+
+    private ItemStack[] cloneContents(ItemStack[] contents) {
+        ItemStack[] clone = new ItemStack[contents.length];
+        for (int i = 0; i < contents.length; i++) {
+            clone[i] = contents[i] == null ? null : contents[i].clone();
+        }
+        return clone;
+    }
+
+    private String buildClaimBroadcast(Player player, CrateDefinition crate, CrateReward reward) {
+        return "&8[&bcrates&8] &f" + player.getName()
+                + " &7claimed &f" + getReadableRewardName(reward)
+                + " &7from &b" + getReadableCrateName(crate) + "&7.";
+    }
+
+    private boolean shouldBroadcastClaim(CrateDefinition crate, CrateReward reward) {
+        if (reward != null && reward.broadcast() != null) {
+            return reward.broadcast();
+        }
+        return crate != null && crate.broadcastOnClaim();
+    }
+
+    private ActionResult saveItemReward(CrateDefinition crate, int slot, ItemStack item, boolean editing) {
+        if (item == null || item.getType().isAir()) {
+            return new ActionResult(false, "&chold the item you want to save in your main hand first.");
+        }
+
+        ItemStack storedItem = item.clone();
+        stripPreviewLore(storedItem);
+        long amethystDuration = 0L;
+        if (plugin.getAmethystToolsManager().hasAmethystMetadata(storedItem)) {
+            if (!plugin.getAmethystToolsManager().hasValidSignature(storedItem)) {
+                return new ActionResult(false, "&cthat amethyst item has invalid metadata and cannot be used as a crate reward.");
+            }
+            if (plugin.getAmethystToolsManager().isExpired(storedItem)) {
+                return new ActionResult(false, "&cexpired amethyst items cannot be used as crate rewards.");
+            }
+            amethystDuration = plugin.getAmethystToolsManager().getToolDuration(storedItem);
+            if (amethystDuration <= 0L) {
+                amethystDuration = plugin.getAmethystToolsManager().getRemainingSeconds(storedItem);
+            }
+            storedItem.setAmount(1);
+        } else if (ShulkerBoxSupport.isShulkerBox(storedItem)) {
+            amethystDuration = 86400L;
+        }
+
+        CrashProtectionManager.ValidationResult safetyResult = plugin.getCrashProtectionManager()
+                .validateForStorage(storedItem, CrashProtectionManager.Context.CRATES);
+        if (!safetyResult.allowed()) {
+            plugin.getCrashProtectionManager().logBlockedItem(
+                    "crate " + crate.id() + " slot " + slot,
+                    storedItem,
+                    CrashProtectionManager.Context.CRATES,
+                    safetyResult
+            );
+            return new ActionResult(false, plugin.getConfigManager().getMessageOrDefault(
+                    "CRASH_PROTECTION.ITEM_BLOCKED",
+                    "&cThat item cannot be used here because its data looks unsafe. &7context: &f{context}&7. reason: &f{reason}",
+                    "{context}", CrashProtectionManager.Context.CRATES.displayName(),
+                    "{reason}", safetyResult.reason()
+            ));
+        }
+
+        String serializedItemData;
+        try {
+            serializedItemData = ItemSerializationUtils.serialize(storedItem);
+        } catch (IOException exception) {
+            plugin.getLogger().log(Level.WARNING, "Failed to serialize crate reward for crate "
+                    + crate.id() + " slot " + slot, exception);
+            return new ActionResult(false, "&cfailed to serialize that item for the crate reward.");
+        }
+
+        FileConfiguration cratesConfig = plugin.getConfigManager().getOriginalCrates();
+        ConfigurationSection rewardsSection = cratesConfig.getConfigurationSection("CRATES." + crate.id() + ".REWARDS");
+        if (rewardsSection == null) {
+            rewardsSection = cratesConfig.createSection("CRATES." + crate.id() + ".REWARDS");
+        }
+
+        String rewardKey = findRewardKeyBySlot(rewardsSection, slot);
+        if (rewardKey == null) {
+            rewardKey = "reward_" + slot;
+        }
+
+        String basePath = "CRATES." + crate.id() + ".REWARDS." + rewardKey;
+        writeItemReward(cratesConfig, basePath, slot, storedItem, serializedItemData, amethystDuration);
+
+        if (!plugin.getConfigManager().saveCrates()) {
+            return new ActionResult(false, "&cfailed to save crates.yml while updating that reward.");
+        }
+
+        reload();
+        return new ActionResult(true, "&a" + (editing ? "updated" : "added")
+                + " reward in slot &f" + slot + "&a for crate &f" + crate.id() + "&a.");
+    }
+
+    private void writeItemReward(
+            FileConfiguration cratesConfig,
+            String basePath,
+            int slot,
+            ItemStack item,
+            String serializedItemData,
+            long amethystDuration
+    ) {
+        ItemStack clonedItem = item.clone();
+        ItemMeta meta = clonedItem.getItemMeta();
+
+        cratesConfig.set(basePath + ".SLOT", slot);
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", clonedItem.getType().name());
+        cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
+        cratesConfig.set(basePath + ".DISPLAY.LORE", serializeDisplayLore(meta));
+        cratesConfig.set(basePath + ".DISPLAY.AMOUNT", Math.max(1, clonedItem.getAmount()));
+        cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", serializeEnchantments(clonedItem));
+
+        cratesConfig.set(basePath + ".GRANT.TYPE", "ITEM");
+        cratesConfig.set(basePath + ".GRANT.MATERIAL", clonedItem.getType().name());
+        cratesConfig.set(basePath + ".GRANT.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
+        cratesConfig.set(basePath + ".GRANT.LORE", serializeGrantLore(meta));
+        cratesConfig.set(basePath + ".GRANT.AMOUNT", Math.max(1, clonedItem.getAmount()));
+        cratesConfig.set(basePath + ".GRANT.ENCHANTMENTS", serializeEnchantments(clonedItem));
+        cratesConfig.set(basePath + ".GRANT.ITEM-DATA", serializedItemData);
+        cratesConfig.set(basePath + ".GRANT.AMETHYST-DURATION", amethystDuration > 0L ? amethystDuration : null);
+        cratesConfig.set(basePath + ".GRANT.REQUIRES-INVENTORY-SPACE", true);
+    }
+
+    private boolean isValidRewardSlot(CrateDefinition crate, int slot) {
+        return slot >= 0
+                && slot < crate.menuSettings().size()
+                && slot != crate.menuSettings().backSlot();
+    }
+
+    private String findRewardKeyBySlot(ConfigurationSection rewardsSection, int slot) {
+        for (String key : rewardsSection.getKeys(false)) {
+            if (rewardsSection.getInt(key + ".SLOT", -1) == slot) {
+                return key;
+            }
+        }
+        return null;
+    }
+
+    private String serializeDisplayName(ItemMeta meta, Material material) {
+        if (meta == null || !meta.hasDisplayName()) {
+            return "&f" + prettifyId(material.name());
+        }
+        return serializeComponent(meta.getDisplayName());
+    }
+
+    private List<String> serializeDisplayLore(ItemMeta meta) {
+        if (meta == null || !meta.hasLore() || meta.getLore() == null || meta.getLore().isEmpty()) {
+            return java.util.Collections.singletonList("&7Choose this reward.");
+        }
+
+        List<String> lore = serializeActualLore(meta);
+        return lore.isEmpty() ? java.util.Collections.singletonList("&7Choose this reward.") : lore;
+    }
+
+    private List<String> serializeGrantLore(ItemMeta meta) {
+        return serializeActualLore(meta);
+    }
+
+    private List<String> serializeActualLore(ItemMeta meta) {
+        if (meta == null || !meta.hasLore() || meta.getLore() == null || meta.getLore().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<String> lore = new ArrayList<>();
+        for (String component : meta.getLore()) {
+            String serialized = serializeComponent(component);
+            if (isPreviewLoreLine(serialized)) {
+                continue;
+            }
+            lore.add(serialized);
+        }
+        return lore;
+    }
+
+    private List<String> serializeEnchantments(ItemStack item) {
+        if (item == null || item.getEnchantments().isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<String> enchantments = new ArrayList<>();
+        for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+            enchantments.add(entry.getKey().getKey().getKey() + ":" + entry.getValue());
+        }
+        return enchantments;
+    }
+
+    private String serializeComponent(String component) {
+        if (component == null) {
+            return "";
+        }
+        return component.replace('\u00A7', '&');
+    }
+
+    private void stripPreviewLore(ItemStack item) {
+        if (item == null) {
+            return;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasLore() || meta.getLore() == null || meta.getLore().isEmpty()) {
+            return;
+        }
+
+        List<String> filteredLore = new ArrayList<>();
+        for (String component : meta.getLore()) {
+            if (component == null) {
+                continue;
+            }
+
+            if (isPreviewLoreLine(serializeComponent(component))) {
+                continue;
+            }
+            filteredLore.add(component);
+        }
+
+        meta.setLore(filteredLore.isEmpty() ? null : filteredLore);
+        item.setItemMeta(meta);
+    }
+
+    private boolean isPreviewLoreLine(String line) {
+        String stripped = ColorUtils.strip(line).trim();
+        if (stripped.regionMatches(true, 0, "worth:", 0, "Worth:".length())) {
+            return false;
+        }
+        return stripped.equalsIgnoreCase("Choose this reward.");
+    }
+
+    private void loadCrates() {
+        FileConfiguration cratesConfig = plugin.getConfigManager().getCrates();
+        ConfigurationSection cratesSection = cratesConfig.getConfigurationSection("CRATES");
+        if (cratesSection == null) {
+            plugin.getLogger().warning("crates.yml is missing the CRATES section.");
+            return;
+        }
+
+        for (String rawId : cratesSection.getKeys(false)) {
+            ConfigurationSection section = cratesSection.getConfigurationSection(rawId);
+            if (section == null) {
+                continue;
+            }
+
+            String crateId = normalizeCrateId(rawId);
+            DisplayItem display = parseDisplayItem(
+                    section.getConfigurationSection("DISPLAY"),
+                    "crate " + crateId,
+                    Material.CHEST
+            );
+            DisplayItem keyItem = parseDisplayItem(
+                    section.getConfigurationSection("KEY-ITEM"),
+                    "key item for crate " + crateId,
+                    Material.TRIPWIRE_HOOK
+            );
+            OpenType openType = parseOpenType(section.getString("OPEN-TYPE", OpenType.CHOOSE_ONE.name()));
+            CrateMenuSettings menuSettings = parseCrateMenuSettings(section.getConfigurationSection("MENU"));
+            GachaSettings gachaSettings = parseGachaSettings(section.getConfigurationSection("GACHA"));
+            List<CrateReward> rewards = parseRewards(crateId, section.getConfigurationSection("REWARDS"));
+
+            CrateDefinition crate = new CrateDefinition(
+                    crateId,
+                    section.getBoolean("ENABLED", true),
+                    display,
+                    openType,
+                    section.getString("PERMISSION", ""),
+                    section.getBoolean("BROADCAST-ON-CLAIM", false),
+                    menuSettings,
+                    gachaSettings,
+                    keyItem,
+                    rewards
+            );
+            crates.put(crate.id(), crate);
+        }
+    }
+
+    private void loadBoundBlocks() {
+        for (DatabaseManager.CrateBlockData blockData : plugin.getDatabaseManager().loadCrateBlocks()) {
+            String crateId = normalizeCrateId(blockData.crateId());
+            if (crateId == null || !crates.containsKey(crateId)) {
+                plugin.getLogger().warning("Skipping crate block binding at "
+                        + blockData.world() + " " + blockData.x() + "," + blockData.y() + "," + blockData.z()
+                        + " because crate '" + blockData.crateId() + "' does not exist.");
+                continue;
+            }
+
+            boundBlocks.put(
+                    new CrateBlockKey(blockData.world(), blockData.x(), blockData.y(), blockData.z()),
+                    crateId
+            );
+        }
+    }
+
+    private List<CrateReward> parseRewards(String crateId, ConfigurationSection rewardsSection) {
+        List<CrateReward> rewards = new ArrayList<>();
+        if (rewardsSection == null) {
+            plugin.getLogger().warning("Crate '" + crateId + "' is missing the REWARDS section.");
+            return rewards;
+        }
+
+        Set<Integer> usedSlots = new HashSet<>();
+        for (String rewardKey : rewardsSection.getKeys(false)) {
+            ConfigurationSection rewardSection = rewardsSection.getConfigurationSection(rewardKey);
+            if (rewardSection == null) {
+                continue;
+            }
+
+            int slot = rewardSection.getInt("SLOT", -1);
+            if (slot < 0) {
+                plugin.getLogger().warning("Skipping reward '" + rewardKey + "' in crate '" + crateId
+                        + "' because it is missing a valid SLOT.");
+                continue;
+            }
+            if (!usedSlots.add(slot)) {
+                plugin.getLogger().warning("Duplicate reward slot " + slot + " detected in crate '" + crateId + "'.");
+            }
+
+            ConfigurationSection displaySection = rewardSection.getConfigurationSection("DISPLAY");
+            ConfigurationSection grantSection = rewardSection.getConfigurationSection("GRANT");
+            if (grantSection == null) {
+                plugin.getLogger().warning("Skipping reward '" + rewardKey + "' in crate '" + crateId
+                        + "' because it is missing a GRANT section.");
+                continue;
+            }
+
+            GrantDefinition grant = parseGrantDefinition(crateId, rewardKey, grantSection);
+            if (grant == null) {
+                continue;
+            }
+
+            DisplayItem display = parseDisplayItem(displaySection, "display reward " + rewardKey + " in crate " + crateId,
+                    grant.item().material());
+
+            rewards.add(new CrateReward(
+                    rewardKey,
+                    slot,
+                    display,
+                    grant,
+                    rewardSection.contains("BROADCAST") ? rewardSection.getBoolean("BROADCAST") : null,
+                    Math.max(1, rewardSection.getInt("WEIGHT", 1))
+            ));
+        }
+
+        rewards.sort((left, right) -> Integer.compare(left.slot(), right.slot()));
+        return rewards;
+    }
+
+    private GrantDefinition parseGrantDefinition(String crateId, String rewardId, ConfigurationSection section) {
+        String typeName = section.getString("TYPE", "ITEM");
+        GrantType type;
+        try {
+            type = GrantType.valueOf(typeName.toUpperCase(Locale.US).trim());
+        } catch (IllegalArgumentException exception) {
+            plugin.getLogger().warning("Skipping reward '" + rewardId + "' in crate '" + crateId
+                    + "' because grant type '" + typeName + "' is invalid.");
+            return null;
+        }
+
+        return switch (type) {        case ITEM: {
+
+                            DisplayItem item = parseDisplayItem(section, "grant reward " + rewardId + " in crate " + crateId, Material.STONE);
+                            new GrantDefinition(type, item, 0D, 0L, java.util.Collections.emptyList(),
+                                    section.getBoolean("REQUIRES-INVENTORY-SPACE", true),
+                                    section.getString("ITEM-DATA", ""),
+                                    Math.max(0L, section.getLong("AMETHYST-DURATION", 0L)));
+                        break;        }        case COMMAND: new GrantDefinition(
+                    type,
+                    new DisplayItem(Material.PAPER, "&freward", java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                    0D,
+                    0L,
+                    readStringList(section, "COMMANDS"),
+                    false,
+                    "",
+                    0L
+            )            break;        case MONEY: new GrantDefinition(
+                    type,
+                    new DisplayItem(Material.SUNFLOWER,
+                            plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
+                                    + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
+                                    + " reward",
+                            java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                    section.getDouble("AMOUNT", 0D),
+                    0L,
+                    java.util.Collections.emptyList(),
+                    false,
+                    "",
+                    0L
+            )            break;        case SHARDS: new GrantDefinition(
+                    type,
+                    new DisplayItem(Material.AMETHYST_SHARD,
+                            plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.SHARDS)
+                                    + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.SHARDS)
+                                    + " reward",
+                            java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                    0D,
+                    Math.max(0L, section.getLong("AMOUNT", 0L)),
+                    java.util.Collections.emptyList(),
+                    false,
+                    "",
+                    0L
+            )            break;
+        };
+    }
+
+    private DisplayItem parseDisplayItem(ConfigurationSection section, String context, Material fallbackMaterial) {
+        if (section == null) {
+            return new DisplayItem(
+                    fallbackMaterial == null ? Material.STONE : fallbackMaterial,
+                    "&f" + prettifyId(context),
+                    java.util.Collections.emptyList(),
+                    1,
+                    java.util.Collections.emptyList()
+            );
+        }
+
+        Material material = parseMaterial(
+                section.getString("MATERIAL"),
+                fallbackMaterial == null ? Material.STONE : fallbackMaterial,
+                context
+        );
+        String name = section.getString("DISPLAY-NAME",
+                section.getString("NAME", "&f" + prettifyId(context)));
+        List<String> lore = readStringList(section, "LORE");
+        int amount = Math.max(1, section.getInt("AMOUNT", 1));
+        List<String> enchantments = readStringList(section, "ENCHANTMENTS");
+        return new DisplayItem(material, name, lore, amount, enchantments);
+    }
+
+    private ListMenuSettings loadListMenuSettings() {
+        ConfigurationSection section = plugin.getConfigManager().getCrates().getConfigurationSection("SETTINGS.LIST-MENU");
+        if (section == null) {
+            return ListMenuSettings.defaults();
+        }
+
+        List<Integer> contentSlots = section.getIntegerList("CONTENT-SLOTS");
+        if (contentSlots.isEmpty()) {
+            contentSlots = new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16));
+        }
+
+        return new ListMenuSettings(
+                section.getString("TITLE", "&8crates"),
+                sanitizeSize(section.getInt("SIZE", 27), 27),
+                parseMaterial(section.getString("FILLER"), Material.GRAY_STAINED_GLASS_PANE, "crate list filler"),
+                contentSlots,
+                section.getInt("EMPTY-SLOT", 13),
+                parseDisplayItem(section.getConfigurationSection("EMPTY"), "empty crate list button", Material.BARRIER),
+                section.getInt("CLOSE-BUTTON.SLOT", 26),
+                parseDisplayItem(section.getConfigurationSection("CLOSE-BUTTON"), "crate list close button", Material.BARRIER)
+        );
+    }
+
+    private ConfirmMenuSettings loadConfirmMenuSettings() {
+        ConfigurationSection section = plugin.getConfigManager().getCrates().getConfigurationSection("SETTINGS.CONFIRM-MENU");
+        if (section == null) {
+            return ConfirmMenuSettings.defaults();
+        }
+
+        return new ConfirmMenuSettings(
+                sanitizeSize(section.getInt("SIZE", 27), 27),
+                parseMaterial(section.getString("FILLER"), Material.GRAY_STAINED_GLASS_PANE, "crate confirm filler"),
+                section.getInt("PREVIEW-SLOT", 13),
+                section.getInt("CONFIRM-SLOT", 15),
+                parseDisplayItem(section.getConfigurationSection("CONFIRM-BUTTON"), "crate confirm button", Material.LIME_STAINED_GLASS_PANE),
+                section.getInt("CANCEL-SLOT", 11),
+                parseDisplayItem(section.getConfigurationSection("CANCEL-BUTTON"), "crate cancel button", Material.RED_STAINED_GLASS_PANE)
+        );
+    }
+
+    private GachaSettings loadGachaDefaults() {
+        ConfigurationSection section = plugin.getConfigManager().getCrates().getConfigurationSection("SETTINGS.GACHA");
+        if (section == null) {
+            return GachaSettings.defaults();
+        }
+
+        List<Integer> previewSlots = section.getIntegerList("PREVIEW-SLOTS");
+        if (previewSlots.isEmpty()) {
+            previewSlots = new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16));
+        }
+
+        return new GachaSettings(
+                section.getString("TITLE", "&8rolling reward"),
+                parseMaterial(section.getString("FILLER"), Material.BLACK_STAINED_GLASS_PANE, "crate gacha filler"),
+                previewSlots,
+                section.getInt("POINTER-SLOT", 13),
+                Math.max(12, section.getInt("TOTAL-STEPS", 38)),
+                Math.max(1, section.getInt("TICK-INTERVAL", 2)),
+                parseSpinDirection(section.getString("SPIN-DIRECTION", SpinDirection.RANDOM.name()))
+        );
+    }
+
+    private CrateMenuSettings parseCrateMenuSettings(ConfigurationSection section) {
+        if (section == null) {
+            return CrateMenuSettings.defaults();
+        }
+
+        int size = sanitizeSize(section.getInt("SIZE", 27), 27);
+        return new CrateMenuSettings(
+                section.getString("OPEN-TITLE", "&8choose 1 reward"),
+                section.getString("CONFIRM-TITLE", "&8confirm reward"),
+                size,
+                parseMaterial(section.getString("FILLER"), Material.BLACK_STAINED_GLASS_PANE, "crate menu filler"),
+                section.getInt("BACK-SLOT", size - 1),
+                parseDisplayItem(section.getConfigurationSection("BACK-BUTTON"), "crate back button", Material.BARRIER)
+        );
+    }
+
+    private GachaSettings parseGachaSettings(ConfigurationSection section) {
+        if (section == null) {
+            return gachaDefaults;
+        }
+
+        List<Integer> previewSlots = section.getIntegerList("PREVIEW-SLOTS");
+        if (previewSlots.isEmpty()) {
+            previewSlots = gachaDefaults.previewSlots();
+        }
+
+        return new GachaSettings(
+                section.getString("TITLE", gachaDefaults.title()),
+                parseMaterial(section.getString("FILLER"), gachaDefaults.filler(), "crate gacha filler"),
+                previewSlots,
+                section.getInt("POINTER-SLOT", gachaDefaults.pointerSlot()),
+                Math.max(12, section.getInt("TOTAL-STEPS", gachaDefaults.totalSteps())),
+                Math.max(1, section.getInt("TICK-INTERVAL", gachaDefaults.tickInterval())),
+                parseSpinDirection(section.getString("SPIN-DIRECTION", gachaDefaults.direction().name()))
+        );
+    }
+
+    private List<String> readStringList(ConfigurationSection section, String path) {
+        if (section == null) {
+            return java.util.Collections.emptyList();
+        }
+        if (section.isList(path)) {
+            return section.getStringList(path);
+        }
+
+        String singleLine = section.getString(path);
+        if (singleLine == null || singleLine.isBlank()) {
+            return java.util.Collections.emptyList();
+        }
+        return java.util.Collections.singletonList(singleLine);
+    }
+
+    private Material parseMaterial(String rawName, Material fallback, String context) {
+        if (rawName == null || rawName.isBlank()) {
+            return fallback;
+        }
+
+        try {
+            return Material.valueOf(rawName.trim().toUpperCase(Locale.US));
+        } catch (IllegalArgumentException exception) {
+            plugin.getLogger().warning("Invalid material '" + rawName + "' configured for " + context
+                    + ". Falling back to " + fallback + ".");
+            return fallback;
+        }
+    }
+
+    private OpenType parseOpenType(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return OpenType.CHOOSE_ONE;
+        }
+
+        try {
+            return OpenType.valueOf(rawValue.trim().toUpperCase(Locale.US));
+        } catch (IllegalArgumentException exception) {
+            return OpenType.CHOOSE_ONE;
+        }
+    }
+
+    private SpinDirection parseSpinDirection(String rawValue) {
+        if (rawValue == null || rawValue.isBlank()) {
+            return SpinDirection.RANDOM;
+        }
+
+        try {
+            return SpinDirection.valueOf(rawValue.trim().toUpperCase(Locale.US));
+        } catch (IllegalArgumentException exception) {
+            return SpinDirection.RANDOM;
+        }
+    }
+
+    private int sanitizeSize(int size, int fallback) {
+        if (size < 9 || size > 54 || size % 9 != 0) {
+            return fallback;
+        }
+        return size;
+    }
+
+    private String normalizeCrateId(String crateId) {
+        if (crateId == null || crateId.isBlank()) {
+            return null;
+        }
+        return crateId.trim().toLowerCase(Locale.US);
+    }
+
+    private String prettifyId(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "Crate";
+        }
+
+        String normalized = raw.replace('-', ' ').replace('_', ' ');
+        String[] parts = normalized.split("\\s+");
+        StringBuilder builder = new StringBuilder();
+        for (String part : parts) {
+            if (part.isBlank()) {
+                continue;
+            }
+            if (!builder.isEmpty()) {
+                builder.append(' ');
+            }
+            builder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                builder.append(part.substring(1).toLowerCase(Locale.US));
+            }
+        }
+        return builder.isEmpty() ? "Crate" : builder.toString();
+    }
+
+    public enum GrantType {
+        ITEM,
+        COMMAND,
+        MONEY,
+        SHARDS
+    }
+
+    public enum FailureReason {
+        CRATE_NOT_FOUND,
+        CRATE_DISABLED,
+        NO_PERMISSION,
+        ALREADY_OPENING,
+        NO_KEYS,
+        INVALID_CRATE,
+        INVALID_REWARD,
+        NO_SESSION,
+        NO_REWARD_SELECTED,
+        INVENTORY_FULL,
+        NO_PLAYER_DATA,
+        REWARD_GRANT_FAILED
+    }
+
+public final class DisplayItem {
+    private final Material material;
+    private final String displayName;
+    private final List<String> lore;
+    private final int amount;
+    private final List<String> enchantments;
+
+    public DisplayItem(Material material, String displayName, List<String> lore, int amount, List<String> enchantments) {
+        this.material = material;
+        this.displayName = displayName;
+        this.lore = lore;
+        this.amount = amount;
+        this.enchantments = enchantments;
+    }
+
+    public Material material() { return material; }
+    public String displayName() { return displayName; }
+    public List<String> lore() { return lore; }
+    public int amount() { return amount; }
+    public List<String> enchantments() { return enchantments; }
+
+    @Override public String toString() {
+        return "DisplayItem[material=+material, displayName=+displayName, lore=+lore, amount=+amount, enchantments=+enchantments]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DisplayItem that = (DisplayItem) o;
+        return java.util.Objects.equals(material, that.material) && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(amount, that.amount) && java.util.Objects.equals(enchantments, that.enchantments);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(material, displayName, lore, amount, enchantments);
+    }
+}
+
+public final class GrantDefinition {
+    private final GrantType type;
+    private final DisplayItem item;
+    private final double moneyAmount;
+    private final long shardAmount;
+    private final List<String> commands;
+    private final boolean requiresInventorySpace;
+    private final String serializedItemData;
+    private final long amethystDurationSeconds;
+
+    public GrantDefinition(GrantType type, DisplayItem item, double moneyAmount, long shardAmount, List<String> commands, boolean requiresInventorySpace, String serializedItemData, long amethystDurationSeconds) {
+        this.type = type;
+        this.item = item;
+        this.moneyAmount = moneyAmount;
+        this.shardAmount = shardAmount;
+        this.commands = commands;
+        this.requiresInventorySpace = requiresInventorySpace;
+        this.serializedItemData = serializedItemData;
+        this.amethystDurationSeconds = amethystDurationSeconds;
+    }
+
+    public GrantType type() { return type; }
+    public DisplayItem item() { return item; }
+    public double moneyAmount() { return moneyAmount; }
+    public long shardAmount() { return shardAmount; }
+    public List<String> commands() { return commands; }
+    public boolean requiresInventorySpace() { return requiresInventorySpace; }
+    public String serializedItemData() { return serializedItemData; }
+    public long amethystDurationSeconds() { return amethystDurationSeconds; }
+
+    @Override public String toString() {
+        return "GrantDefinition[type=+type, item=+item, moneyAmount=+moneyAmount, shardAmount=+shardAmount, commands=+commands, requiresInventorySpace=+requiresInventorySpace, serializedItemData=+serializedItemData, amethystDurationSeconds=+amethystDurationSeconds]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GrantDefinition that = (GrantDefinition) o;
+        return java.util.Objects.equals(type, that.type) && java.util.Objects.equals(item, that.item) && java.util.Objects.equals(moneyAmount, that.moneyAmount) && java.util.Objects.equals(shardAmount, that.shardAmount) && java.util.Objects.equals(commands, that.commands) && java.util.Objects.equals(requiresInventorySpace, that.requiresInventorySpace) && java.util.Objects.equals(serializedItemData, that.serializedItemData) && java.util.Objects.equals(amethystDurationSeconds, that.amethystDurationSeconds);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(type, item, moneyAmount, shardAmount, commands, requiresInventorySpace, serializedItemData, amethystDurationSeconds);
+    }
+}
+
+public final class CrateReward {
+    private final String id;
+    private final int slot;
+    private final DisplayItem display;
+    private final GrantDefinition grant;
+    private final Boolean broadcast;
+    private final int weight;
+
+    public CrateReward(String id, int slot, DisplayItem display, GrantDefinition grant, Boolean broadcast, int weight) {
+        this.id = id;
+        this.slot = slot;
+        this.display = display;
+        this.grant = grant;
+        this.broadcast = broadcast;
+        this.weight = weight;
+    }
+
+    public String id() { return id; }
+    public int slot() { return slot; }
+    public DisplayItem display() { return display; }
+    public GrantDefinition grant() { return grant; }
+    public Boolean broadcast() { return broadcast; }
+    public int weight() { return weight; }
+
+    @Override public String toString() {
+        return "CrateReward[id=+id, slot=+slot, display=+display, grant=+grant, broadcast=+broadcast, weight=+weight]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrateReward that = (CrateReward) o;
+        return java.util.Objects.equals(id, that.id) && java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(display, that.display) && java.util.Objects.equals(grant, that.grant) && java.util.Objects.equals(broadcast, that.broadcast) && java.util.Objects.equals(weight, that.weight);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(id, slot, display, grant, broadcast, weight);
+    }
+}
+
+public final class CrateDefinition {
+    private final String id;
+    private final boolean enabled;
+    private final DisplayItem display;
+    private final OpenType openType;
+    private final String permission;
+    private final boolean broadcastOnClaim;
+    private final CrateMenuSettings menuSettings;
+    private final GachaSettings gachaSettings;
+    private final DisplayItem keyItem;
+    private final List<CrateReward> rewards;
+
+    public CrateDefinition(String id, boolean enabled, DisplayItem display, OpenType openType, String permission, boolean broadcastOnClaim, CrateMenuSettings menuSettings, GachaSettings gachaSettings, DisplayItem keyItem, List<CrateReward> rewards) {
+        this.id = id;
+        this.enabled = enabled;
+        this.display = display;
+        this.openType = openType;
+        this.permission = permission;
+        this.broadcastOnClaim = broadcastOnClaim;
+        this.menuSettings = menuSettings;
+        this.gachaSettings = gachaSettings;
+        this.keyItem = keyItem;
+        this.rewards = rewards;
+    }
+
+    public String id() { return id; }
+    public boolean enabled() { return enabled; }
+    public DisplayItem display() { return display; }
+    public OpenType openType() { return openType; }
+    public String permission() { return permission; }
+    public boolean broadcastOnClaim() { return broadcastOnClaim; }
+    public CrateMenuSettings menuSettings() { return menuSettings; }
+    public GachaSettings gachaSettings() { return gachaSettings; }
+    public DisplayItem keyItem() { return keyItem; }
+    public List<CrateReward> rewards() { return rewards; }
+
+
+        public CrateReward findReward(String rewardId) {
+            if (rewardId == null || rewardId.isBlank()) {
+                return null;
+            }
+            for (CrateReward reward : rewards) {
+                if (reward.id().equalsIgnoreCase(rewardId)) {
+                    return reward;
+                }
+            }
+            return null;
+        }
+
+        public CrateReward findRewardBySlot(int slot) {
+            for (CrateReward reward : rewards) {
+                if (reward.slot() == slot) {
+                    return reward;
+                }
+            }
+            return null;
+        }
+
+    @Override public String toString() {
+        return "CrateDefinition[id=+id, enabled=+enabled, display=+display, openType=+openType, permission=+permission, broadcastOnClaim=+broadcastOnClaim, menuSettings=+menuSettings, gachaSettings=+gachaSettings, keyItem=+keyItem, rewards=+rewards]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrateDefinition that = (CrateDefinition) o;
+        return java.util.Objects.equals(id, that.id) && java.util.Objects.equals(enabled, that.enabled) && java.util.Objects.equals(display, that.display) && java.util.Objects.equals(openType, that.openType) && java.util.Objects.equals(permission, that.permission) && java.util.Objects.equals(broadcastOnClaim, that.broadcastOnClaim) && java.util.Objects.equals(menuSettings, that.menuSettings) && java.util.Objects.equals(gachaSettings, that.gachaSettings) && java.util.Objects.equals(keyItem, that.keyItem) && java.util.Objects.equals(rewards, that.rewards);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(id, enabled, display, openType, permission, broadcastOnClaim, menuSettings, gachaSettings, keyItem, rewards);
+    }
+}
+
+public final class CrateOpenSession {
+    private final CrateDefinition crate;
+    private final CrateReward selectedReward;
+
+    public CrateOpenSession(CrateDefinition crate, CrateReward selectedReward) {
+        this.crate = crate;
+        this.selectedReward = selectedReward;
+    }
+
+    public CrateDefinition crate() { return crate; }
+    public CrateReward selectedReward() { return selectedReward; }
+
+
+        public CrateOpenSession withSelectedReward(CrateReward reward) {
+            return new CrateOpenSession(crate, reward);
+        }
+
+    @Override public String toString() {
+        return "CrateOpenSession[crate=+crate, selectedReward=+selectedReward]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrateOpenSession that = (CrateOpenSession) o;
+        return java.util.Objects.equals(crate, that.crate) && java.util.Objects.equals(selectedReward, that.selectedReward);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(crate, selectedReward);
+    }
+}
+
+public final class CrateBlockKey {
+    private final String world;
+    private final int x;
+    private final int y;
+    private final int z;
+
+    public CrateBlockKey(String world, int x, int y, int z) {
+        this.world = world;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public String world() { return world; }
+    public int x() { return x; }
+    public int y() { return y; }
+    public int z() { return z; }
+
+    @Override public String toString() {
+        return "CrateBlockKey[world=+world, x=+x, y=+y, z=+z]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrateBlockKey that = (CrateBlockKey) o;
+        return java.util.Objects.equals(world, that.world) && java.util.Objects.equals(x, that.x) && java.util.Objects.equals(y, that.y) && java.util.Objects.equals(z, that.z);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(world, x, y, z);
+    }
+}
+
+public final class ActionResult {
+    private final boolean success;
+    private final String message;
+
+    public ActionResult(boolean success, String message) {
+        this.success = success;
+        this.message = message;
+    }
+
+    public boolean success() { return success; }
+    public String message() { return message; }
+
+    @Override public String toString() {
+        return "ActionResult[success=+success, message=+message]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ActionResult that = (ActionResult) o;
+        return java.util.Objects.equals(success, that.success) && java.util.Objects.equals(message, that.message);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(success, message);
+    }
+}
+
+public final class OpenResult {
+    private final boolean success;
+    private final FailureReason reason;
+    private final String message;
+    private final CrateDefinition crate;
+
+    public OpenResult(boolean success, FailureReason reason, String message, CrateDefinition crate) {
+        this.success = success;
+        this.reason = reason;
+        this.message = message;
+        this.crate = crate;
+    }
+
+    public boolean success() { return success; }
+    public FailureReason reason() { return reason; }
+    public String message() { return message; }
+    public CrateDefinition crate() { return crate; }
+
+    @Override public String toString() {
+        return "OpenResult[success=+success, reason=+reason, message=+message, crate=+crate]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OpenResult that = (OpenResult) o;
+        return java.util.Objects.equals(success, that.success) && java.util.Objects.equals(reason, that.reason) && java.util.Objects.equals(message, that.message) && java.util.Objects.equals(crate, that.crate);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(success, reason, message, crate);
+    }
+}
+
+public final class ClaimResult {
+    private final boolean success;
+    private final FailureReason reason;
+    private final String message;
+    private final CrateDefinition crate;
+    private final CrateReward reward;
+    private final int remainingKeys;
+
+    public ClaimResult(boolean success, FailureReason reason, String message, CrateDefinition crate, CrateReward reward, int remainingKeys) {
+        this.success = success;
+        this.reason = reason;
+        this.message = message;
+        this.crate = crate;
+        this.reward = reward;
+        this.remainingKeys = remainingKeys;
+    }
+
+    public boolean success() { return success; }
+    public FailureReason reason() { return reason; }
+    public String message() { return message; }
+    public CrateDefinition crate() { return crate; }
+    public CrateReward reward() { return reward; }
+    public int remainingKeys() { return remainingKeys; }
+
+    @Override public String toString() {
+        return "ClaimResult[success=+success, reason=+reason, message=+message, crate=+crate, reward=+reward, remainingKeys=+remainingKeys]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClaimResult that = (ClaimResult) o;
+        return java.util.Objects.equals(success, that.success) && java.util.Objects.equals(reason, that.reason) && java.util.Objects.equals(message, that.message) && java.util.Objects.equals(crate, that.crate) && java.util.Objects.equals(reward, that.reward) && java.util.Objects.equals(remainingKeys, that.remainingKeys);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(success, reason, message, crate, reward, remainingKeys);
+    }
+}
+
+public final class ListMenuSettings {
+    private final String title;
+    private final int size;
+    private final Material filler;
+    private final List<Integer> contentSlots;
+    private final int emptySlot;
+    private final DisplayItem emptyItem;
+    private final int closeSlot;
+    private final DisplayItem closeItem;
+
+    public ListMenuSettings(String title, int size, Material filler, List<Integer> contentSlots, int emptySlot, DisplayItem emptyItem, int closeSlot, DisplayItem closeItem) {
+        this.title = title;
+        this.size = size;
+        this.filler = filler;
+        this.contentSlots = contentSlots;
+        this.emptySlot = emptySlot;
+        this.emptyItem = emptyItem;
+        this.closeSlot = closeSlot;
+        this.closeItem = closeItem;
+    }
+
+    public String title() { return title; }
+    public int size() { return size; }
+    public Material filler() { return filler; }
+    public List<Integer> contentSlots() { return contentSlots; }
+    public int emptySlot() { return emptySlot; }
+    public DisplayItem emptyItem() { return emptyItem; }
+    public int closeSlot() { return closeSlot; }
+    public DisplayItem closeItem() { return closeItem; }
+
+
+        public static ListMenuSettings defaults() {
+            return new ListMenuSettings(
+                    "&8crates",
+                    27,
+                    Material.GRAY_STAINED_GLASS_PANE,
+                    new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16)),
+                    13,
+                    new DisplayItem(Material.BARRIER, "&cNo crates", java.util.Collections.singletonList("&7no crates are available right now."), 1, java.util.Collections.emptyList()),
+                    26,
+                    new DisplayItem(Material.BARRIER, "&cclose", java.util.Collections.singletonList("&7Close this menu."), 1, java.util.Collections.emptyList())
+            );
+        }
+
+    @Override public String toString() {
+        return "ListMenuSettings[title=+title, size=+size, filler=+filler, contentSlots=+contentSlots, emptySlot=+emptySlot, emptyItem=+emptyItem, closeSlot=+closeSlot, closeItem=+closeItem]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ListMenuSettings that = (ListMenuSettings) o;
+        return java.util.Objects.equals(title, that.title) && java.util.Objects.equals(size, that.size) && java.util.Objects.equals(filler, that.filler) && java.util.Objects.equals(contentSlots, that.contentSlots) && java.util.Objects.equals(emptySlot, that.emptySlot) && java.util.Objects.equals(emptyItem, that.emptyItem) && java.util.Objects.equals(closeSlot, that.closeSlot) && java.util.Objects.equals(closeItem, that.closeItem);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(title, size, filler, contentSlots, emptySlot, emptyItem, closeSlot, closeItem);
+    }
+}
+
+public final class ConfirmMenuSettings {
+    private final int size;
+    private final Material filler;
+    private final int previewSlot;
+    private final int confirmSlot;
+    private final DisplayItem confirmButton;
+    private final int cancelSlot;
+    private final DisplayItem cancelButton;
+
+    public ConfirmMenuSettings(int size, Material filler, int previewSlot, int confirmSlot, DisplayItem confirmButton, int cancelSlot, DisplayItem cancelButton) {
+        this.size = size;
+        this.filler = filler;
+        this.previewSlot = previewSlot;
+        this.confirmSlot = confirmSlot;
+        this.confirmButton = confirmButton;
+        this.cancelSlot = cancelSlot;
+        this.cancelButton = cancelButton;
+    }
+
+    public int size() { return size; }
+    public Material filler() { return filler; }
+    public int previewSlot() { return previewSlot; }
+    public int confirmSlot() { return confirmSlot; }
+    public DisplayItem confirmButton() { return confirmButton; }
+    public int cancelSlot() { return cancelSlot; }
+    public DisplayItem cancelButton() { return cancelButton; }
+
+
+        public static ConfirmMenuSettings defaults() {
+            return new ConfirmMenuSettings(
+                    27,
+                    Material.GRAY_STAINED_GLASS_PANE,
+                    13,
+                    15,
+                    new DisplayItem(Material.LIME_STAINED_GLASS_PANE, "&aconfirm", java.util.Collections.singletonList("&7Click to claim {reward}."), 1, java.util.Collections.emptyList()),
+                    11,
+                    new DisplayItem(Material.RED_STAINED_GLASS_PANE, "&ccancel", java.util.Collections.singletonList("&7Return to the reward list."), 1, java.util.Collections.emptyList())
+            );
+        }
+
+    @Override public String toString() {
+        return "ConfirmMenuSettings[size=+size, filler=+filler, previewSlot=+previewSlot, confirmSlot=+confirmSlot, confirmButton=+confirmButton, cancelSlot=+cancelSlot, cancelButton=+cancelButton]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConfirmMenuSettings that = (ConfirmMenuSettings) o;
+        return java.util.Objects.equals(size, that.size) && java.util.Objects.equals(filler, that.filler) && java.util.Objects.equals(previewSlot, that.previewSlot) && java.util.Objects.equals(confirmSlot, that.confirmSlot) && java.util.Objects.equals(confirmButton, that.confirmButton) && java.util.Objects.equals(cancelSlot, that.cancelSlot) && java.util.Objects.equals(cancelButton, that.cancelButton);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(size, filler, previewSlot, confirmSlot, confirmButton, cancelSlot, cancelButton);
+    }
+}
+
+public final class CrateMenuSettings {
+    private final String openTitle;
+    private final String confirmTitle;
+    private final int size;
+    private final Material filler;
+    private final int backSlot;
+    private final DisplayItem backButton;
+
+    public CrateMenuSettings(String openTitle, String confirmTitle, int size, Material filler, int backSlot, DisplayItem backButton) {
+        this.openTitle = openTitle;
+        this.confirmTitle = confirmTitle;
+        this.size = size;
+        this.filler = filler;
+        this.backSlot = backSlot;
+        this.backButton = backButton;
+    }
+
+    public String openTitle() { return openTitle; }
+    public String confirmTitle() { return confirmTitle; }
+    public int size() { return size; }
+    public Material filler() { return filler; }
+    public int backSlot() { return backSlot; }
+    public DisplayItem backButton() { return backButton; }
+
+
+        public static CrateMenuSettings defaults() {
+            return new CrateMenuSettings(
+                    "&8choose 1 reward",
+                    "&8confirm reward",
+                    27,
+                    Material.BLACK_STAINED_GLASS_PANE,
+                    26,
+                    new DisplayItem(Material.BARRIER, "&cback", java.util.Collections.singletonList("&7Return to the crate list."), 1, java.util.Collections.emptyList())
+            );
+        }
+
+    @Override public String toString() {
+        return "CrateMenuSettings[openTitle=+openTitle, confirmTitle=+confirmTitle, size=+size, filler=+filler, backSlot=+backSlot, backButton=+backButton]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CrateMenuSettings that = (CrateMenuSettings) o;
+        return java.util.Objects.equals(openTitle, that.openTitle) && java.util.Objects.equals(confirmTitle, that.confirmTitle) && java.util.Objects.equals(size, that.size) && java.util.Objects.equals(filler, that.filler) && java.util.Objects.equals(backSlot, that.backSlot) && java.util.Objects.equals(backButton, that.backButton);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(openTitle, confirmTitle, size, filler, backSlot, backButton);
+    }
+}
+
+public final class GachaSettings {
+    private final String title;
+    private final Material filler;
+    private final List<Integer> previewSlots;
+    private final int pointerSlot;
+    private final int totalSteps;
+    private final int tickInterval;
+    private final SpinDirection direction;
+
+    public GachaSettings(String title, Material filler, List<Integer> previewSlots, int pointerSlot, int totalSteps, int tickInterval, SpinDirection direction) {
+        this.title = title;
+        this.filler = filler;
+        this.previewSlots = previewSlots;
+        this.pointerSlot = pointerSlot;
+        this.totalSteps = totalSteps;
+        this.tickInterval = tickInterval;
+        this.direction = direction;
+    }
+
+    public String title() { return title; }
+    public Material filler() { return filler; }
+    public List<Integer> previewSlots() { return previewSlots; }
+    public int pointerSlot() { return pointerSlot; }
+    public int totalSteps() { return totalSteps; }
+    public int tickInterval() { return tickInterval; }
+    public SpinDirection direction() { return direction; }
+
+
+        public static GachaSettings defaults() {
+            return new GachaSettings(
+                    "&8rolling reward",
+                    Material.BLACK_STAINED_GLASS_PANE,
+                    new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16)),
+                    13,
+                    38,
+                    2,
+                    SpinDirection.RANDOM
+            );
+        }
+
+    @Override public String toString() {
+        return "GachaSettings[title=+title, filler=+filler, previewSlots=+previewSlots, pointerSlot=+pointerSlot, totalSteps=+totalSteps, tickInterval=+tickInterval, direction=+direction]";
+    }
+    @Override public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GachaSettings that = (GachaSettings) o;
+        return java.util.Objects.equals(title, that.title) && java.util.Objects.equals(filler, that.filler) && java.util.Objects.equals(previewSlots, that.previewSlots) && java.util.Objects.equals(pointerSlot, that.pointerSlot) && java.util.Objects.equals(totalSteps, that.totalSteps) && java.util.Objects.equals(tickInterval, that.tickInterval) && java.util.Objects.equals(direction, that.direction);
+    }
+    @Override public int hashCode() {
+        return java.util.Objects.hash(title, filler, previewSlots, pointerSlot, totalSteps, tickInterval, direction);
+    }
+}
+
+    public enum OpenType {
+        CHOOSE_ONE,
+        GACHA
+    }
+
+    public enum SpinDirection {
+        LEFT,
+        RIGHT,
+        RANDOM
+    }
+}
