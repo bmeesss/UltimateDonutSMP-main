@@ -99,7 +99,10 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
 
         try {
             Object raw = packet.getModifier().size() > 0 ? packet.getModifier().read(0) : null;
-            return raw instanceof Number number ? number.intValue() : null;
+            if (raw instanceof Number) {
+                return ((Number) raw).intValue();
+            }
+            return null;
         } catch (RuntimeException ignored) {
             return null;
         }
@@ -164,7 +167,11 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
 
     @Override
     public boolean hasSkinTexture(Object profile) {
-        return profile instanceof ProfileData profileData && profileData.hasTexture();
+        if (profile instanceof ProfileData) {
+            ProfileData profileData = profile;
+            return profileData.hasTexture();
+        }
+        return false;
     }
 
     private TablistManager.SkinTexture resolveSkinTexture(Player source) {
@@ -499,9 +506,10 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
 
     @SuppressWarnings("rawtypes")
     private boolean putNativeIntoGuavaMultimap(Object propertyContainer, Object nativeProperty) {
-        if (!(propertyContainer instanceof com.google.common.collect.Multimap multimap) || nativeProperty == null) {
+        if (!(propertyContainer instanceof com.google.common.collect.Multimap) || nativeProperty == null) {
             return false;
         }
+        Multimap multimap = (Multimap) propertyContainer;
 
         try {
             multimap.removeAll("textures");
@@ -688,9 +696,10 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
             Object propertyHandle,
             WrappedSignedProperty property
     ) {
-        if (!(propertyContainer instanceof com.google.common.collect.Multimap multimap)) {
+        if (!(propertyContainer instanceof com.google.common.collect.Multimap)) {
             return false;
         }
+        Multimap multimap = (Multimap) propertyContainer;
 
         Object value = propertyHandle != null ? propertyHandle : property;
         if (value == null) {
@@ -1031,9 +1040,11 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
     }
 
     private WrappedGameProfile unwrapProfile(Object profile) {
-        if (profile instanceof ProfileData profileData) {
+        if (profile instanceof ProfileData) {
+            ProfileData profileData = profile;
             return profileData.profile();
         }
+        return null;
         return (WrappedGameProfile) profile;
     }
 
@@ -1163,4 +1174,9 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
             Class<?> vec3Class = findFirstClass(loader, "net.minecraft.world.phys.Vec3");
             Class<?> positionMoveRotationClass = findFirstClass(loader,
                     "net.minecraft.world.entity.PositionMoveRotation",
+                    "net.minecraft.world.entity.PositionMoveRotation$NestedClass"
             );
+        } catch (RuntimeException | LinkageError ignored) {
+            return false;
+        }
+        return false;
