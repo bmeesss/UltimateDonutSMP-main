@@ -30,18 +30,15 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
         Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
+        if (!(inv.getHolder() instanceof BaseMenu)) return;
+        BaseMenu menu = (BaseMenu) inv.getHolder();
         Inventory topInventory = event.getView().getTopInventory();
 
         if (menu instanceof SellMenu) {
-            SellMenu sellMenu = (SellMenu) !(event.getWhoClicked() instanceof Player player)) return;
-        Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
-        Inventory topInventory = event.getView().getTopInventory();
-
-        if (menu;
+            SellMenu sellMenu = (SellMenu) menu;
             sellMenu.handleInventoryClick(event);
             return;
         }
@@ -52,12 +49,7 @@ public class InventoryClickListener implements Listener {
         }
 
         if (menu instanceof CrateEditorMenu) {
-            CrateEditorMenu crateEditorMenu = (CrateEditorMenu) menu instanceof RTPMenu) {
-            handleRtpMenuClick(event, player, menu);
-            return;
-        }
-
-        if (menu;
+            CrateEditorMenu crateEditorMenu = (CrateEditorMenu) menu;
             crateEditorMenu.handleInventoryClick(event);
             return;
         }
@@ -100,26 +92,11 @@ public class InventoryClickListener implements Listener {
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
         Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
+        if (!(inv.getHolder() instanceof BaseMenu)) return;
+        BaseMenu menu = (BaseMenu) inv.getHolder();
 
         if (menu instanceof com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu) {
-            com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu spawnerStorageMenu = (com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu) menu instanceof OrdersNewMenu && event.getRawSlot() == 23) {
-            handleProtectedMenuClick(event, player, menu);
-            return;
-        }
-
-        event.setCancelled(true);
-        if (event.getClickedInventory() == null || !event.getClickedInventory().equals(topInventory)) return;
-        if (event.getCurrentItem() == null) return;
-        menu.handleClick(event.getSlot(), player, event.getClick());
-    }
-
-    @EventHandler
-    public void onDrag(InventoryDragEvent event) {
-        Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
-
-        if (menu;
+            com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu spawnerStorageMenu = (com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu) menu;
             spawnerStorageMenu.handleInventoryDrag(event);
             return;
         }
@@ -131,7 +108,7 @@ public class InventoryClickListener implements Listener {
         }
 
         if (menu instanceof RTPMenu && event.getWhoClicked() instanceof Player) {
-            Player player = (Player) menu instanceof RTPMenu && event.getWhoClicked();
+            Player player = (Player) event.getWhoClicked();
             event.setCancelled(true);
             event.setResult(Event.Result.DENY);
             syncInventory(player);
@@ -167,11 +144,11 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) return;
-        if (event.getInventory().getHolder() instanceof BaseMenu) {
-            BaseMenu menu = (BaseMenu) !(event.getPlayer() instanceof Player player)) return;
-        if (event.getInventory().getHolder();
-            menu.onClose(player);
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        org.bukkit.inventory.InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof BaseMenu) {
+            ((BaseMenu) holder).onClose(player);
         }
     }
 

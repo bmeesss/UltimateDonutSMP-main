@@ -71,7 +71,7 @@ public class BillfordMenu extends BaseMenu {
     }
 
     private Set<ClickType> resolveAllowedClickTypes(List<String> configured) {
-        Set<ClickType> defaults = Enumnew java.util.LinkedHashSet<>(java.util.Arrays.asList(ClickType.LEFT,  ClickType.RIGHT));
+        Set<ClickType> defaults = new java.util.LinkedHashSet<>(java.util.Arrays.asList(ClickType.LEFT, ClickType.RIGHT));
         if (configured == null || configured.isEmpty()) {
             return defaults;
         }

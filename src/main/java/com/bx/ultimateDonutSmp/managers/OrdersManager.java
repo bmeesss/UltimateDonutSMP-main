@@ -207,7 +207,7 @@ public class OrdersManager {
         DATABASE_ERROR
     }
 
-public final class OrderEditNavigation {
+    public static final class OrderEditNavigation {
     private final boolean backToMyOrders;
     private final int originPage;
     private final OrderSort sortMode;
@@ -226,7 +226,7 @@ public final class OrderEditNavigation {
     public String categoryFilter() { return categoryFilter; }
 
     @Override public String toString() {
-        return "OrderEditNavigation[backToMyOrders=+backToMyOrders, originPage=+originPage, sortMode=+sortMode, categoryFilter=+categoryFilter]";
+        return "OrderEditNavigation[backToMyOrders=" + backToMyOrders + ", originPage=" + originPage + ", sortMode=" + sortMode + ", categoryFilter=" + categoryFilter + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -239,7 +239,7 @@ public final class OrderEditNavigation {
     }
 }
 
-public final class PendingOrderCreationSnapshot {
+    public static final class PendingOrderCreationSnapshot {
     private final ItemStack requestedItem;
     private final String categoryKey;
     private final int quantity;
@@ -261,7 +261,7 @@ public final class PendingOrderCreationSnapshot {
     public double totalBudget() { return totalBudget; }
 
     @Override public String toString() {
-        return "PendingOrderCreationSnapshot[requestedItem=+requestedItem, categoryKey=+categoryKey, quantity=+quantity, priceEach=+priceEach, totalBudget=+totalBudget]";
+        return "PendingOrderCreationSnapshot[requestedItem=" + requestedItem + ", categoryKey=" + categoryKey + ", quantity=" + quantity + ", priceEach=" + priceEach + ", totalBudget=" + totalBudget + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -274,14 +274,23 @@ public final class PendingOrderCreationSnapshot {
     }
 }
 
-public final class CreateOrderResult {
+    public static final class CreateOrderResult {
     private final boolean success;
     private final CreateFailureReason reason;
     private final Order order;
     private final double creationFee;
     private final CrashProtectionManager.ValidationResult safetyResult;
 
+    public CreateOrderResult(boolean success, CreateFailureReason reason, Order order, double creationFee) {
+        this(success, reason, order, creationFee, null);
+    }
+
     public CreateOrderResult(boolean success, CreateFailureReason reason, Order order, double creationFee, CrashProtectionManager.ValidationResult safetyResult) {
+        this.success = success;
+        this.reason = reason;
+        this.order = order;
+        this.creationFee = creationFee;
+        this.safetyResult = safetyResult;
     }
 
     public boolean success() { return success; }
@@ -291,11 +300,9 @@ public final class CreateOrderResult {
     public CrashProtectionManager.ValidationResult safetyResult() { return safetyResult; }
 
 
-        public
-
 
     @Override public String toString() {
-        return "CreateOrderResult[success=+success, reason=+reason, order=+order, creationFee=+creationFee, safetyResult=+safetyResult]";
+        return "CreateOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", creationFee=" + creationFee + ", safetyResult=" + safetyResult + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -308,7 +315,7 @@ public final class CreateOrderResult {
     }
 }
 
-public final class DeliveryPreview {
+    public static final class DeliveryPreview {
     private final boolean success;
     private final DeliveryFailureReason reason;
     private final Order order;
@@ -330,7 +337,7 @@ public final class DeliveryPreview {
     public double payout() { return payout; }
 
     @Override public String toString() {
-        return "DeliveryPreview[success=+success, reason=+reason, order=+order, deliverQuantity=+deliverQuantity, payout=+payout]";
+        return "DeliveryPreview[success=" + success + ", reason=" + reason + ", order=" + order + ", deliverQuantity=" + deliverQuantity + ", payout=" + payout + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -343,7 +350,7 @@ public final class DeliveryPreview {
     }
 }
 
-public final class DeliverOrderResult {
+    public static final class DeliverOrderResult {
     private final boolean success;
     private final DeliveryFailureReason reason;
     private final Order order;
@@ -365,7 +372,7 @@ public final class DeliverOrderResult {
     public double payout() { return payout; }
 
     @Override public String toString() {
-        return "DeliverOrderResult[success=+success, reason=+reason, order=+order, deliveredQuantity=+deliveredQuantity, payout=+payout]";
+        return "DeliverOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", deliveredQuantity=" + deliveredQuantity + ", payout=" + payout + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -378,7 +385,7 @@ public final class DeliverOrderResult {
     }
 }
 
-public final class CancelOrderResult {
+    public static final class CancelOrderResult {
     private final boolean success;
     private final CancelFailureReason reason;
     private final Order order;
@@ -394,7 +401,7 @@ public final class CancelOrderResult {
     public Order order() { return order; }
 
     @Override public String toString() {
-        return "CancelOrderResult[success=+success, reason=+reason, order=+order]";
+        return "CancelOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -407,7 +414,7 @@ public final class CancelOrderResult {
     }
 }
 
-public final class ClaimResult {
+    public static final class ClaimResult {
     private final boolean success;
     private final ClaimFailureReason reason;
     private final OrderCollectionClaim claim;
@@ -423,7 +430,7 @@ public final class ClaimResult {
     public OrderCollectionClaim claim() { return claim; }
 
     @Override public String toString() {
-        return "ClaimResult[success=+success, reason=+reason, claim=+claim]";
+        return "ClaimResult[success=" + success + ", reason=" + reason + ", claim=" + claim + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -436,7 +443,7 @@ public final class ClaimResult {
     }
 }
 
-public final class EditOrderResult {
+    public static final class EditOrderResult {
     private final boolean success;
     private final EditFailureReason reason;
     private final Order order;
@@ -455,7 +462,7 @@ public final class EditOrderResult {
     public double balanceDelta() { return balanceDelta; }
 
     @Override public String toString() {
-        return "EditOrderResult[success=+success, reason=+reason, order=+order, balanceDelta=+balanceDelta]";
+        return "EditOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", balanceDelta=" + balanceDelta + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1901,7 +1908,7 @@ public final class EditOrderResult {
             case WOOD:
                 return isWoodFamilyMaterial(material);
             default:
-                return null;
+                return false;
         }
     }
 
@@ -4130,7 +4137,7 @@ public final class EditOrderResult {
         FUZZY_CATEGORY
     }
 
-public final class SearchCandidate {
+    public static final class SearchCandidate {
     private final Material material;
     private final int score;
     private final SearchMatchTier tier;
@@ -4146,7 +4153,7 @@ public final class SearchCandidate {
     public SearchMatchTier tier() { return tier; }
 
     @Override public String toString() {
-        return "SearchCandidate[material=+material, score=+score, tier=+tier]";
+        return "SearchCandidate[material=" + material + ", score=" + score + ", tier=" + tier + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4159,7 +4166,7 @@ public final class SearchCandidate {
     }
 }
 
-public final class SearchCategoryMatch {
+    public static final class SearchCategoryMatch {
     private final SearchCategory category;
     private final int score;
     private final boolean exact;
@@ -4175,7 +4182,7 @@ public final class SearchCategoryMatch {
     public boolean exact() { return exact; }
 
     @Override public String toString() {
-        return "SearchCategoryMatch[category=+category, score=+score, exact=+exact]";
+        return "SearchCategoryMatch[category=" + category + ", score=" + score + ", exact=" + exact + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4188,7 +4195,7 @@ public final class SearchCategoryMatch {
     }
 }
 
-public final class DeserializedItem {
+    public static final class DeserializedItem {
     private final ItemStack item;
     private final boolean needsRepair;
     private final String failureReason;
@@ -4204,7 +4211,7 @@ public final class DeserializedItem {
     public String failureReason() { return failureReason; }
 
     @Override public String toString() {
-        return "DeserializedItem[item=+item, needsRepair=+needsRepair, failureReason=+failureReason]";
+        return "DeserializedItem[item=" + item + ", needsRepair=" + needsRepair + ", failureReason=" + failureReason + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4217,7 +4224,7 @@ public final class DeserializedItem {
     }
 }
 
-public final class RemovedOrderItems {
+    public static final class RemovedOrderItems {
     private final boolean success;
     private final ItemStack deliveredStack;
     private final int quantity;
@@ -4233,7 +4240,7 @@ public final class RemovedOrderItems {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "RemovedOrderItems[success=+success, deliveredStack=+deliveredStack, quantity=+quantity]";
+        return "RemovedOrderItems[success=" + success + ", deliveredStack=" + deliveredStack + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4246,7 +4253,7 @@ public final class RemovedOrderItems {
     }
 }
 
-public final class ServerCatalogCategory {
+    public static final class ServerCatalogCategory {
     private final String key;
     private final Material icon;
 
@@ -4259,7 +4266,7 @@ public final class ServerCatalogCategory {
     public Material icon() { return icon; }
 
     @Override public String toString() {
-        return "ServerCatalogCategory[key=+key, icon=+icon]";
+        return "ServerCatalogCategory[key=" + key + ", icon=" + icon + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4272,7 +4279,7 @@ public final class ServerCatalogCategory {
     }
 }
 
-public final class ExtractionResult {
+    public static final class ExtractionResult {
     private final List<ItemStack> accepted;
     private final List<ItemStack> returned;
     private final int quantity;
@@ -4288,7 +4295,7 @@ public final class ExtractionResult {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "ExtractionResult[accepted=+accepted, returned=+returned, quantity=+quantity]";
+        return "ExtractionResult[accepted=" + accepted + ", returned=" + returned + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4301,7 +4308,7 @@ public final class ExtractionResult {
     }
 }
 
-public final class NetworkOrderLock {
+    public static final class NetworkOrderLock {
     private final String key;
     private final String token;
     private final boolean acquired;
@@ -4317,7 +4324,7 @@ public final class NetworkOrderLock {
     public boolean acquired() { return acquired; }
 
     @Override public String toString() {
-        return "NetworkOrderLock[key=+key, token=+token, acquired=+acquired]";
+        return "NetworkOrderLock[key=" + key + ", token=" + token + ", acquired=" + acquired + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4330,7 +4337,7 @@ public final class NetworkOrderLock {
     }
 }
 
-public final class InventoryExtraction {
+    public static final class InventoryExtraction {
     private final List<ItemStack> accepted;
     private final ItemStack[] remainingContents;
     private final int quantity;
@@ -4346,7 +4353,7 @@ public final class InventoryExtraction {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "InventoryExtraction[accepted=+accepted, remainingContents=+remainingContents, quantity=+quantity]";
+        return "InventoryExtraction[accepted=" + accepted + ", remainingContents=" + remainingContents + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4364,7 +4371,7 @@ public final class InventoryExtraction {
         PRICE
     }
 
-public final class PendingSearchInput {
+    public static final class PendingSearchInput {
     private final long editOrderId;
     private final OrderEditNavigation navigation;
 
@@ -4386,7 +4393,7 @@ public final class PendingSearchInput {
         }
 
     @Override public String toString() {
-        return "PendingSearchInput[editOrderId=+editOrderId, navigation=+navigation]";
+        return "PendingSearchInput[editOrderId=" + editOrderId + ", navigation=" + navigation + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4399,7 +4406,7 @@ public final class PendingSearchInput {
     }
 }
 
-public final class PendingOrderEdit {
+    public static final class PendingOrderEdit {
     private final long orderId;
     private final EditField field;
     private final OrderEditNavigation navigation;
@@ -4415,7 +4422,7 @@ public final class PendingOrderEdit {
     public OrderEditNavigation navigation() { return navigation; }
 
     @Override public String toString() {
-        return "PendingOrderEdit[orderId=+orderId, field=+field, navigation=+navigation]";
+        return "PendingOrderEdit[orderId=" + orderId + ", field=" + field + ", navigation=" + navigation + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4487,4 +4494,3 @@ public final class PendingOrderEdit {
     }
 
     }
-}

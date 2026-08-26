@@ -120,7 +120,35 @@ public class PlayerLogsMenu extends BaseMenu {
 
     private ItemStack createLogItem(PlayerLogEntry entry) {
         Material material;
-        switch (entry.category().toLowerCase()) {        case "shop": material = Material.CHEST            break;        case "auctions": material = Material.DIAMOND            break;        case "economy": material = Material.GOLD_INGOT            break;        case "crates": material = Material.TRIPWIRE_HOOK            break;        case "spawners": material = Material.SPAWNER            break;        case "deaths": material = Material.SKELETON_SKULL            break;        case "messages": case "msg": material = Material.WRITABLE_BOOK            break;        case "chat": material = Material.BOOK            break;        default: material = Material.PAPER            break;
+        switch (entry.category().toLowerCase()) {
+            case "shop":
+                material = Material.CHEST;
+                break;
+            case "auctions":
+                material = Material.DIAMOND;
+                break;
+            case "economy":
+                material = Material.GOLD_INGOT;
+                break;
+            case "crates":
+                material = Material.TRIPWIRE_HOOK;
+                break;
+            case "spawners":
+                material = Material.SPAWNER;
+                break;
+            case "deaths":
+                material = Material.SKELETON_SKULL;
+                break;
+            case "messages":
+            case "msg":
+                material = Material.WRITABLE_BOOK;
+                break;
+            case "chat":
+                material = Material.BOOK;
+                break;
+            default:
+                material = Material.PAPER;
+                break;
         }
 
         String formattedTime = DATE_FORMAT.format(new Date(entry.timestamp()));

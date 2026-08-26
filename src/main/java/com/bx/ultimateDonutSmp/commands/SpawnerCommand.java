@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.commands;
 import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.SpawnerManager;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
@@ -30,10 +31,11 @@ public class SpawnerCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage("Use /" + label + " give <player> <type> [amount]");
                 return true;
             }
+            Player player = (Player) sender;
             if (!PermissionUtils.has(sender, ADMIN_PERMISSION)) {
                 sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to open the spawner admin panel."));
                 return true;
@@ -91,7 +93,7 @@ public class SpawnerCommand implements CommandExecutor {
             return true;
         }
 
-        var result = plugin.getSpawnerManager().giveSpawner(target, args[2], amount);
+        SpawnerManager.ActionResult result = plugin.getSpawnerManager().giveSpawner(target, args[2], amount);
         sender.sendMessage(ColorUtils.toComponent(result.message()));
         if (!sender.equals(target)) {
             target.sendMessage(ColorUtils.toComponent("&aYou received &f" + NumberUtils.format(amount)
@@ -115,10 +117,11 @@ public class SpawnerCommand implements CommandExecutor {
     }
 
     private boolean handlePanel(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
         if (!PermissionUtils.has(sender, ADMIN_PERMISSION)) {
             sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to open the spawner panel."));
             return true;
@@ -129,10 +132,11 @@ public class SpawnerCommand implements CommandExecutor {
     }
 
     private boolean handleInfo(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         Block target = player.getTargetBlockExact(6);
         SpawnerInstance instance = target == null ? null : plugin.getSpawnerManager().getSpawner(target);
@@ -156,10 +160,11 @@ public class SpawnerCommand implements CommandExecutor {
             sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to remove spawners."));
             return true;
         }
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         Block target = player.getTargetBlockExact(6);
         SpawnerInstance instance = target == null ? null : plugin.getSpawnerManager().getSpawner(target);
@@ -174,10 +179,11 @@ public class SpawnerCommand implements CommandExecutor {
     }
 
     private boolean handleSplit(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         ItemStack hand = player.getInventory().getItemInMainHand();
         if (!plugin.getSpawnerManager().isSpawnerItem(hand)) {

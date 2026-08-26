@@ -135,7 +135,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 data.setPrivateMessagesChoice(nextThreeChoice(data.getPrivateMessagesChoice()));
                 sendChoiceMessage(player, "Private Messages", formatThreeChoice(data.getPrivateMessagesChoice()));
                 break;
-                break;
             }
             case "SERVER_BROADCASTS":
                 toggle(player, "Server Broadcasts",
@@ -161,7 +160,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 data.setFastCrystalsEnabled(!data.isFastCrystalsEnabled());
                 plugin.getFastCrystalManager().applyCrystalCooldown(player);
                 sendToggleMessage(player, "Fast Crystals", data.isFastCrystalsEnabled());
-                break;
                 break;
             }
             case "TOTEM_PARTICLES":
@@ -196,20 +194,17 @@ public final class PlayerSettingsMenu extends BaseMenu {
                             }
                             sendToggleMessage(player, "Nearby Mob Spawn Prevention", !data.isMobSpawnEnabled());
                 break;
-                break;
             }
             case "HIDE_ALL_PLAYERS": {
                 data.setHideAllPlayersEnabled(!data.isHideAllPlayersEnabled());
                 plugin.getPlayerVisibilityManager().applyViewerPreference(player);
                 sendToggleMessage(player, "Hide All Players", data.isHideAllPlayersEnabled());
                 break;
-                break;
             }
             case "SCOREBOARD_VISIBILITY": {
                 data.setScoreboardVisible(!data.isScoreboardVisible());
                 plugin.getScoreboardManager().applyVisibility(player);
                 sendToggleMessage(player, "Scoreboard Visibility", data.isScoreboardVisible());
-                break;
                 break;
             }
             case "AUTO_CONFIRM_TPAS": {
@@ -220,7 +215,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                                 plugin.getTPAManager().processQueuedAutoRequests(player.getUniqueId());
                             }
                             sendToggleMessage(player, "Auto-Confirm TPAs", enabled);
-                break;
                 break;
             }
             case "NOTIFICATION_SOUNDS":
@@ -239,7 +233,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 data.setTpaRequestsChoice(nextThreeChoice(data.getTpaRequestsChoice()));
                 sendChoiceMessage(player, "TPA Requests", formatThreeChoice(data.getTpaRequestsChoice()));
                 break;
-                break;
             }
             case "TEAM_INVITES":
                 toggle(player, "Team Invites",
@@ -248,7 +241,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
             case "PAYMENTS": {
                 data.setPaymentsChoice(nextThreeChoice(data.getPaymentsChoice()));
                 sendChoiceMessage(player, "Payments", formatThreeChoice(data.getPaymentsChoice()));
-                break;
                 break;
             }
             case "TEAM_CHAT_VISIBILITY":
@@ -264,13 +256,11 @@ public final class PlayerSettingsMenu extends BaseMenu {
                             }
                             sendToggleMessage(player, "Worth Display", data.isWorthDisplayEnabled());
                 break;
-                break;
             }
             case "MONEY_NAMETAGS": {
                 data.setMoneyNametagsEnabled(!data.isMoneyNametagsEnabled());
                 plugin.getMoneyNametagManager().refreshViewer(player);
                 sendToggleMessage(player, "Money Nametags", data.isMoneyNametagsEnabled());
-                break;
                 break;
             }
             case "QUIET_SPAWN":
@@ -297,7 +287,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 data.setTpaHereRequestsChoice(nextThreeChoice(data.getTpaHereRequestsChoice()));
                 sendChoiceMessage(player, "TPA Here Requests", formatThreeChoice(data.getTpaHereRequestsChoice()));
                 break;
-                break;
             }
             case "DISABLE_PHANTOM_SPAWN": {
                 data.setPhantomEnabled(!data.isPhantomEnabled());
@@ -312,7 +301,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
                                 data.setPhantomDisabledUntil(0L);
                             }
                             sendToggleMessage(player, "Phantom Spawn Prevention", !data.isPhantomEnabled());
-                break;
                 break;
             }
             case "PAY_CONFIRM_MENUS":
@@ -332,24 +320,20 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 plugin.getDatabaseManager().savePlayer(data);
                 player.kickPlayer(ColorUtils.colorize("&cThe setting has been changed. Please rejoin."));
                 break;
-                break;
             }
             case "DEATH_MESSAGES": {
                 data.setDeathMessagesChoice(nextTwoChoice(data.getDeathMessagesChoice()));
                 sendChoiceMessage(player, "Death Messages", formatTwoChoice(data.getDeathMessagesChoice()));
-                break;
                 break;
             }
             case "ADVANCEMENT_MESSAGES": {
                 data.setAdvancementMessagesChoice(nextThreeChoice(data.getAdvancementMessagesChoice()));
                 sendChoiceMessage(player, "Advancement Messages", formatThreeChoice(data.getAdvancementMessagesChoice()));
                 break;
-                break;
             }
             case "JOIN_LEAVE_MESSAGES": {
                 data.setJoinLeaveMessagesChoice(nextThreeChoice(data.getJoinLeaveMessagesChoice()));
                 sendChoiceMessage(player, "Join/Leave Messages", formatThreeChoice(data.getJoinLeaveMessagesChoice()));
-                break;
                 break;
             }
             case "TELEPORT_ALERTS":
@@ -372,11 +356,9 @@ public final class PlayerSettingsMenu extends BaseMenu {
                 boolean enabled = com.bx.ultimateDonutSmp.utils.NightVisionUtils.toggle(plugin, player);
                 sendToggleMessage(player, "Night Vision", enabled);
                 break;
-                break;
             }
             default: {
                 return;
-                break;
                 break;
             }
         }
@@ -486,13 +468,15 @@ public final class PlayerSettingsMenu extends BaseMenu {
             case "DISABLE_MOB_SPAWN": {
                 boolean disabled = !data.isMobSpawnEnabled();
                 if (disabled && data.getMobSpawnDisabledUntil() > 0) {
-                                long remainingSecs = (data.getMobSpawnDisabledUntil() - System.currentTimeMillis()) / 1000L;
-                                if (remainingSecs > 0) {
-                                    new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
-                                }
-                            }
-                            state(disabled);
-                return break;
+                    long remainingSecs = (data.getMobSpawnDisabledUntil() - System.currentTimeMillis()) / 1000L;
+                    if (remainingSecs > 0) {
+                        return new ButtonState(
+                                "&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)",
+                                true
+                        );
+                    }
+                }
+                return state(disabled);
             }
             case "HIDE_ALL_PLAYERS":
                 return state(data.isHideAllPlayersEnabled());
@@ -533,13 +517,15 @@ public final class PlayerSettingsMenu extends BaseMenu {
             case "DISABLE_PHANTOM_SPAWN": {
                 boolean disabled = !data.isPhantomEnabled();
                 if (disabled && data.getPhantomDisabledUntil() > 0) {
-                                long remainingSecs = (data.getPhantomDisabledUntil() - System.currentTimeMillis()) / 1000L;
-                                if (remainingSecs > 0) {
-                                    new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
-                                }
-                            }
-                            state(disabled);
-                return break;
+                    long remainingSecs = (data.getPhantomDisabledUntil() - System.currentTimeMillis()) / 1000L;
+                    if (remainingSecs > 0) {
+                        return new ButtonState(
+                                "&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)",
+                                true
+                        );
+                    }
+                }
+                return state(disabled);
             }
             case "PAY_CONFIRM_MENUS":
                 return state(data.isPayConfirmMenuEnabled());
@@ -764,7 +750,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
         if (!VALID_SETTINGS.contains(key)) {
             return false;
         }
-        return !"TPA_REQUESTS".equals(key)
+        return !"TPA_REQUESTS".equals(key);
     }
 
     private void rebuildIfOpen(Player player) {
@@ -782,7 +768,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
         void set(boolean value);
     }
 
-public final class ButtonState {
+    public static final class ButtonState {
     private final String status;
     private final boolean clickable;
 
@@ -795,7 +781,7 @@ public final class ButtonState {
     public boolean clickable() { return clickable; }
 
     @Override public String toString() {
-        return "ButtonState[status=+status, clickable=+clickable]";
+        return "ButtonState[status=" + status + ", clickable=" + clickable + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

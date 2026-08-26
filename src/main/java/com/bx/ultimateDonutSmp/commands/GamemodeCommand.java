@@ -96,70 +96,7 @@ public class GamemodeCommand implements CommandExecutor, TabCompleter {
     private Player resolveTarget(CommandSender sender, String input, String label, boolean fixedModeCommand) {
         if (input == null || input.trim().isEmpty()) {
             if (sender instanceof Player) {
-            Player player = (Player) !plugin.getConfigManager().isCommandEnabled("GAMEMODE")) {
-            send(sender, "GAMEMODE.DISABLED", "&cGamemode commands are currently disabled.");
-            return true;
-        }
-
-        if (!hasBasePermission(sender)) {
-            return true;
-        }
-
-        GameMode fixedMode = modeFromLabel(label);
-        if (fixedMode != null) {
-            return handleFixedModeCommand(sender, label, args, fixedMode);
-        }
-
-        return handleMainCommand(sender, label, args);
-    }
-
-    private boolean handleFixedModeCommand(CommandSender sender, String label, String[] args, GameMode mode) {
-        if (args.length > 1) {
-            send(sender, "GAMEMODE.USAGE_SHORT", "&cUsage: /%label% [player]", "%label%", label);
-            return true;
-        }
-
-        Player target = resolveTarget(sender, args.length == 0 ? null : args[0], label, true);
-        if (target == null) {
-            return true;
-        }
-
-        if (!hasRequiredPermission(sender, target)) {
-            return true;
-        }
-
-        applyGamemode(sender, target, mode);
-        return true;
-    }
-
-    private boolean handleMainCommand(CommandSender sender, String label, String[] args) {
-        if (args.length < 1 || args.length > 2) {
-            send(sender, "GAMEMODE.USAGE", "&cUsage: /%label% <survival|creative|adventure|spectator> [player]", "%label%", label);
-            return true;
-        }
-
-        GameMode mode = parseMode(args[0]);
-        if (mode == null) {
-            send(sender, "GAMEMODE.INVALID_MODE", "&cInvalid gamemode. Use survival, creative, adventure, or spectator.");
-            return true;
-        }
-
-        Player target = resolveTarget(sender, args.length == 1 ? null : args[1], label, false);
-        if (target == null) {
-            return true;
-        }
-
-        if (!hasRequiredPermission(sender, target)) {
-            return true;
-        }
-
-        applyGamemode(sender, target, mode);
-        return true;
-    }
-
-    private Player resolveTarget(CommandSender sender, String input, String label, boolean fixedModeCommand) {
-        if (input == null || input.trim().isEmpty()) {
-            if (sender;
+            Player player = (Player) sender;
                 return player;
             }
 
