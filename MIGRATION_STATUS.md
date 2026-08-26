@@ -6,6 +6,14 @@ SQLite/MySQL/HikariCP (bundled). **No MongoDB driver in pom** → any `com.mongo
 
 Source files: 421 main + 69 test. Files with ≥1 Java-8 blocker: ~260 (see scan below).
 
+## Current checkpoint
+
+- **Structural/parser cleanup: COMPLETE** — 421/421 `src/main` Java files parse successfully.
+- **Java 8 language conversion: NOT STARTED.**
+- **Spigot 1.12.2 API migration: NOT STARTED.**
+
+The Java 8 and Spigot/API inventories below are planning inventories only; they have not been applied as repository-wide migration phases.
+
 ## Category A — Pure Java 8 syntax/API incompatibilities (fixable mechanically)
 
 | # | Pattern | Files | Occ. | Fix (automatable?) |

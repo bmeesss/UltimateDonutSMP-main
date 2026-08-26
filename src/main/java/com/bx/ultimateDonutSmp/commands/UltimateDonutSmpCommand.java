@@ -175,12 +175,10 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                 optimizationManager.reload();
                 sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
                 break;
-                break;
             }
             case "reset": {
                 optimizationManager.resetStats();
                 sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
-                break;
                 break;
             }
             default:
@@ -232,185 +230,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 1 || (args.length >= 2 && isGuiAlias(args[1]))) {
             if (sender instanceof Player) {
-            Player player = (Player) args.length == 0) {
-            sendUsage(sender, label);
-            return true;
-        }
-
-        switch (args[0].toLowerCase(Locale.ROOT)) {
-            case "reload":
-                handleReload(sender);
-                break;
-            case "statswipe":
-                handleStatsWipe(sender, label, args);
-                break;
-            case "optimize":
-            case "optimization":
-                handleOptimize(sender, label, args);
-                break;
-            case "setup":
-                handleSetup(sender, label, args);
-                break;
-            case "features":
-                handleFeatures(sender, label, args);
-                break;
-            case "maintenance":
-                handleMaintenance(sender, label, args);
-                break;
-            default:
-                sendUsage(sender, label);
-                break;
-        }
-        return true;
-    }
-
-    private void handleReload(CommandSender sender) {
-        if (!PermissionUtils.has(sender, RELOAD_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to reload plugin settings."));
-            return;
-        }
-
-        try {
-            plugin.reloadAllPluginConfigurations();
-            sender.sendMessage(ColorUtils.toComponent("&aUltimateDonutSMP configuration reloaded."));
-        } catch (Exception exception) {
-            plugin.getLogger().log(Level.SEVERE, "failed to reload ultimatedonutsmp configuration.", exception);
-            sender.sendMessage(ColorUtils.toComponent("&cFailed to reload configuration. Check console for details."));
-        }
-    }
-
-    private void handleStatsWipe(CommandSender sender, String label, String[] args) {
-        if (!PermissionUtils.has(sender, STATS_WIPE_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent(message("NO-PERMISSION",
-                    "&cYou do not have permission to use stats wipe.")));
-            return;
-        }
-
-        if (args.length == 1 || isGuiAlias(args[1])) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage(ColorUtils.toComponent(message("PLAYER-ONLY-GUI",
-                        "&cOpen the stats wipe GUI in-game, or use /" + label + " statswipe <target> confirm.")));
-                return;
-            }
-
-            new StatsWipeMenu(plugin).open(player);
-            return;
-        }
-
-        StatsWipeManager.WipeTarget target = StatsWipeManager.WipeTarget.fromInput(args[1]).orElse(null);
-        if (target == null) {
-            sender.sendMessage(ColorUtils.toComponent(message("INVALID-TARGET",
-                    "&cInvalid stats wipe target. Available: {targets}")
-                    .replace("{targets}", availableTargets())));
-            return;
-        }
-
-        if (args.length < 3 || !args[2].equalsIgnoreCase("confirm")) {
-            sender.sendMessage(ColorUtils.toComponent(message("DIRECT-USAGE",
-                    "&cUse /" + label + " statswipe <target> confirm to run directly, or /" + label + " statswipe to open the GUI.")));
-            return;
-        }
-
-        StatsWipeManager.WipeResult result = plugin.getStatsWipeManager().wipeTarget(target, sender.getName());
-        if (result.busy()) {
-            sender.sendMessage(ColorUtils.toComponent(message("BUSY", "&cA wipe is already in progress.")));
-            return;
-        }
-        if (!result.success()) {
-            String error = result.errorMessage() == null || result.errorMessage().trim().isEmpty()
-                    ? "unknown error"
-                    : result.errorMessage();
-            sender.sendMessage(ColorUtils.toComponent(message("FAILED",
-                    "&cStats wipe failed: {error}")
-                    .replace("{error}", error)));
-            return;
-        }
-
-        sender.sendMessage(ColorUtils.toComponent(message("SUCCESS",
-                "&aWipe complete: &f{target}&a. Affected records: &f{count}&a.")
-                .replace("{target}", target.getDisplayName())
-                .replace("{count}", String.valueOf(result.affectedCount(target)))));
-    }
-
-    private void handleOptimize(CommandSender sender, String label, String[] args) {
-        if (!PermissionUtils.has(sender, OPTIMIZE_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to use optimization tools."));
-            return;
-        }
-
-        OptimizationManager optimizationManager = plugin.getOptimizationManager();
-        if (optimizationManager == null) {
-            sender.sendMessage(ColorUtils.toComponent("&cOptimization manager is not available."));
-            return;
-        }
-
-        if (args.length == 1 || args[1].equalsIgnoreCase("status")) {
-            sendOptimizationStatus(sender, label, optimizationManager);
-            return;
-        }
-
-        switch (args[1].toLowerCase(Locale.ROOT)) {
-            case "reload": {
-                optimizationManager.reload();
-                sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
-                break;
-                break;
-            }
-            case "reset": {
-                optimizationManager.resetStats();
-                sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
-                break;
-                break;
-            }
-            default:
-                sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " optimize [status|reload|reset]"));
-                break;
-        }
-    }
-
-    private void handleSetup(CommandSender sender, String label, String[] args) {
-        if (!PermissionUtils.has(sender, SETUP_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to use setup tools."));
-            return;
-        }
-
-        if (args.length == 1 || args[1].equalsIgnoreCase("status")) {
-            sendSetupStatus(sender, label);
-            return;
-        }
-
-        switch (args[1].toLowerCase(Locale.ROOT)) {
-            case "apply":
-                handleSetupApply(sender, label, args);
-                break;
-            case "setspawn":
-                handleSetupLocation(sender, true);
-                break;
-            case "setafk":
-                handleSetupLocation(sender, false);
-                break;
-            case "commands":
-                handleSetupCommands(sender, label, args);
-                break;
-            default:
-                sendSetupUsage(sender, label);
-                break;
-        }
-    }
-
-    private void handleFeatures(CommandSender sender, String label, String[] args) {
-        if (!PermissionUtils.has(sender, FEATURES_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent(
-                    plugin.getConfigManager().getMessageOrDefault(
-                            "FEATURES.NO-PERMISSION",
-                            "&cYou do not have permission to manage feature toggles."
-                    )
-            ));
-            return;
-        }
-
-        if (args.length == 1 || (args.length >= 2 && isGuiAlias(args[1]))) {
-            if (sender;
+                Player player = (Player) sender;
                 new FeatureToggleMenu(plugin).open(player);
                 return;
             }
@@ -968,7 +788,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                             mm.startMaintenance();
                 sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been enabled. Players are being redirected."));
                 break;
-                break;
             }
             case "off":
             case "stop":
@@ -980,7 +799,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                             mm.stopMaintenance();
                 sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been disabled. Reconnect signal sent."));
                 break;
-                break;
             }
             case "status": {
                 boolean active = mm.isMaintenanceActive();
@@ -988,7 +806,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(ColorUtils.toComponent("&d&lMaintenance status:"));
                 sender.sendMessage(ColorUtils.toComponent("  &fActive: " + (active ? "&aYes" : "&cNo")));
                 sender.sendMessage(ColorUtils.toComponent("  &fLobby server: &b" + lobby));
-                break;
                 break;
             }
             case "setlobby": {
@@ -1000,7 +817,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                 mm.setLobbyServer(lobby);
                 sender.sendMessage(ColorUtils.toComponent("&aLobby server set to &b" + lobby + "&a."));
                 break;
-                break;
             }
             default:
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " maintenance <on|off|status|setlobby [server]>"));
@@ -1008,7 +824,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-public final class CommandEntry {
+    public static final class CommandEntry {
     private final String usage;
     private final String description;
 
@@ -1021,7 +837,7 @@ public final class CommandEntry {
     public String description() { return description; }
 
     @Override public String toString() {
-        return "CommandEntry[usage=+usage, description=+description]";
+        return "CommandEntry[usage=" + usage + ", description=" + description + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

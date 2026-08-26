@@ -37,18 +37,7 @@ public final class AttributeUtils {
             Method valueOf = Attribute.class.getMethod("valueOf", String.class);
             Object value = valueOf.invoke(null, name);
             if (value instanceof Attribute) {
-            Attribute attribute = (Attribute) attribute != null) {
-                return attribute;
-            }
-        }
-        return null;
-    }
-
-    private static Attribute findAttribute(String name) {
-        try {
-            Method valueOf = Attribute.class.getMethod("valueOf", String.class);
-            Object value = valueOf.invoke(null, name);
-            if (value;
+                Attribute attribute = (Attribute) value;
                 return attribute;
             }
         } catch (ReflectiveOperationException | RuntimeException ignored) {
@@ -57,7 +46,7 @@ public final class AttributeUtils {
         try {
             Object value = Attribute.class.getField(name).get(null);
             if (value instanceof Attribute) {
-            Attribute attribute = (Attribute) value;
+                Attribute attribute = (Attribute) value;
                 return attribute;
             }
         } catch (ReflectiveOperationException | RuntimeException ignored) {

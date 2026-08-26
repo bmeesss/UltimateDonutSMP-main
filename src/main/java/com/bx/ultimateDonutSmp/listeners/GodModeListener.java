@@ -97,68 +97,7 @@ public class GodModeListener implements Listener {
 
     private Vector resolveKnockbackDirection(Player player, Entity damager) {
         if (damager instanceof Projectile) {
-            Projectile projectile = (Projectile) !(event.getEntity() instanceof Player player)) {
-            return;
-        }
-
-        if (!plugin.getGodModeManager().isInGodMode(player.getUniqueId())) {
-            return;
-        }
-
-        if (event.isCancelled()) {
-            return;
-        }
-
-        double originalDamage = event.getDamage();
-        event.setDamage(0D);
-
-        if (originalDamage > 0D) {
-            playDamageFeedback(player, event);
-            applyKnockback(player, event);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
-    public void onQuit(PlayerQuitEvent event) {
-        plugin.getGodModeManager().clear(event.getPlayer().getUniqueId());
-    }
-
-    private void playDamageFeedback(Player player, EntityDamageEvent event) {
-        player.playHurtAnimation(resolveHurtYaw(player, event));
-
-        Sound hurtSound = player.getHurtSound();
-        if (hurtSound != null) {
-            player.getWorld().playSound(player.getLocation(), hurtSound, SoundCategory.PLAYERS, 1F, 1F);
-        }
-    }
-
-    private void applyKnockback(Player player, EntityDamageEvent event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageByEntity)) {
-            return;
-        }
-
-        Entity damager = damageByEntity.getDamager();
-        Vector direction = resolveKnockbackDirection(player, damager);
-        if (direction == null) {
-            return;
-        }
-
-        double horizontalStrength = damager instanceof Projectile
-                ? BASE_PROJECTILE_KNOCKBACK
-                : BASE_ENTITY_KNOCKBACK;
-        horizontalStrength += resolveKnockbackLevel(damager) * EXTRA_KNOCKBACK_PER_LEVEL;
-
-        if (damager instanceof Player attacker && attacker.isSprinting()) {
-            horizontalStrength += SPRINT_KNOCKBACK_BONUS;
-        }
-
-        Vector velocity = direction.multiply(horizontalStrength);
-        velocity.setY(Math.max(player.getVelocity().getY(), VERTICAL_KNOCKBACK));
-        player.setVelocity(velocity);
-    }
-
-    private Vector resolveKnockbackDirection(Player player, Entity damager) {
-        if (damager;
+            Projectile projectile = (Projectile) damager;
             Vector projectileVelocity = projectile.getVelocity();
             Vector projectileDirection = new Vector(projectileVelocity.getX(), 0D, projectileVelocity.getZ());
             if (projectileDirection.lengthSquared() > MIN_DIRECTION_LENGTH) {
@@ -166,11 +105,7 @@ public class GodModeListener implements Listener {
             }
 
             if (projectile.getShooter() instanceof Entity) {
-            Entity shooter = (Entity) projectileDirection.lengthSquared() > MIN_DIRECTION_LENGTH) {
-                return projectileDirection.normalize();
-            }
-
-            if (projectile.getShooter();
+                Entity shooter = (Entity) projectile.getShooter();
                 return directionFrom(player, shooter);
             }
         }
@@ -189,17 +124,12 @@ public class GodModeListener implements Listener {
     }
 
     private int resolveKnockbackLevel(Entity damager) {
-        if (damager instanceof Projectile projectile && projectile.getShooter() instanceof LivingEntity) {
-            LivingEntity shooter = (LivingEntity) direction.lengthSquared() <= MIN_DIRECTION_LENGTH) {
-            direction = player.getLocation().getDirection().setY(0D).multiply(-1D);
-        }
-
-        return direction.lengthSquared() > MIN_DIRECTION_LENGTH ? direction.normalize() : null;
-    }
-
-    private int resolveKnockbackLevel(Entity damager) {
-        if (damager instanceof Projectile projectile && projectile.getShooter();
-            return getEnchantmentLevel(shooter, Enchantment.PUNCH);
+        if (damager instanceof Projectile) {
+            Projectile projectile = (Projectile) damager;
+            if (projectile.getShooter() instanceof LivingEntity) {
+                LivingEntity shooter = (LivingEntity) projectile.getShooter();
+                return getEnchantmentLevel(shooter, Enchantment.PUNCH);
+            }
         }
 
         if (damager instanceof LivingEntity) {

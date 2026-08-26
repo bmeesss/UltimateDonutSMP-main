@@ -72,53 +72,7 @@ public class MessageCommand implements CommandExecutor {
 
     private void send(CommandSender sender, String message) {
         if (sender instanceof Player) {
-            Player player = (Player) !plugin.getConfigManager().isCommandEnabled("MESSAGE")) {
-            send(sender, message("DISABLED", "&cPrivate messages are currently disabled."));
-            return true;
-        }
-
-        if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-            send(player, message("NO-PERMISSION", "&cYou do not have permission."));
-            return true;
-        }
-
-        if (label.equalsIgnoreCase("reply") || label.equalsIgnoreCase("r")) {
-            return handleReply(sender, args, label);
-        }
-
-        if (args.length < 2) {
-            send(sender, message("USAGE", "&cUsage: /msg <player> <message>"));
-            return true;
-        }
-
-        Player target = plugin.getHideManager().findOnlinePlayer(sender, args[0]);
-        if (target == null) {
-            send(sender, message("PLAYER-NOT-ONLINE", "&cPlayer not online."));
-            return true;
-        }
-
-        String privateMessage = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-        plugin.getPrivateMessageManager().sendPrivateMessage(sender, target, privateMessage);
-        return true;
-    }
-
-    private boolean handleReply(CommandSender sender, String[] args, String label) {
-        if (!(sender instanceof Player player)) {
-            send(sender, message("PLAYER-ONLY-REPLY", "&cOnly players can use /" + label + "."));
-            return true;
-        }
-
-        if (args.length == 0) {
-            send(player, message("REPLY-USAGE", "&cUsage: /reply <message>"));
-            return true;
-        }
-
-        plugin.getPrivateMessageManager().reply(player, String.join(" ", args));
-        return true;
-    }
-
-    private void send(CommandSender sender, String message) {
-        if (sender;
+            Player player = (Player) sender;
             player.sendMessage(ColorUtils.toComponent(message, player));
             return;
         }
@@ -126,7 +80,7 @@ public class MessageCommand implements CommandExecutor {
     }
 
     private String message(String key, String fallback) {
-String;
+        String configured;
 switch (key) {
             case "USAGE":
                 configured = configuredMessage("MESSAGES.USAGE", "PRIVATE-MESSAGE.USAGE");

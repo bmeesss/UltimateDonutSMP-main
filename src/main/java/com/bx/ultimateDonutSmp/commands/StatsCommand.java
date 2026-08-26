@@ -59,42 +59,7 @@ public class StatsCommand implements CommandExecutor {
         }
 
         if (sender instanceof Player) {
-            Player player = (Player) args.length > 1) {
-            sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " [player]"));
-            return true;
-        }
-
-        UUID targetUuid;
-        String targetName;
-
-        if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
-                sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <player>"));
-                return true;
-            }
-            targetUuid = player.getUniqueId();
-            targetName = plugin.getHideManager().publicName(player);
-        } else {
-            Player online = plugin.getHideManager().findOnlinePlayer(sender, args[0]);
-            if (online != null) {
-                targetUuid = online.getUniqueId();
-                targetName = plugin.getHideManager().publicName(online);
-            } else {
-                targetUuid = plugin.getHideManager().findKnownPlayerUuid(sender, args[0]);
-                if (targetUuid == null) {
-                    sender.sendMessage(ColorUtils.toComponent("&cPlayer not found."));
-                    return true;
-                }
-                OfflinePlayer offline = Bukkit.getOfflinePlayer(targetUuid);
-                String lastKnown = plugin.getDatabaseManager().getLastKnownUsername(targetUuid);
-                String fallback = lastKnown == null || lastKnown.trim().isEmpty()
-                        ? (offline.getName() == null ? args[0] : offline.getName())
-                        : lastKnown;
-                targetName = plugin.getHideManager().publicName(targetUuid, fallback);
-            }
-        }
-
-        if (sender;
+            Player player = (Player) sender;
             new StatsMenu(plugin, targetUuid, targetName).open(player);
         } else {
             PlayerData data = plugin.getPlayerDataManager().get(targetUuid);
