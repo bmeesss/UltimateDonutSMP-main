@@ -661,7 +661,7 @@ public class AmethystToolsListener implements Listener {
         }
 
         String permission = manager.getToolPermission(type);
-        if (!permission.isBlank() && !PermissionUtils.has(player, permission)) {
+        if (!permission.trim().isEmpty() && !PermissionUtils.has(player, permission)) {
             if (sendFeedback) {
                 player.sendMessage(ColorUtils.toComponent(manager.getMessage("NO-PERMISSION")));
             }

@@ -60,7 +60,7 @@ class OffendPlaceholderTest {
         for (String key : expiryKeys) {
             assertTrue(map.containsKey(key), "Missing key in placeholders: " + key);
             assertNotNull(map.get(key), "Null value for key: " + key);
-            assertFalse(map.get(key).isBlank(), "Blank value for key: " + key);
+            assertFalse(map.get(key).trim().isEmpty(), "Blank value for key: " + key);
             assertNotEquals(key, map.get(key), "Placeholder not replaced for key: " + key);
         }
 

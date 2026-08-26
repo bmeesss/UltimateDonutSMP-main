@@ -1674,7 +1674,7 @@ public class CrateVisualManager {
     }
 
     private Particle parseParticle(String particleName) {
-        if (particleName == null || particleName.isBlank()) {
+        if (particleName == null || particleName.trim().isEmpty()) {
             return Particle.ENCHANT;
         }
 

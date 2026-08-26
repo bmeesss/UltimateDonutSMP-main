@@ -37,7 +37,7 @@ public enum SellCategory {
     }
 
     public static Optional<SellCategory> fromConfigKey(String key) {
-        if (key == null || key.isBlank()) {
+        if (key == null || key.trim().isEmpty()) {
             return Optional.empty();
         }
 

@@ -41,7 +41,7 @@ public final class AuctionClaim {
         ITEM;
 
         public static ClaimType fromDatabase(String rawValue) {
-            if (rawValue == null || rawValue.isBlank()) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
                 return ITEM;
             }
 

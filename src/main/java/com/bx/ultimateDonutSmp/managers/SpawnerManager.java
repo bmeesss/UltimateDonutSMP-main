@@ -498,7 +498,7 @@ public final class WorldSummary {
     }
 
     public SpawnerTypeDefinition getTypeDefinition(String typeKey) {
-        if (typeKey == null || typeKey.isBlank()) {
+        if (typeKey == null || typeKey.trim().isEmpty()) {
             return null;
         }
         return typeDefinitions.get(typeKey.trim().toUpperCase(Locale.US));
@@ -832,7 +832,7 @@ public final class WorldSummary {
     }
 
     public void playSound(Player player, String soundConfig) {
-        if (player != null && soundConfig != null && !soundConfig.isBlank()) {
+        if (player != null && soundConfig != null && !soundConfig.trim().isEmpty()) {
             com.bx.ultimateDonutSmp.utils.SoundUtils.play(player, soundConfig);
         }
     }
@@ -1273,7 +1273,7 @@ public final class SpawnerSellPreview {
             msg += sellResult.message();
         }
         if (xpResult.success()) {
-            if (!msg.isBlank()) {
+            if (!msg.trim().isEmpty()) {
                 msg += " ";
             }
             msg += xpResult.message();
@@ -1573,12 +1573,25 @@ public final class SpawnerSellPreview {
     }
 
     public String describeWorld(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return "unknown";
         }
 
-        return switch (worldName.trim().toLowerCase(Locale.US)) {        case "world": case "overworld": "overworld"            break;        case "world_nether": case "nether": "nether"            break;        case "world_the_end": case "the_end": case "the-end": case "end": "the end"            break;        default: prettifyLabel(worldName)            break;
-        };
+        switch (worldName.trim().toLowerCase(Locale.US)) {
+            case "world":
+            case "overworld":
+                return "overworld";
+            case "world_nether":
+            case "nether":
+                return "nether";
+            case "world_the_end":
+            case "the_end":
+            case "the-end":
+            case "end":
+                return "the end";
+            default:
+                return prettifyLabel(worldName);
+        }
     }
 
     public Location getSpawnerCenter(SpawnerInstance instance) {
@@ -1641,8 +1654,16 @@ public final class SpawnerSellPreview {
             return true;
         }
 
-        return switch (instance.getAccessMode()) {        case PUBLIC: true; break;        case OWNER_AND_TEAM: plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid()); break;        case OWNER_ONLY: false; break;
-        };
+        switch (instance.getAccessMode()) {
+            case PUBLIC:
+                return true;
+            case OWNER_AND_TEAM:
+                return plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid());
+            case OWNER_ONLY:
+                return false;
+            default:
+                return null;
+        }
     }
 
     public boolean canBreak(Player player, SpawnerInstance instance) {
@@ -1659,8 +1680,16 @@ public final class SpawnerSellPreview {
             return true;
         }
 
-        return switch (instance.getAccessMode()) {        case PUBLIC: true; break;        case OWNER_AND_TEAM: plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid()); break;        case OWNER_ONLY: false; break;
-        };
+        switch (instance.getAccessMode()) {
+            case PUBLIC:
+                return true;
+            case OWNER_AND_TEAM:
+                return plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid());
+            case OWNER_ONLY:
+                return false;
+            default:
+                return null;
+        }
     }
 
     public boolean canModify(Player player, SpawnerInstance instance) {
@@ -1835,17 +1864,36 @@ public final class SpawnerSellPreview {
             return Material.GRASS_BLOCK;
         }
 
-        return switch (world.getEnvironment()) {        case NETHER: Material.NETHERRACK; break;        case THE_END: Material.END_STONE; break;        default: Material.GRASS_BLOCK            break;
-        };
+        switch (world.getEnvironment()) {
+            case NETHER:
+                return Material.NETHERRACK;
+            case THE_END:
+                return Material.END_STONE;
+            default:
+                return Material.GRASS_BLOCK;
+        }
     }
 
     private int getWorldSortIndex(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return Integer.MAX_VALUE;
         }
 
-        return switch (worldName.trim().toLowerCase(Locale.US)) {        case "world": case "overworld": 0            break;        case "world_nether": case "nether": 1            break;        case "world_the_end": case "the_end": case "the-end": case "end": 2            break;        default: 10            break;
-        };
+        switch (worldName.trim().toLowerCase(Locale.US)) {
+            case "world":
+            case "overworld":
+                return 0;
+            case "world_nether":
+            case "nether":
+                return 1;
+            case "world_the_end":
+            case "the_end":
+            case "the-end":
+            case "end":
+                return 2;
+            default:
+                return 10;
+        }
     }
 
     private ActionResult ok(String message) {
@@ -1968,7 +2016,7 @@ public final class SpawnerSellPreview {
     }
 
     public String prettifyKey(String key) {
-        if (key == null || key.isBlank()) {
+        if (key == null || key.trim().isEmpty()) {
             return "Spawner";
         }
 
@@ -1976,14 +2024,14 @@ public final class SpawnerSellPreview {
     }
 
     private String prettifyLabel(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return "unknown";
         }
 
         String[] tokens = value.toLowerCase(Locale.US).replace('-', '_').split("_");
         StringBuilder builder = new StringBuilder();
         for (String token : tokens) {
-            if (token.isBlank()) {
+            if (token.trim().isEmpty()) {
                 continue;
             }
             if (!builder.isEmpty()) {

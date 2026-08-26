@@ -237,7 +237,7 @@ public class CurrencyManager {
         String plural = getString(section, "PLURAL", type.defaultPlural);
         String symbol = getString(section, "SYMBOL", type.defaultSymbol);
         String color = getString(section, "COLOR", type.defaultColor);
-        String symbolColor = getString(section, "SYMBOL-COLOR", color.isBlank() ? type.defaultSymbolColor : color);
+        String symbolColor = getString(section, "SYMBOL-COLOR", color.trim().isEmpty() ? type.defaultSymbolColor : color);
         int decimalPlaces = clampDecimalPlaces(section != null
                 ? section.getInt("DECIMAL-PLACES", type.defaultDecimalPlaces)
                 : type.defaultDecimalPlaces);
@@ -277,7 +277,7 @@ public class CurrencyManager {
             return fallback;
         }
         String value = section.getString(key);
-        return value == null || value.isBlank() ? fallback : value;
+        return value == null || value.trim().isEmpty() ? fallback : value;
     }
 
     private List<String> getStringList(ConfigurationSection section, String key, List<String> fallback) {
@@ -287,7 +287,7 @@ public class CurrencyManager {
 
         List<String> values = new ArrayList<>();
         for (String value : section.getStringList(key)) {
-            if (value != null && !value.isBlank()) {
+            if (value != null && !value.trim().isEmpty()) {
                 values.add(value.trim());
             }
         }

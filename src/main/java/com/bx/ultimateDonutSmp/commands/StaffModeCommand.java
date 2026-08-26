@@ -104,7 +104,7 @@ public class StaffModeCommand implements CommandExecutor {
         }
 
         StaffModeManager.StaffModeToggleResult result = manager.toggle(player);
-        if (!result.message().isBlank() && !result.success()) {
+        if (!result.message().trim().isEmpty() && !result.success()) {
             player.sendMessage(ColorUtils.toComponent(result.message(), player));
         }
         return true;

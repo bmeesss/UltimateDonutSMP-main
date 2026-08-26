@@ -56,39 +56,208 @@ public class FriendsCommand implements CommandExecutor {
         }
 
         String sub = args[0].toLowerCase();
-        switch (sub) {        case "reload": {
-
-                            if (PermissionUtils.has(player, ADMIN_PERMISSION)) {
+        switch (sub) {
+            case "reload": {
+                if (PermissionUtils.has(player, ADMIN_PERMISSION)) {
                                 plugin.getConfigManager().reload();
                                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.RELOAD_SUCCESS"), player));
                             } else {
                                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.NO_PERMISSION"), player));
                             }
-                        break;        }        case "list": new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.ALL).open(player)            break;        case "following": new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FOLLOWING).open(player)            break;        case "followers": new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FOLLOWERS).open(player)            break;        case "friends": new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FRIENDS).open(player)            break;        case "add": case "follow": {
-
-                            if (args.length < 2) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "list":
+                new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.ALL).open(player);
+                break;
+            case "following":
+                new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FOLLOWING).open(player);
+                break;
+            case "followers":
+                new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FOLLOWERS).open(player);
+                break;
+            case "friends":
+                new FriendsMenu(plugin, 0, null, FriendsMenu.FilterType.FRIENDS).open(player);
+                break;
+            case "add":
+            case "follow": {
+                if (args.length < 2) {
                                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_FOLLOW"), player));
                                 return true;
                             }
                             handleFollow(player, args[1]);
-                        break;        }        case "remove": case "unfollow": {
-
-                            if (args.length < 2) {
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "remove":
+            case "unfollow": {
+                if (args.length < 2) {
                                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_REMOVE"), player));
                                 return true;
                             }
                             handleUnfollow(player, args[1]);
-                        break;        }        case "search": {
-
-                            if (args.length < 2) {
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "search": {
+                if (args.length < 2) {
                                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_SEARCH"), player));
                                 return true;
                             }
                             new FriendsMenu(plugin, 0, args[1], FriendsMenu.FilterType.ALL).open(player);
-                        break;        }        default: {
-
-                            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.UNKNOWN_SUBCOMMAND"), player));
-                        break;        }
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            default: {
+                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.UNKNOWN_SUBCOMMAND"), player));
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
         }
 
         return true;
@@ -152,7 +321,7 @@ public class FriendsCommand implements CommandExecutor {
     }
 
     private ResolvedTarget resolveTarget(Player player, String input) {
-        if (input == null || input.isBlank()) return null;
+        if (input == null || input.trim().isEmpty()) return null;
 
         Player online = plugin.getHideManager().findOnlinePlayer(player, input);
         if (online != null) {
@@ -169,7 +338,7 @@ public class FriendsCommand implements CommandExecutor {
         if (uuid == null) return null;
 
         String name = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        String fallback = name == null || name.isBlank() ? input : name;
+        String fallback = name == null || name.trim().isEmpty() ? input : name;
         return new ResolvedTarget(uuid, plugin.getHideManager().plainPublicName(uuid, fallback));
     }
 

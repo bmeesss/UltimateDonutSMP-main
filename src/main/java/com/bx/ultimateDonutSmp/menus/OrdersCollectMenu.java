@@ -218,7 +218,25 @@ public class OrdersCollectMenu extends BaseMenu {
     }
 
     private String resolveFailureMessage(OrdersManager.ClaimResult result) {
-        return switch (result.reason()) {        case DISABLED: plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is currently disabled."); break;        case CLAIMS_DISABLED: plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIMS_DISABLED", "&cOrders claims are currently disabled."); break;        case CLAIM_NOT_FOUND: plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_NOT_FOUND", "&cThat claim no longer exists."); break;        case NOT_OWNER: plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_CLAIM", "&cThat claim does not belong to you."); break;        case ALREADY_CLAIMED: plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_ALREADY_CLAIMED", "&cThat claim was already collected."); break;        case INVENTORY_FULL: plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_INVENTORY_FULL", "&cYou need a free inventory slot to claim that item."); break;        case NO_PLAYER_DATA: "&cYour player data could not be loaded."; break;        case DATABASE_ERROR: "&cOrders could not complete that claim right now."; break;
-        };
+        switch (result.reason()) {
+            case DISABLED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is currently disabled.");
+            case CLAIMS_DISABLED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIMS_DISABLED", "&cOrders claims are currently disabled.");
+            case CLAIM_NOT_FOUND:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_NOT_FOUND", "&cThat claim no longer exists.");
+            case NOT_OWNER:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_CLAIM", "&cThat claim does not belong to you.");
+            case ALREADY_CLAIMED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_ALREADY_CLAIMED", "&cThat claim was already collected.");
+            case INVENTORY_FULL:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.CLAIM_INVENTORY_FULL", "&cYou need a free inventory slot to claim that item.");
+            case NO_PLAYER_DATA:
+                return "&cYour player data could not be loaded.";
+            case DATABASE_ERROR:
+                return "&cOrders could not complete that claim right now.";
+            default:
+                return null;
+        }
     }
 }

@@ -152,17 +152,17 @@ public class ChatListener implements Listener {
             try {
                 String prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%luckperms_prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
                 prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%vault_prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
                 prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
             } catch (Exception ignored) {
@@ -174,7 +174,7 @@ public class ChatListener implements Listener {
                         Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
                 if (rsp != null && rsp.getProvider() != null) {
                     String prefix = rsp.getProvider().getPlayerPrefix(player);
-                    if (prefix != null && !prefix.isBlank()) {
+                    if (prefix != null && !prefix.trim().isEmpty()) {
                         return prefix;
                     }
                 }
@@ -254,6 +254,6 @@ public class ChatListener implements Listener {
     private String formatIssuer(PunishmentRecord record) {
         if (record == null) return "unknown";
         String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.isBlank() ? "unknown" : issuer;
+        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
     }
 }

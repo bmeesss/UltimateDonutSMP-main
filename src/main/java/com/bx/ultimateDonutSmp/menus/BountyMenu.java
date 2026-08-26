@@ -62,7 +62,7 @@ public class BountyMenu extends BaseMenu {
         int maxItems = menus.getInt("BOUNTIES-MENU.MAX-ITEMS-PER-PAGE", 45);
 
         List<Bounty> allBounties = new ArrayList<>(plugin.getBountyManager().getAllBounties());
-        if (searchQuery != null && !searchQuery.isBlank()) {
+        if (searchQuery != null && !searchQuery.trim().isEmpty()) {
             String lowerQuery = searchQuery.toLowerCase(java.util.Locale.ROOT);
             allBounties = allBounties.stream()
                     .filter(bounty -> {
@@ -134,7 +134,7 @@ public class BountyMenu extends BaseMenu {
                 org.bukkit.configuration.ConfigurationSection config = plugin.getConfigManager().getMenus()
                         .getConfigurationSection("BOUNTIES-MENU.SEARCH_SIGN");
                 com.bx.ultimateDonutSmp.utils.SignInputUtil.openFromConfig(plugin, player, config, text -> {
-                    if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+                    if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                         new BountyMenu(plugin, page, searchQuery, descending).open(player);
                     } else {
                         new BountyMenu(plugin, 0, text.trim(), descending).open(player);

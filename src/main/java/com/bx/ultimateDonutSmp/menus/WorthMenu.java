@@ -82,7 +82,7 @@ public class WorthMenu extends BaseMenu {
         }
 
         public static SortMode fromConfig(String raw) {
-            if (raw == null || raw.isBlank()) {
+            if (raw == null || raw.trim().isEmpty()) {
                 return CATEGORY;
             }
 
@@ -269,7 +269,7 @@ public class WorthMenu extends BaseMenu {
     }
 
     private String formatCategory(String categoryKey) {
-        if (categoryKey == null || categoryKey.isBlank()) {
+        if (categoryKey == null || categoryKey.trim().isEmpty()) {
             return "General";
         }
 

@@ -210,13 +210,13 @@ public class ConfigManager {
             return result;
         }
 
-        int mergedPaths = mergeBundledDefaults(name, currentText.lines(), current, bundledDefault);
+        int mergedPaths = mergeBundledDefaults(name, linesOf(currentText), current, bundledDefault);
         if (mergedPaths == 0) {
             return result;
         }
 
         try {
-            validateYamlLines(currentText.lines());
+            validateYamlLines(linesOf(currentText));
             if (!backupExistingFile(targetFile, backupDirectory)) {
                 result.skipped = true;
                 plugin.getLogger().warning("Skipped configuration sync because backup creation failed: "
@@ -393,7 +393,7 @@ public class ConfigManager {
             }
 
             String bundledComment = yamlInlineComment(bundledLines.get(bundledNode.lineIndex));
-            if (bundledComment.isBlank()) {
+            if (bundledComment.trim().isEmpty()) {
                 continue;
             }
 
@@ -492,8 +492,17 @@ public class ConfigManager {
         return new ArrayList<>(Arrays.asList(content.split("\\R", -1)));
     }
 
+
+    private static List<String> linesOf(String text) {
+        List<String> lines = new ArrayList<>(Arrays.asList(text.split("\\r\\n|\\n|\\r", -1)));
+        if (!lines.isEmpty() && lines.get(lines.size() - 1).isEmpty()) {
+            lines.remove(lines.size() - 1);
+        }
+        return lines;
+    }
+
     private TextFileContent readTextFile(File file) throws IOException {
-        String content = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         String lineSeparator = detectLineSeparator(content);
         boolean trailingLineSeparator = content.endsWith("\r\n")
                 || content.endsWith("\n")
@@ -527,7 +536,7 @@ public class ConfigManager {
         Files.createDirectories(parent);
         Path temporary = Files.createTempFile(parent, "." + file.getName() + ".", ".tmp");
         try {
-            Files.writeString(temporary, content.serialize(), StandardCharsets.UTF_8);
+            Files.write(temporary, content.serialize().getBytes(StandardCharsets.UTF_8));
             Files.move(
                     temporary,
                     target,
@@ -1459,7 +1468,7 @@ public class ConfigManager {
     }
 
     private boolean isUnclosedQuotedScalarValue(String rawValue) {
-        String trimmed = rawValue.stripLeading();
+        String trimmed = rawValue.trim();
         if (!trimmed.startsWith("\"") && !trimmed.startsWith("'")) {
             return false;
         }
@@ -1496,7 +1505,7 @@ public class ConfigManager {
 
     private String removeManagedInlineCommentFromQuotedValue(String line, String bundledComment) {
         int colonIndex = yamlKeyColonIndex(line, leadingWhitespace(line).length());
-        if (colonIndex < 0 || bundledComment.isBlank()) {
+        if (colonIndex < 0 || bundledComment.trim().isEmpty()) {
             return line;
         }
         String marker = " " + bundledComment.trim();
@@ -1563,7 +1572,7 @@ public class ConfigManager {
 
     private String replaceYamlInlineComment(String line, String desiredComment) {
         int colonIndex = yamlKeyColonIndex(line, leadingWhitespace(line).length());
-        if (colonIndex < 0 || desiredComment.isBlank()) {
+        if (colonIndex < 0 || desiredComment.trim().isEmpty()) {
             return line;
         }
 
@@ -1571,7 +1580,7 @@ public class ConfigManager {
         int commentIndex = yamlInlineCommentIndex(rawValue);
         String valuePart = commentIndex >= 0 ? rawValue.substring(0, commentIndex) : rawValue;
         return line.substring(0, colonIndex + 1)
-                + valuePart.stripTrailing()
+                + valuePart.trim()
                 + " "
                 + desiredComment.trim();
     }
@@ -2202,13 +2211,13 @@ public class ConfigManager {
             return false;
         }
 
-        int mergedPaths = mergeBundledDefaults(name, currentText.lines(), current, bundledDefault);
+        int mergedPaths = mergeBundledDefaults(name, linesOf(currentText), current, bundledDefault);
         if (mergedPaths == 0) {
             return true;
         }
 
         try {
-            validateYamlLines(currentText.lines());
+            validateYamlLines(linesOf(currentText));
             if (!backupExistingFile(targetFile, backupDirectory)) {
                 plugin.getLogger().warning("Skipped configuration sync because backup creation failed: "
                         + targetFile.getPath());
@@ -2275,8 +2284,8 @@ public class ConfigManager {
 
         int mergedPaths = mergeBundledDefaults(
                 name,
-                currentText.lines(),
-                defaultText.lines(),
+                linesOf(currentText),
+                linesOf(defaultText),
                 current,
                 defaults
         );
@@ -2285,7 +2294,7 @@ public class ConfigManager {
         }
 
         try {
-            validateYamlLines(currentText.lines());
+            validateYamlLines(linesOf(currentText));
             if (!backupExistingFile(targetFile, backupDirectory)) {
                 plugin.getLogger().warning("Skipped generated configuration sync because backup creation failed: "
                         + targetFile.getPath());

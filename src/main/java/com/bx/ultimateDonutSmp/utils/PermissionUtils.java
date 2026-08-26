@@ -22,7 +22,7 @@ public final class PermissionUtils {
     }
 
     public static boolean has(Permissible permissible, String permission) {
-        if (permissible == null || permission == null || permission.isBlank() || isTemporaryPlayer(permissible)) {
+        if (permissible == null || permission == null || permission.trim().isEmpty() || isTemporaryPlayer(permissible)) {
             return false;
         }
 
@@ -42,7 +42,7 @@ public final class PermissionUtils {
     }
 
     public static boolean hasOrUnset(Permissible permissible, String permission) {
-        return permission == null || permission.isBlank() || has(permissible, permission);
+        return permission == null || permission.trim().isEmpty() || has(permissible, permission);
     }
 
     public static boolean hasAny(Permissible permissible, String... permissions) {
@@ -58,7 +58,7 @@ public final class PermissionUtils {
     }
 
     public static boolean hasExact(Permissible permissible, String permission) {
-        if (permissible == null || permission == null || permission.isBlank() || isTemporaryPlayer(permissible)) {
+        if (permissible == null || permission == null || permission.trim().isEmpty() || isTemporaryPlayer(permissible)) {
             return false;
         }
 
@@ -82,7 +82,7 @@ public final class PermissionUtils {
     }
 
     public static int resolveHighestExactNumberedPermission(Permissible permissible, String prefix, int maxValue) {
-        if (permissible == null || prefix == null || prefix.isBlank() || maxValue < 1) {
+        if (permissible == null || prefix == null || prefix.trim().isEmpty() || maxValue < 1) {
             return 0;
         }
 
@@ -96,7 +96,7 @@ public final class PermissionUtils {
     }
 
     public static String normalizePermissionNode(String permission) {
-        if (permission == null || permission.isBlank()) {
+        if (permission == null || permission.trim().isEmpty()) {
             return "";
         }
 
@@ -115,7 +115,7 @@ public final class PermissionUtils {
     }
 
     private static String repairMojibake(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return "";
         }
 
@@ -127,7 +127,7 @@ public final class PermissionUtils {
     }
 
     private static int scoreNormalizedPermission(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return Integer.MAX_VALUE;
         }
 

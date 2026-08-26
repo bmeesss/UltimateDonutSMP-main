@@ -33,8 +33,15 @@ public final class MobSpawnPolicy {
         if (type == null) {
             return false;
         }
-        return switch (type) {        case WITHER: case ENDER_DRAGON: case ELDER_GUARDIAN: case WARDEN: true; break;        default: false            break;
-        };
+        switch (type) {
+            case WITHER:
+            case ENDER_DRAGON:
+            case ELDER_GUARDIAN:
+            case WARDEN:
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
@@ -56,8 +63,15 @@ public final class MobSpawnPolicy {
         if (reason == CreatureSpawnEvent.SpawnReason.TRIAL_SPAWNER) {
             return trialSpawnersBlocked;
         }
-        return switch (reason) {        case CUSTOM: case SPAWNER_EGG: case BUILD_WITHER: case BREEDING: false; break;        default: true            break;
-        };
+        switch (reason) {
+            case CUSTOM:
+            case SPAWNER_EGG:
+            case BUILD_WITHER:
+            case BREEDING:
+                return false;
+            default:
+                return true;
+        }
     }
 
     public static boolean hasCustomName(LivingEntity entity) {

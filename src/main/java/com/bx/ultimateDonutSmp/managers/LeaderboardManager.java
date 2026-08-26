@@ -120,7 +120,7 @@ public final class CachedLeaderboard {
     }
 
     public Optional<LeaderboardType> parseType(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return Optional.empty();
         }
 
@@ -246,7 +246,7 @@ public final class CachedLeaderboard {
                 }
 
                 List<PlayerData> players = new ArrayList<>(merged.values());
-                players.removeIf(data -> data == null || data.getUsername() == null || data.getUsername().isBlank());
+                players.removeIf(data -> data == null || data.getUsername() == null || data.getUsername().trim().isEmpty());
                 if (type == LeaderboardType.BOUNTIES) {
                     // Every player carries a zero bounty, so an unfiltered board would pad the
                     // ranking with players nobody placed a bounty on.
@@ -314,7 +314,7 @@ public final class CachedLeaderboard {
                 .split("(?=[A-Z])|\\s+");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-            if (part == null || part.isBlank()) {
+            if (part == null || part.trim().isEmpty()) {
                 continue;
             }
             if (builder.length() > 0) {

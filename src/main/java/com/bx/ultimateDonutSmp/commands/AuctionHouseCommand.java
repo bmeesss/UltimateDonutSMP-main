@@ -51,24 +51,117 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
             return true;
         }
 
-        switch (subcommand) {        case "": {
-
-                            if (requirePermission(player, "use")) {
+        switch (subcommand) {
+            case "": {
+                if (requirePermission(player, "use")) {
                                 openBrowse(player);
                             }
-                        break;        }        case "sell": {
-
-                            if (requirePermission(player, "sell")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "sell": {
+                if (requirePermission(player, "sell")) {
                                 handleSell(player, args);
                             }
-                        break;        }        case "my": {
-
-                            if (requirePermission(player, "my")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "my": {
+                if (requirePermission(player, "my")) {
                                 openPlayerItems(player);
                             }
-                        break;        }        case "claims": {
-
-                            if (!requirePermission(player, "claims")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "claims": {
+                if (!requirePermission(player, "claims")) {
                                 return true;
                             }
                             if (!manager.isClaimsEnabled()) {
@@ -77,22 +170,152 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
                             } else {
                                 openPlayerItems(player);
                             }
-                        break;        }        case "cancel": {
-
-                            if (requirePermission(player, "cancel")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "cancel": {
+                if (requirePermission(player, "cancel")) {
                                 handleCancel(player, args);
                             }
-                        break;        }        case "limit": {
-
-                            if (requirePermission(player, "limit")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "limit": {
+                if (requirePermission(player, "limit")) {
                                 handleLimit(player);
                             }
-                        break;        }        case "fastbuy": togglePreference(player, true)            break;        case "fastsell": togglePreference(player, false)            break;        default: {
-
-                            if (requirePermission(player, "use")) {
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "fastbuy":
+                togglePreference(player, true);
+                break;
+            case "fastsell":
+                togglePreference(player, false);
+                break;
+            default: {
+                if (requirePermission(player, "use")) {
                                 openBrowse(player);
                             }
-                        break;        }
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
         }
         return true;
     }
@@ -217,8 +440,29 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         plugin.getAuctionHouseManager().cancelListing(player, listingId)
                 .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                     if (!result.success()) {
-                        String key = switch (result.reason()) {        case DISABLED: "AUCTION_HOUSE.DISABLED"; break;        case NO_PERMISSION: "AUCTION_HOUSE.NO_PERMISSION"; break;        case LISTING_NOT_FOUND: "AUCTION_HOUSE.LISTING_NOT_FOUND"; break;        case NOT_OWNER: "AUCTION_HOUSE.NOT_YOUR_LISTING"; break;        case NOT_ACTIVE: "AUCTION_HOUSE.LISTING_NOT_ACTIVE"; break;        case DATABASE_ERROR: "AUCTION_HOUSE.CANCEL_DATABASE_ERROR"; break;
-                        };
+String;
+switch (result.reason()) {
+                            case DISABLED:
+                                key = "AUCTION_HOUSE.DISABLED";
+                                break;
+                            case NO_PERMISSION:
+                                key = "AUCTION_HOUSE.NO_PERMISSION";
+                                break;
+                            case LISTING_NOT_FOUND:
+                                key = "AUCTION_HOUSE.LISTING_NOT_FOUND";
+                                break;
+                            case NOT_OWNER:
+                                key = "AUCTION_HOUSE.NOT_YOUR_LISTING";
+                                break;
+                            case NOT_ACTIVE:
+                                key = "AUCTION_HOUSE.LISTING_NOT_ACTIVE";
+                                break;
+                            case DATABASE_ERROR:
+                                key = "AUCTION_HOUSE.CANCEL_DATABASE_ERROR";
+                                break;
+                            default:
+                                break;
+                        }
                         send(player, key, "&cThe listing could not be cancelled.");
                         return;
                     }
@@ -327,26 +571,50 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
     }
 
     private String resolveCreateFailure(AuctionHouseManager.CreateListingResult result) {
-        return switch (result.reason()) {        case DISABLED: plugin.getConfigManager().getMessage("AUCTION_HOUSE.DISABLED"); break;        case NO_PERMISSION: plugin.getConfigManager().getMessage("AUCTION_HOUSE.NO_PERMISSION"); break;        case NO_PLAYER_DATA: plugin.getLanguageManager().message(
+        switch (result.reason()) {
+            case DISABLED:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.DISABLED");
+            case NO_PERMISSION:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.NO_PERMISSION");
+            case NO_PLAYER_DATA:
+                return plugin.getLanguageManager().message(
                     "AUCTION_HOUSE.PLAYER_DATA_UNAVAILABLE",
                     "&cYour player data could not be loaded."
-            )            break;        case NO_ITEM: plugin.getConfigManager().getMessage("AUCTION_HOUSE.NO_ITEM_IN_HAND"); break;        case INVALID_ITEM: plugin.getConfigManager().getMessage("AUCTION_HOUSE.ITEM_BLOCKED"); break;        case UNSAFE_ITEM: plugin.getConfigManager().getMessageOrDefault(
+            );
+            case NO_ITEM:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.NO_ITEM_IN_HAND");
+            case INVALID_ITEM:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.ITEM_BLOCKED");
+            case UNSAFE_ITEM:
+                return plugin.getConfigManager().getMessageOrDefault(
                     "CRASH_PROTECTION.ITEM_BLOCKED",
                     "&cThat item cannot be used here. &7Reason: &f{reason}",
                     "{context}", "Auction house",
                     "{reason}", result.safetyResult() == null ? "Unsafe item data" : result.safetyResult().reason()
-            )            break;        case INVALID_PRICE: plugin.getConfigManager().getMessage("AUCTION_HOUSE.PRICE_OUT_OF_RANGE"); break;        case INVALID_DURATION: plugin.getConfigManager().getMessageOrDefault(
+            );
+            case INVALID_PRICE:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.PRICE_OUT_OF_RANGE");
+            case INVALID_DURATION:
+                return plugin.getConfigManager().getMessageOrDefault(
                     "AUCTION_HOUSE.INVALID_DURATION",
                     "&cThat listing duration is not allowed."
-            )            break;        case NO_MONEY: plugin.getConfigManager().getMessage(
+            );
+            case NO_MONEY:
+                return plugin.getConfigManager().getMessage(
                     "AUCTION_HOUSE.NO_MONEY_FOR_FEE",
                     "{fee}", NumberUtils.format(result.listingFee()),
                     "{fee_formatted}", plugin.getCurrencyManager().formatMoney(result.listingFee())
-            )            break;        case MAX_LISTINGS_REACHED: plugin.getConfigManager().getMessage("AUCTION_HOUSE.MAX_LISTINGS_REACHED"); break;        case DATABASE_ERROR: plugin.getLanguageManager().message(
+            );
+            case MAX_LISTINGS_REACHED:
+                return plugin.getConfigManager().getMessage("AUCTION_HOUSE.MAX_LISTINGS_REACHED");
+            case DATABASE_ERROR:
+                return plugin.getLanguageManager().message(
                     "AUCTION_HOUSE.CREATE_DATABASE_ERROR",
                     "&cAuction house could not save your listing."
-            )            break;
-        };
+            );
+            default:
+                return null;
+        }
     }
 
     @Override

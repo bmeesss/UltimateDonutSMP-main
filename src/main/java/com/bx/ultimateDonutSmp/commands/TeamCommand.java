@@ -38,7 +38,46 @@ public class TeamCommand implements CommandExecutor {
             return true;
         }
 
-        switch (args[0].toLowerCase()) {        case "create": handleCreate(player, args)            break;        case "disband": handleDisband(player)            break;        case "invite": handleInvite(player, args)            break;        case "join": handleJoin(player, args)            break;        case "leave": handleLeave(player)            break;        case "kick": handleKick(player, args)            break;        case "home": handleHome(player)            break;        case "sethome": handleSetHome(player)            break;        case "delhome": handleDeleteHome(player)            break;        case "chat": handleChat(player)            break;        case "info": handleInfo(player, args)            break;        case "pvp": handlePvp(player)            break;        default: new TeamMenu(plugin).open(player)            break;
+        switch (args[0].toLowerCase()) {
+            case "create":
+                handleCreate(player, args);
+                break;
+            case "disband":
+                handleDisband(player);
+                break;
+            case "invite":
+                handleInvite(player, args);
+                break;
+            case "join":
+                handleJoin(player, args);
+                break;
+            case "leave":
+                handleLeave(player);
+                break;
+            case "kick":
+                handleKick(player, args);
+                break;
+            case "home":
+                handleHome(player);
+                break;
+            case "sethome":
+                handleSetHome(player);
+                break;
+            case "delhome":
+                handleDeleteHome(player);
+                break;
+            case "chat":
+                handleChat(player);
+                break;
+            case "info":
+                handleInfo(player, args);
+                break;
+            case "pvp":
+                handlePvp(player);
+                break;
+            default:
+                new TeamMenu(plugin).open(player);
+                break;
         }
         return true;
     }

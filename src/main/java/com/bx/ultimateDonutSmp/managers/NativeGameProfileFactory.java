@@ -30,7 +30,7 @@ final class NativeGameProfileFactory {
     ) {
         try {
             Object sourceHandle = sourceProfile == null ? null : sourceProfile.getHandle();
-            Object textureProperty = textureValue == null || textureValue.isBlank()
+            Object textureProperty = textureValue == null || textureValue.trim().isEmpty()
                     ? findTextureProperty(sourceHandle)
                     : createProperty(
                             sourceHandle == null ? null : sourceHandle.getClass().getClassLoader(),
@@ -59,7 +59,7 @@ final class NativeGameProfileFactory {
     }
 
     static boolean applyTexture(WrappedGameProfile profile, String textureValue, String textureSignature) {
-        if (profile == null || textureValue == null || textureValue.isBlank()) {
+        if (profile == null || textureValue == null || textureValue.trim().isEmpty()) {
             return false;
         }
         try {
@@ -169,7 +169,7 @@ final class NativeGameProfileFactory {
             String textureValue,
             String textureSignature
     ) {
-        if (profile == null || textureValue == null || textureValue.isBlank()) {
+        if (profile == null || textureValue == null || textureValue.trim().isEmpty()) {
             return;
         }
         try {
@@ -287,7 +287,7 @@ final class NativeGameProfileFactory {
         String propertyName = readString(source, "getName", "name");
         String propertyValue = readString(source, "getValue", "value");
         if (propertyValue != null
-                && !propertyValue.isBlank()
+                && !propertyValue.trim().isEmpty()
                 && (propertyName == null || propertyName.equalsIgnoreCase("textures"))) {
             return source;
         }
@@ -398,7 +398,7 @@ final class NativeGameProfileFactory {
     }
 
     static boolean applyTexture(WrappedGameProfile profile, String textureValue, String textureSignature) {
-        if (profile == null || textureValue == null || textureValue.isBlank()) {
+        if (profile == null || textureValue == null || textureValue.trim().isEmpty()) {
             return false;
         }
         try {
@@ -508,7 +508,7 @@ final class NativeGameProfileFactory {
             String textureValue,
             String textureSignature
     ) {
-        if (profile == null || textureValue == null || textureValue.isBlank()) {
+        if (profile == null || textureValue == null || textureValue.trim().isEmpty()) {
             return;
         }
         try {
@@ -626,7 +626,7 @@ final class NativeGameProfileFactory {
         String propertyName = readString(source, "getName", "name");
         String propertyValue = readString(source, "getValue", "value");
         if (propertyValue != null
-                && !propertyValue.isBlank()
+                && !propertyValue.trim().isEmpty()
                 && (propertyName == null || propertyName.equalsIgnoreCase("textures"))) {
             return source;
         }
@@ -803,6 +803,6 @@ final class NativeGameProfileFactory {
     }
 
     private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value;
+        return value == null || value.trim().isEmpty() ? null : value;
     }
 }

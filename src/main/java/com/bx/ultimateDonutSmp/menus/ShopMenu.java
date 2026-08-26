@@ -525,7 +525,7 @@ public class ShopMenu extends BaseMenu {
 
     private String itemName(ShopManager.ShopItem item) {
         String display = ColorUtils.strip(item.displayName());
-        return display == null || display.isBlank()
+        return display == null || display.trim().isEmpty()
                 ? plugin.getWorthManager().prettifyMaterial(item.material())
                 : display;
     }

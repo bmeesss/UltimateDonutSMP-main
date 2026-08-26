@@ -16,7 +16,15 @@ public enum PunishmentFilterState {
     }
 
     public PunishmentFilterState next() {
-        return switch (this) {        case ALL: ACTIVE; break;        case ACTIVE: INACTIVE; break;        case INACTIVE: ALL; break;
-        };
+        switch (this) {
+            case ALL:
+                return ACTIVE;
+            case ACTIVE:
+                return INACTIVE;
+            case INACTIVE:
+                return ALL;
+            default:
+                return null;
+        }
     }
 }

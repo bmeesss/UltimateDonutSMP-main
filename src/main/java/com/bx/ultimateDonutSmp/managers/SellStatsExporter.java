@@ -214,11 +214,11 @@ public class SellStatsExporter {
         }
 
         String configuredUrl = plugin.getConfigManager().getShop().getString("SHOP-GUI.WEB-SERVER.PUBLIC-URL", "");
-        if (configuredUrl != null && (configuredUrl.contains("example.com") || configuredUrl.isBlank())) {
+        if (configuredUrl != null && (configuredUrl.contains("example.com") || configuredUrl.trim().isEmpty())) {
             configuredUrl = "";
         }
 
-        String localWebUrl = (configuredUrl != null && !configuredUrl.isBlank())
+        String localWebUrl = (configuredUrl != null && !configuredUrl.trim().isEmpty())
                 ? configuredUrl
                 : "http://localhost:" + actualBoundPort + "/stats";
 
@@ -733,7 +733,7 @@ public class SellStatsExporter {
         }
 
         // 3. If texture hash resolved, mc-heads renders exact texture head directly
-        if (textureHash != null && !textureHash.isBlank()) {
+        if (textureHash != null && !textureHash.trim().isEmpty()) {
             return "https://mc-heads.net/avatar/" + textureHash + "/24";
         }
 
@@ -758,7 +758,7 @@ public class SellStatsExporter {
     }
 
     private String resolveMinecraftItemTextureUrl(String rawMaterial) {
-        if (rawMaterial == null || rawMaterial.isBlank()) {
+        if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
             return "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/item/chest.png";
         }
         String name = rawMaterial.toLowerCase(Locale.US);

@@ -22,7 +22,7 @@ public final class FreezeState {
         this.frozenByUuid = frozenByUuid;
         this.frozenByNameSnapshot = frozenByNameSnapshot == null ? "" : frozenByNameSnapshot;
         this.frozenAt = frozenAt;
-        this.sourceServer = sourceServer == null || sourceServer.isBlank() ? "local" : sourceServer;
+        this.sourceServer = sourceServer == null || sourceServer.trim().isEmpty() ? "local" : sourceServer;
     }
 
     public UUID getTargetUuid() {

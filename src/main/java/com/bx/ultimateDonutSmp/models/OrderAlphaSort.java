@@ -11,7 +11,7 @@ public enum OrderAlphaSort {
     }
 
     public static OrderAlphaSort fromDatabase(String rawValue) {
-        if (rawValue == null || rawValue.isBlank()) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
             return A_Z;
         }
         try {

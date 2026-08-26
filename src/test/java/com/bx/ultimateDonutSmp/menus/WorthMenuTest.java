@@ -43,7 +43,7 @@ class WorthMenuTest {
         YamlConfiguration worth = loadWorth();
 
         assertFalse(
-                worth.getString("BROWSER.ITEM.NAME", "").isBlank(),
+                worth.getString("BROWSER.ITEM.NAME", "").trim().isEmpty(),
                 "worth.yml must ship BROWSER.ITEM.NAME or browser items render without a name"
         );
 

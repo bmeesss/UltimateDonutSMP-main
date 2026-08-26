@@ -90,22 +90,22 @@ public class PlaytimeCommand implements CommandExecutor {
 
     private String resolveStoredName(PlayerData data, String requestedName) {
         String username = data.getUsername();
-        if (username != null && !username.isBlank()) {
+        if (username != null && !username.trim().isEmpty()) {
             return username;
         }
-        return requestedName == null || requestedName.isBlank() ? "unknown" : requestedName;
+        return requestedName == null || requestedName.trim().isEmpty() ? "unknown" : requestedName;
     }
 
     private String resolveServerName() {
         String displayName = plugin.getConfigManager().getNetwork()
                 .getString("NETWORK-STATUS.LOCAL-DISPLAY-NAME", "");
-        if (displayName != null && !displayName.isBlank()) {
+        if (displayName != null && !displayName.trim().isEmpty()) {
             return displayName;
         }
 
         String serverId = plugin.getConfigManager().getNetwork()
                 .getString("NETWORK-STATUS.LOCAL-SERVER-ID", "");
-        if (serverId != null && !serverId.isBlank()) {
+        if (serverId != null && !serverId.trim().isEmpty()) {
             return serverId;
         }
 

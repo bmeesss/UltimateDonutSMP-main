@@ -339,7 +339,7 @@ public class PortalManager {
             return false;
         }
 
-        if (!portal.permission().isBlank() && !PermissionUtils.has(player, portal.permission())) {
+        if (!portal.permission().trim().isEmpty() && !PermissionUtils.has(player, portal.permission())) {
             player.sendMessage(ColorUtils.toComponent(message("PORTAL.NO-PERMISSION",
                     "&cYou do not have permission to use this portal.")));
             return false;
@@ -364,10 +364,10 @@ public class PortalManager {
                 return false;
             }
 
-            String enterMessage = portal.enterMessage().isBlank()
+            String enterMessage = portal.enterMessage().trim().isEmpty()
                     ? message("PORTAL.ENTERED", "")
                     : portal.enterMessage();
-            if (!enterMessage.isBlank()) {
+            if (!enterMessage.trim().isEmpty()) {
                 String destinationLabel = describeDestination(portal);
                 player.sendMessage(ColorUtils.toComponent(
                         enterMessage
@@ -388,11 +388,11 @@ public class PortalManager {
                 return false;
             }
 
-            String enterMessage = portal.enterMessage().isBlank()
+            String enterMessage = portal.enterMessage().trim().isEmpty()
                     ? message("PORTAL.ENTERED", "")
                     : portal.enterMessage();
             String destinationLabel = describeDestination(portal);
-            String resolvedMessage = enterMessage.isBlank() ? "" : enterMessage
+            String resolvedMessage = enterMessage.trim().isEmpty() ? "" : enterMessage
                     .replace("{portal}", portal.effectiveDisplayName())
                     .replace("{destination}", destinationLabel);
 
@@ -410,7 +410,7 @@ public class PortalManager {
 
     private Location resolveAfkDestinationLocation(PortalDefinition portal) {
         String value = portal.destinationValue();
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             for (SpawnManager.TeleportArea area : plugin.getSpawnManager().getValidAreas(SpawnManager.AreaType.AFK)) {
                 if (area.id().equalsIgnoreCase(value)) {
                     Location loc = plugin.getSpawnManager().resolveDestination(area);
@@ -457,7 +457,7 @@ public class PortalManager {
 
         if (DESTINATION_TYPE_AFK.equalsIgnoreCase(portal.destinationType())) {
             String value = portal.destinationValue();
-            if (value == null || value.isBlank()) {
+            if (value == null || value.trim().isEmpty()) {
                 return "AFK";
             }
             return "AFK:" + value;
@@ -468,7 +468,7 @@ public class PortalManager {
         }
 
         String worldName = resolveDestinationWorld(portal);
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return "RTP:" + portal.destinationValue();
         }
 
@@ -814,13 +814,13 @@ public class PortalManager {
     private String getHologramRegion(PortalDefinition portal) {
         String perPortalPath = "PORTAL-SYSTEM.HOLOGRAM.PORTALS." + portal.id() + ".REGION";
         String region = plugin.getConfigManager().getConfig().getString(perPortalPath, "").trim();
-        if (!region.isBlank()) {
+        if (!region.trim().isEmpty()) {
             return region;
         }
 
         region = plugin.getConfigManager().getConfig()
                 .getString("PORTAL-SYSTEM.HOLOGRAM.DEFAULT-REGION", "").trim();
-        if (!region.isBlank()) {
+        if (!region.trim().isEmpty()) {
             return region;
         }
 
@@ -831,7 +831,7 @@ public class PortalManager {
     private String getHologramServerId(PortalDefinition portal) {
         String perPortalPath = "PORTAL-SYSTEM.HOLOGRAM.PORTALS." + portal.id() + ".SERVER-ID";
         String serverId = plugin.getConfigManager().getConfig().getString(perPortalPath, "").trim();
-        if (!serverId.isBlank()) {
+        if (!serverId.trim().isEmpty()) {
             return serverId.toLowerCase(Locale.ROOT);
         }
 
@@ -845,7 +845,7 @@ public class PortalManager {
     }
 
     private boolean isLocalHologramServerId(String serverId) {
-        if (serverId == null || serverId.isBlank()) {
+        if (serverId == null || serverId.trim().isEmpty()) {
             return true;
         }
 
@@ -863,12 +863,12 @@ public class PortalManager {
 
     private String getLocalServerDisplayName() {
         String display = getNetworkString("NETWORK-STATUS.LOCAL-DISPLAY-NAME", "").trim();
-        if (!display.isBlank()) {
+        if (!display.trim().isEmpty()) {
             return display;
         }
 
         display = getNetworkString("NETWORK.LOCAL_DISPLAY_NAME", "").trim();
-        return display.isBlank() ? "local" : display;
+        return display.trim().isEmpty() ? "local" : display;
     }
 
     private String getNetworkString(String path, String fallback) {

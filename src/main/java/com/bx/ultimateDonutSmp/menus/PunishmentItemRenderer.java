@@ -78,8 +78,20 @@ final class PunishmentItemRenderer {
     }
 
     static String defaultMaterial(PunishmentType type) {
-        return switch (type) {        case BAN: "IRON_BARS"; break;        case MUTE: "PAPER"; break;        case WARN: "YELLOW_DYE"; break;        case KICK: "LEATHER_BOOTS"; break;        case BLACKLIST: "BARRIER"; break;
-        };
+        switch (type) {
+            case BAN:
+                return "IRON_BARS";
+            case MUTE:
+                return "PAPER";
+            case WARN:
+                return "YELLOW_DYE";
+            case KICK:
+                return "LEATHER_BOOTS";
+            case BLACKLIST:
+                return "BARRIER";
+            default:
+                return null;
+        }
     }
 
     static String statusColor(PunishmentRecord record, PunishmentState state) {
@@ -90,8 +102,19 @@ final class PunishmentItemRenderer {
             return "&7";
         }
 
-        return switch (record.getType()) {        case BAN: case BLACKLIST: "&c"; break;        case MUTE: "&d"; break;        case WARN: "&e"; break;        case KICK: "&6"; break;
-        };
+        switch (record.getType()) {
+            case BAN:
+            case BLACKLIST:
+                return "&c";
+            case MUTE:
+                return "&d";
+            case WARN:
+                return "&e";
+            case KICK:
+                return "&6";
+            default:
+                return null;
+        }
     }
 
     static String formatTimestamp(Long timestamp, String fallback) {
@@ -102,6 +125,6 @@ final class PunishmentItemRenderer {
     }
 
     static String safeText(String value) {
-        return value == null || value.isBlank() ? "N/A" : value;
+        return value == null || value.trim().isEmpty() ? "N/A" : value;
     }
 }

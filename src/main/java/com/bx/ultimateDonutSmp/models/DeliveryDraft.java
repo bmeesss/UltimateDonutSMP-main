@@ -14,6 +14,7 @@ public final class DeliveryDraft {
     private final long createdAt;
 
     public DeliveryDraft(UUID playerUuid, long orderId, List<ItemStack> acceptedItems, int quantity, double payout, long createdAt) {
+        acceptedItems = copy(acceptedItems);
         this.playerUuid = playerUuid;
         this.orderId = orderId;
         this.acceptedItems = acceptedItems;
@@ -30,9 +31,7 @@ public final class DeliveryDraft {
     public long createdAt() { return createdAt; }
 
 
-    public DeliveryDraft {
-        acceptedItems = copy(acceptedItems);
-    }
+
 
     private static List<ItemStack> copy(List<ItemStack> items) {
         return items == null ? java.util.Collections.emptyList() : items.stream()

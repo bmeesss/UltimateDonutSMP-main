@@ -315,8 +315,14 @@ public class ProfileViewerHomesMenu extends BaseMenu {
         }
 
         World.Environment environment = location.getWorld().getEnvironment();
-        return switch (environment) {        case NETHER: "nether"; break;        case THE_END: "end"; break;        default: "overworld"            break;
-        };
+        switch (environment) {
+            case NETHER:
+                return "nether";
+            case THE_END:
+                return "end";
+            default:
+                return "overworld";
+        }
     }
 
     private List<String> defaultIfEmpty(List<String> configured, List<String> fallback) {

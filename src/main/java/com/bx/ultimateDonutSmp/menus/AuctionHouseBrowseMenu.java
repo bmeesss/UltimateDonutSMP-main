@@ -132,7 +132,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                 Material.OAK_SIGN,
                 "&fSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &e{search}",  "&8Left-click to search",  "&8Right-click to clear")),
-                "{search}", effective.search().isBlank()
+                "{search}", effective.search().trim().isEmpty()
                         ? AuctionHouseMenuSupport.configText(
                                 plugin,
                                 "GUI.TEXT.NONE.NAME",
@@ -204,7 +204,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                     .getConfigurationSection("GUI.BROWSE.SEARCH_SIGN");
             manager.startNavigating(player.getUniqueId());
             SignInputUtil.openFromConfig(plugin, player, signConfig, text -> {
-                String search = text == null || text.isBlank() || text.equalsIgnoreCase("cancel")
+                String search = text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")
                         ? current.search()
                         : text.trim();
                 if (search.length() > 64) {
@@ -234,8 +234,36 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                         )));
                         SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                     } else {
-                        String key = switch (result.reason()) {        case DISABLED: "AUCTION_HOUSE.DISABLED"; break;        case NO_PERMISSION: "AUCTION_HOUSE.NO_PERMISSION"; break;        case LISTING_NOT_FOUND: "AUCTION_HOUSE.LISTING_NOT_FOUND"; break;        case NOT_ACTIVE: "AUCTION_HOUSE.LISTING_NOT_ACTIVE"; break;        case OWN_LISTING: "AUCTION_HOUSE.CANNOT_BUY_OWN"; break;        case NO_MONEY: "AUCTION_HOUSE.NOT_ENOUGH_MONEY"; break;        case INVENTORY_FULL: "AUCTION_HOUSE.FULL_INVENTORY"; break;        case NO_PLAYER_DATA: case DATABASE_ERROR: "AUCTION_HOUSE.PURCHASE_DATABASE_ERROR"; break;
-                        };
+String;
+switch (result.reason()) {
+                            case DISABLED:
+                                key = "AUCTION_HOUSE.DISABLED";
+                                break;
+                            case NO_PERMISSION:
+                                key = "AUCTION_HOUSE.NO_PERMISSION";
+                                break;
+                            case LISTING_NOT_FOUND:
+                                key = "AUCTION_HOUSE.LISTING_NOT_FOUND";
+                                break;
+                            case NOT_ACTIVE:
+                                key = "AUCTION_HOUSE.LISTING_NOT_ACTIVE";
+                                break;
+                            case OWN_LISTING:
+                                key = "AUCTION_HOUSE.CANNOT_BUY_OWN";
+                                break;
+                            case NO_MONEY:
+                                key = "AUCTION_HOUSE.NOT_ENOUGH_MONEY";
+                                break;
+                            case INVENTORY_FULL:
+                                key = "AUCTION_HOUSE.FULL_INVENTORY";
+                                break;
+                            case NO_PLAYER_DATA:
+                            case DATABASE_ERROR:
+                                key = "AUCTION_HOUSE.PURCHASE_DATABASE_ERROR";
+                                break;
+                            default:
+                                break;
+                        }
                         player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage(key)));
                         SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.FAIL"));
                     }

@@ -409,7 +409,7 @@ public final class LuckPermsTablistRefreshBridge {
     }
 
     private void rememberCommandPermissionOverride(String command, Player target) {
-        if (plugin.getTablistManager() == null || command == null || command.isBlank()) {
+        if (plugin.getTablistManager() == null || command == null || command.trim().isEmpty()) {
             return;
         }
 
@@ -425,9 +425,25 @@ public final class LuckPermsTablistRefreshBridge {
 
         String operation = parts[4].toLowerCase(java.util.Locale.ROOT);
         String permission = parts[5];
-        Boolean value = switch (operation) {        case "set": case "add": case "settemp": case "addtemp": parts.length <= 6 || !parts[6].equalsIgnoreCase("false")            break;        case "unset": case "remove": case "unsettemp": case "removetemp": false            break;        default: null            break;
-        };
-        if (value == null || permission.isBlank()) {
+Boolean;
+switch (operation) {
+            case "set":
+            case "add":
+            case "settemp":
+            case "addtemp":
+                value = parts.length <= 6 || !parts[6].equalsIgnoreCase("false");
+                break;
+            case "unset":
+            case "remove":
+            case "unsettemp":
+            case "removetemp":
+                value = false;
+                break;
+            default:
+                value = null;
+                break;
+        }
+        if (value == null || permission.trim().isEmpty()) {
             return;
         }
 
@@ -498,21 +514,40 @@ public final class LuckPermsTablistRefreshBridge {
             return false;
         }
 
-        return switch (value.toLowerCase(java.util.Locale.ROOT)) {
-            case "set", "unset", "add", "remove", "delete", "clear",
-                    "settemp", "unsettemp", "addtemp", "removetemp",
-                    "addprefix", "addsuffix", "removeprefix", "removesuffix",
-                    "promote", "demote", "setprimarygroup", "switchprimarygroup",
-                    "permission", "parent", "meta" -> true;        default: false            break;
-        };
+        switch (value.toLowerCase(java.util.Locale.ROOT)) {
+            case "set":
+            case "unset":
+            case "add":
+            case "remove":
+            case "delete":
+            case "clear":
+            case "settemp":
+            case "unsettemp":
+            case "addtemp":
+            case "removetemp":
+            case "addprefix":
+            case "addsuffix":
+            case "removeprefix":
+            case "removesuffix":
+            case "promote":
+            case "demote":
+            case "setprimarygroup":
+            case "switchprimarygroup":
+            case "permission":
+            case "parent":
+            case "meta":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private String[] splitCommandParts(String command) {
-        if (command == null || command.isBlank()) {
+        if (command == null || command.trim().isEmpty()) {
             return new String[0];
         }
 
-        String normalizedCommand = command.strip();
+        String normalizedCommand = command.trim();
         if (normalizedCommand.startsWith("/")) {
             normalizedCommand = normalizedCommand.substring(1);
         }
@@ -528,7 +563,7 @@ public final class LuckPermsTablistRefreshBridge {
     }
 
     private Player findOnlinePlayer(String name) {
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
 

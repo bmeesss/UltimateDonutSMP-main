@@ -105,7 +105,7 @@ public class RulesMenu extends BaseMenu {
             }
 
             String rawMaterial = buttonSection.getString("MATERIAL");
-            if (rawMaterial == null || rawMaterial.isBlank()) {
+            if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
                 plugin.getLogger().warning("Skipping " + buttonSection.getCurrentPath()
                         + " because material is missing.");
                 continue;

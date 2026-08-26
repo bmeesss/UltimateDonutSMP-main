@@ -30,6 +30,8 @@ public final class StaffCustomItem {
     private final boolean requireTarget;
 
     public StaffCustomItem(String id, int slot, Material material, String name, List<String> lore, List<String> commands, ExecuteAs executeAs, String permission, boolean requireTarget) {
+        lore = lore == null ? java.util.Collections.emptyList() : new java.util.ArrayList<>(lore);
+        commands = commands == null ? java.util.Collections.emptyList() : new java.util.ArrayList<>(commands);
         this.id = id;
         this.slot = slot;
         this.material = material;
@@ -59,7 +61,7 @@ public final class StaffCustomItem {
         CONSOLE;
 
         public static ExecuteAs parse(String raw, ExecuteAs fallback) {
-            if (raw == null || raw.isBlank()) {
+            if (raw == null || raw.trim().isEmpty()) {
                 return fallback;
             }
             try {
@@ -70,13 +72,10 @@ public final class StaffCustomItem {
         }
     }
 
-    public StaffCustomItem {
-        lore = lore == null ? java.util.Collections.emptyList() : new java.util.ArrayList<>(lore);
-        commands = commands == null ? java.util.Collections.emptyList() : new java.util.ArrayList<>(commands);
-    }
+
 
     public boolean hasPermission() {
-        return permission != null && !permission.isBlank();
+        return permission != null && !permission.trim().isEmpty();
     }
 
     /**
@@ -161,7 +160,7 @@ public final class StaffCustomItem {
         List<String> raw = new ArrayList<>(definition.getStringList("COMMANDS"));
         if (raw.isEmpty()) {
             String single = definition.getString("COMMANDS");
-            if (single != null && !single.isBlank()) {
+            if (single != null && !single.trim().isEmpty()) {
                 raw.add(single);
             }
         }

@@ -69,7 +69,7 @@ public class PunishmentCommand implements CommandExecutor {
     }
 
     private String normalizeLabel(String label, Command command) {
-        String normalized = label == null || label.isBlank() ? command.getName() : label;
+        String normalized = label == null || label.trim().isEmpty() ? command.getName() : label;
         int namespaceSeparator = normalized.indexOf(':');
         if (namespaceSeparator >= 0 && namespaceSeparator + 1 < normalized.length()) {
             normalized = normalized.substring(namespaceSeparator + 1);
@@ -78,7 +78,7 @@ public class PunishmentCommand implements CommandExecutor {
     }
 
     static String permissionForAction(String action) {
-        if (action == null || action.isBlank()) {
+        if (action == null || action.trim().isEmpty()) {
             return null;
         }
 
@@ -208,7 +208,7 @@ public class PunishmentCommand implements CommandExecutor {
         UUID targetUuid = target != null ? target.uuid() : null;
         String targetName = target != null ? target.name() : args[0];
 
-        if (targetUuid == null && (targetName == null || targetName.isBlank())) {
+        if (targetUuid == null && (targetName == null || targetName.trim().isEmpty())) {
             send(sender, plugin.getConfigManager().getMessageOrDefault("PUNISHMENTS.NOT-FOUND", "&cPlayer not found."));
             return true;
         }
@@ -370,7 +370,7 @@ public class PunishmentCommand implements CommandExecutor {
     private String formatIssuer(PunishmentRecord record) {
         if (record == null) return "unknown";
         String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.isBlank() ? "unknown" : issuer;
+        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
     }
 
     private ResolvedTarget resolveTarget(String input) {
@@ -417,7 +417,7 @@ public class PunishmentCommand implements CommandExecutor {
     }
 
     private long parseDurationMillis(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return -1L;
         }
 

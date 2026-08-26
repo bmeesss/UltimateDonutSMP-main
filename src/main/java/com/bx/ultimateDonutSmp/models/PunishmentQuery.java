@@ -6,6 +6,8 @@ public final class PunishmentQuery {
     private final PunishmentSortOrder sortOrder;
 
     public PunishmentQuery(PunishmentType typeFilter, PunishmentFilterState stateFilter, PunishmentSortOrder sortOrder) {
+        stateFilter = stateFilter == null ? PunishmentFilterState.ALL : stateFilter;
+        sortOrder = sortOrder == null ? PunishmentSortOrder.NEWEST : sortOrder;
         this.typeFilter = typeFilter;
         this.stateFilter = stateFilter;
         this.sortOrder = sortOrder;
@@ -16,10 +18,7 @@ public final class PunishmentQuery {
     public PunishmentSortOrder sortOrder() { return sortOrder; }
 
 
-    public PunishmentQuery {
-        stateFilter = stateFilter == null ? PunishmentFilterState.ALL : stateFilter;
-        sortOrder = sortOrder == null ? PunishmentSortOrder.NEWEST : sortOrder;
-    }
+
 
     public static PunishmentQuery defaultQuery() {
         return new PunishmentQuery(null, PunishmentFilterState.ALL, PunishmentSortOrder.NEWEST);

@@ -123,7 +123,7 @@ public class IgnoreCommand implements CommandExecutor {
     }
 
     private ResolvedTarget resolveTarget(Player owner, String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -145,7 +145,7 @@ public class IgnoreCommand implements CommandExecutor {
         }
 
         String name = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        String fallback = name == null || name.isBlank() ? input : name;
+        String fallback = name == null || name.trim().isEmpty() ? input : name;
         return new ResolvedTarget(uuid, plugin.getHideManager().plainPublicName(uuid, fallback));
     }
 
@@ -248,7 +248,7 @@ public class IgnoreCommand implements CommandExecutor {
     }
 
     private ResolvedTarget resolveTarget(Player owner, String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -270,7 +270,7 @@ public class IgnoreCommand implements CommandExecutor {
         }
 
         String name = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        String fallback = name == null || name.isBlank() ? input : name;
+        String fallback = name == null || name.trim().isEmpty() ? input : name;
         return new ResolvedTarget(uuid, plugin.getHideManager().plainPublicName(uuid, fallback));
     }
 

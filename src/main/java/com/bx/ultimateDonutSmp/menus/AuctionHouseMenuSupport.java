@@ -121,7 +121,7 @@ final class AuctionHouseMenuSupport {
         }
         combinedLore.addAll(extraLore);
 
-        if (!meta.hasDisplayName() && fallbackDisplayName != null && !fallbackDisplayName.isBlank()) {
+        if (!meta.hasDisplayName() && fallbackDisplayName != null && !fallbackDisplayName.trim().isEmpty()) {
             meta.setDisplayName(ColorUtils.toComponent("&b" + fallbackDisplayName));
         }
         meta.setLore(ColorUtils.toComponentList(combinedLore));

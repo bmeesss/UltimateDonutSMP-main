@@ -42,6 +42,6 @@ public final class OrderUiState {
     public void itemSearch(String itemSearch) { this.itemSearch = itemSearch == null ? "" : itemSearch.trim(); }
 
     private static String normalizeFilter(String filter) {
-        return filter == null || filter.isBlank() ? "ALL" : filter.trim().toUpperCase(java.util.Locale.ROOT);
+        return filter == null || filter.trim().isEmpty() ? "ALL" : filter.trim().toUpperCase(java.util.Locale.ROOT);
     }
 }

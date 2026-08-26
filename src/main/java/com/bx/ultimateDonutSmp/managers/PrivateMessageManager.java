@@ -25,7 +25,7 @@ public class PrivateMessageManager {
     }
 
     public boolean sendPrivateMessage(CommandSender sender, Player target, String message) {
-        if (sender == null || target == null || message == null || message.isBlank()) {
+        if (sender == null || target == null || message == null || message.trim().isEmpty()) {
             return false;
         }
 
@@ -144,7 +144,7 @@ public class PrivateMessageManager {
     }
 
     public boolean reply(Player sender, String message) {
-        if (sender == null || message == null || message.isBlank()) {
+        if (sender == null || message == null || message.trim().isEmpty()) {
             return false;
         }
 

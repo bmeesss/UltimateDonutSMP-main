@@ -299,7 +299,7 @@ public class FakePlayerManager {
         plugin.getLogger().info("[FakePlayer] Using " + source + " skin texture for " + playerName
                 + " (resolver=" + resolver
                 + ", valueLength=" + texture.value().length()
-                + ", signed=" + (texture.signature() != null && !texture.signature().isBlank()) + ").");
+                + ", signed=" + (texture.signature() != null && !texture.signature().trim().isEmpty()) + ").");
     }
 
     private FakePlayerPacketBridge createBridge() {
@@ -922,15 +922,15 @@ public class FakePlayerManager {
 
     private String resolveDisplayName(Player player) {
         String displayName = ColorUtils.strip(player.getDisplayName()).trim();
-        return displayName.isBlank() ? player.getName() : displayName;
+        return displayName.trim().isEmpty() ? player.getName() : displayName;
     }
 
     private String resolveProfileName(Player player, String displayName) {
         String name = sanitizeProfileName(displayName);
-        if (name.isBlank()) {
+        if (name.trim().isEmpty()) {
             name = sanitizeProfileName(player.getName());
         }
-        if (name.isBlank()) {
+        if (name.trim().isEmpty()) {
             name = "FakePlayer";
         }
         return name.length() > 16 ? name.substring(0, 16) : name;
@@ -982,7 +982,7 @@ public class FakePlayerManager {
     }
 
     private UUID parseTextureUuid(String rawUuid) {
-        if (rawUuid == null || rawUuid.isBlank()) {
+        if (rawUuid == null || rawUuid.trim().isEmpty()) {
             return null;
         }
 
@@ -1128,7 +1128,7 @@ public final class SpawnResult {
         }
 
         static SkinSourceMode fromConfig(String value) {
-            if (value == null || value.isBlank()) {
+            if (value == null || value.trim().isEmpty()) {
                 return AUTO;
             }
 

@@ -302,7 +302,7 @@ public class TeamManager {
         player.closeInventory();
 
         String currentQuery = getActiveSearchQuery(player.getUniqueId());
-        if (currentQuery == null || currentQuery.isBlank()) {
+        if (currentQuery == null || currentQuery.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent(
                     "&7Type a team member name in chat to search. Type &ccancel &7to abort."));
             return;
@@ -339,7 +339,7 @@ public class TeamManager {
             return;
         }
 
-        if (input.isBlank()) {
+        if (input.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent("&cSearch query cannot be empty."));
             player.sendMessage(ColorUtils.toComponent("&7Type a team member name or &ccancel&7."));
             return;
@@ -353,7 +353,7 @@ public class TeamManager {
 
     public String getActiveSearchQuery(UUID uuid) {
         String query = activeSearchQueries.get(uuid);
-        return query == null || query.isBlank() ? null : query;
+        return query == null || query.trim().isEmpty() ? null : query;
     }
 
     public void clearSearchState(UUID uuid) {

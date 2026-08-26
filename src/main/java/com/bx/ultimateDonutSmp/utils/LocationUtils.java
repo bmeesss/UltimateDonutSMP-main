@@ -10,7 +10,7 @@ public final class LocationUtils {
     }
 
     public static Location parse(String serialized) {
-        if (serialized == null || serialized.isBlank()) {
+        if (serialized == null || serialized.trim().isEmpty()) {
             return null;
         }
 
@@ -46,7 +46,7 @@ public final class LocationUtils {
     }
 
     private static World findWorld(String name) {
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
 

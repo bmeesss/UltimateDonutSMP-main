@@ -134,7 +134,7 @@ public class ChatLogsMenu extends BaseMenu {
     }
 
     private ItemStack createChatItem(PlayerLogEntry entry) {
-        String name = entry.playerName() == null || entry.playerName().isBlank()
+        String name = entry.playerName() == null || entry.playerName().trim().isEmpty()
                 ? "Unknown"
                 : entry.playerName();
 
@@ -155,7 +155,7 @@ public class ChatLogsMenu extends BaseMenu {
     /** Breaks a chat message over several lore lines so long messages stay readable. */
     static List<String> wrap(String message) {
         List<String> lines = new ArrayList<>();
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             lines.add("");
             return lines;
         }

@@ -116,7 +116,7 @@ public final class PlayerEntry {
                 entryMap.put(fid, new PlayerEntry(fid, existing.name(), true, true));
             } else {
                 String name = plugin.getDatabaseManager().getLastKnownUsername(fid);
-                if (name == null || name.isBlank()) {
+                if (name == null || name.trim().isEmpty()) {
                     name = fid.toString();
                 }
                 entryMap.put(fid, new PlayerEntry(fid, name, false, true));
@@ -141,7 +141,7 @@ public final class PlayerEntry {
             }
 
             // Apply search query
-            if (searchQuery != null && !searchQuery.isBlank()) {
+            if (searchQuery != null && !searchQuery.trim().isEmpty()) {
                 if (!pe.name().toLowerCase(Locale.ROOT).contains(searchQuery.toLowerCase(Locale.ROOT))) {
                     continue;
                 }
@@ -296,7 +296,7 @@ public final class PlayerEntry {
                 0,
                 text -> {
                     String input = text == null ? "" : text.trim();
-                    if (input.isBlank() || input.equalsIgnoreCase("cancel")) {
+                    if (input.trim().isEmpty() || input.equalsIgnoreCase("cancel")) {
                         new FriendsMenu(plugin, page, searchQuery, filterType).open(player);
                     } else if (input.equalsIgnoreCase("clear")) {
                         new FriendsMenu(plugin, 0, null, filterType).open(player);

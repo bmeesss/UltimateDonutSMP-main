@@ -50,7 +50,27 @@ public class CuboidCommand implements CommandExecutor {
             return true;
         }
 
-        switch (sub) {        case "wand": giveWand(player)            break;        case "create": case "save": createCuboid(player, args)            break;        case "delete": deleteCuboid(player, args)            break;        case "list": listCuboids(player)            break;        case "bind": case "system": bindCuboidSystem(player, args)            break;        default: sendUsage(player)            break;
+        switch (sub) {
+            case "wand":
+                giveWand(player);
+                break;
+            case "create":
+            case "save":
+                createCuboid(player, args);
+                break;
+            case "delete":
+                deleteCuboid(player, args);
+                break;
+            case "list":
+                listCuboids(player);
+                break;
+            case "bind":
+            case "system":
+                bindCuboidSystem(player, args);
+                break;
+            default:
+                sendUsage(player);
+                break;
         }
         return true;
     }
@@ -151,18 +171,20 @@ public class CuboidCommand implements CommandExecutor {
         }
 
         FileConfiguration config = plugin.getConfigManager().getConfig();
-        switch (role) {        case "spawn": {
-
-                            updateBindList(config, "CUBOID-BINDS.SPAWN", cuboidName, enabled);
-                            List<String> spawnBinds = config.getStringList("CUBOID-BINDS.SPAWN");
-                            config.set("AFK-SYSTEM.SPAWN-CUBOID-NAME", spawnBinds.isEmpty() ? "" : spawnBinds.get(0));
-                        break;        }        case "shard": {
-
-                            config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", enabled);
-                            config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", enabled);
-                            updateBindList(config, "CUBOID-BINDS.AFK", cuboidName, enabled);
-                            List<String> afkBinds = config.getStringList("CUBOID-BINDS.AFK");
-                            if (enabled) {
+        switch (role) {
+            case "spawn": {
+                updateBindList(config, "CUBOID-BINDS.SPAWN", cuboidName, enabled);
+                List<String> spawnBinds = config.getStringList("CUBOID-BINDS.SPAWN");
+                config.set("AFK-SYSTEM.SPAWN-CUBOID-NAME", spawnBinds.isEmpty() ? "" : spawnBinds.get(0));
+                break;
+                break;
+            }
+            case "shard": {
+                config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", enabled);
+                config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", enabled);
+                updateBindList(config, "CUBOID-BINDS.AFK", cuboidName, enabled);
+                List<String> afkBinds = config.getStringList("CUBOID-BINDS.AFK");
+                if (enabled) {
                                 config.set("SHARDS.CUBOIDS.REGIONS.spawn.CUBOID", cuboidName);
                                 config.set("SHARDS.CUBOIDS.REGIONS.spawn.WORLD", cuboid.world());
                             } else {
@@ -177,11 +199,18 @@ public class CuboidCommand implements CommandExecutor {
                                 }
                             }
                             config.set("AFK-SYSTEM.AFK-CUBOID-NAME", afkBinds.isEmpty() ? "" : afkBinds.get(0));
-                        break;        }        case "rtp-zone": config.set("RTP-ZONE.CUBOID", enabled ? cuboidName : "")            break;        default: {
-
-                            player.sendMessage(ColorUtils.toComponent("&cUnknown role."));
-                            return;
-                        break;        }
+                break;
+                break;
+            }
+            case "rtp-zone":
+                config.set("RTP-ZONE.CUBOID", enabled ? cuboidName : "");
+                break;
+            default: {
+                player.sendMessage(ColorUtils.toComponent("&cUnknown role."));
+                return;
+                break;
+                break;
+            }
         }
 
         if (!plugin.getConfigManager().saveConfig()) {
@@ -239,12 +268,23 @@ public class CuboidCommand implements CommandExecutor {
     }
 
     private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+        return value == null || value.trim().isEmpty();
     }
 
     private String normalizeRole(String raw) {
-        return switch (raw.toLowerCase()) {        case "spawn": "spawn"            break;        case "shard": case "shards": "shard"            break;        case "rtp-zone": case "rtpzone": case "rtp_zone": "rtp-zone"            break;        default: null            break;
-        };
+        switch (raw.toLowerCase()) {
+            case "spawn":
+                return "spawn";
+            case "shard":
+            case "shards":
+                return "shard";
+            case "rtp-zone":
+            case "rtpzone":
+            case "rtp_zone":
+                return "rtp-zone";
+            default:
+                return null;
+        }
     }
 
     private void sendUsage(CommandSender sender) {

@@ -80,12 +80,12 @@ public final class AdventureHeadComponentBridge {
     }
 
     private Object createProfileProperty(String value, String signature) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
 
         try {
-            if (signature != null && !signature.isBlank() && profilePropertyThreeMethod != null) {
+            if (signature != null && !signature.trim().isEmpty() && profilePropertyThreeMethod != null) {
                 return profilePropertyThreeMethod.invoke(null, "textures", value, signature);
             }
             if (profilePropertyTwoMethod != null) {
@@ -293,7 +293,7 @@ public final class AdventureHeadComponentBridge {
         }
 
         public void name(String value) {
-            if (value != null && !value.isBlank()) {
+            if (value != null && !value.trim().isEmpty()) {
                 invokeQuietly("name", value);
             }
         }

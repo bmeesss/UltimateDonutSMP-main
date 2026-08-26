@@ -505,10 +505,10 @@ public final class TablistComponentUpdater {
 
         UUID id = getUuidValue(playerHead, "id");
         String name = getStringValue(playerHead, "name");
-        if ((name == null || name.isBlank()) && id != null) {
+        if ((name == null || name.trim().isEmpty()) && id != null) {
             name = id.toString().replace("-", "").substring(0, 16);
         }
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             name = "Player";
         }
 
@@ -523,10 +523,10 @@ public final class TablistComponentUpdater {
         for (Object profileProperty : iterableProperties) {
             String propertyName = getStringValue(profileProperty, "name");
             String propertyValue = getStringValue(profileProperty, "value");
-            if (profileProperty == null || propertyValue == null || propertyValue.isBlank()) {
+            if (profileProperty == null || propertyValue == null || propertyValue.trim().isEmpty()) {
                 continue;
             }
-            if (propertyName == null || propertyName.isBlank()) {
+            if (propertyName == null || propertyName.trim().isEmpty()) {
                 propertyName = "textures";
             }
             Object property = createMojangProfileProperty(profileProperty, gameProfileType.getClassLoader());
@@ -542,7 +542,7 @@ public final class TablistComponentUpdater {
         String propertyName = getStringValue(profileProperty, "name");
         String propertyValue = getStringValue(profileProperty, "value");
         String propertySignature = getStringValue(profileProperty, "signature");
-        if (propertyName == null || propertyName.isBlank()) {
+        if (propertyName == null || propertyName.trim().isEmpty()) {
             propertyName = "textures";
         }
 
@@ -1643,10 +1643,10 @@ public final class TablistComponentUpdater {
 
         UUID id = getUuidValue(playerHead, "id");
         String name = getStringValue(playerHead, "name");
-        if ((name == null || name.isBlank()) && id != null) {
+        if ((name == null || name.trim().isEmpty()) && id != null) {
             name = id.toString().replace("-", "").substring(0, 16);
         }
-        if (name == null || name.isBlank()) {
+        if (name == null || name.trim().isEmpty()) {
             name = "Player";
         }
 
@@ -1661,10 +1661,10 @@ public final class TablistComponentUpdater {
         for (Object profileProperty : iterableProperties) {
             String propertyName = getStringValue(profileProperty, "name");
             String propertyValue = getStringValue(profileProperty, "value");
-            if (profileProperty == null || propertyValue == null || propertyValue.isBlank()) {
+            if (profileProperty == null || propertyValue == null || propertyValue.trim().isEmpty()) {
                 continue;
             }
-            if (propertyName == null || propertyName.isBlank()) {
+            if (propertyName == null || propertyName.trim().isEmpty()) {
                 propertyName = "textures";
             }
             Object property = createMojangProfileProperty(profileProperty, gameProfileType.getClassLoader());
@@ -1680,7 +1680,7 @@ public final class TablistComponentUpdater {
         String propertyName = getStringValue(profileProperty, "name");
         String propertyValue = getStringValue(profileProperty, "value");
         String propertySignature = getStringValue(profileProperty, "signature");
-        if (propertyName == null || propertyName.isBlank()) {
+        if (propertyName == null || propertyName.trim().isEmpty()) {
             propertyName = "textures";
         }
 

@@ -92,7 +92,7 @@ public class ChatManager {
 
         if (config.getBoolean(LEGACY_CLICK_RUN_PATH, true)) {
             String command = config.getString(LEGACY_CLICK_COMMAND_PATH, "/stats %player%");
-            if (command != null && !command.isBlank()) {
+            if (command != null && !command.trim().isEmpty()) {
                 return new ClickAction(ClickActionType.RUN_COMMAND, resolveCommandTemplate(command, player));
             }
         }
@@ -108,7 +108,7 @@ public class ChatManager {
 
         String fallback = section.getString("default", "&f");
         String primaryGroup = resolvePrimaryGroup(player);
-        if (primaryGroup == null || primaryGroup.isBlank()) {
+        if (primaryGroup == null || primaryGroup.trim().isEmpty()) {
             return fallback;
         }
 
@@ -251,7 +251,7 @@ public class ChatManager {
         logPublicChat(player, rawMessage);
 
         String normalized = normalizeMessage(rawMessage);
-        if (!normalized.isBlank()) {
+        if (!normalized.trim().isEmpty()) {
             lastAcceptedGlobalMessageByPlayer.put(player.getUniqueId(), normalized);
         }
 
@@ -278,7 +278,7 @@ public class ChatManager {
     }
 
     private void logPublicChat(Player player, String rawMessage) {
-        if (rawMessage == null || rawMessage.isBlank() || !isPublicChatLoggingEnabled()) {
+        if (rawMessage == null || rawMessage.trim().isEmpty() || !isPublicChatLoggingEnabled()) {
             return;
         }
 
@@ -341,13 +341,13 @@ public class ChatManager {
     }
 
     private boolean containsBlockedWord(String message) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return false;
         }
 
         String normalized = message.toLowerCase(Locale.ROOT);
         for (String blockedWord : config().getStringList(CHAT_ROOT + ".FILTER.WORDS")) {
-            if (blockedWord != null && !blockedWord.isBlank()
+            if (blockedWord != null && !blockedWord.trim().isEmpty()
                     && normalized.contains(blockedWord.toLowerCase(Locale.ROOT))) {
                 return true;
             }
@@ -480,18 +480,21 @@ public class ChatManager {
             return true;
         }
 
-        return switch (Character.getType(codePoint)) {
-            case Character.CONNECTOR_PUNCTUATION,
-                    Character.DASH_PUNCTUATION,
-                    Character.START_PUNCTUATION,
-                    Character.END_PUNCTUATION,
-                    Character.INITIAL_QUOTE_PUNCTUATION,
-                    Character.FINAL_QUOTE_PUNCTUATION,
-                    Character.OTHER_PUNCTUATION,
-                    Character.MATH_SYMBOL,
-                    Character.CURRENCY_SYMBOL,
-                    Character.MODIFIER_SYMBOL -> codePoint <= 0x2BFF;        default: false            break;
-        };
+        switch (Character.getType(codePoint)) {
+            case Character.CONNECTOR_PUNCTUATION:
+            case Character.DASH_PUNCTUATION:
+            case Character.START_PUNCTUATION:
+            case Character.END_PUNCTUATION:
+            case Character.INITIAL_QUOTE_PUNCTUATION:
+            case Character.FINAL_QUOTE_PUNCTUATION:
+            case Character.OTHER_PUNCTUATION:
+            case Character.MATH_SYMBOL:
+            case Character.CURRENCY_SYMBOL:
+            case Character.MODIFIER_SYMBOL:
+                return codePoint <= 0x2BFF;
+            default:
+                return false;
+        }
     }
 
     private String resolvePrimaryGroup(Player player) {
@@ -502,7 +505,7 @@ public class ChatManager {
         try {
             String group = me.clip.placeholderapi.PlaceholderAPI
                     .setPlaceholders(player, "%luckperms_primary_group%");
-            if (group == null || group.isBlank() || group.startsWith("%")) {
+            if (group == null || group.trim().isEmpty() || group.startsWith("%")) {
                 return null;
             }
             return group.trim();
@@ -512,7 +515,7 @@ public class ChatManager {
     }
 
     private String resolveCommandTemplate(String template, Player player) {
-        if (template == null || template.isBlank() || player == null) {
+        if (template == null || template.trim().isEmpty() || player == null) {
             return template == null ? "" : template;
         }
 
@@ -535,7 +538,7 @@ public class ChatManager {
     }
 
     private String normalizeHost(String host) {
-        if (host == null || host.isBlank()) {
+        if (host == null || host.trim().isEmpty()) {
             return null;
         }
 

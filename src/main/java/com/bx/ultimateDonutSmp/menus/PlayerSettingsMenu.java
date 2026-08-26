@@ -104,7 +104,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
 
         if (section != null && section.contains("COMMAND")) {
             String commandStr = section.getString("COMMAND");
-            if (commandStr != null && !commandStr.isBlank()) {
+            if (commandStr != null && !commandStr.trim().isEmpty()) {
                 commandStr = commandStr.replace("{player}", player.getName()).replace("%player%", player.getName());
                 if (commandStr.toLowerCase(java.util.Locale.ROOT).startsWith("[console] ")) {
                     String cmd = commandStr.substring(10).trim();
@@ -126,28 +126,65 @@ public final class PlayerSettingsMenu extends BaseMenu {
             }
         }
 
-        switch (key) {        case "PUBLIC_CHAT": toggle(player, "Public Chat",
-                    !data.isPublicChatEnabled(), data::setPublicChatEnabled)            break;        case "PRIVATE_MESSAGES": {
-
-                            data.setPrivateMessagesChoice(nextThreeChoice(data.getPrivateMessagesChoice()));
-                            sendChoiceMessage(player, "Private Messages", formatThreeChoice(data.getPrivateMessagesChoice()));
-                        break;        }        case "SERVER_BROADCASTS": toggle(player, "Server Broadcasts",
-                    !data.isServerBroadcastsEnabled(), data::setServerBroadcastsEnabled)            break;        case "HOTBAR_MESSAGES": toggle(player, "Hotbar Notifications",
-                    !data.isHotbarMessagesEnabled(), data::setHotbarMessagesEnabled)            break;        case "PAY_ALERTS": toggle(player, "Pay Alerts",
-                    !data.isPayAlertsEnabled(), data::setPayAlertsEnabled)            break;        case "BOUNTY_ALERTS": toggle(player, "Bounty Alerts",
-                    !data.isBountyAlertsEnabled(), data::setBountyAlertsEnabled)            break;        case "AUCTION_NOTIFICATIONS": toggle(player, "Auction Notifications",
-                    !data.isAuctionNotificationsEnabled(), data::setAuctionNotificationsEnabled)            break;        case "FAST_CRYSTALS": {
-
-                            data.setFastCrystalsEnabled(!data.isFastCrystalsEnabled());
-                            plugin.getFastCrystalManager().applyCrystalCooldown(player);
-                            sendToggleMessage(player, "Fast Crystals", data.isFastCrystalsEnabled());
-                        break;        }        case "TOTEM_PARTICLES": toggle(player, "Totem Particles",
-                    !data.isTotemParticlesEnabled(), data::setTotemParticlesEnabled)            break;        case "EXPLOSION_PARTICLES": toggle(player, "Explosion Particles",
-                    !data.isExplosionParticlesEnabled(), data::setExplosionParticlesEnabled)            break;        case "QUICK_AUCTION_PURCHASE": toggleQuickBuy(player)            break;        case "QUICK_AUCTION_SELL": toggleQuickSell(player)            break;        case "CHAINMAIL_ON_RESPAWN": toggle(player, "Automatic Respawn Kit",
-                    !data.isChainmailOnRespawnEnabled(), data::setChainmailOnRespawnEnabled)            break;        case "DISABLE_MOB_SPAWN": {
-
-                            data.setMobSpawnEnabled(!data.isMobSpawnEnabled());
-                            if (!data.isMobSpawnEnabled()) {
+        switch (key) {
+            case "PUBLIC_CHAT":
+                toggle(player, "Public Chat",
+                    !data.isPublicChatEnabled(), data::setPublicChatEnabled);
+                break;
+            case "PRIVATE_MESSAGES": {
+                data.setPrivateMessagesChoice(nextThreeChoice(data.getPrivateMessagesChoice()));
+                sendChoiceMessage(player, "Private Messages", formatThreeChoice(data.getPrivateMessagesChoice()));
+                break;
+                break;
+            }
+            case "SERVER_BROADCASTS":
+                toggle(player, "Server Broadcasts",
+                    !data.isServerBroadcastsEnabled(), data::setServerBroadcastsEnabled);
+                break;
+            case "HOTBAR_MESSAGES":
+                toggle(player, "Hotbar Notifications",
+                    !data.isHotbarMessagesEnabled(), data::setHotbarMessagesEnabled);
+                break;
+            case "PAY_ALERTS":
+                toggle(player, "Pay Alerts",
+                    !data.isPayAlertsEnabled(), data::setPayAlertsEnabled);
+                break;
+            case "BOUNTY_ALERTS":
+                toggle(player, "Bounty Alerts",
+                    !data.isBountyAlertsEnabled(), data::setBountyAlertsEnabled);
+                break;
+            case "AUCTION_NOTIFICATIONS":
+                toggle(player, "Auction Notifications",
+                    !data.isAuctionNotificationsEnabled(), data::setAuctionNotificationsEnabled);
+                break;
+            case "FAST_CRYSTALS": {
+                data.setFastCrystalsEnabled(!data.isFastCrystalsEnabled());
+                plugin.getFastCrystalManager().applyCrystalCooldown(player);
+                sendToggleMessage(player, "Fast Crystals", data.isFastCrystalsEnabled());
+                break;
+                break;
+            }
+            case "TOTEM_PARTICLES":
+                toggle(player, "Totem Particles",
+                    !data.isTotemParticlesEnabled(), data::setTotemParticlesEnabled);
+                break;
+            case "EXPLOSION_PARTICLES":
+                toggle(player, "Explosion Particles",
+                    !data.isExplosionParticlesEnabled(), data::setExplosionParticlesEnabled);
+                break;
+            case "QUICK_AUCTION_PURCHASE":
+                toggleQuickBuy(player);
+                break;
+            case "QUICK_AUCTION_SELL":
+                toggleQuickSell(player);
+                break;
+            case "CHAINMAIL_ON_RESPAWN":
+                toggle(player, "Automatic Respawn Kit",
+                    !data.isChainmailOnRespawnEnabled(), data::setChainmailOnRespawnEnabled);
+                break;
+            case "DISABLE_MOB_SPAWN": {
+                data.setMobSpawnEnabled(!data.isMobSpawnEnabled());
+                if (!data.isMobSpawnEnabled()) {
                                 long limitSeconds = plugin.getConfigManager().getConfig().getLong("SETTINGS.DISABLE-MOB-SPAWN-LIMIT-SECONDS", -1L);
                                 if (limitSeconds > 0) {
                                     data.setMobSpawnDisabledUntil(System.currentTimeMillis() + (limitSeconds * 1000L));
@@ -158,65 +195,113 @@ public final class PlayerSettingsMenu extends BaseMenu {
                                 data.setMobSpawnDisabledUntil(0L);
                             }
                             sendToggleMessage(player, "Nearby Mob Spawn Prevention", !data.isMobSpawnEnabled());
-                        break;        }        case "HIDE_ALL_PLAYERS": {
-
-                            data.setHideAllPlayersEnabled(!data.isHideAllPlayersEnabled());
-                            plugin.getPlayerVisibilityManager().applyViewerPreference(player);
-                            sendToggleMessage(player, "Hide All Players", data.isHideAllPlayersEnabled());
-                        break;        }        case "SCOREBOARD_VISIBILITY": {
-
-                            data.setScoreboardVisible(!data.isScoreboardVisible());
-                            plugin.getScoreboardManager().applyVisibility(player);
-                            sendToggleMessage(player, "Scoreboard Visibility", data.isScoreboardVisible());
-                        break;        }        case "AUTO_CONFIRM_TPAS": {
-
-                            boolean enabled = !(data.isTpauto() && data.isAutoTpaHereEnabled());
-                            data.setTpauto(enabled);
-                            data.setAutoTpaHereEnabled(enabled);
-                            if (enabled) {
+                break;
+                break;
+            }
+            case "HIDE_ALL_PLAYERS": {
+                data.setHideAllPlayersEnabled(!data.isHideAllPlayersEnabled());
+                plugin.getPlayerVisibilityManager().applyViewerPreference(player);
+                sendToggleMessage(player, "Hide All Players", data.isHideAllPlayersEnabled());
+                break;
+                break;
+            }
+            case "SCOREBOARD_VISIBILITY": {
+                data.setScoreboardVisible(!data.isScoreboardVisible());
+                plugin.getScoreboardManager().applyVisibility(player);
+                sendToggleMessage(player, "Scoreboard Visibility", data.isScoreboardVisible());
+                break;
+                break;
+            }
+            case "AUTO_CONFIRM_TPAS": {
+                boolean enabled = !(data.isTpauto() && data.isAutoTpaHereEnabled());
+                data.setTpauto(enabled);
+                data.setAutoTpaHereEnabled(enabled);
+                if (enabled) {
                                 plugin.getTPAManager().processQueuedAutoRequests(player.getUniqueId());
                             }
                             sendToggleMessage(player, "Auto-Confirm TPAs", enabled);
-                        break;        }        case "NOTIFICATION_SOUNDS": toggle(player, "Notification Sounds",
-                    !data.isNotificationSoundsEnabled(), data::setNotificationSoundsEnabled)            break;        case "RTP_COORDINATES": toggle(player, "RTP Coordinates",
-                    !data.isRtpCoordinatesEnabled(), data::setRtpCoordinatesEnabled)            break;        case "ORDER_NOTIFICATIONS": toggle(player, "Order Notifications",
-                    !data.isOrderNotificationsEnabled(), data::setOrderNotificationsEnabled)            break;        case "TPA_REQUESTS": {
-
-                            data.setTpaRequestsChoice(nextThreeChoice(data.getTpaRequestsChoice()));
-                            sendChoiceMessage(player, "TPA Requests", formatThreeChoice(data.getTpaRequestsChoice()));
-                        break;        }        case "TEAM_INVITES": toggle(player, "Team Invites",
-                    !data.isTeamInvitesEnabled(), data::setTeamInvitesEnabled)            break;        case "PAYMENTS": {
-
-                            data.setPaymentsChoice(nextThreeChoice(data.getPaymentsChoice()));
-                            sendChoiceMessage(player, "Payments", formatThreeChoice(data.getPaymentsChoice()));
-                        break;        }        case "TEAM_CHAT_VISIBILITY": toggle(player, "Team Chat Visibility",
-                    !data.isTeamChatVisible(), data::setTeamChatVisible)            break;        case "WORTH_DISPLAY": {
-
-                            data.setWorthDisplayEnabled(!data.isWorthDisplayEnabled());
-                            if (data.isWorthDisplayEnabled()) {
+                break;
+                break;
+            }
+            case "NOTIFICATION_SOUNDS":
+                toggle(player, "Notification Sounds",
+                    !data.isNotificationSoundsEnabled(), data::setNotificationSoundsEnabled);
+                break;
+            case "RTP_COORDINATES":
+                toggle(player, "RTP Coordinates",
+                    !data.isRtpCoordinatesEnabled(), data::setRtpCoordinatesEnabled);
+                break;
+            case "ORDER_NOTIFICATIONS":
+                toggle(player, "Order Notifications",
+                    !data.isOrderNotificationsEnabled(), data::setOrderNotificationsEnabled);
+                break;
+            case "TPA_REQUESTS": {
+                data.setTpaRequestsChoice(nextThreeChoice(data.getTpaRequestsChoice()));
+                sendChoiceMessage(player, "TPA Requests", formatThreeChoice(data.getTpaRequestsChoice()));
+                break;
+                break;
+            }
+            case "TEAM_INVITES":
+                toggle(player, "Team Invites",
+                    !data.isTeamInvitesEnabled(), data::setTeamInvitesEnabled);
+                break;
+            case "PAYMENTS": {
+                data.setPaymentsChoice(nextThreeChoice(data.getPaymentsChoice()));
+                sendChoiceMessage(player, "Payments", formatThreeChoice(data.getPaymentsChoice()));
+                break;
+                break;
+            }
+            case "TEAM_CHAT_VISIBILITY":
+                toggle(player, "Team Chat Visibility",
+                    !data.isTeamChatVisible(), data::setTeamChatVisible);
+                break;
+            case "WORTH_DISPLAY": {
+                data.setWorthDisplayEnabled(!data.isWorthDisplayEnabled());
+                if (data.isWorthDisplayEnabled()) {
                                 plugin.getWorthManager().syncWorthDisplay(player);
                             } else {
                                 plugin.getWorthManager().clearWorthDisplay(player);
                             }
                             sendToggleMessage(player, "Worth Display", data.isWorthDisplayEnabled());
-                        break;        }        case "MONEY_NAMETAGS": {
-
-                            data.setMoneyNametagsEnabled(!data.isMoneyNametagsEnabled());
-                            plugin.getMoneyNametagManager().refreshViewer(player);
-                            sendToggleMessage(player, "Money Nametags", data.isMoneyNametagsEnabled());
-                         break;        }        case "QUIET_SPAWN": toggle(player, "Quiet Spawn Teleportation",
-                    !data.isQuietSpawnEnabled(), data::setQuietSpawnEnabled)            break;        case "CLEAR_ENTITIES_MESSAGES": toggle(player, "Clear Entities Messages",
-                    !data.isClearEntitiesMessagesEnabled(), data::setClearEntitiesMessagesEnabled)            break;        case "AMETHYST_BREAK_MESSAGES": toggle(player, "Amethyst Break Messages",
-                    !data.isAmethystBreakMessagesEnabled(), data::setAmethystBreakMessagesEnabled)            break;        case "KEY_ALL_NOTIFICATIONS": toggle(player, "Key-All Notifications",
-                    !data.isKeyAllNotificationsEnabled(), data::setKeyAllNotificationsEnabled)            break;        case "TPA_CONFIRM_MENUS": toggle(player, "TPA Confirmation Menus",
-                     !data.isTpaConfirmMenuEnabled(), data::setTpaConfirmMenuEnabled)            break;        case "TPA_HERE_REQUESTS": {
-
-                            data.setTpaHereRequestsChoice(nextThreeChoice(data.getTpaHereRequestsChoice()));
-                            sendChoiceMessage(player, "TPA Here Requests", formatThreeChoice(data.getTpaHereRequestsChoice()));
-                        break;        }        case "DISABLE_PHANTOM_SPAWN": {
-
-                            data.setPhantomEnabled(!data.isPhantomEnabled());
-                            if (!data.isPhantomEnabled()) {
+                break;
+                break;
+            }
+            case "MONEY_NAMETAGS": {
+                data.setMoneyNametagsEnabled(!data.isMoneyNametagsEnabled());
+                plugin.getMoneyNametagManager().refreshViewer(player);
+                sendToggleMessage(player, "Money Nametags", data.isMoneyNametagsEnabled());
+                break;
+                break;
+            }
+            case "QUIET_SPAWN":
+                toggle(player, "Quiet Spawn Teleportation",
+                    !data.isQuietSpawnEnabled(), data::setQuietSpawnEnabled);
+                break;
+            case "CLEAR_ENTITIES_MESSAGES":
+                toggle(player, "Clear Entities Messages",
+                    !data.isClearEntitiesMessagesEnabled(), data::setClearEntitiesMessagesEnabled);
+                break;
+            case "AMETHYST_BREAK_MESSAGES":
+                toggle(player, "Amethyst Break Messages",
+                    !data.isAmethystBreakMessagesEnabled(), data::setAmethystBreakMessagesEnabled);
+                break;
+            case "KEY_ALL_NOTIFICATIONS":
+                toggle(player, "Key-All Notifications",
+                    !data.isKeyAllNotificationsEnabled(), data::setKeyAllNotificationsEnabled);
+                break;
+            case "TPA_CONFIRM_MENUS":
+                toggle(player, "TPA Confirmation Menus",
+                     !data.isTpaConfirmMenuEnabled(), data::setTpaConfirmMenuEnabled);
+                break;
+            case "TPA_HERE_REQUESTS": {
+                data.setTpaHereRequestsChoice(nextThreeChoice(data.getTpaHereRequestsChoice()));
+                sendChoiceMessage(player, "TPA Here Requests", formatThreeChoice(data.getTpaHereRequestsChoice()));
+                break;
+                break;
+            }
+            case "DISABLE_PHANTOM_SPAWN": {
+                data.setPhantomEnabled(!data.isPhantomEnabled());
+                if (!data.isPhantomEnabled()) {
                                 long limitSeconds = plugin.getConfigManager().getConfig().getLong("SETTINGS.DISABLE-PHANTOM-SPAWN-LIMIT-SECONDS", -1L);
                                 if (limitSeconds > 0) {
                                     data.setPhantomDisabledUntil(System.currentTimeMillis() + (limitSeconds * 1000L));
@@ -227,38 +312,73 @@ public final class PlayerSettingsMenu extends BaseMenu {
                                 data.setPhantomDisabledUntil(0L);
                             }
                             sendToggleMessage(player, "Phantom Spawn Prevention", !data.isPhantomEnabled());
-                        break;        }        case "PAY_CONFIRM_MENUS": toggle(player, "Pay Confirmation Menus",
-                    !data.isPayConfirmMenuEnabled(), data::setPayConfirmMenuEnabled)            break;        case "TEAM_CHAT": toggleTeamChat(player)            break;        case "DESTROY_PEARL_ON_DEATH": toggle(player, "Destroy Pearl on Death",
-                    !data.isDestroyPearlOnDeath(), data::setDestroyPearlOnDeath)            break;        case "RANDOMIZED_COORDS": {
-
-                            boolean nextVal = !data.isRandomizedCoords();
-                            data.setRandomizedCoords(nextVal);
-                            plugin.getDatabaseManager().savePlayer(data);
-                            player.kickPlayer(ColorUtils.colorize("&cThe setting has been changed. Please rejoin."));
-                        break;        }        case "DEATH_MESSAGES": {
-
-                            data.setDeathMessagesChoice(nextTwoChoice(data.getDeathMessagesChoice()));
-                            sendChoiceMessage(player, "Death Messages", formatTwoChoice(data.getDeathMessagesChoice()));
-                        break;        }        case "ADVANCEMENT_MESSAGES": {
-
-                            data.setAdvancementMessagesChoice(nextThreeChoice(data.getAdvancementMessagesChoice()));
-                            sendChoiceMessage(player, "Advancement Messages", formatThreeChoice(data.getAdvancementMessagesChoice()));
-                        break;        }        case "JOIN_LEAVE_MESSAGES": {
-
-                            data.setJoinLeaveMessagesChoice(nextThreeChoice(data.getJoinLeaveMessagesChoice()));
-                            sendChoiceMessage(player, "Join/Leave Messages", formatThreeChoice(data.getJoinLeaveMessagesChoice()));
-                        break;        }        case "TELEPORT_ALERTS": toggle(player, "Teleport Alerts",
-                    !data.isTeleportAlertsEnabled(), data::setTeleportAlertsEnabled)            break;        case "FOLLOW_ALERT_SETTINGS": toggle(player, "Follow Alerts",
-                    !data.isFollowAlertsEnabled(), data::setFollowAlertsEnabled)            break;        case "EXPLOSION_SOUNDS": toggle(player, "Explosion Sounds",
-                    !data.isExplosionSoundsEnabled(), data::setExplosionSoundsEnabled)            break;        case "DISPLAY_DONUT_PLUS": toggle(player, "Display Donut+",
-                    !data.isDisplayDonutPlusEnabled(), data::setDisplayDonutPlusEnabled)            break;        case "NIGHT_VISION": {
-
-                            boolean enabled = com.bx.ultimateDonutSmp.utils.NightVisionUtils.toggle(plugin, player);
-                            sendToggleMessage(player, "Night Vision", enabled);
-                        break;        }        default: {
-
-                            return;
-                        break;        }
+                break;
+                break;
+            }
+            case "PAY_CONFIRM_MENUS":
+                toggle(player, "Pay Confirmation Menus",
+                    !data.isPayConfirmMenuEnabled(), data::setPayConfirmMenuEnabled);
+                break;
+            case "TEAM_CHAT":
+                toggleTeamChat(player);
+                break;
+            case "DESTROY_PEARL_ON_DEATH":
+                toggle(player, "Destroy Pearl on Death",
+                    !data.isDestroyPearlOnDeath(), data::setDestroyPearlOnDeath);
+                break;
+            case "RANDOMIZED_COORDS": {
+                boolean nextVal = !data.isRandomizedCoords();
+                data.setRandomizedCoords(nextVal);
+                plugin.getDatabaseManager().savePlayer(data);
+                player.kickPlayer(ColorUtils.colorize("&cThe setting has been changed. Please rejoin."));
+                break;
+                break;
+            }
+            case "DEATH_MESSAGES": {
+                data.setDeathMessagesChoice(nextTwoChoice(data.getDeathMessagesChoice()));
+                sendChoiceMessage(player, "Death Messages", formatTwoChoice(data.getDeathMessagesChoice()));
+                break;
+                break;
+            }
+            case "ADVANCEMENT_MESSAGES": {
+                data.setAdvancementMessagesChoice(nextThreeChoice(data.getAdvancementMessagesChoice()));
+                sendChoiceMessage(player, "Advancement Messages", formatThreeChoice(data.getAdvancementMessagesChoice()));
+                break;
+                break;
+            }
+            case "JOIN_LEAVE_MESSAGES": {
+                data.setJoinLeaveMessagesChoice(nextThreeChoice(data.getJoinLeaveMessagesChoice()));
+                sendChoiceMessage(player, "Join/Leave Messages", formatThreeChoice(data.getJoinLeaveMessagesChoice()));
+                break;
+                break;
+            }
+            case "TELEPORT_ALERTS":
+                toggle(player, "Teleport Alerts",
+                    !data.isTeleportAlertsEnabled(), data::setTeleportAlertsEnabled);
+                break;
+            case "FOLLOW_ALERT_SETTINGS":
+                toggle(player, "Follow Alerts",
+                    !data.isFollowAlertsEnabled(), data::setFollowAlertsEnabled);
+                break;
+            case "EXPLOSION_SOUNDS":
+                toggle(player, "Explosion Sounds",
+                    !data.isExplosionSoundsEnabled(), data::setExplosionSoundsEnabled);
+                break;
+            case "DISPLAY_DONUT_PLUS":
+                toggle(player, "Display Donut+",
+                    !data.isDisplayDonutPlusEnabled(), data::setDisplayDonutPlusEnabled);
+                break;
+            case "NIGHT_VISION": {
+                boolean enabled = com.bx.ultimateDonutSmp.utils.NightVisionUtils.toggle(plugin, player);
+                sendToggleMessage(player, "Night Vision", enabled);
+                break;
+                break;
+            }
+            default: {
+                return;
+                break;
+                break;
+            }
         }
 
         build(player);
@@ -303,7 +423,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
     private ButtonState buttonState(Player player, PlayerData data, String key, ConfigurationSection section) {
         if (section != null && section.contains("STATUS-PLACEHOLDER")) {
             String placeholder = section.getString("STATUS-PLACEHOLDER");
-            if (placeholder != null && !placeholder.isBlank()) {
+            if (placeholder != null && !placeholder.trim().isEmpty()) {
                 String evaluated = ColorUtils.colorize(placeholder, player).trim();
                 if (evaluated.startsWith("%") && evaluated.endsWith("%")) {
                     if (placeholder.equalsIgnoreCase("%player_is_flying%") || placeholder.equalsIgnoreCase("%player_flying%")) {
@@ -336,28 +456,118 @@ public final class PlayerSettingsMenu extends BaseMenu {
             }
             return new ButtonState("&aEnabled", true);
         }
-        return switch (key) {        case "PUBLIC_CHAT": state(data.isPublicChatEnabled())            break;        case "PRIVATE_MESSAGES": new ButtonState(formatThreeChoice(data.getPrivateMessagesChoice()), true)            break;        case "SERVER_BROADCASTS": state(data.isServerBroadcastsEnabled())            break;        case "HOTBAR_MESSAGES": state(data.isHotbarMessagesEnabled())            break;        case "PAY_ALERTS": state(data.isPayAlertsEnabled())            break;        case "BOUNTY_ALERTS": state(data.isBountyAlertsEnabled())            break;        case "AUCTION_NOTIFICATIONS": state(data.isAuctionNotificationsEnabled())            break;        case "FAST_CRYSTALS": state(data.isFastCrystalsEnabled())            break;        case "TOTEM_PARTICLES": state(data.isTotemParticlesEnabled())            break;        case "EXPLOSION_PARTICLES": explosionState(data)            break;        case "QUICK_AUCTION_PURCHASE": quickBuyState(player)            break;        case "QUICK_AUCTION_SELL": quickSellState(player)            break;        case "CHAINMAIL_ON_RESPAWN": state(data.isChainmailOnRespawnEnabled())            break;        case "DISABLE_MOB_SPAWN": {
-
-                            boolean disabled = !data.isMobSpawnEnabled();
-                            if (disabled && data.getMobSpawnDisabledUntil() > 0) {
+        switch (key) {
+            case "PUBLIC_CHAT":
+                return state(data.isPublicChatEnabled());
+            case "PRIVATE_MESSAGES":
+                return new ButtonState(formatThreeChoice(data.getPrivateMessagesChoice()), true);
+            case "SERVER_BROADCASTS":
+                return state(data.isServerBroadcastsEnabled());
+            case "HOTBAR_MESSAGES":
+                return state(data.isHotbarMessagesEnabled());
+            case "PAY_ALERTS":
+                return state(data.isPayAlertsEnabled());
+            case "BOUNTY_ALERTS":
+                return state(data.isBountyAlertsEnabled());
+            case "AUCTION_NOTIFICATIONS":
+                return state(data.isAuctionNotificationsEnabled());
+            case "FAST_CRYSTALS":
+                return state(data.isFastCrystalsEnabled());
+            case "TOTEM_PARTICLES":
+                return state(data.isTotemParticlesEnabled());
+            case "EXPLOSION_PARTICLES":
+                return explosionState(data);
+            case "QUICK_AUCTION_PURCHASE":
+                return quickBuyState(player);
+            case "QUICK_AUCTION_SELL":
+                return quickSellState(player);
+            case "CHAINMAIL_ON_RESPAWN":
+                return state(data.isChainmailOnRespawnEnabled());
+            case "DISABLE_MOB_SPAWN": {
+                boolean disabled = !data.isMobSpawnEnabled();
+                if (disabled && data.getMobSpawnDisabledUntil() > 0) {
                                 long remainingSecs = (data.getMobSpawnDisabledUntil() - System.currentTimeMillis()) / 1000L;
                                 if (remainingSecs > 0) {
                                     new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
                                 }
                             }
                             state(disabled);
-                        break;        }        case "HIDE_ALL_PLAYERS": state(data.isHideAllPlayersEnabled())            break;        case "SCOREBOARD_VISIBILITY": state(data.isScoreboardVisible())            break;        case "AUTO_CONFIRM_TPAS": state(data.isTpauto() && data.isAutoTpaHereEnabled())            break;        case "NOTIFICATION_SOUNDS": state(data.isNotificationSoundsEnabled())            break;        case "RTP_COORDINATES": state(data.isRtpCoordinatesEnabled())            break;        case "ORDER_NOTIFICATIONS": state(data.isOrderNotificationsEnabled())            break;        case "TPA_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaRequestsChoice()), true)            break;        case "TEAM_INVITES": state(data.isTeamInvitesEnabled())            break;        case "PAYMENTS": new ButtonState(formatThreeChoice(data.getPaymentsChoice()), true)            break;        case "TEAM_CHAT_VISIBILITY": state(data.isTeamChatVisible())            break;        case "WORTH_DISPLAY": state(data.isWorthDisplayEnabled())                                     break;        case "MONEY_NAMETAGS": state(data.isMoneyNametagsEnabled())            break;        case "QUIET_SPAWN": state(data.isQuietSpawnEnabled())            break;        case "CLEAR_ENTITIES_MESSAGES": state(data.isClearEntitiesMessagesEnabled())            break;        case "AMETHYST_BREAK_MESSAGES": state(data.isAmethystBreakMessagesEnabled())            break;        case "KEY_ALL_NOTIFICATIONS": state(data.isKeyAllNotificationsEnabled())            break;        case "TPA_CONFIRM_MENUS":                     state(data.isTpaConfirmMenuEnabled())            break;        case "TPA_HERE_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaHereRequestsChoice()), true)            break;        case "DISABLE_PHANTOM_SPAWN": {
-
-                            boolean disabled = !data.isPhantomEnabled();
-                            if (disabled && data.getPhantomDisabledUntil() > 0) {
+                return break;
+            }
+            case "HIDE_ALL_PLAYERS":
+                return state(data.isHideAllPlayersEnabled());
+            case "SCOREBOARD_VISIBILITY":
+                return state(data.isScoreboardVisible());
+            case "AUTO_CONFIRM_TPAS":
+                return state(data.isTpauto() && data.isAutoTpaHereEnabled());
+            case "NOTIFICATION_SOUNDS":
+                return state(data.isNotificationSoundsEnabled());
+            case "RTP_COORDINATES":
+                return state(data.isRtpCoordinatesEnabled());
+            case "ORDER_NOTIFICATIONS":
+                return state(data.isOrderNotificationsEnabled());
+            case "TPA_REQUESTS":
+                return new ButtonState(formatThreeChoice(data.getTpaRequestsChoice()), true);
+            case "TEAM_INVITES":
+                return state(data.isTeamInvitesEnabled());
+            case "PAYMENTS":
+                return new ButtonState(formatThreeChoice(data.getPaymentsChoice()), true);
+            case "TEAM_CHAT_VISIBILITY":
+                return state(data.isTeamChatVisible());
+            case "WORTH_DISPLAY":
+                return state(data.isWorthDisplayEnabled());
+            case "MONEY_NAMETAGS":
+                return state(data.isMoneyNametagsEnabled());
+            case "QUIET_SPAWN":
+                return state(data.isQuietSpawnEnabled());
+            case "CLEAR_ENTITIES_MESSAGES":
+                return state(data.isClearEntitiesMessagesEnabled());
+            case "AMETHYST_BREAK_MESSAGES":
+                return state(data.isAmethystBreakMessagesEnabled());
+            case "KEY_ALL_NOTIFICATIONS":
+                return state(data.isKeyAllNotificationsEnabled());
+            case "TPA_CONFIRM_MENUS":
+                return state(data.isTpaConfirmMenuEnabled());
+            case "TPA_HERE_REQUESTS":
+                return new ButtonState(formatThreeChoice(data.getTpaHereRequestsChoice()), true);
+            case "DISABLE_PHANTOM_SPAWN": {
+                boolean disabled = !data.isPhantomEnabled();
+                if (disabled && data.getPhantomDisabledUntil() > 0) {
                                 long remainingSecs = (data.getPhantomDisabledUntil() - System.currentTimeMillis()) / 1000L;
                                 if (remainingSecs > 0) {
                                     new ButtonState("&aEnabled &7(" + com.bx.ultimateDonutSmp.utils.NumberUtils.formatTime(remainingSecs) + " left)", true);
                                 }
                             }
                             state(disabled);
-                        break;        }        case "PAY_CONFIRM_MENUS": state(data.isPayConfirmMenuEnabled())            break;        case "TEAM_CHAT": state(plugin.getTeamManager().isTeamChatEnabled(player.getUniqueId()))            break;        case "DESTROY_PEARL_ON_DEATH": state(data.isDestroyPearlOnDeath())            break;        case "RANDOMIZED_COORDS": state(data.isRandomizedCoords())            break;        case "DEATH_MESSAGES": new ButtonState(formatTwoChoice(data.getDeathMessagesChoice()), true)            break;        case "ADVANCEMENT_MESSAGES": new ButtonState(formatThreeChoice(data.getAdvancementMessagesChoice()), true)            break;        case "JOIN_LEAVE_MESSAGES": new ButtonState(formatThreeChoice(data.getJoinLeaveMessagesChoice()), true)            break;        case "TELEPORT_ALERTS": state(data.isTeleportAlertsEnabled())            break;        case "FOLLOW_ALERT_SETTINGS": state(data.isFollowAlertsEnabled())            break;        case "EXPLOSION_SOUNDS": state(data.isExplosionSoundsEnabled())            break;        case "DISPLAY_DONUT_PLUS": state(data.isDisplayDonutPlusEnabled())            break;        case "NIGHT_VISION": state(com.bx.ultimateDonutSmp.utils.NightVisionUtils.isEnabled(plugin, player))            break;        default: new ButtonState("", false)            break;
-        };
+                return break;
+            }
+            case "PAY_CONFIRM_MENUS":
+                return state(data.isPayConfirmMenuEnabled());
+            case "TEAM_CHAT":
+                return state(plugin.getTeamManager().isTeamChatEnabled(player.getUniqueId()));
+            case "DESTROY_PEARL_ON_DEATH":
+                return state(data.isDestroyPearlOnDeath());
+            case "RANDOMIZED_COORDS":
+                return state(data.isRandomizedCoords());
+            case "DEATH_MESSAGES":
+                return new ButtonState(formatTwoChoice(data.getDeathMessagesChoice()), true);
+            case "ADVANCEMENT_MESSAGES":
+                return new ButtonState(formatThreeChoice(data.getAdvancementMessagesChoice()), true);
+            case "JOIN_LEAVE_MESSAGES":
+                return new ButtonState(formatThreeChoice(data.getJoinLeaveMessagesChoice()), true);
+            case "TELEPORT_ALERTS":
+                return state(data.isTeleportAlertsEnabled());
+            case "FOLLOW_ALERT_SETTINGS":
+                return state(data.isFollowAlertsEnabled());
+            case "EXPLOSION_SOUNDS":
+                return state(data.isExplosionSoundsEnabled());
+            case "DISPLAY_DONUT_PLUS":
+                return state(data.isDisplayDonutPlusEnabled());
+            case "NIGHT_VISION":
+                return state(com.bx.ultimateDonutSmp.utils.NightVisionUtils.isEnabled(plugin, player));
+            default:
+                return new ButtonState("", false);
+        }
     }
 
     private ButtonState explosionState(PlayerData data) {
@@ -507,13 +717,27 @@ public final class PlayerSettingsMenu extends BaseMenu {
     }
 
     private String formatThreeChoice(ThreeChoice choice) {
-        return switch (choice) {        case OFF: "&cOff"; break;        case ANYONE: "&aAnyone"; break;        case FRIENDS_FOLLOWED: "&dFriends/Followed"; break;
-        };
+        switch (choice) {
+            case OFF:
+                return "&cOff";
+            case ANYONE:
+                return "&aAnyone";
+            case FRIENDS_FOLLOWED:
+                return "&dFriends/Followed";
+            default:
+                return null;
+        }
     }
 
     private String formatTwoChoice(TwoChoice choice) {
-        return switch (choice) {        case OFF: "&cOff"; break;        case FRIENDS_FOLLOWED: "&dFriends/Followed"; break;
-        };
+        switch (choice) {
+            case OFF:
+                return "&cOff";
+            case FRIENDS_FOLLOWED:
+                return "&dFriends/Followed";
+            default:
+                return null;
+        }
     }
 
     private ThreeChoice nextThreeChoice(ThreeChoice current) {

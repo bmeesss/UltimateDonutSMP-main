@@ -127,7 +127,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partial))
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 2) {
@@ -135,7 +135,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return plugin.getOffenseManager().getOffenseKeys().stream()
                     .filter(key -> key.toLowerCase(Locale.ROOT).startsWith(partial))
                     .sorted()
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 3) {
@@ -143,7 +143,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             List<String> durations = new java.util.ArrayList<>(java.util.Arrays.asList("24h",  "3d",  "7d",  "14d",  "30d",  "60d",  "180d",  "360d",  "perm"));
             return durations.stream()
                     .filter(d -> d.startsWith(partial))
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         return Collections.emptyList();
@@ -154,13 +154,24 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (type) {        case BAN: case BLACKLIST: case KICK: onlineTarget.kickPlayer(ColorUtils.toComponent(buildPunishmentMessage(record))); break;        case WARN: onlineTarget.sendMessage(ColorUtils.toComponent(
+        switch (type) {
+            case BAN:
+            case BLACKLIST:
+            case KICK:
+                onlineTarget.kickPlayer(ColorUtils.toComponent(buildPunishmentMessage(record)));
+                break;
+            case WARN:
+                onlineTarget.sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getMessageOrDefault(
                             "PUNISHMENTS.WARN-RECEIVED",
                             "&cWarning: &f{reason}",
                             "{reason}", record.getReason()
                     )
-            ))            break;        case MUTE: onlineTarget.sendMessage(ColorUtils.toComponent(buildPunishmentMessage(record))); break;
+            ));
+                break;
+            case MUTE:
+                onlineTarget.sendMessage(ColorUtils.toComponent(buildPunishmentMessage(record)));
+                break;
         }
     }
 
@@ -173,13 +184,37 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
     }
 
     private String punishmentMessagePath(PunishmentType type) {
-        return switch (type) {        case BAN: "PUNISHMENTS.BAN"; break;        case KICK: "PUNISHMENTS.KICK"; break;        case MUTE: "PUNISHMENTS.MUTE"; break;        case BLACKLIST: "PUNISHMENTS.BLACKLIST"; break;        case WARN: "PUNISHMENTS.WARN-RECEIVED"; break;
-        };
+        switch (type) {
+            case BAN:
+                return "PUNISHMENTS.BAN";
+            case KICK:
+                return "PUNISHMENTS.KICK";
+            case MUTE:
+                return "PUNISHMENTS.MUTE";
+            case BLACKLIST:
+                return "PUNISHMENTS.BLACKLIST";
+            case WARN:
+                return "PUNISHMENTS.WARN-RECEIVED";
+            default:
+                return null;
+        }
     }
 
     private String defaultPunishmentMessage(PunishmentType type) {
-        return switch (type) {        case BAN: "&c&lyou have been banned!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7banned by: &f%issuer%\n&8&m----------------------------"; break;        case KICK: "&c&lyou have been kicked!\n&8&m----------------------------\n&7reason: &f%reason%\n&7kicked by: &f%issuer%\n&8&m----------------------------"; break;        case MUTE: "&c&lyou have been muted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7muted by: &f%issuer%\n&8&m----------------------------"; break;        case BLACKLIST: "&4&lyou have been blacklisted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7blacklisted by: &f%issuer%\n&8&m----------------------------"; break;        case WARN: "&cwarning: &f{reason}"            break;
-        };
+        switch (type) {
+            case BAN:
+                return "&c&lyou have been banned!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7banned by: &f%issuer%\n&8&m----------------------------";
+            case KICK:
+                return "&c&lyou have been kicked!\n&8&m----------------------------\n&7reason: &f%reason%\n&7kicked by: &f%issuer%\n&8&m----------------------------";
+            case MUTE:
+                return "&c&lyou have been muted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7muted by: &f%issuer%\n&8&m----------------------------";
+            case BLACKLIST:
+                return "&4&lyou have been blacklisted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7blacklisted by: &f%issuer%\n&8&m----------------------------";
+            case WARN:
+                return "&cwarning: &f{reason}";
+            default:
+                return null;
+        }
     }
 
     private String[] punishmentPlaceholders(PunishmentRecord record) {
@@ -244,7 +279,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
     private String formatIssuer(PunishmentRecord record) {
         if (record == null) return "unknown";
         String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.isBlank() ? "unknown" : issuer;
+        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
     }
 
     private ResolvedTarget resolveTarget(String input) {
@@ -365,7 +400,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partial))
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 2) {
@@ -373,7 +408,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return plugin.getOffenseManager().getOffenseKeys().stream()
                     .filter(key -> key.toLowerCase(Locale.ROOT).startsWith(partial))
                     .sorted()
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         if (args.length == 3) {
@@ -381,7 +416,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             List<String> durations = new java.util.ArrayList<>(java.util.Arrays.asList("24h",  "3d",  "7d",  "14d",  "30d",  "60d",  "180d",  "360d",  "perm"));
             return durations.stream()
                     .filter(d -> d.startsWith(partial))
-                    .collect(Collectors.collect(java.util.stream.Collectors.toList()));
+                    .collect(Collectors.toList());
         }
 
         return Collections.emptyList();
@@ -392,13 +427,24 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (type) {        case BAN: case BLACKLIST: case KICK: onlineTarget.kickPlayer(ColorUtils.toComponent(buildPunishmentMessage(record))); break;        case WARN: onlineTarget.sendMessage(ColorUtils.toComponent(
+        switch (type) {
+            case BAN:
+            case BLACKLIST:
+            case KICK:
+                onlineTarget.kickPlayer(ColorUtils.toComponent(buildPunishmentMessage(record)));
+                break;
+            case WARN:
+                onlineTarget.sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getMessageOrDefault(
                             "PUNISHMENTS.WARN-RECEIVED",
                             "&cWarning: &f{reason}",
                             "{reason}", record.getReason()
                     )
-            ))            break;        case MUTE: onlineTarget.sendMessage(ColorUtils.toComponent(buildPunishmentMessage(record))); break;
+            ));
+                break;
+            case MUTE:
+                onlineTarget.sendMessage(ColorUtils.toComponent(buildPunishmentMessage(record)));
+                break;
         }
     }
 
@@ -411,13 +457,37 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
     }
 
     private String punishmentMessagePath(PunishmentType type) {
-        return switch (type) {        case BAN: "PUNISHMENTS.BAN"; break;        case KICK: "PUNISHMENTS.KICK"; break;        case MUTE: "PUNISHMENTS.MUTE"; break;        case BLACKLIST: "PUNISHMENTS.BLACKLIST"; break;        case WARN: "PUNISHMENTS.WARN-RECEIVED"; break;
-        };
+        switch (type) {
+            case BAN:
+                return "PUNISHMENTS.BAN";
+            case KICK:
+                return "PUNISHMENTS.KICK";
+            case MUTE:
+                return "PUNISHMENTS.MUTE";
+            case BLACKLIST:
+                return "PUNISHMENTS.BLACKLIST";
+            case WARN:
+                return "PUNISHMENTS.WARN-RECEIVED";
+            default:
+                return null;
+        }
     }
 
     private String defaultPunishmentMessage(PunishmentType type) {
-        return switch (type) {        case BAN: "&c&lyou have been banned!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7banned by: &f%issuer%\n&8&m----------------------------"; break;        case KICK: "&c&lyou have been kicked!\n&8&m----------------------------\n&7reason: &f%reason%\n&7kicked by: &f%issuer%\n&8&m----------------------------"; break;        case MUTE: "&c&lyou have been muted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7muted by: &f%issuer%\n&8&m----------------------------"; break;        case BLACKLIST: "&4&lyou have been blacklisted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7blacklisted by: &f%issuer%\n&8&m----------------------------"; break;        case WARN: "&cwarning: &f{reason}"            break;
-        };
+        switch (type) {
+            case BAN:
+                return "&c&lyou have been banned!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7banned by: &f%issuer%\n&8&m----------------------------";
+            case KICK:
+                return "&c&lyou have been kicked!\n&8&m----------------------------\n&7reason: &f%reason%\n&7kicked by: &f%issuer%\n&8&m----------------------------";
+            case MUTE:
+                return "&c&lyou have been muted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7muted by: &f%issuer%\n&8&m----------------------------";
+            case BLACKLIST:
+                return "&4&lyou have been blacklisted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7blacklisted by: &f%issuer%\n&8&m----------------------------";
+            case WARN:
+                return "&cwarning: &f{reason}";
+            default:
+                return null;
+        }
     }
 
     private String[] punishmentPlaceholders(PunishmentRecord record) {
@@ -482,7 +552,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
     private String formatIssuer(PunishmentRecord record) {
         if (record == null) return "unknown";
         String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.isBlank() ? "unknown" : issuer;
+        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
     }
 
     private ResolvedTarget resolveTarget(String input) {
@@ -515,7 +585,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendMessage(CommandSender sender, String message) {
-        if (sender != null && message != null && !message.isBlank()) {
+        if (sender != null && message != null && !message.trim().isEmpty()) {
             sender.sendMessage(ColorUtils.toComponent(message));
         }
     }

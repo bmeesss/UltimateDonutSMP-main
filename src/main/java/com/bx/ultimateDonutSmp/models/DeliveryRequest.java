@@ -11,6 +11,10 @@ public final class DeliveryRequest {
     private final double expectedPriceEach;
 
     public DeliveryRequest(long orderId, List<ItemStack> items, int expectedQuantity, double expectedPriceEach) {
+        items = items == null ? java.util.Collections.emptyList() : items.stream()
+        .filter(java.util.Objects::nonNull)
+        .map(ItemStack::clone)
+        .collect(java.util.stream.Collectors.toList());
         this.orderId = orderId;
         this.items = items;
         this.expectedQuantity = expectedQuantity;
@@ -23,12 +27,7 @@ public final class DeliveryRequest {
     public double expectedPriceEach() { return expectedPriceEach; }
 
 
-    public DeliveryRequest {
-        items = items == null ? java.util.Collections.emptyList() : items.stream()
-                .filter(java.util.Objects::nonNull)
-                .map(ItemStack::clone)
-                .collect(java.util.stream.Collectors.toList());
-    }
+
     @Override public String toString() {
         return "DeliveryRequest[orderId=+orderId, items=+items, expectedQuantity=+expectedQuantity, expectedPriceEach=+expectedPriceEach]";
     }

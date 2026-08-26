@@ -66,7 +66,7 @@ public class MaintenanceManager {
     }
 
     public String getLobbyServer() {
-        if (customLobbyServer != null && !customLobbyServer.isBlank()) {
+        if (customLobbyServer != null && !customLobbyServer.trim().isEmpty()) {
             return customLobbyServer;
         }
         return "lobby";
@@ -154,7 +154,7 @@ public class MaintenanceManager {
     }
 
     public void sendToLobby(Player player, String lobby) {
-        if (player == null || lobby == null || lobby.isBlank()) {
+        if (player == null || lobby == null || lobby.trim().isEmpty()) {
             return;
         }
 

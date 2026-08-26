@@ -51,7 +51,7 @@ public class StatsCommand implements CommandExecutor {
                 }
                 OfflinePlayer offline = Bukkit.getOfflinePlayer(targetUuid);
                 String lastKnown = plugin.getDatabaseManager().getLastKnownUsername(targetUuid);
-                String fallback = lastKnown == null || lastKnown.isBlank()
+                String fallback = lastKnown == null || lastKnown.trim().isEmpty()
                         ? (offline.getName() == null ? args[0] : offline.getName())
                         : lastKnown;
                 targetName = plugin.getHideManager().publicName(targetUuid, fallback);
@@ -87,7 +87,7 @@ public class StatsCommand implements CommandExecutor {
                 }
                 OfflinePlayer offline = Bukkit.getOfflinePlayer(targetUuid);
                 String lastKnown = plugin.getDatabaseManager().getLastKnownUsername(targetUuid);
-                String fallback = lastKnown == null || lastKnown.isBlank()
+                String fallback = lastKnown == null || lastKnown.trim().isEmpty()
                         ? (offline.getName() == null ? args[0] : offline.getName())
                         : lastKnown;
                 targetName = plugin.getHideManager().publicName(targetUuid, fallback);

@@ -47,7 +47,7 @@ public class StatsWipeManager {
         }
 
         public static Optional<WipeTarget> fromInput(String input) {
-            if (input == null || input.isBlank()) {
+            if (input == null || input.trim().isEmpty()) {
                 return Optional.empty();
             }
 
@@ -124,8 +124,24 @@ public final class WipeResult {
     }
 
     public int getPreviewCount(WipeTarget target) {
-        return switch (target) {        case PLAYER_STATS: countPlayerStatsTargets(); break;        case TEAM_DOCUMENTS: plugin.getDatabaseManager().countTeams(); break;        case HOME_DOCUMENTS: plugin.getDatabaseManager().countHomes(); break;        case BOUNTIES: plugin.getDatabaseManager().countBounties(); break;        case SELL_DOCUMENTS: plugin.getDatabaseManager().countSellDocuments(); break;        case MONEY: countEconomyTargets(true); break;        case SHARDS: countEconomyTargets(false); break;
-        };
+        switch (target) {
+            case PLAYER_STATS:
+                return countPlayerStatsTargets();
+            case TEAM_DOCUMENTS:
+                return plugin.getDatabaseManager().countTeams();
+            case HOME_DOCUMENTS:
+                return plugin.getDatabaseManager().countHomes();
+            case BOUNTIES:
+                return plugin.getDatabaseManager().countBounties();
+            case SELL_DOCUMENTS:
+                return plugin.getDatabaseManager().countSellDocuments();
+            case MONEY:
+                return countEconomyTargets(true);
+            case SHARDS:
+                return countEconomyTargets(false);
+            default:
+                return null;
+        }
     }
 
     public WipeResult wipeTarget(WipeTarget target, String actorName) {
@@ -149,18 +165,34 @@ public final class WipeResult {
             }
             refreshRuntimeStateAfterWipe(normalizedTargets);
             plugin.getLogger().info("Stats wipe completed by " + actorName + " for targets " + normalizedTargets + ".");
-            return new WipeResult(true, false, Map.copyOf(affectedCounts), null);
+            return new WipeResult(true, false, new java.util.HashMap<>(affectedCounts), null);
         } catch (Exception exception) {
             plugin.getLogger().log(Level.SEVERE, "stats wipe failed for " + normalizedTargets, exception);
-            return new WipeResult(false, false, Map.copyOf(affectedCounts), exception.getMessage());
+            return new WipeResult(false, false, new java.util.HashMap<>(affectedCounts), exception.getMessage());
         } finally {
             wipeInProgress.set(false);
         }
     }
 
     private int wipeSingleTarget(WipeTarget target) {
-        return switch (target) {        case PLAYER_STATS: wipePlayerStats(); break;        case TEAM_DOCUMENTS: wipeTeams(); break;        case HOME_DOCUMENTS: wipeHomes(); break;        case BOUNTIES: wipeBounties(); break;        case SELL_DOCUMENTS: wipeSellDocuments(); break;        case MONEY: wipeMoney(); break;        case SHARDS: wipeShards(); break;
-        };
+        switch (target) {
+            case PLAYER_STATS:
+                return wipePlayerStats();
+            case TEAM_DOCUMENTS:
+                return wipeTeams();
+            case HOME_DOCUMENTS:
+                return wipeHomes();
+            case BOUNTIES:
+                return wipeBounties();
+            case SELL_DOCUMENTS:
+                return wipeSellDocuments();
+            case MONEY:
+                return wipeMoney();
+            case SHARDS:
+                return wipeShards();
+            default:
+                return null;
+        }
     }
 
     private int wipePlayerStats() {

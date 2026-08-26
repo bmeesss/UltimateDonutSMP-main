@@ -34,20 +34,37 @@ public class PortalTabCompleter implements TabCompleter {
 
         String subcommand = args[0].toLowerCase();
         if (args.length == 2) {
-            return switch (subcommand) {        case "info": case "delete": case "setcuboid": case "setdestination": case "setdisplay": case "toggle": case "setpriority": case "sethologramhere": partialMatches(args[1], plugin.getPortalManager().getSortedPortalIds())            break;        default: Collections.emptyList()            break;
-            };
+            switch (subcommand) {
+                case "info":
+                case "delete":
+                case "setcuboid":
+                case "setdestination":
+                case "setdisplay":
+                case "toggle":
+                case "setpriority":
+                case "sethologramhere":
+                    return partialMatches(args[1], plugin.getPortalManager().getSortedPortalIds());
+                default:
+                    return Collections.emptyList();
+            }
         }
 
         if (args.length == 3) {
-            return switch (subcommand) {        case "create": case "setcuboid": partialMatches(args[2], new ArrayList<>(plugin.getCuboidManager().getCuboidNames()))            break;        case "setdestination": {
-
-                                List<String> list = new ArrayList<>();
-                                list.add("RTP");
-                                list.add("AFK");
-                                list.addAll(plugin.getRtpManager().getPortalSelectorSuggestions());
-                                partialMatches(args[2], list);
-                            break;        }        default: Collections.emptyList()            break;
-            };
+            switch (subcommand) {
+                case "create":
+                case "setcuboid":
+                    return partialMatches(args[2], new ArrayList<>(plugin.getCuboidManager().getCuboidNames()));
+                case "setdestination": {
+                    List<String> list = new ArrayList<>();
+                    list.add("RTP");
+                    list.add("AFK");
+                    list.addAll(plugin.getRtpManager().getPortalSelectorSuggestions());
+                    partialMatches(args[2], list);
+                    return break;
+                }
+                default:
+                    return Collections.emptyList();
+            }
         }
 
         if (args.length == 4) {

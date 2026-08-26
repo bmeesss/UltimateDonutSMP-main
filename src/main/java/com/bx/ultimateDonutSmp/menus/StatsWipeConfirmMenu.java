@@ -84,7 +84,7 @@ public class StatsWipeConfirmMenu extends BaseMenu {
             return;
         }
         if (!result.success()) {
-            String error = result.errorMessage() == null || result.errorMessage().isBlank()
+            String error = result.errorMessage() == null || result.errorMessage().trim().isEmpty()
                     ? "Unknown error"
                     : result.errorMessage();
             player.sendMessage(ColorUtils.toComponent(message("FAILED", "&cStats wipe failed: {error}")

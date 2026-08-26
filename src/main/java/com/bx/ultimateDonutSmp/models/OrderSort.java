@@ -9,7 +9,7 @@ public enum OrderSort {
     MOST_MONEY_PER_ITEM;
 
     public static OrderSort fromConfig(String rawValue) {
-        if (rawValue == null || rawValue.isBlank()) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
             return MOST_PAID;
         }
 

@@ -99,14 +99,14 @@ public class RespawnRtpManager {
     }
 
     private void sendMessage(Player player, String message, Location location) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return;
         }
         player.sendMessage(ColorUtils.toComponent(applyPlaceholders(message, location)));
     }
 
     static String applyPlaceholders(String message, Location location) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return "";
         }
         if (location == null) {

@@ -64,8 +64,18 @@ public class FindPlayerCommand implements CommandExecutor {
             return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
         }
 
-        return switch (world.getEnvironment()) {        case NORMAL: new LocationMessage("FINDPLAYER.OVERWORLD", DEFAULT_OVERWORLD); break;        case NETHER: new LocationMessage("FINDPLAYER.NETHER", DEFAULT_NETHER); break;        case THE_END: new LocationMessage("FINDPLAYER.THE_END", DEFAULT_THE_END); break;        case CUSTOM: new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN); break;
-        };
+        switch (world.getEnvironment()) {
+            case NORMAL:
+                return new LocationMessage("FINDPLAYER.OVERWORLD", DEFAULT_OVERWORLD);
+            case NETHER:
+                return new LocationMessage("FINDPLAYER.NETHER", DEFAULT_NETHER);
+            case THE_END:
+                return new LocationMessage("FINDPLAYER.THE_END", DEFAULT_THE_END);
+            case CUSTOM:
+                return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
+            default:
+                return null;
+        }
     }
 
     private String friendlyWorldName(World world) {
@@ -73,8 +83,18 @@ public class FindPlayerCommand implements CommandExecutor {
             return "unknown";
         }
 
-        return switch (world.getEnvironment()) {        case NORMAL: "overworld"; break;        case NETHER: "nether"; break;        case THE_END: "the end"; break;        case CUSTOM: formatIdentifier(world.getName()); break;
-        };
+        switch (world.getEnvironment()) {
+            case NORMAL:
+                return "overworld";
+            case NETHER:
+                return "nether";
+            case THE_END:
+                return "the end";
+            case CUSTOM:
+                return formatIdentifier(world.getName());
+            default:
+                return null;
+        }
     }
 
     private String formatBiome(Location location) {
@@ -91,7 +111,7 @@ public class FindPlayerCommand implements CommandExecutor {
     }
 
     private String formatIdentifier(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return "unknown";
         }
 
@@ -105,7 +125,7 @@ public class FindPlayerCommand implements CommandExecutor {
         String[] parts = normalized.split("_+");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-            if (part.isBlank()) {
+            if (part.trim().isEmpty()) {
                 continue;
             }
             if (!builder.isEmpty()) {

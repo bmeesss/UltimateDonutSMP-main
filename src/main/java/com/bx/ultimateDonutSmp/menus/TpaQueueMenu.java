@@ -162,7 +162,19 @@ public class TpaQueueMenu extends BaseMenu {
 
     private void buildButton(String key, boolean active, Map<String, String> placeholders) {
         String path = MENU_PATH + ".BUTTONS." + key;
-        int slot = menus().getInt(path + ".SLOT", switch (key) {        case "PREVIOUS": 45            break;        case "RANDOM": 49            break;        case "NEXT": 53            break;        default: -1            break;
+        int slot = menus().getInt(path + ".SLOT", switch (key) {
+            case "PREVIOUS":
+                45;
+                break;
+            case "RANDOM":
+                49;
+                break;
+            case "NEXT":
+                53;
+                break;
+            default:
+                -1;
+                break;
         });
         if (slot < 0 || slot >= inventory.getSize()) {
             return;
@@ -230,7 +242,7 @@ public class TpaQueueMenu extends BaseMenu {
 
         OfflinePlayer offline = Bukkit.getOfflinePlayer(uuid);
         String name = offline.getName();
-        return name == null || name.isBlank() ? uuid.toString().substring(0, 8) : name;
+        return name == null || name.trim().isEmpty() ? uuid.toString().substring(0, 8) : name;
     }
 
     private String formatRemaining(long expiresAtMillis) {

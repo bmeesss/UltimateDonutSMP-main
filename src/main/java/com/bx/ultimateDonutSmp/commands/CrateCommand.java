@@ -67,8 +67,44 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
             return sendCrateUsage(sender, label);
         }
 
-        return switch (args[0].toLowerCase()) {        case "create": handleCreate(sender, label, args)            break;        case "delete": handleDelete(sender, label, args)            break;        case "type": handleType(sender, label, args)            break;        case "open": handleOpen(sender, label, args)            break;        case "keys": handleKeys(sender, args)            break;        case "reload": handleReload(sender)            break;        case "key": handleKeyMutation(sender, args, MutationMode.ADD)            break;        case "take": handleKeyMutation(sender, args, MutationMode.TAKE)            break;        case "set": handleKeyMutation(sender, args, MutationMode.SET)            break;        case "keyall": handleKeyAll(sender, label, args)            break;        case "add": handleRewardMutation(sender, label, args, RewardMutationMode.ADD)            break;        case "edit": handleRewardMutation(sender, label, args, RewardMutationMode.EDIT)            break;        case "remove": handleRewardMutation(sender, label, args, RewardMutationMode.REMOVE)            break;        case "bind": handleBind(sender, label, args)            break;        case "unbind": handleUnbind(sender, args)            break;        case "listbound": handleListBound(sender)            break;        case "info": handleInfo(sender)            break;        default: sendCrateUsage(sender, label)            break;
-        };
+        switch (args[0].toLowerCase()) {
+            case "create":
+                return handleCreate(sender, label, args);
+            case "delete":
+                return handleDelete(sender, label, args);
+            case "type":
+                return handleType(sender, label, args);
+            case "open":
+                return handleOpen(sender, label, args);
+            case "keys":
+                return handleKeys(sender, args);
+            case "reload":
+                return handleReload(sender);
+            case "key":
+                return handleKeyMutation(sender, args, MutationMode.ADD);
+            case "take":
+                return handleKeyMutation(sender, args, MutationMode.TAKE);
+            case "set":
+                return handleKeyMutation(sender, args, MutationMode.SET);
+            case "keyall":
+                return handleKeyAll(sender, label, args);
+            case "add":
+                return handleRewardMutation(sender, label, args, RewardMutationMode.ADD);
+            case "edit":
+                return handleRewardMutation(sender, label, args, RewardMutationMode.EDIT);
+            case "remove":
+                return handleRewardMutation(sender, label, args, RewardMutationMode.REMOVE);
+            case "bind":
+                return handleBind(sender, label, args);
+            case "unbind":
+                return handleUnbind(sender, args);
+            case "listbound":
+                return handleListBound(sender);
+            case "info":
+                return handleInfo(sender);
+            default:
+                return sendCrateUsage(sender, label);
+        }
     }
 
     @Override
@@ -99,29 +135,61 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 2) {
-            return switch (subcommand) {        case "delete": case "type": case "add": case "edit": case "remove": hasAdminPermission(sender)
+            switch (subcommand) {
+                case "delete":
+                case "type":
+                case "add":
+                case "edit":
+                case "remove":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[1], crateIds())
-                        : Collections.emptyList()            break;        case "open": partialMatches(args[1], crateIds())            break;        case "keyall": hasKeyAllPermission(sender)
+                        : Collections.emptyList();
+                case "open":
+                    return partialMatches(args[1], crateIds());
+                case "keyall":
+                    return hasKeyAllPermission(sender)
                         ? partialMatches(args[1], crateIds())
-                        : Collections.emptyList()            break;        case "key": case "take": case "set": hasAdminPermission(sender)
+                        : Collections.emptyList();
+                case "key":
+                case "take":
+                case "set":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[1], targetNames())
-                        : Collections.emptyList()            break;        case "bind": hasAdminPermission(sender)
+                        : Collections.emptyList();
+                case "bind":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[1], bindTargets())
-                        : Collections.emptyList()            break;        default: Collections.emptyList()            break;
-            };
+                        : Collections.emptyList();
+                default:
+                    return Collections.emptyList();
+            }
         }
 
         if (args.length == 3) {
-            return switch (subcommand) {        case "type": hasAdminPermission(sender)
+            switch (subcommand) {
+                case "type":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[2], OPEN_TYPE_COMPLETIONS)
-                        : Collections.emptyList()            break;        case "key": case "take": case "set": hasAdminPermission(sender)
+                        : Collections.emptyList();
+                case "key":
+                case "take":
+                case "set":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[2], crateIds())
-                        : Collections.emptyList()            break;        case "keyall": hasKeyAllPermission(sender)
+                        : Collections.emptyList();
+                case "keyall":
+                    return hasKeyAllPermission(sender)
                         ? partialMatches(args[2], AMOUNT_COMPLETIONS)
-                        : Collections.emptyList()            break;        case "add": case "edit": case "remove": hasAdminPermission(sender)
+                        : Collections.emptyList();
+                case "add":
+                case "edit":
+                case "remove":
+                    return hasAdminPermission(sender)
                         ? partialMatches(args[2], SLOT_COMPLETIONS)
-                        : Collections.emptyList()            break;        default: Collections.emptyList()            break;
-            };
+                        : Collections.emptyList();
+                default:
+                    return Collections.emptyList();
+            }
         }
 
         if (args.length == 4 && new java.util.ArrayList<>(java.util.Arrays.asList("key",  "take",  "set")).contains(subcommand)) {
@@ -329,11 +397,20 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
 
         int balance;
         boolean success = true;
-        switch (mode) {        case ADD: balance = plugin.getCrateManager().addKeys(target.uuid(), crate.id(), amount); break;        case TAKE: {
-
-                            success = plugin.getCrateManager().takeKeys(target.uuid(), crate.id(), amount);
-                            balance = plugin.getCrateManager().getKeyBalance(target.uuid(), crate.id());
-                        break;        }        case SET: balance = plugin.getCrateManager().setKeys(target.uuid(), crate.id(), amount); break;        default: throw new IllegalStateException("Unexpected value: " + mode)
+        switch (mode) {
+            case ADD:
+                balance = plugin.getCrateManager().addKeys(target.uuid(), crate.id(), amount);
+                break;
+            case TAKE: {
+                success = plugin.getCrateManager().takeKeys(target.uuid(), crate.id(), amount);
+                balance = plugin.getCrateManager().getKeyBalance(target.uuid(), crate.id());
+                break;
+            }
+            case SET:
+                balance = plugin.getCrateManager().setKeys(target.uuid(), crate.id(), amount);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + mode);
         }
 
         if (!success) {
@@ -464,8 +541,20 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
                 result = plugin.getCrateManager().addItemReward(crate.id(), slot, player.getInventory().getItemInMainHand());
             }
         } else {
-            result = switch (mode) {        case ADD: plugin.getCrateManager().addItemReward(crate.id(), slot, player.getInventory().getItemInMainHand()); break;        case EDIT: plugin.getCrateManager().editItemReward(crate.id(), slot, player.getInventory().getItemInMainHand()); break;        case REMOVE: plugin.getCrateManager().removeReward(crate.id(), slot); break;
-            };
+;
+switch (mode) {
+                case ADD:
+                    result = plugin.getCrateManager().addItemReward(crate.id(), slot, player.getInventory().getItemInMainHand());
+                    break;
+                case EDIT:
+                    result = plugin.getCrateManager().editItemReward(crate.id(), slot, player.getInventory().getItemInMainHand());
+                    break;
+                case REMOVE:
+                    result = plugin.getCrateManager().removeReward(crate.id(), slot);
+                    break;
+                default:
+                    break;
+            }
         }
 
         sender.sendMessage(ColorUtils.toComponent(result.message()));
@@ -632,7 +721,7 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
         }
 
         String name = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        return new ResolvedTarget(uuid, name == null || name.isBlank() ? input : name);
+        return new ResolvedTarget(uuid, name == null || name.trim().isEmpty() ? input : name);
     }
 
     private Integer parsePositiveInt(String input) {
@@ -740,7 +829,7 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
             names.add(player.getName());
         }
         for (PlayerData data : plugin.getPlayerDataManager().getAll()) {
-            if (data.getUsername() != null && !data.getUsername().isBlank()) {
+            if (data.getUsername() != null && !data.getUsername().trim().isEmpty()) {
                 names.add(data.getUsername());
             }
         }

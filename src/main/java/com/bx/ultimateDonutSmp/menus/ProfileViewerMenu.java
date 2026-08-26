@@ -254,8 +254,34 @@ public class ProfileViewerMenu extends BaseMenu {
             return "No data";
         }
 
-        return switch (key.toUpperCase(Locale.ROOT)) {        case "MONEY": plugin.getCurrencyManager().formatMoneyCompact(data.getMoney())            break;        case "SHARDS": plugin.getCurrencyManager().formatShardsCompact(data.getShards())            break;        case "KILLS": NumberUtils.format(data.getKills())            break;        case "DEATHS": NumberUtils.format(data.getDeaths())            break;        case "PLAYTIME": NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds())            break;        case "BLOCKS_PLACED": NumberUtils.format(data.getBlocksPlaced())            break;        case "BLOCKS_BROKEN": NumberUtils.format(data.getBlocksBroken())            break;        case "MOBS_KILLED": NumberUtils.format(data.getMobsKilled())            break;        case "KILL_STREAK": NumberUtils.format(data.getKillStreak())            break;        case "HIGHEST_KILL_STREAK": NumberUtils.format(data.getHighestKillStreak())            break;        case "MONEY_SPENT": plugin.getCurrencyManager().formatMoneyCompact(data.getMoneySpent())            break;        case "MONEY_MADE": plugin.getCurrencyManager().formatMoneyCompact(data.getMoneyMade())            break;        default: "unknown"            break;
-        };
+        switch (key.toUpperCase(Locale.ROOT)) {
+            case "MONEY":
+                return plugin.getCurrencyManager().formatMoneyCompact(data.getMoney());
+            case "SHARDS":
+                return plugin.getCurrencyManager().formatShardsCompact(data.getShards());
+            case "KILLS":
+                return NumberUtils.format(data.getKills());
+            case "DEATHS":
+                return NumberUtils.format(data.getDeaths());
+            case "PLAYTIME":
+                return NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds());
+            case "BLOCKS_PLACED":
+                return NumberUtils.format(data.getBlocksPlaced());
+            case "BLOCKS_BROKEN":
+                return NumberUtils.format(data.getBlocksBroken());
+            case "MOBS_KILLED":
+                return NumberUtils.format(data.getMobsKilled());
+            case "KILL_STREAK":
+                return NumberUtils.format(data.getKillStreak());
+            case "HIGHEST_KILL_STREAK":
+                return NumberUtils.format(data.getHighestKillStreak());
+            case "MONEY_SPENT":
+                return plugin.getCurrencyManager().formatMoneyCompact(data.getMoneySpent());
+            case "MONEY_MADE":
+                return plugin.getCurrencyManager().formatMoneyCompact(data.getMoneyMade());
+            default:
+                return "unknown";
+        }
     }
 
     private ItemStack createPlayerItem(Material material, String displayName, List<String> lore, UUID uuid) {
@@ -311,7 +337,7 @@ public class ProfileViewerMenu extends BaseMenu {
     }
 
     private String safeTeamName(ProfileSnapshot snapshot) {
-        return snapshot.getTeamName() == null || snapshot.getTeamName().isBlank()
+        return snapshot.getTeamName() == null || snapshot.getTeamName().trim().isEmpty()
                 ? "none"
                 : snapshot.getTeamName();
     }
@@ -341,8 +367,14 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         World.Environment environment = location.getWorld().getEnvironment();
-        return switch (environment) {        case NETHER: "nether"; break;        case THE_END: "end"; break;        default: "overworld"            break;
-        };
+        switch (environment) {
+            case NETHER:
+                return "nether";
+            case THE_END:
+                return "end";
+            default:
+                return "overworld";
+        }
     }
 
     private String yesNo(boolean value) {

@@ -166,24 +166,85 @@ public class PlayerDeathListener implements Listener {
         String killerName = resolveNonPlayerKillerName(damageCause, victim);
         boolean hasNonPlayerKiller = killerName != null;
 
-        String template = switch (cause) {        case "BLOCK_EXPLOSION": cfg.getString("MESSAGES.BLOCK-EXPLOSION", "{player} was blown up")            break;        case "CONTACT": cfg.getString("MESSAGES.CONTACT", "{player} was pricked")            break;        case "DROWNING": hasNonPlayerKiller
+String;
+switch (cause) {
+            case "BLOCK_EXPLOSION":
+                template = cfg.getString("MESSAGES.BLOCK-EXPLOSION", "{player} was blown up");
+                break;
+            case "CONTACT":
+                template = cfg.getString("MESSAGES.CONTACT", "{player} was pricked");
+                break;
+            case "DROWNING":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.DROWNING.PVP", "{player} drowned escaping {killer}")
-                    : cfg.getString("MESSAGES.DROWNING.NORMAL", "{player} drowned!")            break;        case "ENTITY_ATTACK": cfg.getString("MESSAGES.ENTITY-ATTACK", "{player} was slain by {killer}")            break;        case "FALL": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.DROWNING.NORMAL", "{player} drowned!");
+                break;
+            case "ENTITY_ATTACK":
+                template = cfg.getString("MESSAGES.ENTITY-ATTACK", "{player} was slain by {killer}");
+                break;
+            case "FALL":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FALL.PVP", "{player} was doomed to fall by {killer}")
-                    : cfg.getString("MESSAGES.FALL.NORMAL", "{player} hit the ground too hard")            break;        case "FALLING_BLOCK": cfg.getString("MESSAGES.FALLING-BLOCK", "{player} was squashed")            break;        case "FIRE": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FALL.NORMAL", "{player} hit the ground too hard");
+                break;
+            case "FALLING_BLOCK":
+                template = cfg.getString("MESSAGES.FALLING-BLOCK", "{player} was squashed");
+                break;
+            case "FIRE":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FIRE.PVP", "{player} walked into fire fighting {killer}")
-                    : cfg.getString("MESSAGES.FIRE.NORMAL", "{player} went up in flames")            break;        case "FIRE_TICK": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FIRE.NORMAL", "{player} went up in flames");
+                break;
+            case "FIRE_TICK":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FIRE-TICK.PVP", "{player} burned while fighting {killer}")
-                    : cfg.getString("MESSAGES.FIRE-TICK.NORMAL", "{player} burned to death")            break;        case "LAVA": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FIRE-TICK.NORMAL", "{player} burned to death");
+                break;
+            case "LAVA":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.LAVA.PVP", "{player} tried to swim in lava escaping {killer}")
-                    : cfg.getString("MESSAGES.LAVA.NORMAL", "{player} tried to swim in lava")            break;        case "LIGHTNING": cfg.getString("MESSAGES.LIGHTNING", "{player} got struck by lightning")            break;        case "POISON": cfg.getString("MESSAGES.POISON", "{player} was poisoned")            break;        case "PROJECTILE": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.LAVA.NORMAL", "{player} tried to swim in lava");
+                break;
+            case "LIGHTNING":
+                template = cfg.getString("MESSAGES.LIGHTNING", "{player} got struck by lightning");
+                break;
+            case "POISON":
+                template = cfg.getString("MESSAGES.POISON", "{player} was poisoned");
+                break;
+            case "PROJECTILE":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.PROJECTILE.PVP", "{player} was shot by {killer}")
-                    : cfg.getString("MESSAGES.PROJECTILE.NORMAL", "{player} was shot")            break;        case "STARVATION": cfg.getString("MESSAGES.STARVATION", "{player} starved to death")            break;        case "SUFFOCATION": cfg.getString("MESSAGES.SUFFOCATION", "{player} suffocated in a wall")            break;        case "SUICIDE": cfg.getString("MESSAGES.SUICIDE", "{player} took their own life")            break;        case "THORNS": cfg.getString("MESSAGES.THORNS", "{player} killed themselves trying to kill someone")            break;        case "VOID": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.PROJECTILE.NORMAL", "{player} was shot");
+                break;
+            case "STARVATION":
+                template = cfg.getString("MESSAGES.STARVATION", "{player} starved to death");
+                break;
+            case "SUFFOCATION":
+                template = cfg.getString("MESSAGES.SUFFOCATION", "{player} suffocated in a wall");
+                break;
+            case "SUICIDE":
+                template = cfg.getString("MESSAGES.SUICIDE", "{player} took their own life");
+                break;
+            case "THORNS":
+                template = cfg.getString("MESSAGES.THORNS", "{player} killed themselves trying to kill someone");
+                break;
+            case "VOID":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.VOID.PVP", "{player} was knocked into the void by {killer}")
-                    : cfg.getString("MESSAGES.VOID.NORMAL", "{player} fell out of the world")            break;        case "WITHER": cfg.getString("MESSAGES.WITHER", "{player} withered away")            break;        case "ENTITY_EXPLOSION": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.VOID.NORMAL", "{player} fell out of the world");
+                break;
+            case "WITHER":
+                template = cfg.getString("MESSAGES.WITHER", "{player} withered away");
+                break;
+            case "ENTITY_EXPLOSION":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.ENTITY-EXPLOSION.PVP", "{player} was blown up by {killer}")
-                    : cfg.getString("MESSAGES.ENTITY-EXPLOSION.NORMAL", "{player} was blown up")            break;        default: cfg.getString("MESSAGES.DEFAULT", "{player} died")            break;
-        };
+                    : cfg.getString("MESSAGES.ENTITY-EXPLOSION.NORMAL", "{player} was blown up");
+                break;
+            default:
+                template = cfg.getString("MESSAGES.DEFAULT", "{player} died");
+                break;
+        }
 
         String msg = template
                 .replace("{player}", plugin.getHideManager().publicName(victim))
@@ -339,24 +400,85 @@ public class PlayerDeathListener implements Listener {
         String killerName = resolveNonPlayerKillerName(damageCause, victim);
         boolean hasNonPlayerKiller = killerName != null;
 
-        String template = switch (cause) {        case "BLOCK_EXPLOSION": cfg.getString("MESSAGES.BLOCK-EXPLOSION", "{player} was blown up")            break;        case "CONTACT": cfg.getString("MESSAGES.CONTACT", "{player} was pricked")            break;        case "DROWNING": hasNonPlayerKiller
+String;
+switch (cause) {
+            case "BLOCK_EXPLOSION":
+                template = cfg.getString("MESSAGES.BLOCK-EXPLOSION", "{player} was blown up");
+                break;
+            case "CONTACT":
+                template = cfg.getString("MESSAGES.CONTACT", "{player} was pricked");
+                break;
+            case "DROWNING":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.DROWNING.PVP", "{player} drowned escaping {killer}")
-                    : cfg.getString("MESSAGES.DROWNING.NORMAL", "{player} drowned!")            break;        case "ENTITY_ATTACK": cfg.getString("MESSAGES.ENTITY-ATTACK", "{player} was slain by {killer}")            break;        case "FALL": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.DROWNING.NORMAL", "{player} drowned!");
+                break;
+            case "ENTITY_ATTACK":
+                template = cfg.getString("MESSAGES.ENTITY-ATTACK", "{player} was slain by {killer}");
+                break;
+            case "FALL":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FALL.PVP", "{player} was doomed to fall by {killer}")
-                    : cfg.getString("MESSAGES.FALL.NORMAL", "{player} hit the ground too hard")            break;        case "FALLING_BLOCK": cfg.getString("MESSAGES.FALLING-BLOCK", "{player} was squashed")            break;        case "FIRE": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FALL.NORMAL", "{player} hit the ground too hard");
+                break;
+            case "FALLING_BLOCK":
+                template = cfg.getString("MESSAGES.FALLING-BLOCK", "{player} was squashed");
+                break;
+            case "FIRE":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FIRE.PVP", "{player} walked into fire fighting {killer}")
-                    : cfg.getString("MESSAGES.FIRE.NORMAL", "{player} went up in flames")            break;        case "FIRE_TICK": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FIRE.NORMAL", "{player} went up in flames");
+                break;
+            case "FIRE_TICK":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.FIRE-TICK.PVP", "{player} burned while fighting {killer}")
-                    : cfg.getString("MESSAGES.FIRE-TICK.NORMAL", "{player} burned to death")            break;        case "LAVA": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.FIRE-TICK.NORMAL", "{player} burned to death");
+                break;
+            case "LAVA":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.LAVA.PVP", "{player} tried to swim in lava escaping {killer}")
-                    : cfg.getString("MESSAGES.LAVA.NORMAL", "{player} tried to swim in lava")            break;        case "LIGHTNING": cfg.getString("MESSAGES.LIGHTNING", "{player} got struck by lightning")            break;        case "POISON": cfg.getString("MESSAGES.POISON", "{player} was poisoned")            break;        case "PROJECTILE": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.LAVA.NORMAL", "{player} tried to swim in lava");
+                break;
+            case "LIGHTNING":
+                template = cfg.getString("MESSAGES.LIGHTNING", "{player} got struck by lightning");
+                break;
+            case "POISON":
+                template = cfg.getString("MESSAGES.POISON", "{player} was poisoned");
+                break;
+            case "PROJECTILE":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.PROJECTILE.PVP", "{player} was shot by {killer}")
-                    : cfg.getString("MESSAGES.PROJECTILE.NORMAL", "{player} was shot")            break;        case "STARVATION": cfg.getString("MESSAGES.STARVATION", "{player} starved to death")            break;        case "SUFFOCATION": cfg.getString("MESSAGES.SUFFOCATION", "{player} suffocated in a wall")            break;        case "SUICIDE": cfg.getString("MESSAGES.SUICIDE", "{player} took their own life")            break;        case "THORNS": cfg.getString("MESSAGES.THORNS", "{player} killed themselves trying to kill someone")            break;        case "VOID": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.PROJECTILE.NORMAL", "{player} was shot");
+                break;
+            case "STARVATION":
+                template = cfg.getString("MESSAGES.STARVATION", "{player} starved to death");
+                break;
+            case "SUFFOCATION":
+                template = cfg.getString("MESSAGES.SUFFOCATION", "{player} suffocated in a wall");
+                break;
+            case "SUICIDE":
+                template = cfg.getString("MESSAGES.SUICIDE", "{player} took their own life");
+                break;
+            case "THORNS":
+                template = cfg.getString("MESSAGES.THORNS", "{player} killed themselves trying to kill someone");
+                break;
+            case "VOID":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.VOID.PVP", "{player} was knocked into the void by {killer}")
-                    : cfg.getString("MESSAGES.VOID.NORMAL", "{player} fell out of the world")            break;        case "WITHER": cfg.getString("MESSAGES.WITHER", "{player} withered away")            break;        case "ENTITY_EXPLOSION": hasNonPlayerKiller
+                    : cfg.getString("MESSAGES.VOID.NORMAL", "{player} fell out of the world");
+                break;
+            case "WITHER":
+                template = cfg.getString("MESSAGES.WITHER", "{player} withered away");
+                break;
+            case "ENTITY_EXPLOSION":
+                template = hasNonPlayerKiller
                     ? cfg.getString("MESSAGES.ENTITY-EXPLOSION.PVP", "{player} was blown up by {killer}")
-                    : cfg.getString("MESSAGES.ENTITY-EXPLOSION.NORMAL", "{player} was blown up")            break;        default: cfg.getString("MESSAGES.DEFAULT", "{player} died")            break;
-        };
+                    : cfg.getString("MESSAGES.ENTITY-EXPLOSION.NORMAL", "{player} was blown up");
+                break;
+            default:
+                template = cfg.getString("MESSAGES.DEFAULT", "{player} died");
+                break;
+        }
 
         String msg = template
                 .replace("{player}", plugin.getHideManager().publicName(victim))
@@ -397,7 +519,7 @@ public class PlayerDeathListener implements Listener {
         }
 
         String name = entity.getName();
-        return name == null || name.isBlank() ? entity.getType().name() : name;
+        return name == null || name.trim().isEmpty() ? entity.getType().name() : name;
     }
 
     private String buildPlayerKillMessage(Player victim, Player killer) {

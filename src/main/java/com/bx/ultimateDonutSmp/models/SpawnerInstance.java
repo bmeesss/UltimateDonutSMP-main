@@ -20,7 +20,7 @@ public class SpawnerInstance {
         PUBLIC;
 
         public static AccessMode fromString(String raw, AccessMode fallback) {
-            if (raw == null || raw.isBlank()) {
+            if (raw == null || raw.trim().isEmpty()) {
                 return fallback == null ? OWNER_ONLY : fallback;
             }
 

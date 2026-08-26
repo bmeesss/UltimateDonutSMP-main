@@ -78,7 +78,7 @@ public class EcseeCommand implements CommandExecutor {
         String targetName = onlineTarget == null
                 ? plugin.getDatabaseManager().getLastKnownUsername(targetUuid)
                 : onlineTarget.getName();
-        if (targetName == null || targetName.isBlank()) {
+        if (targetName == null || targetName.trim().isEmpty()) {
             targetName = input;
         }
 

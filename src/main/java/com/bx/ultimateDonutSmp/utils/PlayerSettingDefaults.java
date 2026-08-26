@@ -251,7 +251,7 @@ public final class PlayerSettingDefaults {
         bindings.put("NIGHT_VISION", bool(PlayerData::isNightVisionEnabled, PlayerData::setNightVisionEnabled));
         bindings.put("BOUNTY_ALERTS", bool(PlayerData::isBountyAlertsEnabled, PlayerData::setBountyAlertsEnabled));
 
-        return Map.copyOf(bindings);
+        return new java.util.HashMap<>(bindings);
     }
 
     private static Binding bool(Predicate<PlayerData> getter, BooleanSetter setter) {
@@ -300,20 +300,82 @@ public final class PlayerSettingDefaults {
     }
 
     private static Boolean parseBoolean(String raw) {
-        return switch (raw) {        case "true": case "yes": case "on": case "enable": case "enabled": case "1": Boolean.TRUE            break;        case "false": case "no": case "off": case "disable": case "disabled": case "0": Boolean.FALSE            break;        default: null            break;
-        };
+        switch (raw) {
+            case "true":
+            case "yes":
+            case "on":
+            case "enable":
+            case "enabled":
+            case "1":
+                return Boolean.TRUE;
+            case "false":
+            case "no":
+            case "off":
+            case "disable":
+            case "disabled":
+            case "0":
+                return Boolean.FALSE;
+            default:
+                return null;
+        }
     }
 
     private static ThreeChoice parseThreeChoice(String raw) {
-        return switch (raw) {        case "anyone": case "everyone": case "all": case "true": case "yes": case "on": case "enable": case "enabled": case "1": ThreeChoice.ANYONE            break;        case "friends_followed": case "friends-followed": case "friends/followed": case "friends": case "followed": ThreeChoice.FRIENDS_FOLLOWED            break;        case "off": case "none": case "false": case "no": case "disable": case "disabled": case "0": ThreeChoice.OFF            break;        default: null            break;
-        };
+        switch (raw) {
+            case "anyone":
+            case "everyone":
+            case "all":
+            case "true":
+            case "yes":
+            case "on":
+            case "enable":
+            case "enabled":
+            case "1":
+                return ThreeChoice.ANYONE;
+            case "friends_followed":
+            case "friends-followed":
+            case "friends/followed":
+            case "friends":
+            case "followed":
+                return ThreeChoice.FRIENDS_FOLLOWED;
+            case "off":
+            case "none":
+            case "false":
+            case "no":
+            case "disable":
+            case "disabled":
+            case "0":
+                return ThreeChoice.OFF;
+            default:
+                return null;
+        }
     }
 
     private static TwoChoice parseTwoChoice(String raw) {
-        return switch (raw) {
-            case "friends_followed", "friends-followed", "friends/followed", "friends", "followed",
-                 "true", "yes", "on", "enable", "enabled", "1" -> TwoChoice.FRIENDS_FOLLOWED;        case "off": case "none": case "false": case "no": case "disable": case "disabled": case "0": TwoChoice.OFF            break;        default: null            break;
-        };
+        switch (raw) {
+            case "friends_followed":
+            case "friends-followed":
+            case "friends/followed":
+            case "friends":
+            case "followed":
+            case "true":
+            case "yes":
+            case "on":
+            case "enable":
+            case "enabled":
+            case "1":
+                return TwoChoice.FRIENDS_FOLLOWED;
+            case "off":
+            case "none":
+            case "false":
+            case "no":
+            case "disable":
+            case "disabled":
+            case "0":
+                return TwoChoice.OFF;
+            default:
+                return null;
+        }
     }
 
     @FunctionalInterface

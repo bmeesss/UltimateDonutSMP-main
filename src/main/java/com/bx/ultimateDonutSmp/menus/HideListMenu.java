@@ -49,7 +49,7 @@ public class HideListMenu extends BaseMenu {
                     new java.util.ArrayList<>(java.util.Arrays.asList(
                             "&7Real name: &f" + state.realNameSnapshot(), 
                             "&7Mode: &f" + state.mode().name(), 
-                            "&7Skin: &f" + (state.skinUsername().isBlank() ? "Original" : state.skinUsername()), 
+                            "&7Skin: &f" + (state.skinUsername().trim().isEmpty() ? "Original" : state.skinUsername()), 
                             "&7Status: " + (online == null ? "&cOffline" : "&aOnline"), 
                             "", 
                             online == null ? "&7Left-click unavailable." : "&aLeft-click to teleport.", 

@@ -101,7 +101,7 @@ public class OrdersMyOrdersMenu extends BaseMenu {
 
     private List<Order> visibleOrders(Player player) {
         List<Order> orders = plugin.getOrdersManager().getOrdersForOwner(player.getUniqueId(), sortMode);
-        if (query.isBlank()) {
+        if (query.trim().isEmpty()) {
             return orders;
         }
         String normalized = query.toLowerCase(Locale.ROOT);

@@ -131,7 +131,7 @@ public final class WipeResult {
      * a disguise cannot dodge a wipe.
      */
     public Target resolveTarget(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -144,7 +144,7 @@ public final class WipeResult {
         UUID storedUuid = plugin.getDatabaseManager().findPlayerUuidByUsername(trimmed);
         if (storedUuid != null) {
             String storedName = plugin.getDatabaseManager().getLastKnownUsername(storedUuid);
-            return new Target(storedUuid, storedName == null || storedName.isBlank() ? trimmed : storedName);
+            return new Target(storedUuid, storedName == null || storedName.trim().isEmpty() ? trimmed : storedName);
         }
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(trimmed);
@@ -152,7 +152,7 @@ public final class WipeResult {
             String offlineName = offlinePlayer.getName();
             return new Target(
                     offlinePlayer.getUniqueId(),
-                    offlineName == null || offlineName.isBlank() ? trimmed : offlineName
+                    offlineName == null || offlineName.trim().isEmpty() ? trimmed : offlineName
             );
         }
 

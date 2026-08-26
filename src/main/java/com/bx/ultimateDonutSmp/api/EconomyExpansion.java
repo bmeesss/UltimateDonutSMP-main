@@ -197,35 +197,136 @@ public class EconomyExpansion extends PlaceholderExpansion {
             }
         }
         if (data == null) {
-            return switch (params) {        case "nicestMoney": case "money_short": case "money_amount_short": case "nicestmoney": currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.MONEY, 0D)            break;        case "money_formatted": case "money-formatted": currencyManager.formatMoney(0D)            break;        case "money_short_formatted": case "nicestMoney_formatted": case "nicestmoney_formatted": currencyManager.formatMoneyCompact(0D)            break;        case "nicestShards": case "shards_short": case "shards_amount_short": case "nicestshards": currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.SHARDS, 0D)            break;        case "shards_formatted": case "shards-formatted": currencyManager.formatShards(0L)            break;        case "shards_short_formatted": currencyManager.formatShardsCompact(0L)            break;        default: "0"            break;
-            };
+            switch (params) {
+                case "nicestMoney":
+                case "money_short":
+                case "money_amount_short":
+                case "nicestmoney":
+                    return currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.MONEY, 0D);
+                case "money_formatted":
+                case "money-formatted":
+                    return currencyManager.formatMoney(0D);
+                case "money_short_formatted":
+                case "nicestMoney_formatted":
+                case "nicestmoney_formatted":
+                    return currencyManager.formatMoneyCompact(0D);
+                case "nicestShards":
+                case "shards_short":
+                case "shards_amount_short":
+                case "nicestshards":
+                    return currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.SHARDS, 0D);
+                case "shards_formatted":
+                case "shards-formatted":
+                    return currencyManager.formatShards(0L);
+                case "shards_short_formatted":
+                    return currencyManager.formatShardsCompact(0L);
+                default:
+                    return "0";
+            }
         }
 
-        return switch (params) {        case "donutplus": case "display_donutplus": {
-
-                            if (offlinePlayer == null || !offlinePlayer.isOnline()) "";
-                            org.bukkit.entity.Player p = offlinePlayer.getPlayer();
-                            if (p != null && data.isDisplayDonutPlusEnabled() && (p.hasPermission("ultimatedonutsmp.donutplus") || p.hasPermission("donutplus"))) {
-                                "&d&lDonut+ &r";
-                            }
-                            "";
-                        break;        }        case "money": NumberUtils.format(data.getMoney())            break;        case "nicestMoney": case "money_short": case "money_amount_short": case "nicestmoney": currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.MONEY, data.getMoney())            break;        case "money_formatted": case "money-formatted": currencyManager.formatMoney(data.getMoney())            break;        case "money_short_formatted": case "nicestMoney_formatted": case "nicestmoney_formatted": currencyManager.formatMoneyCompact(data.getMoney())            break;        case "shards": String.valueOf(data.getShards())            break;        case "nicestShards": case "shards_short": case "shards_amount_short": case "nicestshards": currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.SHARDS, data.getShards())            break;        case "shards_formatted": case "shards-formatted": currencyManager.formatShards(data.getShards())            break;        case "shards_short_formatted": currencyManager.formatShardsCompact(data.getShards())            break;        case "kills": String.valueOf(data.getKills())            break;        case "deaths": String.valueOf(data.getDeaths())            break;        case "playtime": NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds())            break;        case "killStreak": case "killstreak": String.valueOf(data.getKillStreak())            break;        case "highestKillStreak": case "highestkillstreak": String.valueOf(data.getHighestKillStreak())            break;        case "blocksPlaced": case "blocksplaced": String.valueOf(data.getBlocksPlaced())            break;        case "blocksBroken": case "blocksbroken": String.valueOf(data.getBlocksBroken())            break;        case "mobsKilled": case "mobskilled": String.valueOf(data.getMobsKilled())            break;        case "moneySpent": case "moneyspent": NumberUtils.format(data.getMoneySpent())            break;        case "moneyMade": case "moneymade": NumberUtils.format(data.getMoneyMade())            break;        case "x": case "coord_x": case "coords_x": {
-
-                            if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) "0";
-                            String.valueOf(data.getDisplayX(offlinePlayer.getPlayer().getLocation().getBlockX()));
-                        break;        }        case "y": case "coord_y": case "coords_y": {
-
-                            if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) "0";
-                            String.valueOf(data.getDisplayY(offlinePlayer.getPlayer().getLocation().getBlockY()));
-                        break;        }        case "z": case "coord_z": case "coords_z": {
-
-                            if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) "0";
-                            String.valueOf(data.getDisplayZ(offlinePlayer.getPlayer().getLocation().getBlockZ()));
-                        break;        }        case "coords": case "location": case "formatted_coords": {
-
-                            if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) "0, 0, 0";
-                            data.getDisplayCoords(offlinePlayer.getPlayer().getLocation());
-                        break;        }        case "randomized_coords": case "randomized_coords_enabled": String.valueOf(data.isRandomizedCoords())            break;        default: null            break;
-        };
+        switch (params) {
+            case "donutplus":
+            case "display_donutplus": {
+                if (offlinePlayer == null || !offlinePlayer.isOnline()) {
+                    return "";
+                }
+                org.bukkit.entity.Player p = offlinePlayer.getPlayer();
+                if (p != null && data.isDisplayDonutPlusEnabled() && (p.hasPermission("ultimatedonutsmp.donutplus") || p.hasPermission("donutplus"))) {
+                    return "&d&lDonut+ &r";
+                }
+                return "";
+            }
+            case "money":
+                return NumberUtils.format(data.getMoney());
+            case "nicestMoney":
+            case "money_short":
+            case "money_amount_short":
+            case "nicestmoney":
+                return currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.MONEY, data.getMoney());
+            case "money_formatted":
+            case "money-formatted":
+                return currencyManager.formatMoney(data.getMoney());
+            case "money_short_formatted":
+            case "nicestMoney_formatted":
+            case "nicestmoney_formatted":
+                return currencyManager.formatMoneyCompact(data.getMoney());
+            case "shards":
+                return String.valueOf(data.getShards());
+            case "nicestShards":
+            case "shards_short":
+            case "shards_amount_short":
+            case "nicestshards":
+                return currencyManager.formatCompactAmount(CurrencyManager.CurrencyType.SHARDS, data.getShards());
+            case "shards_formatted":
+            case "shards-formatted":
+                return currencyManager.formatShards(data.getShards());
+            case "shards_short_formatted":
+                return currencyManager.formatShardsCompact(data.getShards());
+            case "kills":
+                return String.valueOf(data.getKills());
+            case "deaths":
+                return String.valueOf(data.getDeaths());
+            case "playtime":
+                return NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds());
+            case "killStreak":
+            case "killstreak":
+                return String.valueOf(data.getKillStreak());
+            case "highestKillStreak":
+            case "highestkillstreak":
+                return String.valueOf(data.getHighestKillStreak());
+            case "blocksPlaced":
+            case "blocksplaced":
+                return String.valueOf(data.getBlocksPlaced());
+            case "blocksBroken":
+            case "blocksbroken":
+                return String.valueOf(data.getBlocksBroken());
+            case "mobsKilled":
+            case "mobskilled":
+                return String.valueOf(data.getMobsKilled());
+            case "moneySpent":
+            case "moneyspent":
+                return NumberUtils.format(data.getMoneySpent());
+            case "moneyMade":
+            case "moneymade":
+                return NumberUtils.format(data.getMoneyMade());
+            case "x":
+            case "coord_x":
+            case "coords_x": {
+                if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) {
+                    return "0";
+                }
+                return String.valueOf(data.getDisplayX(offlinePlayer.getPlayer().getLocation().getBlockX()));
+            }
+            case "y":
+            case "coord_y":
+            case "coords_y": {
+                if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) {
+                    return "0";
+                }
+                return String.valueOf(data.getDisplayY(offlinePlayer.getPlayer().getLocation().getBlockY()));
+            }
+            case "z":
+            case "coord_z":
+            case "coords_z": {
+                if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) {
+                    return "0";
+                }
+                return String.valueOf(data.getDisplayZ(offlinePlayer.getPlayer().getLocation().getBlockZ()));
+            }
+            case "coords":
+            case "location":
+            case "formatted_coords": {
+                if (offlinePlayer == null || !offlinePlayer.isOnline() || offlinePlayer.getPlayer() == null) {
+                    return "0, 0, 0";
+                }
+                return data.getDisplayCoords(offlinePlayer.getPlayer().getLocation());
+            }
+            case "randomized_coords":
+            case "randomized_coords_enabled":
+                return String.valueOf(data.isRandomizedCoords());
+            default:
+                return null;
+        }
     }
 }

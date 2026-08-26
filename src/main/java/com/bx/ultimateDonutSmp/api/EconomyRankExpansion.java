@@ -37,7 +37,7 @@ public class EconomyRankExpansion extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onRequest(OfflinePlayer player, @NotNull String params) {
-        if (player == null || params.isBlank()) {
+        if (player == null || params.trim().isEmpty()) {
             return "0";
         }
 

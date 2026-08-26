@@ -10,7 +10,7 @@ public enum PunishmentType {
     BLACKLIST;
 
     public static PunishmentType fromString(String value, PunishmentType fallback) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return fallback;
         }
 

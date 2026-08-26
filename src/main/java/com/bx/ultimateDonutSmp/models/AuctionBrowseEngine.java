@@ -47,13 +47,25 @@ public final class AuctionBrowseEngine {
         AuctionHouseManager.AuctionSort effective = sort == null
                 ? AuctionHouseManager.AuctionSort.NEWEST
                 : sort;
-        return switch (effective) {        case OLDEST: Comparator.comparingLong(AuctionListing::createdAt)
-                    .thenComparingLong(AuctionListing::id)            break;        case PRICE_LOWEST: Comparator.comparingDouble(AuctionListing::price)
-                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed())            break;        case PRICE_HIGHEST: Comparator.comparingDouble(AuctionListing::price).reversed()
-                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed())            break;        case EXPIRING_SOON: Comparator.comparingLong(AuctionListing::expiresAt)
-                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed())            break;        case NEWEST: Comparator.comparingLong(AuctionListing::createdAt).reversed()
-                    .thenComparing(Comparator.comparingLong(AuctionListing::id).reversed())            break;
-        };
+        switch (effective) {
+            case OLDEST:
+                return Comparator.comparingLong(AuctionListing::createdAt)
+                    .thenComparingLong(AuctionListing::id);
+            case PRICE_LOWEST:
+                return Comparator.comparingDouble(AuctionListing::price)
+                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed());
+            case PRICE_HIGHEST:
+                return Comparator.comparingDouble(AuctionListing::price).reversed()
+                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed());
+            case EXPIRING_SOON:
+                return Comparator.comparingLong(AuctionListing::expiresAt)
+                    .thenComparing(Comparator.comparingLong(AuctionListing::createdAt).reversed());
+            case NEWEST:
+                return Comparator.comparingLong(AuctionListing::createdAt).reversed()
+                    .thenComparing(Comparator.comparingLong(AuctionListing::id).reversed());
+            default:
+                return null;
+        }
     }
 
     private static boolean matchesSearch(
@@ -61,7 +73,7 @@ public final class AuctionBrowseEngine {
             String normalizedSearch,
             Function<AuctionListing, String> itemDescription
     ) {
-        if (normalizedSearch.isBlank()) {
+        if (normalizedSearch.trim().isEmpty()) {
             return true;
         }
         String display = itemDescription.apply(listing);

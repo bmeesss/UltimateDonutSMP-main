@@ -32,8 +32,18 @@ public class SpawnStashCommand implements CommandExecutor, TabCompleter {
         }
 
         String sub = args[0].toLowerCase(Locale.US);
-        return switch (sub) {        case "spawn": handleSpawn(sender, label, args.length >= 2 ? args[1] : null)            break;        case "list": handleList(sender)            break;        case "remove": handleRemove(sender, label, args)            break;        case "reload": handleReload(sender)            break;        default: handleSpawn(sender, label, args[0])            break;
-        };
+        switch (sub) {
+            case "spawn":
+                return handleSpawn(sender, label, args.length >= 2 ? args[1] : null);
+            case "list":
+                return handleList(sender);
+            case "remove":
+                return handleRemove(sender, label, args);
+            case "reload":
+                return handleReload(sender);
+            default:
+                return handleSpawn(sender, label, args[0]);
+        }
     }
 
     private boolean handleSpawn(CommandSender sender, String label, String typeKey) {
@@ -45,7 +55,7 @@ public class SpawnStashCommand implements CommandExecutor, TabCompleter {
             send(sender, plugin.getSpawnStashManager().publicMessage("PLAYER-ONLY", "&conly players can use this command."));
             return true;
         }
-        if (typeKey == null || typeKey.isBlank()) {
+        if (typeKey == null || typeKey.trim().isEmpty()) {
             plugin.getSpawnStashManager().sendUsage(sender, label);
             return true;
         }

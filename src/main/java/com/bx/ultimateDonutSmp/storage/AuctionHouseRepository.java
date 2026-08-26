@@ -38,6 +38,8 @@ public final class Snapshot {
     private final List<AuctionClaim> claims;
 
     public Snapshot(List<AuctionListing> listings, List<AuctionClaim> claims) {
+            listings = new java.util.ArrayList<>(listings);
+            claims = new java.util.ArrayList<>(claims);
         this.listings = listings;
         this.claims = claims;
     }
@@ -46,10 +48,7 @@ public final class Snapshot {
     public List<AuctionClaim> claims() { return claims; }
 
 
-        public Snapshot {
-            listings = new java.util.ArrayList<>(listings);
-            claims = new java.util.ArrayList<>(claims);
-        }
+
 
     @Override public String toString() {
         return "Snapshot[listings=+listings, claims=+claims]";
@@ -844,7 +843,7 @@ public final class PurchaseCommit {
                 resultSet.getLong("id"),
                 UUID.fromString(resultSet.getString("seller_uuid")),
                 resultSet.getString("seller_name"),
-                buyer == null || buyer.isBlank() ? null : UUID.fromString(buyer),
+                buyer == null || buyer.trim().isEmpty() ? null : UUID.fromString(buyer),
                 AuctionListing.Status.fromDatabase(resultSet.getString("status")),
                 resultSet.getDouble("price"),
                 resultSet.getDouble("tax"),
@@ -889,7 +888,7 @@ public final class PurchaseCommit {
     }
 
     private ItemStack deserializeItem(String encoded) {
-        if (encoded == null || encoded.isBlank()) {
+        if (encoded == null || encoded.trim().isEmpty()) {
             return null;
         }
         try {

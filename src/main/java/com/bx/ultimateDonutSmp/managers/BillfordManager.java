@@ -442,7 +442,7 @@ public final class BillfordTrade {
     private ZoneId getRotationZone() {
         String configured = plugin.getConfigManager().getBillford()
                 .getString("COUNTDOWN.TIME_ZONE", "SYSTEM");
-        if (configured == null || configured.isBlank() || configured.equalsIgnoreCase("SYSTEM")) {
+        if (configured == null || configured.trim().isEmpty() || configured.equalsIgnoreCase("SYSTEM")) {
             return ZoneId.systemDefault();
         }
 

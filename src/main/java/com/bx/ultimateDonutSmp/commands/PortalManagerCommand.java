@@ -40,7 +40,40 @@ public class PortalManagerCommand implements CommandExecutor {
         }
 
         String subcommand = args[0].toLowerCase(Locale.ROOT);
-        switch (subcommand) {        case "list": handleList(sender)            break;        case "info": handleInfo(sender, label, args)            break;        case "create": handleCreate(sender, label, args)            break;        case "delete": handleDelete(sender, label, args)            break;        case "setcuboid": handleSetCuboid(sender, label, args)            break;        case "setdestination": handleSetDestination(sender, label, args)            break;        case "setdisplay": handleSetDisplay(sender, label, args)            break;        case "toggle": handleToggle(sender, label, args)            break;        case "setpriority": handleSetPriority(sender, label, args)            break;        case "sethologramhere": handleSetHologramHere(sender, label, args)            break;        default: sendMessage(sender, usage(label))            break;
+        switch (subcommand) {
+            case "list":
+                handleList(sender);
+                break;
+            case "info":
+                handleInfo(sender, label, args);
+                break;
+            case "create":
+                handleCreate(sender, label, args);
+                break;
+            case "delete":
+                handleDelete(sender, label, args);
+                break;
+            case "setcuboid":
+                handleSetCuboid(sender, label, args);
+                break;
+            case "setdestination":
+                handleSetDestination(sender, label, args);
+                break;
+            case "setdisplay":
+                handleSetDisplay(sender, label, args);
+                break;
+            case "toggle":
+                handleToggle(sender, label, args);
+                break;
+            case "setpriority":
+                handleSetPriority(sender, label, args);
+                break;
+            case "sethologramhere":
+                handleSetHologramHere(sender, label, args);
+                break;
+            default:
+                sendMessage(sender, usage(label));
+                break;
         }
         return true;
     }
@@ -110,7 +143,7 @@ public class PortalManagerCommand implements CommandExecutor {
                 .replace("{cooldown}", String.valueOf(portal.triggerCooldownMillis())));
         sendMessage(sender, message("PORTALMANAGER.INFO-PERMISSION",
                 "&7Permission: &f{permission}")
-                .replace("{permission}", portal.permission().isBlank() ? "-" : portal.permission()));
+                .replace("{permission}", portal.permission().trim().isEmpty() ? "-" : portal.permission()));
         sendMessage(sender, message("PORTALMANAGER.INFO-HOLOGRAM",
                 "&7Hologram: &f{hologram}")
                 .replace("{hologram}", formatHologramLocation(portal)));
@@ -176,7 +209,7 @@ public class PortalManagerCommand implements CommandExecutor {
             }
         } else if (destinationType.equals("AFK")) {
             boolean valid = false;
-            if (destinationValue.isBlank()) {
+            if (destinationValue.trim().isEmpty()) {
                 valid = plugin.getSpawnManager().hasAfk();
             } else {
                 for (SpawnManager.TeleportArea area : plugin.getSpawnManager().getValidAreas(SpawnManager.AreaType.AFK)) {
@@ -189,7 +222,7 @@ public class PortalManagerCommand implements CommandExecutor {
             if (!valid) {
                 sendMessage(sender, message("PORTALMANAGER.INVALID-DESTINATION",
                         "&cAFK destination '&e{destination}&c' is unavailable.")
-                        .replace("{destination}", destinationValue.isBlank() ? "default" : destinationValue));
+                        .replace("{destination}", destinationValue.trim().isEmpty() ? "default" : destinationValue));
                 return;
             }
         }
@@ -297,7 +330,7 @@ public class PortalManagerCommand implements CommandExecutor {
             }
         } else if (destinationType.equals("AFK")) {
             boolean valid = false;
-            if (destinationValue.isBlank()) {
+            if (destinationValue.trim().isEmpty()) {
                 valid = plugin.getSpawnManager().hasAfk();
             } else {
                 for (SpawnManager.TeleportArea area : plugin.getSpawnManager().getValidAreas(SpawnManager.AreaType.AFK)) {
@@ -310,7 +343,7 @@ public class PortalManagerCommand implements CommandExecutor {
             if (!valid) {
                 sendMessage(sender, message("PORTALMANAGER.INVALID-DESTINATION",
                         "&cAFK destination '&e{destination}&c' is unavailable.")
-                        .replace("{destination}", destinationValue.isBlank() ? "default" : destinationValue));
+                        .replace("{destination}", destinationValue.trim().isEmpty() ? "default" : destinationValue));
                 return;
             }
         }
@@ -334,7 +367,7 @@ public class PortalManagerCommand implements CommandExecutor {
         }
 
         String displayName = String.join(" ", Arrays.copyOfRange(args, 2, args.length)).trim();
-        if (displayName.isBlank()) {
+        if (displayName.trim().isEmpty()) {
             sendMessage(sender, message("PORTALMANAGER.SETDISPLAY-USAGE",
                     "&cUsage: /" + label + " setdisplay <id> <display name...>"));
             return;
@@ -432,8 +465,18 @@ public class PortalManagerCommand implements CommandExecutor {
 
     private String describeState(PortalDefinition portal) {
         String stateKey = plugin.getPortalManager().getPortalStateKey(portal);
-        return switch (stateKey) {        case "READY": message("PORTAL.STATUS-READY", "&aReady")            break;        case "DISABLED": message("PORTAL.STATUS-DISABLED", "&cDisabled")            break;        case "INVALID_CUBOID": message("PORTAL.STATUS-INVALID-CUBOID", "&eInvalid cuboid")            break;        case "INVALID_DESTINATION": message("PORTAL.STATUS-INVALID-DESTINATION", "&eInvalid destination")            break;        default: "&7unknown"            break;
-        };
+        switch (stateKey) {
+            case "READY":
+                return message("PORTAL.STATUS-READY", "&aReady");
+            case "DISABLED":
+                return message("PORTAL.STATUS-DISABLED", "&cDisabled");
+            case "INVALID_CUBOID":
+                return message("PORTAL.STATUS-INVALID-CUBOID", "&eInvalid cuboid");
+            case "INVALID_DESTINATION":
+                return message("PORTAL.STATUS-INVALID-DESTINATION", "&eInvalid destination");
+            default:
+                return "&7unknown";
+        }
     }
 
     private String formatHologramLocation(PortalDefinition portal) {
