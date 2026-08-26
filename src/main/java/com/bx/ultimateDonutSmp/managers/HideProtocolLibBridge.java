@@ -613,7 +613,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         if (packet.getPlayerInfoActions().size() > 0) {
             packet.getPlayerInfoActions().write(
                     0,
-                    Enumjava.util.Collections.singleton(EnumWrappers.PlayerInfoAction.REMOVE_PLAYER)
+                    EnumSet.of(EnumWrappers.PlayerInfoAction.REMOVE_PLAYER)
             );
         } else if (packet.getPlayerInfoAction().size() > 0) {
             packet.getPlayerInfoAction().write(0, EnumWrappers.PlayerInfoAction.REMOVE_PLAYER);
@@ -626,13 +626,13 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.PLAYER_INFO);
         WrappedRemoteChatSessionData chatSession = remoteChatSession(target);
         if (packet.getPlayerInfoActions().size() > 0) {
-            EnumSet<EnumWrappers.PlayerInfoAction> actions = Enumnew java.util.LinkedHashSet<>(java.util.Arrays.asList(
-                    EnumWrappers.PlayerInfoAction.ADD_PLAYER, 
-                    EnumWrappers.PlayerInfoAction.UPDATE_LISTED, 
-                    EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE, 
-                    EnumWrappers.PlayerInfoAction.UPDATE_LATENCY, 
+            EnumSet<EnumWrappers.PlayerInfoAction> actions = EnumSet.of(
+                    EnumWrappers.PlayerInfoAction.ADD_PLAYER,
+                    EnumWrappers.PlayerInfoAction.UPDATE_LISTED,
+                    EnumWrappers.PlayerInfoAction.UPDATE_GAME_MODE,
+                    EnumWrappers.PlayerInfoAction.UPDATE_LATENCY,
                     EnumWrappers.PlayerInfoAction.UPDATE_DISPLAY_NAME
-            ));
+            );
             if (chatSession != null) {
                 actions.add(EnumWrappers.PlayerInfoAction.INITIALIZE_CHAT);
             }
@@ -768,7 +768,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         removeNametagDisplay(targetUuid);
     }
 
-public final class PlayerInfoListField {
+    static final class PlayerInfoListField {
     private final int index;
     private final List<PlayerInfoData> data;
 
@@ -781,7 +781,7 @@ public final class PlayerInfoListField {
     public List<PlayerInfoData> data() { return data; }
 
     @Override public String toString() {
-        return "PlayerInfoListField[index=+index, data=+data]";
+        return "PlayerInfoListField[index=" + index + ", data=" + data + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

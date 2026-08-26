@@ -51,25 +51,9 @@ public final class ItemKey {
         if (mat == Material.ENCHANTED_BOOK) {
             Map<String, Integer> enchants = new LinkedHashMap<>();
             if (meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta) {
-            org.bukkit.inventory.meta.EnchantmentStorageMeta esm = (org.bukkit.inventory.meta.EnchantmentStorageMeta) enchants != null) {
-            for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                stringEnchants.put(keyOf(entry.getKey()), entry.getValue());
-            }
-        }
-        return new ItemKey(Material.ENCHANTED_BOOK, null, stringEnchants);
-    }
-
-    public static ItemKey fromStack(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
-            return of(Material.AIR);
-        }
-        Material mat = item.getType();
-        ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : null;
-
-        if (mat == Material.ENCHANTED_BOOK) {
-            Map<String, Integer> enchants = new LinkedHashMap<>();
-            if (meta;
-                for (Map.Entry<Enchantment, Integer> entry : esm.getStoredEnchants().entrySet()) {
+                org.bukkit.inventory.meta.EnchantmentStorageMeta storageMeta =
+                        (org.bukkit.inventory.meta.EnchantmentStorageMeta) meta;
+                for (Map.Entry<Enchantment, Integer> entry : storageMeta.getStoredEnchants().entrySet()) {
                     enchants.put(keyOf(entry.getKey()), entry.getValue());
                 }
             }
@@ -79,16 +63,14 @@ public final class ItemKey {
         if (isPotionLike(mat)) {
             PotionType pType = null;
             if (meta instanceof PotionMeta) {
-            PotionMeta pm = (PotionMeta) isPotionLike(mat)) {
-            PotionType pType = null;
-            if (meta;
+                PotionMeta potionMeta = (PotionMeta) meta;
                 try {
-                    pType = pm.getBasePotionType();
+                    pType = potionMeta.getBasePotionType();
                 } catch (NoSuchMethodError | Exception e) {
-                    // Fallback for older Spigot versions if getBasePotionType doesn't exist
                     try {
-                        pType = pm.getBasePotionData().getType();
-                    } catch (Exception ignored) {}
+                        pType = potionMeta.getBasePotionData().getType();
+                    } catch (Exception ignored) {
+                    }
                 }
             }
             return new ItemKey(mat, pType, null);
@@ -111,10 +93,12 @@ public final class ItemKey {
         ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : null;
 
         if (material == Material.ENCHANTED_BOOK) {
-            if (!(meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta esm)) {
+            if (!(meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta)) {
                 return false;
             }
-            Map<Enchantment, Integer> itemEnchants = esm.getStoredEnchants();
+            org.bukkit.inventory.meta.EnchantmentStorageMeta storageMeta =
+                    (org.bukkit.inventory.meta.EnchantmentStorageMeta) meta;
+            Map<Enchantment, Integer> itemEnchants = storageMeta.getStoredEnchants();
             // Verify that all required enchantments match exactly
             for (Map.Entry<String, Integer> reqEntry : enchants.entrySet()) {
                 Enchantment reqEnch = findByKey(reqEntry.getKey());
@@ -130,16 +114,18 @@ public final class ItemKey {
         }
 
         if (isPotionLike(material)) {
-            if (!(meta instanceof PotionMeta pm)) {
+            if (!(meta instanceof PotionMeta)) {
                 return false;
             }
+            PotionMeta potionMeta = (PotionMeta) meta;
             PotionType itemPType = null;
             try {
-                itemPType = pm.getBasePotionType();
+                itemPType = potionMeta.getBasePotionType();
             } catch (NoSuchMethodError | Exception e) {
                 try {
-                    itemPType = pm.getBasePotionData().getType();
-                } catch (Exception ignored) {}
+                    itemPType = potionMeta.getBasePotionData().getType();
+                } catch (Exception ignored) {
+                }
             }
             return Objects.equals(potionType, itemPType);
         }
@@ -164,76 +150,8 @@ public final class ItemKey {
 
         // Damage check: items must not be damaged!
         if (meta instanceof Damageable) {
-            Damageable dmg = (Damageable) meta != null && meta.hasEnchants()) {
-            for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
-                enchants.put(keyOf(entry.getKey()), entry.getValue());
-            }
-        }
-        return new ItemKey(mat, null, enchants);
-    }
-
-    public boolean matches(ItemStack item) {
-        if (item == null || item.getType() != material) {
-            return false;
-        }
-
-        ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : null;
-
-        if (material == Material.ENCHANTED_BOOK) {
-            if (!(meta instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta esm)) {
-                return false;
-            }
-            Map<Enchantment, Integer> itemEnchants = esm.getStoredEnchants();
-            // Verify that all required enchantments match exactly
-            for (Map.Entry<String, Integer> reqEntry : enchants.entrySet()) {
-                Enchantment reqEnch = findByKey(reqEntry.getKey());
-                if (reqEnch == null) {
-                    return false;
-                }
-                Integer itemLvl = itemEnchants.get(reqEnch);
-                if (itemLvl == null || !itemLvl.equals(reqEntry.getValue())) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        if (isPotionLike(material)) {
-            if (!(meta instanceof PotionMeta pm)) {
-                return false;
-            }
-            PotionType itemPType = null;
-            try {
-                itemPType = pm.getBasePotionType();
-            } catch (NoSuchMethodError | Exception e) {
-                try {
-                    itemPType = pm.getBasePotionData().getType();
-                } catch (Exception ignored) {}
-            }
-            return Objects.equals(potionType, itemPType);
-        }
-
-        // Check required enchantments on regular items
-        if (!enchants.isEmpty()) {
-            if (meta == null) {
-                return false;
-            }
-            Map<Enchantment, Integer> itemEnchants = meta.getEnchants();
-            for (Map.Entry<String, Integer> reqEntry : enchants.entrySet()) {
-                Enchantment reqEnch = findByKey(reqEntry.getKey());
-                if (reqEnch == null) {
-                    return false;
-                }
-                Integer itemLvl = itemEnchants.get(reqEnch);
-                if (itemLvl == null || !itemLvl.equals(reqEntry.getValue())) {
-                    return false;
-                }
-            }
-        }
-
-        // Damage check: items must not be damaged!
-        if (meta;
-            if (dmg.hasDamage() && dmg.getDamage() > 0) {
+            Damageable damageable = (Damageable) meta;
+            if (damageable.hasDamage() && damageable.getDamage() > 0) {
                 return false;
             }
         }
@@ -312,7 +230,22 @@ public final class ItemKey {
             boolean longDuration = potionType.name().startsWith("LONG_");
 
             String prefix;
-            switch (material) {        case POTION: prefix = "Potion of "; break;        case SPLASH_POTION: prefix = "Splash Potion of "; break;        case LINGERING_POTION: prefix = "Lingering Potion of "; break;        case TIPPED_ARROW: prefix = "Tipped Arrow of "; break;        default: prefix = ""            break;
+            switch (material) {
+                case POTION:
+                    prefix = "Potion of ";
+                    break;
+                case SPLASH_POTION:
+                    prefix = "Splash Potion of ";
+                    break;
+                case LINGERING_POTION:
+                    prefix = "Lingering Potion of ";
+                    break;
+                case TIPPED_ARROW:
+                    prefix = "Tipped Arrow of ";
+                    break;
+                default:
+                    prefix = "";
+                    break;
             }
 
             if (strong) {
