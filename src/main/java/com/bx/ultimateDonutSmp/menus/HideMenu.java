@@ -37,7 +37,7 @@ public class HideMenu extends BaseMenu {
                         : new java.util.ArrayList<>(java.util.Arrays.asList(
                                 "&7Status: &a" + state.mode().name(), 
                                 "&7Alias: &f" + state.alias(), 
-                                "&7Skin: &f" + (state.skinUsername().isBlank() ? "Original" : state.skinUsername())
+                                "&7Skin: &f" + (state.skinUsername().trim().isEmpty() ? "Original" : state.skinUsername())
                         ))
         ));
         set(11, ItemUtils.createItem(

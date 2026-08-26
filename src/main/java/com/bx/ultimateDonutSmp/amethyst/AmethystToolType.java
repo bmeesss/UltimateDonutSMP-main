@@ -30,7 +30,21 @@ public enum AmethystToolType {
 
     /** Config section key for this type */
     public String getConfigKey() {
-        return switch (this) {        case DRILL: "DRILL"; break;        case CHOPPER: "CHOPPER"; break;        case SELL_AXE: "SELL-AXE"; break;        case SHOVEL: "SHOVEL"; break;        case BUCKET: "BUCKET"; break;        case SHARD_BOOSTER: "SHARD-BOOSTER"; break;
-        };
+        switch (this) {
+            case DRILL:
+                return "DRILL";
+            case CHOPPER:
+                return "CHOPPER";
+            case SELL_AXE:
+                return "SELL-AXE";
+            case SHOVEL:
+                return "SHOVEL";
+            case BUCKET:
+                return "BUCKET";
+            case SHARD_BOOSTER:
+                return "SHARD-BOOSTER";
+            default:
+                return null;
+        }
     }
 }

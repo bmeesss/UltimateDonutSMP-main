@@ -207,7 +207,17 @@ public class OrdersDeliverConfirmMenu extends BaseMenu {
         if (result == null || result.reason() == null) {
             return OrdersMenuSupport.text(plugin, "ORDERS.DELIVERY_FAILED", "&cDelivery failed.");
         }
-        return switch (result.reason()) {        case OWN_ORDER: OrdersMenuSupport.text(plugin, "ORDERS.CANNOT_DELIVER_OWN", "&cYou cannot deliver to your own order."); break;        case NO_MATCHING_ITEMS: OrdersMenuSupport.text(plugin, "ORDERS.NO_MATCHING_ITEMS", "&cThe deposited items no longer match."); break;        case ORDER_FULL: OrdersMenuSupport.text(plugin, "ORDERS.ORDER_FULL", "&cThat order is already full."); break;        case PAYOUT_ERROR: OrdersMenuSupport.text(plugin, "ORDERS.DELIVERY_FAILED_ECONOMY", "&cThe payout transaction failed."); break;        default: OrdersMenuSupport.text(plugin, "ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.")            break;
-        };
+        switch (result.reason()) {
+            case OWN_ORDER:
+                return OrdersMenuSupport.text(plugin, "ORDERS.CANNOT_DELIVER_OWN", "&cYou cannot deliver to your own order.");
+            case NO_MATCHING_ITEMS:
+                return OrdersMenuSupport.text(plugin, "ORDERS.NO_MATCHING_ITEMS", "&cThe deposited items no longer match.");
+            case ORDER_FULL:
+                return OrdersMenuSupport.text(plugin, "ORDERS.ORDER_FULL", "&cThat order is already full.");
+            case PAYOUT_ERROR:
+                return OrdersMenuSupport.text(plugin, "ORDERS.DELIVERY_FAILED_ECONOMY", "&cThe payout transaction failed.");
+            default:
+                return OrdersMenuSupport.text(plugin, "ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.");
+        }
     }
 }

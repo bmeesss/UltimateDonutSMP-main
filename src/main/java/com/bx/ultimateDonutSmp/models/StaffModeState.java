@@ -34,7 +34,7 @@ public final class StaffModeState {
         this.staffUuid = staffUuid;
         this.staffNameSnapshot = staffNameSnapshot == null ? "" : staffNameSnapshot;
         this.enabledAt = enabledAt;
-        this.sourceServer = sourceServer == null || sourceServer.isBlank() ? "local" : sourceServer;
+        this.sourceServer = sourceServer == null || sourceServer.trim().isEmpty() ? "local" : sourceServer;
         this.vanishActive = vanishActive;
         this.betterViewActive = betterViewActive;
         this.snapshotPresent = snapshotPresent;

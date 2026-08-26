@@ -36,7 +36,7 @@ class LeaderboardConfigurationTest {
         for (LeaderboardManager.LeaderboardType type : LeaderboardManager.LeaderboardType.values()) {
             String name = typeNames.getString(type.getConfigKey());
             assertNotNull(name, "missing TYPE-NAMES entry for " + type.getConfigKey());
-            assertTrue(!name.isBlank(), "blank TYPE-NAMES entry for " + type.getConfigKey());
+            assertTrue(!name.trim().isEmpty(), "blank TYPE-NAMES entry for " + type.getConfigKey());
         }
     }
 

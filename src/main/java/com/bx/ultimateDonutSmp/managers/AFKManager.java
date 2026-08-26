@@ -54,11 +54,11 @@ public class AFKManager {
         );
         if (cuboidNames.isEmpty()) {
             String legacy = getSpawnCuboidName();
-            if (legacy != null && !legacy.isBlank()) {
+            if (legacy != null && !legacy.trim().isEmpty()) {
                 cuboidNames.add(legacy.toLowerCase());
             }
         }
-        Set<String> unmodifiable = Set.copyOf(cuboidNames);
+        Set<String> unmodifiable = new java.util.HashSet<>(cuboidNames);
         cachedTrackedCuboidNames = unmodifiable;
         return unmodifiable;
     }
@@ -138,7 +138,7 @@ public class AFKManager {
     }
 
     private void sendAfkMessage(Player player, String message) {
-        if (message != null && !message.isBlank()) {
+        if (message != null && !message.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent(message));
         }
     }

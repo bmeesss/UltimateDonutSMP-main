@@ -63,7 +63,7 @@ public class PlayerWipeCommand implements CommandExecutor, TabCompleter {
             return true;
         }
         if (!result.success()) {
-            String error = result.errorMessage() == null || result.errorMessage().isBlank()
+            String error = result.errorMessage() == null || result.errorMessage().trim().isEmpty()
                     ? "unknown error"
                     : result.errorMessage();
             send(sender, "&cPlayer wipe failed: &f" + error);

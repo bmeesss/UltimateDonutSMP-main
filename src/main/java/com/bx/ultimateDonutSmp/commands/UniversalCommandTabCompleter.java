@@ -58,15 +58,133 @@ public class UniversalCommandTabCompleter implements TabCompleter {
 
         String commandName = normalize(command.getName());
         String label = normalize(alias);
-        return switch (commandName) {        case "team": completeTeam(sender, args)            break;        case "home": case "homes": case "sethome": case "delhome": case "renamehome": completeHome(sender, commandName, args)            break;        case "rtp": singleArg(args, plugin.getRtpManager().getPortalSelectorSuggestions())            break;        case "shop": completeShop(sender, args)            break;        case "shardshop": java.util.Collections.emptyList()            break;        case "safety": completeSafety(sender, args)            break;                case "orders": completeOrders(sender, args)            break;
-        case "auctionhouse": completeAuctionHouse(sender, args)            break;        case "enderchest": completeReloadOnly(sender, args, "ultimatedonutsmp.admin.enderchest")            break;        case "ecsee": completeEcsee(sender, args)            break;        case "sellhand": singleArg(args, AMOUNTS)            break;        case "worth": completeWorth(sender, args)            break;        case "balance": case "stats": case "playtime": case "alts": case "profileviewer": case "seehomes": case "punishments": case "logs": completeKnownPlayer(args, sender, true)            break;        case "ping": case "findplayer": completeOnlinePlayer(args, sender, true)            break;        case "pay": case "shardpay": completePayment(sender, args)            break;        case "addmoney": case "removemoney": case "setmoney": case "addshards": case "removeshards": case "setshards": completeMoneyAdmin(sender, args)            break;        case "shards": completeShards(sender, args)            break;        case "freeze": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.freeze", false)            break;        case "fly": case "heal": case "feed": completeOnlinePlayer(args, sender, true)            break;        case "flyspeed": completeFlySpeed(args, sender)            break;        case "staffmode": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.staffmode", true)            break;        case "helpop": case "staffchat": java.util.Collections.emptyList()            break;        case "rename": singleArg(args, new java.util.ArrayList<>(java.util.Arrays.asList("reset",  "clear",  "remove")))            break;
-            case "randomteleport", "leave", "draw", "pm", "spawn", "afk", "sell", "sellall", "sellhistory",
-                    "stafflist", "vanish", "tpauto", "tpahereauto", "nightvision", "phantom", "settings",
-                     "twitter", "store", "social", "rules", "help", "servers", "billford",
-                    "clearlag", "crates", "keys" -> java.util.Collections.emptyList();        case "teleport": completeTeleport(sender, label, args)            break;        case "invsee": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.invsee", false)            break;
-            case "ban", "tempban", "mute", "tempmute", "warn", "kick", "blacklist", "unban", "unmute",
-                    "unblacklist" -> completePunishment(sender, commandName, args);        case "bounty": completeBounty(sender, args)            break;        case "tpa": case "tpahere": completeOnlinePlayer(args, sender, false)            break;        case "tpaccept": case "tpadeny": completeOnlinePlayer(args, sender, true)            break;        case "leaderboard": singleArg(args, leaderboardTypes())            break;        case "spawner": completeSpawner(sender, args)            break;        case "cuboid": completeCuboid(sender, args)            break;        default: java.util.Collections.emptyList()            break;
-        };
+        switch (commandName) {
+            case "team":
+                return completeTeam(sender, args);
+            case "home":
+            case "homes":
+            case "sethome":
+            case "delhome":
+            case "renamehome":
+                return completeHome(sender, commandName, args);
+            case "rtp":
+                return singleArg(args, plugin.getRtpManager().getPortalSelectorSuggestions());
+            case "shop":
+                return completeShop(sender, args);
+            case "shardshop":
+                return java.util.Collections.emptyList();
+            case "safety":
+                return completeSafety(sender, args);
+            case "orders":
+                return completeOrders(sender, args);
+            case "auctionhouse":
+                return completeAuctionHouse(sender, args);
+            case "enderchest":
+                return completeReloadOnly(sender, args, "ultimatedonutsmp.admin.enderchest");
+            case "ecsee":
+                return completeEcsee(sender, args);
+            case "sellhand":
+                return singleArg(args, AMOUNTS);
+            case "worth":
+                return completeWorth(sender, args);
+            case "balance":
+            case "stats":
+            case "playtime":
+            case "alts":
+            case "profileviewer":
+            case "seehomes":
+            case "punishments":
+            case "logs":
+                return completeKnownPlayer(args, sender, true);
+            case "ping":
+            case "findplayer":
+                return completeOnlinePlayer(args, sender, true);
+            case "pay":
+            case "shardpay":
+                return completePayment(sender, args);
+            case "addmoney":
+            case "removemoney":
+            case "setmoney":
+            case "addshards":
+            case "removeshards":
+            case "setshards":
+                return completeMoneyAdmin(sender, args);
+            case "shards":
+                return completeShards(sender, args);
+            case "freeze":
+                return completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.freeze", false);
+            case "fly":
+            case "heal":
+            case "feed":
+                return completeOnlinePlayer(args, sender, true);
+            case "flyspeed":
+                return completeFlySpeed(args, sender);
+            case "staffmode":
+                return completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.staffmode", true);
+            case "helpop":
+            case "staffchat":
+                return java.util.Collections.emptyList();
+            case "rename":
+                return singleArg(args, new java.util.ArrayList<>(java.util.Arrays.asList("reset",  "clear",  "remove")));
+            case "randomteleport":
+            case "leave":
+            case "draw":
+            case "pm":
+            case "spawn":
+            case "afk":
+            case "sell":
+            case "sellall":
+            case "sellhistory":
+            case "stafflist":
+            case "vanish":
+            case "tpauto":
+            case "tpahereauto":
+            case "nightvision":
+            case "phantom":
+            case "settings":
+            case "twitter":
+            case "store":
+            case "social":
+            case "rules":
+            case "help":
+            case "servers":
+            case "billford":
+            case "clearlag":
+            case "crates":
+            case "keys":
+                return java.util.Collections.emptyList();
+            case "teleport":
+                return completeTeleport(sender, label, args);
+            case "invsee":
+                return completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.invsee", false);
+            case "ban":
+            case "tempban":
+            case "mute":
+            case "tempmute":
+            case "warn":
+            case "kick":
+            case "blacklist":
+            case "unban":
+            case "unmute":
+            case "unblacklist":
+                return completePunishment(sender, commandName, args);
+            case "bounty":
+                return completeBounty(sender, args);
+            case "tpa":
+            case "tpahere":
+                return completeOnlinePlayer(args, sender, false);
+            case "tpaccept":
+            case "tpadeny":
+                return completeOnlinePlayer(args, sender, true);
+            case "leaderboard":
+                return singleArg(args, leaderboardTypes());
+            case "spawner":
+                return completeSpawner(sender, args);
+            case "cuboid":
+                return completeCuboid(sender, args);
+            default:
+                return java.util.Collections.emptyList();
+        }
     }
 
     private List<String> completeTeam(CommandSender sender, String[] args) {
@@ -80,8 +198,18 @@ public class UniversalCommandTabCompleter implements TabCompleter {
             return java.util.Collections.emptyList();
         }
 
-        return switch (normalize(args[0])) {        case "invite": partial(args[1], onlinePlayerNames(sender, false))            break;        case "join": partial(args[1], plugin.getTeamManager().getPendingInvites(player.getUniqueId()))            break;        case "kick": partial(args[1], teamMemberNames(player, false))            break;        case "info": partial(args[1], teamNames())            break;        default: java.util.Collections.emptyList()            break;
-        };
+        switch (normalize(args[0])) {
+            case "invite":
+                return partial(args[1], onlinePlayerNames(sender, false));
+            case "join":
+                return partial(args[1], plugin.getTeamManager().getPendingInvites(player.getUniqueId()));
+            case "kick":
+                return partial(args[1], teamMemberNames(player, false));
+            case "info":
+                return partial(args[1], teamNames());
+            default:
+                return java.util.Collections.emptyList();
+        }
     }
 
     private List<String> teamNames() {
@@ -97,8 +225,14 @@ public class UniversalCommandTabCompleter implements TabCompleter {
         if (args.length != 1) {
             return java.util.Collections.emptyList();
         }
-        return switch (commandName) {        case "home": case "delhome": case "renamehome": partial(args[0], homeNames(player))            break;        default: java.util.Collections.emptyList()            break;
-        };
+        switch (commandName) {
+            case "home":
+            case "delhome":
+            case "renamehome":
+                return partial(args[0], homeNames(player));
+            default:
+                return java.util.Collections.emptyList();
+        }
     }
 
     private List<String> completeOrders(CommandSender sender, String[] args) {
@@ -112,7 +246,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
         return partial(args[0], options);
     }
 
-    private List<String> completeOrders(CommandSender sender, String[] args) {
+    private List<String> completeAuctionHouse(CommandSender sender, String[] args) {
         if (args.length == 1) {
             List<String> options = new ArrayList<>(new java.util.ArrayList<>(java.util.Arrays.asList("sell",  "my",  "claims",  "cancel")));
             if (has(sender, "ultimatedonutsmp.admin.auctionhouse")) {
@@ -124,78 +258,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
             return partial(args[1], AMOUNTS);
         }
         if (args.length == 2 && normalize(args[0]).equals("cancel") && sender instanceof Player) {
-            Player player = (Player) !command.testPermissionSilent(sender) || !isFeatureEnabled(command.getName())) {
-            return java.util.Collections.emptyList();
-        }
-
-        String commandName = normalize(command.getName());
-        String label = normalize(alias);
-        return switch (commandName) {        case "team": completeTeam(sender, args)            break;        case "home": case "homes": case "sethome": case "delhome": case "renamehome": completeHome(sender, commandName, args)            break;        case "rtp": singleArg(args, plugin.getRtpManager().getPortalSelectorSuggestions())            break;        case "shop": completeShop(sender, args)            break;        case "shardshop": java.util.Collections.emptyList()            break;        case "safety": completeSafety(sender, args)            break;                case "orders": completeOrders(sender, args)            break;
-        case "auctionhouse": completeAuctionHouse(sender, args)            break;        case "enderchest": completeReloadOnly(sender, args, "ultimatedonutsmp.admin.enderchest")            break;        case "ecsee": completeEcsee(sender, args)            break;        case "sellhand": singleArg(args, AMOUNTS)            break;        case "worth": completeWorth(sender, args)            break;        case "balance": case "stats": case "playtime": case "alts": case "profileviewer": case "seehomes": case "punishments": case "logs": completeKnownPlayer(args, sender, true)            break;        case "ping": case "findplayer": completeOnlinePlayer(args, sender, true)            break;        case "pay": case "shardpay": completePayment(sender, args)            break;        case "addmoney": case "removemoney": case "setmoney": case "addshards": case "removeshards": case "setshards": completeMoneyAdmin(sender, args)            break;        case "shards": completeShards(sender, args)            break;        case "freeze": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.freeze", false)            break;        case "fly": case "heal": case "feed": completeOnlinePlayer(args, sender, true)            break;        case "flyspeed": completeFlySpeed(args, sender)            break;        case "staffmode": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.staffmode", true)            break;        case "helpop": case "staffchat": java.util.Collections.emptyList()            break;        case "rename": singleArg(args, new java.util.ArrayList<>(java.util.Arrays.asList("reset",  "clear",  "remove")))            break;
-            case "randomteleport", "leave", "draw", "pm", "spawn", "afk", "sell", "sellall", "sellhistory",
-                    "stafflist", "vanish", "tpauto", "tpahereauto", "nightvision", "phantom", "settings",
-                     "twitter", "store", "social", "rules", "help", "servers", "billford",
-                    "clearlag", "crates", "keys" -> java.util.Collections.emptyList();        case "teleport": completeTeleport(sender, label, args)            break;        case "invsee": completePlayerOrReload(sender, args, "ultimatedonutsmp.admin.invsee", false)            break;
-            case "ban", "tempban", "mute", "tempmute", "warn", "kick", "blacklist", "unban", "unmute",
-                    "unblacklist" -> completePunishment(sender, commandName, args);        case "bounty": completeBounty(sender, args)            break;        case "tpa": case "tpahere": completeOnlinePlayer(args, sender, false)            break;        case "tpaccept": case "tpadeny": completeOnlinePlayer(args, sender, true)            break;        case "leaderboard": singleArg(args, leaderboardTypes())            break;        case "spawner": completeSpawner(sender, args)            break;        case "cuboid": completeCuboid(sender, args)            break;        default: java.util.Collections.emptyList()            break;
-        };
-    }
-
-    private List<String> completeTeam(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
-            return java.util.Collections.emptyList();
-        }
-        if (args.length == 1) {
-            return partial(args[0], TEAM_SUBCOMMANDS);
-        }
-        if (args.length != 2) {
-            return java.util.Collections.emptyList();
-        }
-
-        return switch (normalize(args[0])) {        case "invite": partial(args[1], onlinePlayerNames(sender, false))            break;        case "join": partial(args[1], plugin.getTeamManager().getPendingInvites(player.getUniqueId()))            break;        case "kick": partial(args[1], teamMemberNames(player, false))            break;        case "info": partial(args[1], teamNames())            break;        default: java.util.Collections.emptyList()            break;
-        };
-    }
-
-    private List<String> teamNames() {
-        return plugin.getTeamManager().getAllTeams().stream()
-                .map(Team::getName)
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    private List<String> completeHome(CommandSender sender, String commandName, String[] args) {
-        if (!(sender instanceof Player player)) {
-            return java.util.Collections.emptyList();
-        }
-        if (args.length != 1) {
-            return java.util.Collections.emptyList();
-        }
-        return switch (commandName) {        case "home": case "delhome": case "renamehome": partial(args[0], homeNames(player))            break;        default: java.util.Collections.emptyList()            break;
-        };
-    }
-
-    private List<String> completeOrders(CommandSender sender, String[] args) {
-        if (args.length != 1) {
-            return java.util.Collections.emptyList();
-        }
-        List<String> options = new ArrayList<>(new java.util.ArrayList<>(java.util.Arrays.asList("browse",  "my",  "collect")));
-        if (has(sender, "ultimatedonutsmp.admin.orders")) {
-            options.add("reload");
-        }
-        return partial(args[0], options);
-    }
-
-    private List<String> completeOrders(CommandSender sender, String[] args) {
-        if (args.length == 1) {
-            List<String> options = new ArrayList<>(new java.util.ArrayList<>(java.util.Arrays.asList("sell",  "my",  "claims",  "cancel")));
-            if (has(sender, "ultimatedonutsmp.admin.auctionhouse")) {
-                options.add("reload");
-            }
-            return partial(args[0], options);
-        }
-        if (args.length == 2 && normalize(args[0]).equals("sell")) {
-            return partial(args[1], AMOUNTS);
-        }
-        if (args.length == 2 && normalize(args[0]).equals("cancel") && sender;
+            Player player = (Player) sender;
             return partial(args[1], ownAuctionListingIds(player));
         }
         return java.util.Collections.emptyList();
@@ -470,7 +533,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
             return new ArrayList<>(names);
         }
         for (PlayerData data : plugin.getPlayerDataManager().getAll()) {
-            if (data == null || data.getUsername() == null || data.getUsername().isBlank()) {
+            if (data == null || data.getUsername() == null || data.getUsername().trim().isEmpty()) {
                 continue;
             }
             if (!includeSelf && senderUuid != null && senderUuid.equals(data.getUuid())) {
@@ -506,7 +569,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
                 continue;
             }
             String knownName = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-            if (knownName != null && !knownName.isBlank()) {
+            if (knownName != null && !knownName.trim().isEmpty()) {
                 names.add(knownName);
             }
         }
@@ -578,7 +641,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
     }
 
     private boolean has(CommandSender sender, String permission) {
-        return permission == null || permission.isBlank() || PermissionUtils.has(sender, permission);
+        return permission == null || permission.trim().isEmpty() || PermissionUtils.has(sender, permission);
     }
 
     private String normalize(String value) {
@@ -591,7 +654,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
         }
         String prefix = input == null ? "" : input.toLowerCase(Locale.ROOT);
         return options.stream()
-                .filter(option -> option != null && !option.isBlank())
+                .filter(option -> option != null && !option.trim().isEmpty())
                 .distinct()
                 .filter(option -> option.toLowerCase(Locale.ROOT).startsWith(prefix))
                 .sorted(String.CASE_INSENSITIVE_ORDER)

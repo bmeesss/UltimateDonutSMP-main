@@ -230,7 +230,7 @@ public final class MovedPath {
         if (activeBackupDirectory != null) {
             status.append(", backup=").append(activeBackupDirectory);
         }
-        if (!lastError.isBlank()) {
+        if (!lastError.trim().isEmpty()) {
             status.append(", error=").append(lastError);
         }
         return status.toString();
@@ -532,7 +532,7 @@ public final class MovedPath {
             environments.put(worldName, loaded == null ? inferEnvironment(worldName) : loaded.getEnvironment());
         }
 
-        return new Validation(new java.util.ArrayList<>(worlds), Map.copyOf(environments), new java.util.ArrayList<>(errors));
+        return new Validation(new java.util.ArrayList<>(worlds), new java.util.HashMap<>(environments), new java.util.ArrayList<>(errors));
     }
 
     private Set<String> collectProtectedWorlds() {
@@ -580,7 +580,7 @@ public final class MovedPath {
                 addWorldName(protectedWorlds, key.world());
             }
         }
-        return Set.copyOf(protectedWorlds);
+        return new java.util.HashSet<>(protectedWorlds);
     }
 
     private boolean isConfiguredRtpWorld(String worldName) {
@@ -602,7 +602,7 @@ public final class MovedPath {
 
     private Path createBackupDirectory() throws IOException {
         String configured = config().getString("BACKUP-DIRECTORY", "server-wipe-backups");
-        Path root = Path.of(configured == null || configured.isBlank() ? "server-wipe-backups" : configured);
+        Path root = Path.of(configured == null || configured.trim().isEmpty() ? "server-wipe-backups" : configured);
         if (!root.isAbsolute()) {
             root = plugin.getDataFolder().toPath().resolve(root);
         }
@@ -798,7 +798,7 @@ public final class MovedPath {
     }
 
     private Path readAbsolutePath(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
         try {
@@ -832,7 +832,7 @@ public final class MovedPath {
     }
 
     private void addWorldName(Set<String> worlds, String world) {
-        if (world != null && !world.isBlank()) {
+        if (world != null && !world.trim().isEmpty()) {
             worlds.add(world.trim().toLowerCase(Locale.ROOT));
         }
     }
@@ -845,7 +845,7 @@ public final class MovedPath {
         LinkedHashMap<String, String> worlds = new LinkedHashMap<>();
         if (values != null) {
             for (String value : values) {
-                if (value == null || value.isBlank()) {
+                if (value == null || value.trim().isEmpty()) {
                     continue;
                 }
                 String trimmed = value.trim();

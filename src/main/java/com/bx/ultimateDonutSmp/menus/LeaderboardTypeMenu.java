@@ -238,7 +238,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
         }
 
         String singleLine = section.getString(key);
-        if (singleLine == null || singleLine.isBlank()) {
+        if (singleLine == null || singleLine.trim().isEmpty()) {
             return java.util.Collections.emptyList();
         }
         return java.util.Collections.singletonList(singleLine);

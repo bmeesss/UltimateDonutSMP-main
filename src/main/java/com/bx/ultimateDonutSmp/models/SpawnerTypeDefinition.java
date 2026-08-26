@@ -16,6 +16,12 @@ public final class SpawnerTypeDefinition {
     private final List<DropDefinition> drops;
 
     public SpawnerTypeDefinition(String key, String displayName, EntityType entityType, Material iconMaterial, long baseItemsPerCycle, double xpPerCycle, String headTexture, List<DropDefinition> drops) {
+        displayName = displayName == null || displayName.trim().isEmpty() ? key : displayName;
+        iconMaterial = iconMaterial == null ? Material.SPAWNER : iconMaterial;
+        baseItemsPerCycle = Math.max(1L, baseItemsPerCycle);
+        xpPerCycle = Math.max(0.0, xpPerCycle);
+        headTexture = headTexture == null || headTexture.trim().isEmpty() ? null : headTexture.trim();
+        drops = new java.util.ArrayList<>(drops == null ? java.util.Collections.emptyList() : drops);
     }
 
     public String key() { return key; }
@@ -44,14 +50,7 @@ public final class SpawnerTypeDefinition {
         this(key, displayName, entityType, iconMaterial, baseItemsPerCycle, xpPerCycle, null, drops);
     }
 
-    public SpawnerTypeDefinition {
-        displayName = displayName == null || displayName.isBlank() ? key : displayName;
-        iconMaterial = iconMaterial == null ? Material.SPAWNER : iconMaterial;
-        baseItemsPerCycle = Math.max(1L, baseItemsPerCycle);
-        xpPerCycle = Math.max(0.0, xpPerCycle);
-        headTexture = headTexture == null || headTexture.isBlank() ? null : headTexture.trim();
-        drops = new java.util.ArrayList<>(drops == null ? java.util.Collections.emptyList() : drops);
-    }
+
 
 public final class DropDefinition {
     private final String key;
@@ -61,6 +60,11 @@ public final class DropDefinition {
     private final double chance;
 
     public DropDefinition(String key, Material material, long min, long max, double chance) {
+            key = key == null ? "" : key.trim();
+            material = material == null ? Material.STONE : material;
+            min = Math.max(0L, min);
+            max = Math.max(min, max);
+            chance = Math.max(0D, Math.min(1D, chance));
         this.key = key;
         this.material = material;
         this.min = min;
@@ -75,13 +79,7 @@ public final class DropDefinition {
     public double chance() { return chance; }
 
 
-        public DropDefinition {
-            key = key == null ? "" : key.trim();
-            material = material == null ? Material.STONE : material;
-            min = Math.max(0L, min);
-            max = Math.max(min, max);
-            chance = Math.max(0D, Math.min(1D, chance));
-        }
+
 
         public double averageDropAmount() {
             return (min + max) / 2.0D;

@@ -16,6 +16,13 @@ public final class HideState {
     private final long updatedAt;
 
     public HideState(UUID playerUuid, String realNameSnapshot, HideMode mode, String alias, String aliasNormalized, String skinKey, String skinUsername, String textureValue, String textureSignature, long createdAt, long updatedAt) {
+        realNameSnapshot = safe(realNameSnapshot);
+        alias = safe(alias);
+        aliasNormalized = safe(aliasNormalized);
+        skinKey = safe(skinKey);
+        skinUsername = safe(skinUsername);
+        textureValue = safe(textureValue);
+        textureSignature = safe(textureSignature);
         this.playerUuid = playerUuid;
         this.realNameSnapshot = realNameSnapshot;
         this.mode = mode;
@@ -42,18 +49,10 @@ public final class HideState {
     public long updatedAt() { return updatedAt; }
 
 
-    public HideState {
-        realNameSnapshot = safe(realNameSnapshot);
-        alias = safe(alias);
-        aliasNormalized = safe(aliasNormalized);
-        skinKey = safe(skinKey);
-        skinUsername = safe(skinUsername);
-        textureValue = safe(textureValue);
-        textureSignature = safe(textureSignature);
-    }
+
 
     public boolean hasTexture() {
-        return !textureValue.isBlank();
+        return !textureValue.trim().isEmpty();
     }
 
     public HideState withTexture(String value, String signature, long timestamp) {

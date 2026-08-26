@@ -169,18 +169,23 @@ public class KeyAllManager {
         String configuredType = plugin.getConfigManager().getConfig().getString("KEY-ALL.TYPE");
         if (configuredType == null) {
             configuredType = "RANDOM";
-        } else if (configuredType.isBlank()) {
+        } else if (configuredType.trim().isEmpty()) {
             return null;
         }
 
         String type = configuredType.trim().toUpperCase(Locale.US);
 
-        return switch (type) {        case "ONE_KEY_ONLY": loadOneKeyOnlyReward()            break;        case "RANDOM": loadRandomReward()            break;        default: {
-
-                            SelectedKeyReward reward = loadRandomReward();
-                            reward != null ? reward : loadOneKeyOnlyReward();
-                        break;        }
-        };
+        switch (type) {
+            case "ONE_KEY_ONLY":
+                return loadOneKeyOnlyReward();
+            case "RANDOM":
+                return loadRandomReward();
+            default: {
+                SelectedKeyReward reward = loadRandomReward();
+                reward != null ? reward : loadOneKeyOnlyReward();
+                return break;
+            }
+        }
     }
 
     private SelectedKeyReward loadRandomReward() {
@@ -220,7 +225,7 @@ public class KeyAllManager {
 
     private SelectedKeyReward loadOneKeyOnlyReward() {
         String crateId = plugin.getConfigManager().getConfig().getString("KEY-ALL.ONE-KEY-ONLY.KEY", "");
-        if (crateId == null || crateId.isBlank()) {
+        if (crateId == null || crateId.trim().isEmpty()) {
             return loadLegacyReward();
         }
 
@@ -268,7 +273,7 @@ public class KeyAllManager {
         }
 
         String crateId = plugin.getConfigManager().getConfig().getString("KEY-ALL.REWARD.CRATE-ID", "");
-        if (crateId == null || crateId.isBlank()) {
+        if (crateId == null || crateId.trim().isEmpty()) {
             return null;
         }
 
@@ -318,12 +323,12 @@ public class KeyAllManager {
             boolean randomize = plugin.getConfigManager().getConfig().getBoolean("KEY-ALL.RANDOM-COMMANDS", false);
             if (randomize) {
                 String command = commands.get(random.nextInt(commands.size()));
-                if (command != null && !command.isBlank()) {
+                if (command != null && !command.trim().isEmpty()) {
                     executeSingleCommand(command, player, reward);
                 }
             } else {
                 for (String command : commands) {
-                    if (command == null || command.isBlank()) {
+                    if (command == null || command.trim().isEmpty()) {
                         continue;
                     }
                     executeSingleCommand(command, player, reward);
@@ -336,7 +341,7 @@ public class KeyAllManager {
 
     private void executeSingleCommand(String command, Player player, SelectedKeyReward reward) {
         String resolved = resolveCommandReward(command, player, reward);
-        if (resolved.isBlank()) {
+        if (resolved.trim().isEmpty()) {
             return;
         }
 
@@ -375,7 +380,7 @@ public class KeyAllManager {
         }
 
         String command = plugin.getConfigManager().getConfig().getString("KEY-ALL.COMMANDS", "");
-        if (command == null || command.isBlank()) {
+        if (command == null || command.trim().isEmpty()) {
             return java.util.Collections.emptyList();
         }
         return java.util.Collections.singletonList(command);
@@ -396,7 +401,7 @@ public class KeyAllManager {
         }
 
         for (String message : readNotificationMessages()) {
-            if (message == null || message.isBlank()) {
+            if (message == null || message.trim().isEmpty()) {
                 continue;
             }
 
@@ -409,7 +414,7 @@ public class KeyAllManager {
         }
 
         String sound = plugin.getConfigManager().getSound("KEY-ALL.REWARD");
-        if (sound == null || sound.isBlank()) {
+        if (sound == null || sound.trim().isEmpty()) {
             sound = plugin.getConfigManager().getConfig().getString(
                     "KEY-ALL.NOTIFICATION.SOUND",
                     "minecraft:entity.player.levelup|1.0|1.1"

@@ -272,7 +272,7 @@ public class ScoreboardManager {
         if (visiblePlayers.isEmpty()) {
             return;
         }
-        Set<UUID> uuids = Set.copyOf(visiblePlayers);
+        Set<UUID> uuids = new java.util.HashSet<>(visiblePlayers);
         visiblePlayers.clear();
         for (UUID uuid : uuids) {
             Player player = plugin.getServer().getPlayer(uuid);
@@ -773,8 +773,43 @@ public class ScoreboardManager {
     }
 
     private int minecraftCharWidth(int codePoint) {
-        return switch (codePoint) {        case ' ': case '\u00A0': 4            break;        case '!': case '.': case ': case ': case ':': case ';': case '|': case 'i': case '\'': case '`': 2            break;        case 'l': case 'I': case '[': case ']': case 't': 3            break;        case '"': case '(': case ')': case '*': case '<': case '>': case '{': case '}': case 'f': case 'k': 5            break;        case '@': case '~': 7            break;        default: codePoint > 127 ? 7 : 6            break;
-        };
+        switch (codePoint) {
+            case ' ':
+            case '\u00A0':
+                return 4;
+            case '!':
+            case '.':
+            case ': case ':
+            case ':':
+            case ';':
+            case '|':
+            case 'i':
+            case '\'':
+            case '`':
+                return 2;
+            case 'l':
+            case 'I':
+            case '[':
+            case ']':
+            case 't':
+                return 3;
+            case '"':
+            case '(':
+            case ')':
+            case '*':
+            case '<':
+            case '>':
+            case '{':
+            case '}':
+            case 'f':
+            case 'k':
+                return 5;
+            case '@':
+            case '~':
+                return 7;
+            default:
+                return codePoint > 127 ? 7 : 6;
+        }
     }
 
     private String getTitle(Player player, SidebarSettings settings) {

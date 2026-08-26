@@ -25,7 +25,7 @@ public enum StaffToolType {
     }
 
     public static StaffToolType fromPersistentId(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.trim().isEmpty()) {
             return null;
         }
 

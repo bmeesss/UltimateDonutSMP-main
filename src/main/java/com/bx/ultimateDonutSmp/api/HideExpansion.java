@@ -45,8 +45,24 @@ public class HideExpansion extends PlaceholderExpansion {
                 ? null
                 : hideManager.getState(player.getUniqueId());
 
-        return switch (params.toLowerCase(Locale.ROOT)) {        case "active": String.valueOf(state != null)            break;        case "public_name": case "name": publicName(player, hideManager, false)            break;        case "plain_name": case "plain_public_name": publicName(player, hideManager, true)            break;        case "mode": state == null ? "NONE" : state.mode().name()            break;        case "alias": state == null ? "" : state.alias()            break;        case "skin": state == null ? "" : state.skinUsername()            break;        default: null            break;
-        };
+        switch (params.toLowerCase(Locale.ROOT)) {
+            case "active":
+                return String.valueOf(state != null);
+            case "public_name":
+            case "name":
+                return publicName(player, hideManager, false);
+            case "plain_name":
+            case "plain_public_name":
+                return publicName(player, hideManager, true);
+            case "mode":
+                return state == null ? "NONE" : state.mode().name();
+            case "alias":
+                return state == null ? "" : state.alias();
+            case "skin":
+                return state == null ? "" : state.skinUsername();
+            default:
+                return null;
+        }
     }
 
     /**

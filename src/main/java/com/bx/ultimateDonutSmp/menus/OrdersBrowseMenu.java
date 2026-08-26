@@ -119,7 +119,7 @@ public class OrdersBrowseMenu extends BaseMenu {
                 plugin, "GUI.MAIN.BUTTONS.SEARCH", "ORDERS.GUI.MAIN.SEARCH",
                 Material.OAK_SIGN, "&aSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &f{query}",  "",  "&eLeft-click &fto search",  "&eRight-click &fto clear")),
-                "{query}", query.isBlank() ? "none" : query
+                "{query}", query.trim().isEmpty() ? "none" : query
         ));
         set(myOrdersSlot, OrdersMenuSupport.button(
                 plugin, "GUI.MAIN.BUTTONS.MY_ORDERS", "ORDERS.GUI.MAIN.MY_ORDERS",
@@ -223,7 +223,7 @@ public class OrdersBrowseMenu extends BaseMenu {
 
     private List<Order> visibleOrders() {
         List<Order> orders = plugin.getOrdersManager().getActiveOrders(sortMode, categoryFilter);
-        if (query.isBlank()) {
+        if (query.trim().isEmpty()) {
             return orders;
         }
         String normalized = query.toLowerCase(Locale.ROOT);

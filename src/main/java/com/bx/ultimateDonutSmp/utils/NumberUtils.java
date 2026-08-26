@@ -57,7 +57,7 @@ public class NumberUtils {
 
     /** Parse a number string with optional K/M/B/T suffix */
     public static double parse(String input) {
-        if (input == null || input.isBlank()) throw new NumberFormatException("Empty input");
+        if (input == null || input.trim().isEmpty()) throw new NumberFormatException("Empty input");
         String clean = input.trim().replace(",", "").replace("_", "").toUpperCase(Locale.US);
         double multiplier = 1;
         if (clean.endsWith("Q")) { multiplier = 1_000_000_000_000_000D; clean = clean.substring(0, clean.length() - 1); }

@@ -101,7 +101,7 @@ public class OrdersManager {
         SEARCH_ITEM;
 
         private static ItemSelectionMode fromConfig(String rawValue) {
-            if (rawValue == null || rawValue.isBlank()) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
                 return SELECT_ITEM;
             }
 
@@ -118,7 +118,7 @@ public class OrdersManager {
         SERVER_MATERIALS;
 
         private static SelectItemSource fromConfig(String rawValue) {
-            if (rawValue == null || rawValue.isBlank()) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
                 return CATEGORY_FILTERS;
             }
 
@@ -135,7 +135,7 @@ public class OrdersManager {
         AUTO_SCAN;
 
         private static DeliveryMode fromConfig(String rawValue) {
-            if (rawValue == null || rawValue.isBlank()) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
                 return DEPOSIT_GUI;
             }
             try {
@@ -892,7 +892,7 @@ public final class EditOrderResult {
     }
 
     public String normalizeCategory(String rawCategory) {
-        if (rawCategory == null || rawCategory.isBlank()) {
+        if (rawCategory == null || rawCategory.trim().isEmpty()) {
             return "ALL";
         }
 
@@ -967,7 +967,7 @@ public final class EditOrderResult {
             comparator = comparator.reversed();
         }
         return getCatalogEntries(categoryKey).stream()
-                .filter(entry -> normalizedSearch.isBlank()
+                .filter(entry -> normalizedSearch.trim().isEmpty()
                         || normalizeSearchText(entry.searchText()).contains(normalizedSearch)
                         || normalizeSearchText(entry.displayName()).contains(normalizedSearch))
                 .sorted(comparator)
@@ -1072,7 +1072,7 @@ public final class EditOrderResult {
 
         org.bukkit.configuration.ConfigurationSection configSection = getSignConfig("SEARCH_SIGN");
         SignInputUtil.openFromConfig(plugin, player, configSection, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingSearchInputs.remove(player.getUniqueId());
                 new OrdersBrowseMenu(plugin, 1, getDefaultSort(), "ALL").open(player);
             } else {
@@ -1089,7 +1089,7 @@ public final class EditOrderResult {
 
         org.bukkit.configuration.ConfigurationSection configSection = getSignConfig("SEARCH_SIGN");
         SignInputUtil.openFromConfig(plugin, player, configSection, text -> {
-            String query = (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) ? "" : text.trim();
+            String query = (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) ? "" : text.trim();
             plugin.getSpigotScheduler().runEntity(player, () -> {
                 if (isMyOrders) {
                     new com.bx.ultimateDonutSmp.menus.OrdersMyOrdersMenu(plugin, 1, sortMode, query).open(player);
@@ -1119,7 +1119,7 @@ public final class EditOrderResult {
 
         org.bukkit.configuration.ConfigurationSection configSection = getSignConfig("SEARCH_SIGN");
         SignInputUtil.openFromConfig(plugin, player, configSection, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingSearchInputs.remove(player.getUniqueId());
                 openEditOrderMenu(player, orderId, navigation);
             } else {
@@ -1363,7 +1363,7 @@ public final class EditOrderResult {
 
         org.bukkit.configuration.ConfigurationSection config = getSignConfig("AMOUNT_SIGN");
         SignInputUtil.openFromConfig(plugin, player, config, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingEdits.remove(player.getUniqueId());
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                         "ORDERS.EDIT_CANCELLED",
@@ -1400,7 +1400,7 @@ public final class EditOrderResult {
 
         org.bukkit.configuration.ConfigurationSection config = getSignConfig("PRICE_SIGN");
         SignInputUtil.openFromConfig(plugin, player, config, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingEdits.remove(player.getUniqueId());
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                         "ORDERS.EDIT_CANCELLED",
@@ -1425,7 +1425,7 @@ public final class EditOrderResult {
         }
 
         String serializedItem = serializeItem(requestedItem);
-        if (serializedItem.isBlank()) {
+        if (serializedItem.trim().isEmpty()) {
             return new EditOrderResult(false, EditFailureReason.DATABASE_ERROR, validation.order(), 0D);
         }
 
@@ -1497,7 +1497,25 @@ public final class EditOrderResult {
 
     public String resolveEditFailureMessage(EditOrderResult result) {
         EditFailureReason reason = result == null ? EditFailureReason.DATABASE_ERROR : result.reason();
-        return switch (reason) {        case DISABLED: plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is disabled."); break;        case ORDER_NOT_FOUND: plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_FOUND", "&cThat order no longer exists."); break;        case NOT_OWNER: plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_ORDER", "&cThat order does not belong to you."); break;        case NOT_ACTIVE: plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active."); break;        case ALREADY_DELIVERED: plugin.getConfigManager().getMessageOrDefault("ORDERS.EDIT_LOCKED", "&cThis order already has deliveries, so it cannot be edited."); break;        case INVALID_ITEM: plugin.getConfigManager().getMessageOrDefault("ORDERS.ITEM_BLOCKED", "&cThat item cannot be ordered."); break;        case INVALID_QUANTITY: plugin.getConfigManager().getMessageOrDefault("ORDERS.INVALID_QUANTITY", "&cInvalid quantity."); break;        case INVALID_PRICE: plugin.getConfigManager().getMessageOrDefault("ORDERS.INVALID_PRICE", "&cInvalid price."); break;        case PRICE_OUT_OF_RANGE: plugin.getConfigManager().getMessageOrDefault(
+        switch (reason) {
+            case DISABLED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is disabled.");
+            case ORDER_NOT_FOUND:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_FOUND", "&cThat order no longer exists.");
+            case NOT_OWNER:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_ORDER", "&cThat order does not belong to you.");
+            case NOT_ACTIVE:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.");
+            case ALREADY_DELIVERED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.EDIT_LOCKED", "&cThis order already has deliveries, so it cannot be edited.");
+            case INVALID_ITEM:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.ITEM_BLOCKED", "&cThat item cannot be ordered.");
+            case INVALID_QUANTITY:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.INVALID_QUANTITY", "&cInvalid quantity.");
+            case INVALID_PRICE:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.INVALID_PRICE", "&cInvalid price.");
+            case PRICE_OUT_OF_RANGE:
+                return plugin.getConfigManager().getMessageOrDefault(
                     "ORDERS.PRICE_OUT_OF_RANGE",
                     "&cPrice each must be between &f{min_formatted}&c and &f{max_formatted}&c.",
                     "{min}", NumberUtils.format(getMinPriceEach()),
@@ -1506,14 +1524,24 @@ public final class EditOrderResult {
                     "{max}", NumberUtils.format(getMaxPriceEach()),
                     "{max_formatted}", plugin.getCurrencyManager().formatMoney(getMaxPriceEach()),
                     "${max}", plugin.getCurrencyManager().formatMoney(getMaxPriceEach())
-            )            break;        case TOTAL_TOO_HIGH: plugin.getConfigManager().getMessageOrDefault(
+            );
+            case TOTAL_TOO_HIGH:
+                return plugin.getConfigManager().getMessageOrDefault(
                     "ORDERS.TOTAL_TOO_HIGH",
                     "&cTotal order budget cannot exceed &f{max_formatted}&c.",
                     "{max}", NumberUtils.format(getMaxTotalBudget()),
                     "{max_formatted}", plugin.getCurrencyManager().formatMoney(getMaxTotalBudget()),
                     "${max}", plugin.getCurrencyManager().formatMoney(getMaxTotalBudget())
-            )            break;        case NO_MONEY: plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_ENOUGH_MONEY", "&cYou do not have enough money for that change."); break;        case NO_PLAYER_DATA: "&cYour player data could not be loaded."; break;        case DATABASE_ERROR: "&cOrders could not update that order right now."; break;
-        };
+            );
+            case NO_MONEY:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_ENOUGH_MONEY", "&cYou do not have enough money for that change.");
+            case NO_PLAYER_DATA:
+                return "&cYour player data could not be loaded.";
+            case DATABASE_ERROR:
+                return "&cOrders could not update that order right now.";
+            default:
+                return null;
+        }
     }
 
     public String describeMaterial(Material material) {
@@ -1550,7 +1578,7 @@ public final class EditOrderResult {
 
         String query = rawQuery == null ? "" : rawQuery.trim();
         String normalizedQuery = normalizeSearchText(query);
-        if (normalizedQuery.isBlank()) {
+        if (normalizedQuery.trim().isEmpty()) {
             return java.util.Collections.emptyList();
         }
 
@@ -1603,7 +1631,7 @@ public final class EditOrderResult {
             return;
         }
 
-        if (input.isBlank()) {
+        if (input.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                     "ORDERS.SEARCH_EMPTY",
                     "&cType an item or category name to search."
@@ -1799,7 +1827,7 @@ public final class EditOrderResult {
         List<String> tokens = new ArrayList<>();
         for (String rawToken : material.name().split("_")) {
             String token = normalizeSearchText(rawToken);
-            if (!token.isBlank()) {
+            if (!token.trim().isEmpty()) {
                 tokens.add(token);
             }
         }
@@ -1836,8 +1864,22 @@ public final class EditOrderResult {
     }
 
     private List<String> searchCategoryAliases(SearchCategory category) {
-        return switch (category) {        case BLOCKS: new java.util.ArrayList<>(java.util.Arrays.asList("block",  "blocks")); break;        case ITEMS: new java.util.ArrayList<>(java.util.Arrays.asList("item",  "items")); break;        case SWORDS: new java.util.ArrayList<>(java.util.Arrays.asList("sword",  "swords")); break;        case ARMOR: java.util.Collections.singletonList("armor"); break;        case FOOD: new java.util.ArrayList<>(java.util.Arrays.asList("food",  "foods")); break;        case WOOD: new java.util.ArrayList<>(java.util.Arrays.asList("wood",  "woods")); break;
-        };
+        switch (category) {
+            case BLOCKS:
+                return new java.util.ArrayList<>(java.util.Arrays.asList("block",  "blocks"));
+            case ITEMS:
+                return new java.util.ArrayList<>(java.util.Arrays.asList("item",  "items"));
+            case SWORDS:
+                return new java.util.ArrayList<>(java.util.Arrays.asList("sword",  "swords"));
+            case ARMOR:
+                return java.util.Collections.singletonList("armor");
+            case FOOD:
+                return new java.util.ArrayList<>(java.util.Arrays.asList("food",  "foods"));
+            case WOOD:
+                return new java.util.ArrayList<>(java.util.Arrays.asList("wood",  "woods"));
+            default:
+                return null;
+        }
     }
 
     private boolean matchesSearchCategory(Material material, SearchCategory category) {
@@ -1845,8 +1887,22 @@ public final class EditOrderResult {
             return false;
         }
 
-        return switch (category) {        case BLOCKS: material.isBlock(); break;        case ITEMS: !material.isBlock(); break;        case SWORDS: material.name().endsWith("_SWORD"); break;        case ARMOR: isArmorMaterial(material); break;        case FOOD: material.isEdible(); break;        case WOOD: isWoodFamilyMaterial(material); break;
-        };
+        switch (category) {
+            case BLOCKS:
+                return material.isBlock();
+            case ITEMS:
+                return !material.isBlock();
+            case SWORDS:
+                return material.name().endsWith("_SWORD");
+            case ARMOR:
+                return isArmorMaterial(material);
+            case FOOD:
+                return material.isEdible();
+            case WOOD:
+                return isWoodFamilyMaterial(material);
+            default:
+                return null;
+        }
     }
 
     private List<OrderCatalogEntry> getServerMaterialCatalogEntries(String categoryKey) {
@@ -1863,7 +1919,7 @@ public final class EditOrderResult {
     }
 
     private String normalizeServerCatalogCategory(String rawCategory) {
-        if (rawCategory == null || rawCategory.isBlank()) {
+        if (rawCategory == null || rawCategory.trim().isEmpty()) {
             return "ALL";
         }
 
@@ -1891,10 +1947,30 @@ public final class EditOrderResult {
             return false;
         }
 
-        return switch (normalizeServerCatalogCategory(categoryKey)) {        case "ALL": true            break;        case "BLOCKS": material.isBlock()            break;        case "ITEMS": !material.isBlock() && !isFoodMaterial(material) && !isToolMaterial(material)
+        switch (normalizeServerCatalogCategory(categoryKey)) {
+            case "ALL":
+                return true;
+            case "BLOCKS":
+                return material.isBlock();
+            case "ITEMS":
+                return !material.isBlock() && !isFoodMaterial(material) && !isToolMaterial(material)
                     && !isSwordMaterial(material) && !isArmorMaterial(material)
-                    && !isCombatMaterial(material) && !isRedstoneMaterial(material)            break;        case "FOOD": isFoodMaterial(material)            break;        case "TOOLS": isToolMaterial(material)            break;        case "SWORDS": isSwordMaterial(material)            break;        case "ARMOR": isArmorMaterial(material)            break;        case "COMBAT": isCombatMaterial(material)            break;        case "REDSTONE": isRedstoneMaterial(material)            break;        default: true            break;
-        };
+                    && !isCombatMaterial(material) && !isRedstoneMaterial(material);
+            case "FOOD":
+                return isFoodMaterial(material);
+            case "TOOLS":
+                return isToolMaterial(material);
+            case "SWORDS":
+                return isSwordMaterial(material);
+            case "ARMOR":
+                return isArmorMaterial(material);
+            case "COMBAT":
+                return isCombatMaterial(material);
+            case "REDSTONE":
+                return isRedstoneMaterial(material);
+            default:
+                return true;
+        }
     }
 
     private boolean isFoodMaterial(Material material) {
@@ -1987,7 +2063,7 @@ public final class EditOrderResult {
     }
 
     private String normalizeSearchText(String rawText) {
-        if (rawText == null || rawText.isBlank()) {
+        if (rawText == null || rawText.trim().isEmpty()) {
             return "";
         }
 
@@ -2149,7 +2225,7 @@ public final class EditOrderResult {
         )));
         org.bukkit.configuration.ConfigurationSection config = getSignConfig("AMOUNT_SIGN");
         SignInputUtil.openFromConfig(plugin, player, config, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingEdits.remove(player.getUniqueId());
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                         "ORDERS.EDIT_CANCELLED",
@@ -2176,7 +2252,7 @@ public final class EditOrderResult {
         )));
         org.bukkit.configuration.ConfigurationSection config = getSignConfig("PRICE_SIGN");
         SignInputUtil.openFromConfig(plugin, player, config, text -> {
-            if (text == null || text.isBlank() || text.equalsIgnoreCase("cancel")) {
+            if (text == null || text.trim().isEmpty() || text.equalsIgnoreCase("cancel")) {
                 pendingEdits.remove(player.getUniqueId());
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                         "ORDERS.EDIT_CANCELLED",
@@ -3025,7 +3101,7 @@ public final class EditOrderResult {
     }
 
     private Material parseMaterial(String rawMaterial) {
-        if (rawMaterial == null || rawMaterial.isBlank()) {
+        if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
             return null;
         }
 
@@ -3457,12 +3533,22 @@ public final class EditOrderResult {
 
     private Comparator<Order> resolveComparator(OrderSort sortMode) {
         OrderSort effectiveSort = sortMode == null ? getDefaultSort() : sortMode;
-        return switch (effectiveSort) {        case MOST_DELIVERED: Comparator.comparingInt(Order::deliveredQuantity).reversed()
-                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed())            break;        case RECENTLY_LISTED: Comparator.comparingLong(Order::createdAt).reversed()
-                    .thenComparing(Comparator.comparingLong(Order::id).reversed())            break;        case MOST_MONEY_PER_ITEM: Comparator.comparingDouble(Order::priceEach).reversed()
-                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed())            break;        case MOST_PAID: Comparator.comparingDouble(Order::paidAmount).reversed()
-                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed())            break;
-        };
+        switch (effectiveSort) {
+            case MOST_DELIVERED:
+                return Comparator.comparingInt(Order::deliveredQuantity).reversed()
+                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed());
+            case RECENTLY_LISTED:
+                return Comparator.comparingLong(Order::createdAt).reversed()
+                    .thenComparing(Comparator.comparingLong(Order::id).reversed());
+            case MOST_MONEY_PER_ITEM:
+                return Comparator.comparingDouble(Order::priceEach).reversed()
+                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed());
+            case MOST_PAID:
+                return Comparator.comparingDouble(Order::paidAmount).reversed()
+                    .thenComparing(Comparator.comparingLong(Order::createdAt).reversed());
+            default:
+                return null;
+        }
     }
 
     private PlayerData getPlayerData(Player player) {
@@ -3584,7 +3670,7 @@ public final class EditOrderResult {
     }
 
     private DeserializedItem deserializeItem(String encoded) {
-        if (encoded == null || encoded.isBlank()) {
+        if (encoded == null || encoded.trim().isEmpty()) {
             return new DeserializedItem(null, true, "missing item data");
         }
 
@@ -3623,7 +3709,7 @@ public final class EditOrderResult {
     }
 
     private boolean serializedItemMissingMaterialKey(String encoded, Material material) {
-        if (encoded == null || encoded.isBlank() || material == null) {
+        if (encoded == null || encoded.trim().isEmpty() || material == null) {
             return false;
         }
 
@@ -3638,11 +3724,11 @@ public final class EditOrderResult {
 
     private String summarizeException(Exception exception) {
         String message = exception.getMessage();
-        if ((message == null || message.isBlank()) && exception.getCause() != null) {
+        if ((message == null || message.trim().isEmpty()) && exception.getCause() != null) {
             message = exception.getCause().getMessage();
         }
         return exception.getClass().getSimpleName()
-                + (message == null || message.isBlank() ? "" : ": " + message);
+                + (message == null || message.trim().isEmpty() ? "" : ": " + message);
     }
 
     private Order mapOrder(ResultSet rs) throws SQLException {
@@ -3710,7 +3796,7 @@ public final class EditOrderResult {
 
     private void repairOrderItemData(long orderId, ItemStack fallbackItem, String reason) {
         String serializedFallback = serializeItem(fallbackItem);
-        if (serializedFallback.isBlank()) {
+        if (serializedFallback.trim().isEmpty()) {
             return;
         }
 
@@ -3721,7 +3807,7 @@ public final class EditOrderResult {
             ps.setLong(3, orderId);
             ps.executeUpdate();
             plugin.getLogger().warning("Repaired order #" + orderId + " item data with " + fallbackItem.getType().name()
-                    + " fallback" + (reason == null || reason.isBlank() ? "." : " (" + reason + ")."));
+                    + " fallback" + (reason == null || reason.trim().isEmpty() ? "." : " (" + reason + ")."));
         } catch (SQLException exception) {
             plugin.getLogger().warning("Failed to repair order #" + orderId + " item data: " + summarizeException(exception));
         }
@@ -3808,7 +3894,7 @@ public final class EditOrderResult {
         }
 
         for (String rawMaterial : config().getStringList("MATCHING.BLOCKED_MATERIALS")) {
-            if (rawMaterial == null || rawMaterial.isBlank()) {
+            if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
                 continue;
             }
             if (parseMaterial(rawMaterial) == null) {

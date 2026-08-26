@@ -124,7 +124,7 @@ public class SpawnStashManager {
     }
 
     public synchronized SpawnStashTypeDefinition getTypeDefinition(String typeKey) {
-        if (typeKey == null || typeKey.isBlank()) {
+        if (typeKey == null || typeKey.trim().isEmpty()) {
             return null;
         }
         return typeDefinitions.get(normalizeTypeKey(typeKey));
@@ -434,7 +434,7 @@ public class SpawnStashManager {
             String materialName = stringValue(value(map, "MATERIAL"));
             String blockData = stringValue(value(map, "BLOCK_DATA"));
             Material material = materialName == null ? null : parseMaterial(materialName);
-            if (material == null && (blockData == null || blockData.isBlank())) {
+            if (material == null && (blockData == null || blockData.trim().isEmpty())) {
                 plugin.getLogger().warning("Ignoring SpawnStash block in type " + typeKey + " with no material/block data.");
                 continue;
             }
@@ -567,7 +567,7 @@ public class SpawnStashManager {
         if (instance == null || player == null || (!forceAlert && isBypass(player))) {
             return;
         }
-        String normalizedReason = reason == null || reason.isBlank()
+        String normalizedReason = reason == null || reason.trim().isEmpty()
                 ? "unknown"
                 : reason.toLowerCase(Locale.US);
         String cooldownKey = player.getUniqueId() + ":" + normalizedReason;
@@ -702,7 +702,7 @@ public class SpawnStashManager {
     }
 
     public synchronized SpawnStashTypeDefinition getTypeDefinition(String typeKey) {
-        if (typeKey == null || typeKey.isBlank()) {
+        if (typeKey == null || typeKey.trim().isEmpty()) {
             return null;
         }
         return typeDefinitions.get(normalizeTypeKey(typeKey));
@@ -1012,7 +1012,7 @@ public class SpawnStashManager {
             String materialName = stringValue(value(map, "MATERIAL"));
             String blockData = stringValue(value(map, "BLOCK_DATA"));
             Material material = materialName == null ? null : parseMaterial(materialName);
-            if (material == null && (blockData == null || blockData.isBlank())) {
+            if (material == null && (blockData == null || blockData.trim().isEmpty())) {
                 plugin.getLogger().warning("Ignoring SpawnStash block in type " + typeKey + " with no material/block data.");
                 continue;
             }
@@ -1145,7 +1145,7 @@ public class SpawnStashManager {
         if (instance == null || player == null || (!forceAlert && isBypass(player))) {
             return;
         }
-        String normalizedReason = reason == null || reason.isBlank()
+        String normalizedReason = reason == null || reason.trim().isEmpty()
                 ? "unknown"
                 : reason.toLowerCase(Locale.US);
         String cooldownKey = player.getUniqueId() + ":" + normalizedReason;
@@ -1430,7 +1430,7 @@ public class SpawnStashManager {
 
     private BlockData createBlockData(SpawnStashBlockDefinition definition, BlockFace facing) {
         BlockData data;
-        if (definition.blockData() != null && !definition.blockData().isBlank()) {
+        if (definition.blockData() != null && !definition.blockData().trim().isEmpty()) {
             data = Bukkit.createBlockData(definition.blockData());
         } else {
             data = Objects.requireNonNull(definition.material(), "material").createBlockData();
@@ -1448,7 +1448,7 @@ public class SpawnStashManager {
 
     private BlockData createBlockData(SpawnStashBlockDefinition definition, BlockFace facing) {
         BlockData data;
-        if (definition.blockData() != null && !definition.blockData().isBlank()) {
+        if (definition.blockData() != null && !definition.blockData().trim().isEmpty()) {
             data = Bukkit.createBlockData(definition.blockData());
         } else {
             data = Objects.requireNonNull(definition.material(), "material").createBlockData();
@@ -1475,7 +1475,7 @@ public class SpawnStashManager {
         ItemStack item = new ItemStack(definition.material(), definition.amount());
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            if (definition.displayName() != null && !definition.displayName().isBlank()) {
+            if (definition.displayName() != null && !definition.displayName().trim().isEmpty()) {
                 meta.setDisplayName(ColorUtils.colorize(definition.displayName()));
             }
             if (!definition.lore().isEmpty()) {
@@ -1513,8 +1513,18 @@ public class SpawnStashManager {
     }
 
     private String displayReason(String reason) {
-        return switch (reason) {        case "radius": "radius entry"            break;        case "open": "container open"            break;        case "interact": "block interact"            break;        case "break": "break attempt"            break;        default: reason            break;
-        };
+        switch (reason) {
+            case "radius":
+                return "radius entry";
+            case "open":
+                return "container open";
+            case "interact":
+                return "block interact";
+            case "break":
+                return "break attempt";
+            default:
+                return reason;
+        }
     }
 
     private String blockKey(Block block) {
@@ -1543,7 +1553,7 @@ public class SpawnStashManager {
         }
         if (raw instanceof String) {
             String text = (String) meta != null) {
-            if (definition.displayName() != null && !definition.displayName().isBlank()) {
+            if (definition.displayName() != null && !definition.displayName().trim().isEmpty()) {
                 meta.setDisplayName(ColorUtils.colorize(definition.displayName()));
             }
             if (!definition.lore().isEmpty()) {
@@ -1581,8 +1591,18 @@ public class SpawnStashManager {
     }
 
     private String displayReason(String reason) {
-        return switch (reason) {        case "radius": "radius entry"            break;        case "open": "container open"            break;        case "interact": "block interact"            break;        case "break": "break attempt"            break;        default: reason            break;
-        };
+        switch (reason) {
+            case "radius":
+                return "radius entry";
+            case "open":
+                return "container open";
+            case "interact":
+                return "block interact";
+            case "break":
+                return "break attempt";
+            default:
+                return reason;
+        }
     }
 
     private String blockKey(Block block) {
@@ -1750,7 +1770,7 @@ public class SpawnStashManager {
     }
 
     private Material parseMaterial(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
         String normalized = input.trim()
@@ -1761,7 +1781,7 @@ public class SpawnStashManager {
     }
 
     private EntityType parseEntityType(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
         try {
@@ -1779,7 +1799,7 @@ public class SpawnStashManager {
     }
 
     private String normalizeSpawnerTypeKey(String typeKey) {
-        if (typeKey == null || typeKey.isBlank()) {
+        if (typeKey == null || typeKey.trim().isEmpty()) {
             return null;
         }
         return typeKey.trim()

@@ -73,7 +73,7 @@ public final class ShopPreferenceRepository {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         String favoriteId = resultSet.getString("favorite_id");
-                        if (favoriteId != null && !favoriteId.isBlank()) {
+                        if (favoriteId != null && !favoriteId.trim().isEmpty()) {
                             favorites.add(favoriteId);
                         }
                     }

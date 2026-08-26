@@ -271,12 +271,44 @@ public class OrdersEditMenu extends BaseMenu {
         if (preview.reason() == null) {
             return "&7Ready to deliver.";
         }
-        return switch (preview.reason()) {        case DISABLED: "&7Orders is disabled."; break;        case NO_PLAYER_DATA: "&7Your player data is unavailable."; break;        case ORDER_NOT_FOUND: "&7This order no longer exists."; break;        case NOT_ACTIVE: "&7This order is no longer active."; break;        case OWN_ORDER: "&7You cannot deliver to your own order."; break;        case NO_MATCHING_ITEMS: "&7You do not have matching items to deliver."; break;        case ORDER_FULL: "&7This order has already been fulfilled."; break;        case PAYOUT_ERROR: "&7The payout could not be calculated."; break;        case DATABASE_ERROR: "&7Orders is busy right now."; break;
-        };
+        switch (preview.reason()) {
+            case DISABLED:
+                return "&7Orders is disabled.";
+            case NO_PLAYER_DATA:
+                return "&7Your player data is unavailable.";
+            case ORDER_NOT_FOUND:
+                return "&7This order no longer exists.";
+            case NOT_ACTIVE:
+                return "&7This order is no longer active.";
+            case OWN_ORDER:
+                return "&7You cannot deliver to your own order.";
+            case NO_MATCHING_ITEMS:
+                return "&7You do not have matching items to deliver.";
+            case ORDER_FULL:
+                return "&7This order has already been fulfilled.";
+            case PAYOUT_ERROR:
+                return "&7The payout could not be calculated.";
+            case DATABASE_ERROR:
+                return "&7Orders is busy right now.";
+            default:
+                return null;
+        }
     }
 
     private String resolveCancelFailure(OrdersManager.CancelOrderResult result) {
-        return switch (result.reason()) {        case DISABLED: plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is currently disabled."); break;        case ORDER_NOT_FOUND: plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_FOUND", "&cThat order no longer exists."); break;        case NOT_OWNER: plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_ORDER", "&cThat order does not belong to you."); break;        case NOT_ACTIVE: plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active."); break;        case DATABASE_ERROR: "&cOrders could not cancel that order right now."; break;
-        };
+        switch (result.reason()) {
+            case DISABLED:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.DISABLED", "&cOrders is currently disabled.");
+            case ORDER_NOT_FOUND:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_FOUND", "&cThat order no longer exists.");
+            case NOT_OWNER:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.NOT_YOUR_ORDER", "&cThat order does not belong to you.");
+            case NOT_ACTIVE:
+                return plugin.getConfigManager().getMessageOrDefault("ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.");
+            case DATABASE_ERROR:
+                return "&cOrders could not cancel that order right now.";
+            default:
+                return null;
+        }
     }
 }

@@ -49,7 +49,7 @@ final class HideIdentityPolicy {
     static boolean isValidProfileName(String name, int maxLength) {
         int safeMax = Math.max(1, Math.min(16, maxLength));
         return name != null
-                && !name.isBlank()
+                && !name.trim().isEmpty()
                 && name.length() <= safeMax
                 && name.matches("[A-Za-z0-9_]+");
     }
@@ -63,7 +63,7 @@ final class HideIdentityPolicy {
     }
 
     static boolean matchesState(HideState state, String input, boolean bypass) {
-        if (state == null || input == null || input.isBlank()) {
+        if (state == null || input == null || input.trim().isEmpty()) {
             return false;
         }
         return state.alias().equalsIgnoreCase(input)

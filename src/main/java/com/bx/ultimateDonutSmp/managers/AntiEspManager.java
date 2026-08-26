@@ -222,8 +222,14 @@ public class AntiEspManager {
             return Material.DEEPSLATE;
         }
 
-        return switch (world.getEnvironment()) {        case NETHER: fallback(netherCamouflage, Material.NETHERRACK); break;        case THE_END: fallback(endCamouflage, Material.END_STONE); break;        default: fallback(overworldCamouflage, Material.DEEPSLATE)            break;
-        };
+        switch (world.getEnvironment()) {
+            case NETHER:
+                return fallback(netherCamouflage, Material.NETHERRACK);
+            case THE_END:
+                return fallback(endCamouflage, Material.END_STONE);
+            default:
+                return fallback(overworldCamouflage, Material.DEEPSLATE);
+        }
     }
 
     private Material fallback(Material material, Material fallback) {

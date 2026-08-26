@@ -84,7 +84,7 @@ public final class LoadedAccount {
     }
 
     public AccountReference resolveAccount(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -577,7 +577,7 @@ public final class LoadedAccount {
 
     private String resolveDisplayName(UUID uuid, String fallbackName) {
         if (uuid == null) {
-            return fallbackName != null && !fallbackName.isBlank() ? fallbackName : "unknown";
+            return fallbackName != null && !fallbackName.trim().isEmpty() ? fallbackName : "unknown";
         }
 
         Player onlinePlayer = Bukkit.getPlayer(uuid);
@@ -585,17 +585,17 @@ public final class LoadedAccount {
             return onlinePlayer.getName();
         }
 
-        if (fallbackName != null && !fallbackName.isBlank()) {
+        if (fallbackName != null && !fallbackName.trim().isEmpty()) {
             return fallbackName;
         }
 
         String storedName = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        if (storedName != null && !storedName.isBlank()) {
+        if (storedName != null && !storedName.trim().isEmpty()) {
             return storedName;
         }
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-        if (offlinePlayer.getName() != null && !offlinePlayer.getName().isBlank()) {
+        if (offlinePlayer.getName() != null && !offlinePlayer.getName().trim().isEmpty()) {
             return offlinePlayer.getName();
         }
 
@@ -628,7 +628,7 @@ public final class LoadedAccount {
                 failureReason,
                 reason,
                 uuid,
-                displayName != null && !displayName.isBlank()
+                displayName != null && !displayName.trim().isEmpty()
                         ? displayName
                         : (uuid != null ? resolveDisplayName(uuid, null) : "Unknown"),
                 roundCurrency(Math.max(0D, Double.isFinite(amount) ? amount : 0D)),
@@ -669,11 +669,11 @@ public final class LoadedAccount {
                 failureReason,
                 reason,
                 senderUuid,
-                senderName != null && !senderName.isBlank()
+                senderName != null && !senderName.trim().isEmpty()
                         ? senderName
                         : (senderUuid != null ? resolveDisplayName(senderUuid, null) : "Unknown"),
                 recipientUuid,
-                recipientName != null && !recipientName.isBlank()
+                recipientName != null && !recipientName.trim().isEmpty()
                         ? recipientName
                         : (recipientUuid != null ? resolveDisplayName(recipientUuid, null) : "Unknown"),
                 roundCurrency(Math.max(0D, Double.isFinite(amount) ? amount : 0D)),

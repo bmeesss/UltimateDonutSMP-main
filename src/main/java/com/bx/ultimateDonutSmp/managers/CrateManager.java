@@ -476,7 +476,7 @@ public class CrateManager {
     }
 
     public boolean unbindCrateBlock(String worldName, int x, int y, int z) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return false;
         }
 
@@ -496,7 +496,7 @@ public class CrateManager {
             return false;
         }
         return crate.permission() == null
-                || crate.permission().isBlank()
+                || crate.permission().trim().isEmpty()
                 || PermissionUtils.has(player, crate.permission());
     }
 
@@ -745,7 +745,7 @@ public class CrateManager {
 
         clearSession(player.getUniqueId());
         if (shouldBroadcastClaim(crate, reward)) {
-            var broadcast = ColorUtils.toComponent(buildClaimBroadcast(player, crate, reward));
+            String broadcast = ColorUtils.toComponent(buildClaimBroadcast(player, crate, reward));
             Bukkit.getOnlinePlayers().stream()
                     .filter(viewer -> PlayerSettingUtils.notificationEnabled(
                             plugin,
@@ -850,7 +850,7 @@ public class CrateManager {
         }
 
         String stripped = ColorUtils.strip(crate.display().displayName());
-        return stripped == null || stripped.isBlank() ? prettifyId(crate.id()) : stripped;
+        return stripped == null || stripped.trim().isEmpty() ? prettifyId(crate.id()) : stripped;
     }
 
     public String getReadableRewardName(CrateReward reward) {
@@ -866,10 +866,10 @@ public class CrateManager {
         }
 
         String stripped = ColorUtils.strip(reward.display().displayName());
-        if (stripped == null || stripped.isBlank()) {
+        if (stripped == null || stripped.trim().isEmpty()) {
             stripped = ColorUtils.strip(reward.grant().item().displayName());
         }
-        return stripped == null || stripped.isBlank() ? reward.id() : stripped;
+        return stripped == null || stripped.trim().isEmpty() ? reward.id() : stripped;
     }
 
     public ItemStack createCrateListItem(Player player, CrateDefinition crate) {
@@ -880,7 +880,7 @@ public class CrateManager {
             item.setAmount(Math.min(keyCount, item.getMaxStackSize()));
         }
 
-        var meta = item.getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ColorUtils.toComponent(applyPlaceholders(display.displayName(), player, crate, null)));
             meta.setLore(ColorUtils.toComponentList(applyPlaceholders(display.lore(), player, crate, null)));
@@ -891,7 +891,7 @@ public class CrateManager {
 
     public ItemStack createRewardDisplayItem(Player player, CrateDefinition crate, CrateReward reward) {
         ItemStack item = null;
-        if (reward.grant().type() == GrantType.ITEM && reward.grant().serializedItemData() != null && !reward.grant().serializedItemData().isBlank()) {
+        if (reward.grant().type() == GrantType.ITEM && reward.grant().serializedItemData() != null && !reward.grant().serializedItemData().trim().isEmpty()) {
             item = deserializeGrantItem(reward.grant().serializedItemData(), crate, reward);
         }
         if (item == null) {
@@ -906,7 +906,7 @@ public class CrateManager {
             plugin.getAmethystToolsManager().prepareCrateDisplayShulker(item, reward.grant().amethystDurationSeconds());
         }
 
-        var meta = item.getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(ColorUtils.toComponent(applyPlaceholders(reward.display().displayName(), player, crate, reward)));
             meta.setLore(ColorUtils.toComponentList(applyPlaceholders(reward.display().lore(), player, crate, reward)));
@@ -974,8 +974,18 @@ public class CrateManager {
 
     private boolean grantReward(Player player, CrateDefinition crate, CrateReward reward, ItemStack preparedItem) {
         GrantDefinition grant = reward.grant();
-        return switch (grant.type()) {        case ITEM: grantItemReward(player, grant, preparedItem); break;        case MONEY: grantMoneyReward(player, grant); break;        case SHARDS: grantShardReward(player, grant); break;        case COMMAND: grantCommandReward(player, crate, reward, grant); break;
-        };
+        switch (grant.type()) {
+            case ITEM:
+                return grantItemReward(player, grant, preparedItem);
+            case MONEY:
+                return grantMoneyReward(player, grant);
+            case SHARDS:
+                return grantShardReward(player, grant);
+            case COMMAND:
+                return grantCommandReward(player, crate, reward, grant);
+            default:
+                return false;
+        }
     }
 
     private boolean grantItemReward(Player player, GrantDefinition grant, ItemStack rewardItem) {
@@ -1026,7 +1036,7 @@ public class CrateManager {
 
     private boolean grantCommandReward(Player player, CrateDefinition crate, CrateReward reward, GrantDefinition grant) {
         for (String command : grant.commands()) {
-            if (command == null || command.isBlank()) {
+            if (command == null || command.trim().isEmpty()) {
                 continue;
             }
 
@@ -1080,7 +1090,7 @@ public class CrateManager {
     }
 
     private ItemStack deserializeGrantItem(String encoded, CrateDefinition crate, CrateReward reward) {
-        if (encoded == null || encoded.isBlank()) {
+        if (encoded == null || encoded.trim().isEmpty()) {
             return null;
         }
 
@@ -1479,50 +1489,58 @@ public class CrateManager {
             return null;
         }
 
-        return switch (type) {        case ITEM: {
-
-                            DisplayItem item = parseDisplayItem(section, "grant reward " + rewardId + " in crate " + crateId, Material.STONE);
-                            new GrantDefinition(type, item, 0D, 0L, java.util.Collections.emptyList(),
-                                    section.getBoolean("REQUIRES-INVENTORY-SPACE", true),
-                                    section.getString("ITEM-DATA", ""),
-                                    Math.max(0L, section.getLong("AMETHYST-DURATION", 0L)));
-                        break;        }        case COMMAND: new GrantDefinition(
-                    type,
-                    new DisplayItem(Material.PAPER, "&freward", java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
-                    0D,
-                    0L,
-                    readStringList(section, "COMMANDS"),
-                    false,
-                    "",
-                    0L
-            )            break;        case MONEY: new GrantDefinition(
-                    type,
-                    new DisplayItem(Material.SUNFLOWER,
-                            plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
-                                    + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
-                                    + " reward",
-                            java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
-                    section.getDouble("AMOUNT", 0D),
-                    0L,
-                    java.util.Collections.emptyList(),
-                    false,
-                    "",
-                    0L
-            )            break;        case SHARDS: new GrantDefinition(
-                    type,
-                    new DisplayItem(Material.AMETHYST_SHARD,
-                            plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.SHARDS)
-                                    + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.SHARDS)
-                                    + " reward",
-                            java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
-                    0D,
-                    Math.max(0L, section.getLong("AMOUNT", 0L)),
-                    java.util.Collections.emptyList(),
-                    false,
-                    "",
-                    0L
-            )            break;
-        };
+        switch (type) {
+            case ITEM: {
+                DisplayItem item = parseDisplayItem(section, "grant reward " + rewardId + " in crate " + crateId, Material.STONE);
+                return new GrantDefinition(type, item, 0D, 0L, java.util.Collections.emptyList(),
+                        section.getBoolean("REQUIRES-INVENTORY-SPACE", true),
+                        section.getString("ITEM-DATA", ""),
+                        Math.max(0L, section.getLong("AMETHYST-DURATION", 0L)));
+            }
+            case COMMAND:
+                return new GrantDefinition(
+                        type,
+                        new DisplayItem(Material.PAPER, "&freward", java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                        0D,
+                        0L,
+                        readStringList(section, "COMMANDS"),
+                        false,
+                        "",
+                        0L
+                );
+            case MONEY:
+                return new GrantDefinition(
+                        type,
+                        new DisplayItem(Material.SUNFLOWER,
+                                plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
+                                        + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
+                                        + " reward",
+                                java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                        section.getDouble("AMOUNT", 0D),
+                        0L,
+                        java.util.Collections.emptyList(),
+                        false,
+                        "",
+                        0L
+                );
+            case SHARDS:
+                return new GrantDefinition(
+                        type,
+                        new DisplayItem(Material.AMETHYST_SHARD,
+                                plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.SHARDS)
+                                        + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.SHARDS)
+                                        + " reward",
+                                java.util.Collections.emptyList(), 1, java.util.Collections.emptyList()),
+                        0D,
+                        Math.max(0L, section.getLong("AMOUNT", 0L)),
+                        java.util.Collections.emptyList(),
+                        false,
+                        "",
+                        0L
+                );
+            default:
+                return null;
+        }
     }
 
     private DisplayItem parseDisplayItem(ConfigurationSection section, String context, Material fallbackMaterial) {
@@ -1657,14 +1675,14 @@ public class CrateManager {
         }
 
         String singleLine = section.getString(path);
-        if (singleLine == null || singleLine.isBlank()) {
+        if (singleLine == null || singleLine.trim().isEmpty()) {
             return java.util.Collections.emptyList();
         }
         return java.util.Collections.singletonList(singleLine);
     }
 
     private Material parseMaterial(String rawName, Material fallback, String context) {
-        if (rawName == null || rawName.isBlank()) {
+        if (rawName == null || rawName.trim().isEmpty()) {
             return fallback;
         }
 
@@ -1678,7 +1696,7 @@ public class CrateManager {
     }
 
     private OpenType parseOpenType(String rawValue) {
-        if (rawValue == null || rawValue.isBlank()) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
             return OpenType.CHOOSE_ONE;
         }
 
@@ -1690,7 +1708,7 @@ public class CrateManager {
     }
 
     private SpinDirection parseSpinDirection(String rawValue) {
-        if (rawValue == null || rawValue.isBlank()) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
             return SpinDirection.RANDOM;
         }
 
@@ -1709,14 +1727,14 @@ public class CrateManager {
     }
 
     private String normalizeCrateId(String crateId) {
-        if (crateId == null || crateId.isBlank()) {
+        if (crateId == null || crateId.trim().isEmpty()) {
             return null;
         }
         return crateId.trim().toLowerCase(Locale.US);
     }
 
     private String prettifyId(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.trim().isEmpty()) {
             return "Crate";
         }
 
@@ -1724,10 +1742,10 @@ public class CrateManager {
         String[] parts = normalized.split("\\s+");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-            if (part.isBlank()) {
+            if (part.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() > 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -1735,7 +1753,7 @@ public class CrateManager {
                 builder.append(part.substring(1).toLowerCase(Locale.US));
             }
         }
-        return builder.isEmpty() ? "Crate" : builder.toString();
+        return builder.length() == 0 ? "Crate" : builder.toString();
     }
 
     public enum GrantType {
@@ -1760,7 +1778,7 @@ public class CrateManager {
         REWARD_GRANT_FAILED
     }
 
-public final class DisplayItem {
+public static final class DisplayItem {
     private final Material material;
     private final String displayName;
     private final List<String> lore;
@@ -1782,7 +1800,7 @@ public final class DisplayItem {
     public List<String> enchantments() { return enchantments; }
 
     @Override public String toString() {
-        return "DisplayItem[material=+material, displayName=+displayName, lore=+lore, amount=+amount, enchantments=+enchantments]";
+        return "DisplayItem[material=" + material + ", displayName=" + displayName + ", lore=" + lore + ", amount=" + amount + ", enchantments=" + enchantments + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1795,7 +1813,7 @@ public final class DisplayItem {
     }
 }
 
-public final class GrantDefinition {
+public static final class GrantDefinition {
     private final GrantType type;
     private final DisplayItem item;
     private final double moneyAmount;
@@ -1826,7 +1844,7 @@ public final class GrantDefinition {
     public long amethystDurationSeconds() { return amethystDurationSeconds; }
 
     @Override public String toString() {
-        return "GrantDefinition[type=+type, item=+item, moneyAmount=+moneyAmount, shardAmount=+shardAmount, commands=+commands, requiresInventorySpace=+requiresInventorySpace, serializedItemData=+serializedItemData, amethystDurationSeconds=+amethystDurationSeconds]";
+        return "GrantDefinition[type=" + type + ", item=" + item + ", moneyAmount=" + moneyAmount + ", shardAmount=" + shardAmount + ", commands=" + commands + ", requiresInventorySpace=" + requiresInventorySpace + ", serializedItemData=" + serializedItemData + ", amethystDurationSeconds=" + amethystDurationSeconds + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1839,7 +1857,7 @@ public final class GrantDefinition {
     }
 }
 
-public final class CrateReward {
+public static final class CrateReward {
     private final String id;
     private final int slot;
     private final DisplayItem display;
@@ -1864,7 +1882,7 @@ public final class CrateReward {
     public int weight() { return weight; }
 
     @Override public String toString() {
-        return "CrateReward[id=+id, slot=+slot, display=+display, grant=+grant, broadcast=+broadcast, weight=+weight]";
+        return "CrateReward[id=" + id + ", slot=" + slot + ", display=" + display + ", grant=" + grant + ", broadcast=" + broadcast + ", weight=" + weight + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1877,7 +1895,7 @@ public final class CrateReward {
     }
 }
 
-public final class CrateDefinition {
+public static final class CrateDefinition {
     private final String id;
     private final boolean enabled;
     private final DisplayItem display;
@@ -1915,7 +1933,7 @@ public final class CrateDefinition {
 
 
         public CrateReward findReward(String rewardId) {
-            if (rewardId == null || rewardId.isBlank()) {
+            if (rewardId == null || rewardId.trim().isEmpty()) {
                 return null;
             }
             for (CrateReward reward : rewards) {
@@ -1936,7 +1954,7 @@ public final class CrateDefinition {
         }
 
     @Override public String toString() {
-        return "CrateDefinition[id=+id, enabled=+enabled, display=+display, openType=+openType, permission=+permission, broadcastOnClaim=+broadcastOnClaim, menuSettings=+menuSettings, gachaSettings=+gachaSettings, keyItem=+keyItem, rewards=+rewards]";
+        return "CrateDefinition[id=" + id + ", enabled=" + enabled + ", display=" + display + ", openType=" + openType + ", permission=" + permission + ", broadcastOnClaim=" + broadcastOnClaim + ", menuSettings=" + menuSettings + ", gachaSettings=" + gachaSettings + ", keyItem=" + keyItem + ", rewards=" + rewards + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1949,7 +1967,7 @@ public final class CrateDefinition {
     }
 }
 
-public final class CrateOpenSession {
+public static final class CrateOpenSession {
     private final CrateDefinition crate;
     private final CrateReward selectedReward;
 
@@ -1967,7 +1985,7 @@ public final class CrateOpenSession {
         }
 
     @Override public String toString() {
-        return "CrateOpenSession[crate=+crate, selectedReward=+selectedReward]";
+        return "CrateOpenSession[crate=" + crate + ", selectedReward=" + selectedReward + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -1980,7 +1998,7 @@ public final class CrateOpenSession {
     }
 }
 
-public final class CrateBlockKey {
+public static final class CrateBlockKey {
     private final String world;
     private final int x;
     private final int y;
@@ -1999,7 +2017,7 @@ public final class CrateBlockKey {
     public int z() { return z; }
 
     @Override public String toString() {
-        return "CrateBlockKey[world=+world, x=+x, y=+y, z=+z]";
+        return "CrateBlockKey[world=" + world + ", x=" + x + ", y=" + y + ", z=" + z + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2012,7 +2030,7 @@ public final class CrateBlockKey {
     }
 }
 
-public final class ActionResult {
+public static final class ActionResult {
     private final boolean success;
     private final String message;
 
@@ -2025,7 +2043,7 @@ public final class ActionResult {
     public String message() { return message; }
 
     @Override public String toString() {
-        return "ActionResult[success=+success, message=+message]";
+        return "ActionResult[success=" + success + ", message=" + message + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2038,7 +2056,7 @@ public final class ActionResult {
     }
 }
 
-public final class OpenResult {
+public static final class OpenResult {
     private final boolean success;
     private final FailureReason reason;
     private final String message;
@@ -2057,7 +2075,7 @@ public final class OpenResult {
     public CrateDefinition crate() { return crate; }
 
     @Override public String toString() {
-        return "OpenResult[success=+success, reason=+reason, message=+message, crate=+crate]";
+        return "OpenResult[success=" + success + ", reason=" + reason + ", message=" + message + ", crate=" + crate + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2070,7 +2088,7 @@ public final class OpenResult {
     }
 }
 
-public final class ClaimResult {
+public static final class ClaimResult {
     private final boolean success;
     private final FailureReason reason;
     private final String message;
@@ -2095,7 +2113,7 @@ public final class ClaimResult {
     public int remainingKeys() { return remainingKeys; }
 
     @Override public String toString() {
-        return "ClaimResult[success=+success, reason=+reason, message=+message, crate=+crate, reward=+reward, remainingKeys=+remainingKeys]";
+        return "ClaimResult[success=" + success + ", reason=" + reason + ", message=" + message + ", crate=" + crate + ", reward=" + reward + ", remainingKeys=" + remainingKeys + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2108,7 +2126,7 @@ public final class ClaimResult {
     }
 }
 
-public final class ListMenuSettings {
+public static final class ListMenuSettings {
     private final String title;
     private final int size;
     private final Material filler;
@@ -2153,7 +2171,7 @@ public final class ListMenuSettings {
         }
 
     @Override public String toString() {
-        return "ListMenuSettings[title=+title, size=+size, filler=+filler, contentSlots=+contentSlots, emptySlot=+emptySlot, emptyItem=+emptyItem, closeSlot=+closeSlot, closeItem=+closeItem]";
+        return "ListMenuSettings[title=" + title + ", size=" + size + ", filler=" + filler + ", contentSlots=" + contentSlots + ", emptySlot=" + emptySlot + ", emptyItem=" + emptyItem + ", closeSlot=" + closeSlot + ", closeItem=" + closeItem + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2166,7 +2184,7 @@ public final class ListMenuSettings {
     }
 }
 
-public final class ConfirmMenuSettings {
+public static final class ConfirmMenuSettings {
     private final int size;
     private final Material filler;
     private final int previewSlot;
@@ -2207,7 +2225,7 @@ public final class ConfirmMenuSettings {
         }
 
     @Override public String toString() {
-        return "ConfirmMenuSettings[size=+size, filler=+filler, previewSlot=+previewSlot, confirmSlot=+confirmSlot, confirmButton=+confirmButton, cancelSlot=+cancelSlot, cancelButton=+cancelButton]";
+        return "ConfirmMenuSettings[size=" + size + ", filler=" + filler + ", previewSlot=" + previewSlot + ", confirmSlot=" + confirmSlot + ", confirmButton=" + confirmButton + ", cancelSlot=" + cancelSlot + ", cancelButton=" + cancelButton + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2220,7 +2238,7 @@ public final class ConfirmMenuSettings {
     }
 }
 
-public final class CrateMenuSettings {
+public static final class CrateMenuSettings {
     private final String openTitle;
     private final String confirmTitle;
     private final int size;
@@ -2257,7 +2275,7 @@ public final class CrateMenuSettings {
         }
 
     @Override public String toString() {
-        return "CrateMenuSettings[openTitle=+openTitle, confirmTitle=+confirmTitle, size=+size, filler=+filler, backSlot=+backSlot, backButton=+backButton]";
+        return "CrateMenuSettings[openTitle=" + openTitle + ", confirmTitle=" + confirmTitle + ", size=" + size + ", filler=" + filler + ", backSlot=" + backSlot + ", backButton=" + backButton + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -2270,7 +2288,7 @@ public final class CrateMenuSettings {
     }
 }
 
-public final class GachaSettings {
+public static final class GachaSettings {
     private final String title;
     private final Material filler;
     private final List<Integer> previewSlots;
@@ -2311,7 +2329,7 @@ public final class GachaSettings {
         }
 
     @Override public String toString() {
-        return "GachaSettings[title=+title, filler=+filler, previewSlots=+previewSlots, pointerSlot=+pointerSlot, totalSteps=+totalSteps, tickInterval=+tickInterval, direction=+direction]";
+        return "GachaSettings[title=" + title + ", filler=" + filler + ", previewSlots=" + previewSlots + ", pointerSlot=" + pointerSlot + ", totalSteps=" + totalSteps + ", tickInterval=" + tickInterval + ", direction=" + direction + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

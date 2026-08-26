@@ -38,26 +38,127 @@ public class SellCommand implements CommandExecutor, TabCompleter {
             return new SellStatsCommand(plugin).onCommand(sender, command, label, args);
         }
 
-        switch (label.toLowerCase()) {        case "sell": new SellMenu(plugin).open(player)            break;        case "sellmulti": case "sellmultiplier": case "sellprogress": {
-
-                            SellCategory category = SellCategory.CROPS;
-                            if (args.length > 0) {
+        switch (label.toLowerCase()) {
+            case "sell":
+                new SellMenu(plugin).open(player);
+                break;
+            case "sellmulti":
+            case "sellmultiplier":
+            case "sellprogress": {
+                SellCategory category = SellCategory.CROPS;
+                if (args.length > 0) {
                                 category = SellCategory.fromConfigKey(args[0]).orElse(SellCategory.CROPS);
                             }
                             new SellProgressMenu(plugin, category).open(player);
-                        break;        }        case "sellhand": {
-
-                            double total = plugin.getShopManager().sellInventory(player, true);
-                            if (total <= 0) player.sendMessage(ColorUtils.toComponent(
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "sellhand": {
+                double total = plugin.getShopManager().sellInventory(player, true);
+                if (total <= 0) player.sendMessage(ColorUtils.toComponent(
                                     plugin.getConfigManager().getMessage("WORTH.NO-SELLABLE")));
-                        break;        }        case "sellall": new SellAllConfirmMenu(plugin).open(player)            break;        case "sellhistory": {
-
-                            if (args.length > 0 && args[0].equalsIgnoreCase("admin")) {
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
+            case "sellall":
+                new SellAllConfirmMenu(plugin).open(player);
+                break;
+            case "sellhistory": {
+                if (args.length > 0 && args[0].equalsIgnoreCase("admin")) {
                                 new SellStatsAdminMenu(plugin).open(player);
                             } else {
                                 new SellHistoryMenu(plugin).open(player);
                             }
-                        break;        }
+                        break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+                break;
+            }
         }
         return true;
     }

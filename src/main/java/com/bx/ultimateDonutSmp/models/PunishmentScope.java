@@ -7,7 +7,7 @@ public enum PunishmentScope {
     NETWORK;
 
     public static PunishmentScope fromString(String value, PunishmentScope fallback) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return fallback;
         }
 

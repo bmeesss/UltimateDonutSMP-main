@@ -94,7 +94,7 @@ public class GamemodeCommand implements CommandExecutor, TabCompleter {
     }
 
     private Player resolveTarget(CommandSender sender, String input, String label, boolean fixedModeCommand) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             if (sender instanceof Player) {
             Player player = (Player) !plugin.getConfigManager().isCommandEnabled("GAMEMODE")) {
             send(sender, "GAMEMODE.DISABLED", "&cGamemode commands are currently disabled.");
@@ -158,7 +158,7 @@ public class GamemodeCommand implements CommandExecutor, TabCompleter {
     }
 
     private Player resolveTarget(CommandSender sender, String input, String label, boolean fixedModeCommand) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             if (sender;
                 return player;
             }
@@ -216,17 +216,46 @@ public class GamemodeCommand implements CommandExecutor, TabCompleter {
     }
 
     private GameMode modeFromLabel(String label) {
-        return switch (normalizeLabel(label)) {        case "gms": GameMode.SURVIVAL            break;        case "gmc": GameMode.CREATIVE            break;        case "gma": GameMode.ADVENTURE            break;        case "gmsp": GameMode.SPECTATOR            break;        default: null            break;
-        };
+        switch (normalizeLabel(label)) {
+            case "gms":
+                return GameMode.SURVIVAL;
+            case "gmc":
+                return GameMode.CREATIVE;
+            case "gma":
+                return GameMode.ADVENTURE;
+            case "gmsp":
+                return GameMode.SPECTATOR;
+            default:
+                return null;
+        }
     }
 
     private GameMode parseMode(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
-        return switch (input.toLowerCase(Locale.ROOT)) {        case "survival": case "s": case "0": GameMode.SURVIVAL            break;        case "creative": case "c": case "1": GameMode.CREATIVE            break;        case "adventure": case "a": case "2": GameMode.ADVENTURE            break;        case "spectator": case "spec": case "sp": case "3": GameMode.SPECTATOR            break;        default: null            break;
-        };
+        switch (input.toLowerCase(Locale.ROOT)) {
+            case "survival":
+            case "s":
+            case "0":
+                return GameMode.SURVIVAL;
+            case "creative":
+            case "c":
+            case "1":
+                return GameMode.CREATIVE;
+            case "adventure":
+            case "a":
+            case "2":
+                return GameMode.ADVENTURE;
+            case "spectator":
+            case "spec":
+            case "sp":
+            case "3":
+                return GameMode.SPECTATOR;
+            default:
+                return null;
+        }
     }
 
     private Player findOnlinePlayer(String input) {

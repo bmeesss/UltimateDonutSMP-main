@@ -146,7 +146,7 @@ public class InvseeManager {
     }
 
     public Player findOnlineTarget(String username) {
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return null;
         }
 
@@ -165,7 +165,7 @@ public class InvseeManager {
 
     public boolean hasKnownPlayer(String username) {
         return username != null
-                && !username.isBlank()
+                && !username.trim().isEmpty()
                 && plugin.getDatabaseManager().findPlayerUuidByUsername(username) != null;
     }
 

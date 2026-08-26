@@ -513,7 +513,7 @@ public class WorthDisplayListener implements Listener {
             return;
         }
 
-        for (UUID uuid : Set.copyOf(dirtyPlayers)) {
+        for (UUID uuid : new java.util.HashSet<>(dirtyPlayers)) {
             Player player = plugin.getServer().getPlayer(uuid);
 
             boolean forceUpdate = forceUpdatePlayers.contains(uuid);

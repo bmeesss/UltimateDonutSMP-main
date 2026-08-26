@@ -58,7 +58,29 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        switch (args[0].toLowerCase(Locale.ROOT)) {        case "reload": handleReload(sender)            break;        case "statswipe": handleStatsWipe(sender, label, args)            break;        case "optimize": case "optimization": handleOptimize(sender, label, args)            break;        case "setup": handleSetup(sender, label, args)            break;        case "features": handleFeatures(sender, label, args)            break;        case "maintenance": handleMaintenance(sender, label, args)            break;        default: sendUsage(sender, label)            break;
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "reload":
+                handleReload(sender);
+                break;
+            case "statswipe":
+                handleStatsWipe(sender, label, args);
+                break;
+            case "optimize":
+            case "optimization":
+                handleOptimize(sender, label, args);
+                break;
+            case "setup":
+                handleSetup(sender, label, args);
+                break;
+            case "features":
+                handleFeatures(sender, label, args);
+                break;
+            case "maintenance":
+                handleMaintenance(sender, label, args);
+                break;
+            default:
+                sendUsage(sender, label);
+                break;
         }
         return true;
     }
@@ -116,7 +138,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
         if (!result.success()) {
-            String error = result.errorMessage() == null || result.errorMessage().isBlank()
+            String error = result.errorMessage() == null || result.errorMessage().trim().isEmpty()
                     ? "unknown error"
                     : result.errorMessage();
             sender.sendMessage(ColorUtils.toComponent(message("FAILED",
@@ -148,15 +170,22 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (args[1].toLowerCase(Locale.ROOT)) {        case "reload": {
-
-                            optimizationManager.reload();
-                            sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
-                        break;        }        case "reset": {
-
-                            optimizationManager.resetStats();
-                            sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
-                        break;        }        default: sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " optimize [status|reload|reset]"))            break;
+        switch (args[1].toLowerCase(Locale.ROOT)) {
+            case "reload": {
+                optimizationManager.reload();
+                sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
+                break;
+                break;
+            }
+            case "reset": {
+                optimizationManager.resetStats();
+                sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
+                break;
+                break;
+            }
+            default:
+                sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " optimize [status|reload|reset]"));
+                break;
         }
     }
 
@@ -171,7 +200,22 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (args[1].toLowerCase(Locale.ROOT)) {        case "apply": handleSetupApply(sender, label, args)            break;        case "setspawn": handleSetupLocation(sender, true)            break;        case "setafk": handleSetupLocation(sender, false)            break;        case "commands": handleSetupCommands(sender, label, args)            break;        default: sendSetupUsage(sender, label)            break;
+        switch (args[1].toLowerCase(Locale.ROOT)) {
+            case "apply":
+                handleSetupApply(sender, label, args);
+                break;
+            case "setspawn":
+                handleSetupLocation(sender, true);
+                break;
+            case "setafk":
+                handleSetupLocation(sender, false);
+                break;
+            case "commands":
+                handleSetupCommands(sender, label, args);
+                break;
+            default:
+                sendSetupUsage(sender, label);
+                break;
         }
     }
 
@@ -193,7 +237,29 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        switch (args[0].toLowerCase(Locale.ROOT)) {        case "reload": handleReload(sender)            break;        case "statswipe": handleStatsWipe(sender, label, args)            break;        case "optimize": case "optimization": handleOptimize(sender, label, args)            break;        case "setup": handleSetup(sender, label, args)            break;        case "features": handleFeatures(sender, label, args)            break;        case "maintenance": handleMaintenance(sender, label, args)            break;        default: sendUsage(sender, label)            break;
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "reload":
+                handleReload(sender);
+                break;
+            case "statswipe":
+                handleStatsWipe(sender, label, args);
+                break;
+            case "optimize":
+            case "optimization":
+                handleOptimize(sender, label, args);
+                break;
+            case "setup":
+                handleSetup(sender, label, args);
+                break;
+            case "features":
+                handleFeatures(sender, label, args);
+                break;
+            case "maintenance":
+                handleMaintenance(sender, label, args);
+                break;
+            default:
+                sendUsage(sender, label);
+                break;
         }
         return true;
     }
@@ -251,7 +317,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
         if (!result.success()) {
-            String error = result.errorMessage() == null || result.errorMessage().isBlank()
+            String error = result.errorMessage() == null || result.errorMessage().trim().isEmpty()
                     ? "unknown error"
                     : result.errorMessage();
             sender.sendMessage(ColorUtils.toComponent(message("FAILED",
@@ -283,15 +349,22 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (args[1].toLowerCase(Locale.ROOT)) {        case "reload": {
-
-                            optimizationManager.reload();
-                            sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
-                        break;        }        case "reset": {
-
-                            optimizationManager.resetStats();
-                            sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
-                        break;        }        default: sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " optimize [status|reload|reset]"))            break;
+        switch (args[1].toLowerCase(Locale.ROOT)) {
+            case "reload": {
+                optimizationManager.reload();
+                sender.sendMessage(ColorUtils.toComponent("&aOptimization settings reloaded."));
+                break;
+                break;
+            }
+            case "reset": {
+                optimizationManager.resetStats();
+                sender.sendMessage(ColorUtils.toComponent("&aOptimization runtime counters reset."));
+                break;
+                break;
+            }
+            default:
+                sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " optimize [status|reload|reset]"));
+                break;
         }
     }
 
@@ -306,7 +379,22 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (args[1].toLowerCase(Locale.ROOT)) {        case "apply": handleSetupApply(sender, label, args)            break;        case "setspawn": handleSetupLocation(sender, true)            break;        case "setafk": handleSetupLocation(sender, false)            break;        case "commands": handleSetupCommands(sender, label, args)            break;        default: sendSetupUsage(sender, label)            break;
+        switch (args[1].toLowerCase(Locale.ROOT)) {
+            case "apply":
+                handleSetupApply(sender, label, args);
+                break;
+            case "setspawn":
+                handleSetupLocation(sender, true);
+                break;
+            case "setafk":
+                handleSetupLocation(sender, false);
+                break;
+            case "commands":
+                handleSetupCommands(sender, label, args);
+                break;
+            default:
+                sendSetupUsage(sender, label);
+                break;
         }
     }
 
@@ -540,7 +628,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             String usage = String.valueOf(details.getOrDefault("usage", "/" + commandName));
             String description = String.valueOf(details.getOrDefault("description", "no description"));
             String aliases = formatAliases(details.get("aliases"));
-            if (!aliases.isBlank()) {
+            if (!aliases.trim().isEmpty()) {
                 description += " (aliases: " + aliases + ")";
             }
             if (!plugin.getFeatureManager().isCommandFeatureEnabled(commandName)) {
@@ -565,28 +653,40 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return new ArrayList<>(allCommandNames);
         }
 
-        return switch (category) {        case "starter": new java.util.ArrayList<>(java.util.Arrays.asList(
+        switch (category) {
+            case "starter":
+                return new java.util.ArrayList<>(java.util.Arrays.asList(
                     "spawn",  "afk",  "home",  "homes",  "sethome",  "delhome",  "renamehome", 
                     "rtp",  "warp",  "tpa",  "tpahere",  "tpaccept",  "tpadeny",  "tpacancel", 
                      "settings",  "stats",  "ping",  "playtime",  "social",  "twitter",
                     "store",  "rules",  "help",  "servers"
-            ))            break;        case "economy": new java.util.ArrayList<>(java.util.Arrays.asList(
+            ));
+            case "economy":
+                return new java.util.ArrayList<>(java.util.Arrays.asList(
                     "balance",  "pay",  "addmoney",  "removemoney",  "setmoney",  "shards",  "shardpay", 
                     "addshards",  "removeshards",  "setshards", 
                     "shop",  "sell",  "sellhand",  "sellall",  "sellhistory",  "worth"
-            ))            break;        case "market": new java.util.ArrayList<>(java.util.Arrays.asList(
+            ));
+            case "market":
+                return new java.util.ArrayList<>(java.util.Arrays.asList(
                     "auctionhouse",  "orders",  "billford",  "bounty",  "crate",  "crates",  "keys",  "spawner"
-            ))            break;        case "staff": new java.util.ArrayList<>(java.util.Arrays.asList(
+            ));
+            case "staff":
+                return new java.util.ArrayList<>(java.util.Arrays.asList(
                     "staffmode",  "stafflist",  "staffchat",  "helpop",  "report",  "freeze",  "fly",  "flyspeed", 
                     "heal",  "feed",  "gamemode",  "randomteleport",  "teleport",  "alts",  "vanish", 
                     "invsee",  "profileviewer",  "punishments",  "ban",  "tempban",  "mute",  "tempmute", 
                     "warn",  "kick",  "blacklist",  "unban",  "unmute",  "unblacklist",  "findplayer",  "rename"
-            ))            break;        case "admin": new java.util.ArrayList<>(java.util.Arrays.asList(
+            ));
+            case "admin":
+                return new java.util.ArrayList<>(java.util.Arrays.asList(
                     "ultimatedonutsmp",  "clearlag",  "cuboid",  "setwarp",  "delwarp",  "warpmanager", 
                      "portalmanager",  "amethysttool",  "arena",  "crate",  "spawner",
                     "shop",  "orders",  "auctionhouse",  "enderchest",  "freeze",  "staffmode",  "invsee",  "worth"
-            ))            break;        default: java.util.Collections.emptyList()            break;
-        };
+            ));
+            default:
+                return java.util.Collections.emptyList();
+        }
     }
 
     private String formatAliases(Object rawAliases) {
@@ -596,7 +696,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                     .reduce((left, right) -> left + ", " + right)
                     .orElse("");
         }
-        if (rawAliases instanceof String alias && !alias.isBlank()) {
+        if (rawAliases instanceof String alias && !alias.trim().isEmpty()) {
             return alias;
         }
         return "";
@@ -857,39 +957,54 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             return;
         }
 
-        switch (args[1].toLowerCase(Locale.ROOT)) {        case "on": case "start": case "enable": {
-
-                            if (mm.isMaintenanceActive()) {
+        switch (args[1].toLowerCase(Locale.ROOT)) {
+            case "on":
+            case "start":
+            case "enable": {
+                if (mm.isMaintenanceActive()) {
                                 sender.sendMessage(ColorUtils.toComponent("&eMaintenance mode is already active."));
                                 return;
                             }
                             mm.startMaintenance();
-                            sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been enabled. Players are being redirected."));
-                        break;        }        case "off": case "stop": case "disable": {
-
-                            if (!mm.isMaintenanceActive()) {
+                sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been enabled. Players are being redirected."));
+                break;
+                break;
+            }
+            case "off":
+            case "stop":
+            case "disable": {
+                if (!mm.isMaintenanceActive()) {
                                 sender.sendMessage(ColorUtils.toComponent("&eMaintenance mode is not active."));
                                 return;
                             }
                             mm.stopMaintenance();
-                            sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been disabled. Reconnect signal sent."));
-                        break;        }        case "status": {
-
-                            boolean active = mm.isMaintenanceActive();
-                            String lobby = mm.getLobbyServer();
-                            sender.sendMessage(ColorUtils.toComponent("&d&lMaintenance status:"));
-                            sender.sendMessage(ColorUtils.toComponent("  &fActive: " + (active ? "&aYes" : "&cNo")));
-                            sender.sendMessage(ColorUtils.toComponent("  &fLobby server: &b" + lobby));
-                        break;        }        case "setlobby": {
-
-                            if (args.length < 3) {
+                sender.sendMessage(ColorUtils.toComponent("&aMaintenance mode has been disabled. Reconnect signal sent."));
+                break;
+                break;
+            }
+            case "status": {
+                boolean active = mm.isMaintenanceActive();
+                String lobby = mm.getLobbyServer();
+                sender.sendMessage(ColorUtils.toComponent("&d&lMaintenance status:"));
+                sender.sendMessage(ColorUtils.toComponent("  &fActive: " + (active ? "&aYes" : "&cNo")));
+                sender.sendMessage(ColorUtils.toComponent("  &fLobby server: &b" + lobby));
+                break;
+                break;
+            }
+            case "setlobby": {
+                if (args.length < 3) {
                                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " maintenance setlobby <server>"));
                                 return;
                             }
                             String lobby = args[2];
-                            mm.setLobbyServer(lobby);
-                            sender.sendMessage(ColorUtils.toComponent("&aLobby server set to &b" + lobby + "&a."));
-                        break;        }        default: sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " maintenance <on|off|status|setlobby [server]>"))            break;
+                mm.setLobbyServer(lobby);
+                sender.sendMessage(ColorUtils.toComponent("&aLobby server set to &b" + lobby + "&a."));
+                break;
+                break;
+            }
+            default:
+                sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " maintenance <on|off|status|setlobby [server]>"));
+                break;
         }
     }
 

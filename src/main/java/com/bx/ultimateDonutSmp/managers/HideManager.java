@@ -158,7 +158,7 @@ public final class HeadTexture {
 
 
         public boolean isValid() {
-            return value != null && !value.isBlank();
+            return value != null && !value.trim().isEmpty();
         }
 
     @Override public String toString() {
@@ -213,7 +213,7 @@ public final class HeadTexture {
     }
 
     public void shutdown() {
-        for (UUID playerUuid : Set.copyOf(originalSkinTextures.keySet())) {
+        for (UUID playerUuid : new java.util.HashSet<>(originalSkinTextures.keySet())) {
             Player online = Bukkit.getPlayer(playerUuid);
             if (online != null) {
                 restoreOriginalSkin(online);
@@ -255,7 +255,7 @@ public final class HeadTexture {
     }
 
     public HideState findState(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
         String normalized = normalize(input);
@@ -342,7 +342,7 @@ public final class HeadTexture {
     }
 
     public Player findOnlinePlayer(CommandSender viewer, String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
         String normalized = normalize(input);
@@ -372,7 +372,7 @@ public final class HeadTexture {
         if (online != null) {
             return online.getUniqueId();
         }
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -458,7 +458,7 @@ public final class HeadTexture {
             return new Result(ResultType.INVALID_ALIAS, null, 0L);
         }
         SkinOption skinOption = skins().get(normalizeKey(skinKey));
-        if (skinOption == null || skinOption.username().isBlank()) {
+        if (skinOption == null || skinOption.username().trim().isEmpty()) {
             return new Result(ResultType.INVALID_SKIN, null, 0L);
         }
         if (!isAliasAvailable(aliasOption.name(), player.getUniqueId())) {
@@ -536,7 +536,7 @@ public final class HeadTexture {
         }
 
         String source = resolveSkinSource(skinInput);
-        if (source == null || source.isBlank()) {
+        if (source == null || source.trim().isEmpty()) {
             completion.accept(new Result(ResultType.INVALID_SKIN, null, 0L));
             return;
         }
@@ -728,7 +728,7 @@ public final class HeadTexture {
             String path = key + ".";
             String username = section.getString(path + "USERNAME", key);
             String displayName = section.getString(path + "DISPLAY-NAME", username);
-            if (username != null && !username.isBlank()) {
+            if (username != null && !username.trim().isEmpty()) {
                 options.put(normalizeKey(key), new SkinOption(normalizeKey(key), displayName, username));
             }
         }
@@ -736,7 +736,7 @@ public final class HeadTexture {
     }
 
     public HeadTexture cachedHeadTexture(String username) {
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return null;
         }
         HeadTexture texture = headTextures.get(normalizeKey(username));
@@ -748,7 +748,7 @@ public final class HeadTexture {
         if (cached != null) {
             return CompletableFuture.completedFuture(cached);
         }
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return CompletableFuture.completedFuture(null);
         }
 
@@ -1063,7 +1063,7 @@ public final class HeadTexture {
     private void cache(HideState state) {
         states.put(state.playerUuid(), state);
         aliasOwners.put(state.aliasNormalized(), state.playerUuid());
-        if (!state.skinUsername().isBlank() && state.hasTexture()) {
+        if (!state.skinUsername().trim().isEmpty() && state.hasTexture()) {
             headTextures.put(
                     normalizeKey(state.skinUsername()),
                     new HeadTexture(state.textureValue(), state.textureSignature())
@@ -1129,7 +1129,7 @@ public final class HeadTexture {
     }
 
     private void refreshAll() {
-        Set<UUID> hidden = Set.copyOf(states.keySet());
+        Set<UUID> hidden = new java.util.HashSet<>(states.keySet());
         for (UUID playerUuid : hidden) {
             Player online = Bukkit.getPlayer(playerUuid);
             if (online != null) {
@@ -1187,6 +1187,6 @@ public final class HeadTexture {
     }
 
     private static String safeName(String value) {
-        return value == null || value.isBlank() ? "Unknown" : value;
+        return value == null || value.trim().isEmpty() ? "Unknown" : value;
     }
 }

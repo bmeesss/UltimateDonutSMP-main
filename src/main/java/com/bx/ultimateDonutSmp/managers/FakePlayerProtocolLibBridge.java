@@ -342,11 +342,6 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
         return (WrappedGameProfile) profile;
     }
 
-    @Override
-    public void removeFromTablist(Player viewer, FakePlayerSession fakePlayer) {
-        send(viewer, createPlayerInfoRemove(fakePlayer));
-    }
-
     private PacketContainer createPlayerInfoRemove(FakePlayerSession fakePlayer) {
         PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.PLAYER_INFO_REMOVE);
         if (packet.getUUIDLists().size() > 0) {

@@ -14,6 +14,8 @@ public final class DeliveryQuote {
     private final double payout;
 
     public DeliveryQuote(boolean success, String failureCode, Order order, List<ItemStack> acceptedItems, List<ItemStack> returnedItems, int quantity, double payout) {
+        acceptedItems = copy(acceptedItems);
+        returnedItems = copy(returnedItems);
         this.success = success;
         this.failureCode = failureCode;
         this.order = order;
@@ -32,10 +34,7 @@ public final class DeliveryQuote {
     public double payout() { return payout; }
 
 
-    public DeliveryQuote {
-        acceptedItems = copy(acceptedItems);
-        returnedItems = copy(returnedItems);
-    }
+
 
     private static List<ItemStack> copy(List<ItemStack> items) {
         return items == null ? java.util.Collections.emptyList() : items.stream()

@@ -109,7 +109,7 @@ public class ServerInfoMenu extends BaseMenu {
         SoundUtils.play(player, plugin.getConfigManager().getSound(CLICK_SOUND_PATH));
 
         if (action.type() == ActionType.COMMAND) {
-            if (action.command() == null || action.command().isBlank()) {
+            if (action.command() == null || action.command().trim().isEmpty()) {
                 player.sendMessage(ColorUtils.toComponent("&cThis menu button is missing a command."));
                 return;
             }
@@ -273,7 +273,7 @@ public class ServerInfoMenu extends BaseMenu {
             }
 
             String rawMaterial = buttonSection.getString("MATERIAL");
-            if (rawMaterial == null || rawMaterial.isBlank()) {
+            if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
                 plugin.getLogger().warning("Skipping " + buttonSection.getCurrentPath() + " because MATERIAL is missing.");
                 continue;
             }
@@ -400,7 +400,7 @@ public class ServerInfoMenu extends BaseMenu {
     }
 
     private static String sanitizeCommand(String rawCommand) {
-        if (rawCommand == null || rawCommand.isBlank()) {
+        if (rawCommand == null || rawCommand.trim().isEmpty()) {
             return null;
         }
 
@@ -408,12 +408,12 @@ public class ServerInfoMenu extends BaseMenu {
         if (sanitized.startsWith("/")) {
             sanitized = sanitized.substring(1);
         }
-        return sanitized.isBlank() ? null : sanitized;
+        return sanitized.trim().isEmpty() ? null : sanitized;
     }
 
     private static String firstNonBlank(String... values) {
         for (String value : values) {
-            if (value != null && !value.isBlank()) {
+            if (value != null && !value.trim().isEmpty()) {
                 return value;
             }
         }

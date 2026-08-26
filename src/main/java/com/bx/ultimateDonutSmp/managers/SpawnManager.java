@@ -412,7 +412,7 @@ public final class SetupAreaTarget {
         Location override = area.locationOverride();
         if (override == null && area.locationOverrideRaw() != null) {
             String serialized = area.locationOverrideRaw().trim();
-            if (!serialized.isBlank() && !serialized.matches("\\d+")) {
+            if (!serialized.trim().isEmpty() && !serialized.matches("\\d+")) {
                 override = LocationUtils.parse(serialized);
             }
         }
@@ -481,7 +481,7 @@ public final class SetupAreaTarget {
     }
 
     private Location resolveSpawnLocationDirect() {
-        if (spawnLocation == null && spawnLocationRaw != null && !spawnLocationRaw.isBlank()) {
+        if (spawnLocation == null && spawnLocationRaw != null && !spawnLocationRaw.trim().isEmpty()) {
             spawnLocation = LocationUtils.parse(spawnLocationRaw);
         }
         if (spawnLocation != null) {
@@ -508,7 +508,7 @@ public final class SetupAreaTarget {
     }
 
     private Location resolveAfkLocationDirect() {
-        if (afkLocation == null && afkLocationRaw != null && !afkLocationRaw.isBlank()) {
+        if (afkLocation == null && afkLocationRaw != null && !afkLocationRaw.trim().isEmpty()) {
             afkLocation = LocationUtils.parse(afkLocationRaw);
         }
         if (afkLocation != null) {
@@ -564,7 +564,7 @@ public final class SetupAreaTarget {
             }
 
             String cuboidName = section.getString("CUBOID", "").trim();
-            if (cuboidName.isBlank()) {
+            if (cuboidName.trim().isEmpty()) {
                 warn(menuPath + ".AREAS." + key + " is missing cuboid. it can still be used only as a generic visual template.");
             }
 
@@ -599,7 +599,7 @@ public final class SetupAreaTarget {
         }
 
         String serialized = String.valueOf(rawValue).trim();
-        if (serialized.isBlank()) {
+        if (serialized.trim().isEmpty()) {
             return null;
         }
 
@@ -665,7 +665,7 @@ public final class SetupAreaTarget {
             AreaType type,
             String previousSetupLocation
     ) {
-        if (location == null || location.getWorld() == null || serialized == null || serialized.isBlank()) {
+        if (location == null || location.getWorld() == null || serialized == null || serialized.trim().isEmpty()) {
             return;
         }
 

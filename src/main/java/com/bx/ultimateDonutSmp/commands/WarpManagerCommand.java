@@ -44,7 +44,19 @@ public class WarpManagerCommand implements CommandExecutor {
         }
 
         String subcommand = args[0].toLowerCase(Locale.ROOT);
-        switch (subcommand) {        case "create": handleCreate(sender, args, true)            break;        case "delete": handleDelete(sender, args, true)            break;        case "list": handleList(sender)            break;        default: sendMessage(sender, message("WARPMANAGER.USAGE", "&cUsage: /warpmanager <create|delete|list> [name]"))            break;
+        switch (subcommand) {
+            case "create":
+                handleCreate(sender, args, true);
+                break;
+            case "delete":
+                handleDelete(sender, args, true);
+                break;
+            case "list":
+                handleList(sender);
+                break;
+            default:
+                sendMessage(sender, message("WARPMANAGER.USAGE", "&cUsage: /warpmanager <create|delete|list> [name]"));
+                break;
         }
         return true;
     }

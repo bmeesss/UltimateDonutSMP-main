@@ -19,6 +19,15 @@ public final class PortalDefinition {
     private final double hologramZ;
 
     public PortalDefinition(String id, String displayName, String cuboidName, String destinationType, String destinationValue, boolean enabled, String permission, int priority, long triggerCooldownMillis, String enterMessage, String hologramWorld, double hologramX, double hologramY, double hologramZ) {
+        id = normalizeId(id);
+        displayName = normalizeText(displayName);
+        cuboidName = normalizeToken(cuboidName);
+        destinationType = normalizeToken(destinationType).toUpperCase(Locale.ROOT);
+        destinationValue = normalizeToken(destinationValue);
+        permission = normalizeText(permission);
+        triggerCooldownMillis = Math.max(0L, triggerCooldownMillis);
+        enterMessage = normalizeText(enterMessage);
+        hologramWorld = normalizeToken(hologramWorld);
         this.id = id;
         this.displayName = displayName;
         this.cuboidName = cuboidName;
@@ -52,20 +61,10 @@ public final class PortalDefinition {
 
 
 
-    public PortalDefinition {
-        id = normalizeId(id);
-        displayName = normalizeText(displayName);
-        cuboidName = normalizeToken(cuboidName);
-        destinationType = normalizeToken(destinationType).toUpperCase(Locale.ROOT);
-        destinationValue = normalizeToken(destinationValue);
-        permission = normalizeText(permission);
-        triggerCooldownMillis = Math.max(0L, triggerCooldownMillis);
-        enterMessage = normalizeText(enterMessage);
-        hologramWorld = normalizeToken(hologramWorld);
-    }
+
 
     public String effectiveDisplayName() {
-        return displayName.isBlank() ? id : displayName;
+        return displayName.trim().isEmpty() ? id : displayName;
     }
 
     public PortalDefinition withDisplayName(String value) {
@@ -114,7 +113,7 @@ public final class PortalDefinition {
     }
 
     public boolean hasCustomHologramLocation() {
-        return !hologramWorld.isBlank();
+        return !hologramWorld.trim().isEmpty();
     }
 
     private static String normalizeId(String value) {

@@ -507,6 +507,6 @@ public class PlayerJoinQuitListener implements Listener {
     private String formatIssuer(PunishmentRecord record) {
         if (record == null) return "unknown";
         String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.isBlank() ? "unknown" : issuer;
+        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
     }
 }

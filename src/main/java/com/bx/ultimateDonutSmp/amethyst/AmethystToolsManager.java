@@ -87,33 +87,7 @@ public class AmethystToolsManager {
         }
 
         if (type == AmethystToolType.SHARD_BOOSTER && meta instanceof PotionMeta) {
-            PotionMeta potionMeta = (PotionMeta) cfg == null) {
-            return null;
-        }
-
-        Material material = ItemUtils.parseMaterial(cfg.getString("MATERIAL", "IRON_PICKAXE"));
-        long duration = durationSeconds > 0 ? durationSeconds : cfg.getLong("DURATION", 86400L);
-        long expiryEpoch = (System.currentTimeMillis() / 1000L) + duration;
-
-        List<String> resolvedLore = new ArrayList<>();
-        for (String line : cfg.getStringList("LORE")) {
-            resolvedLore.add(line.replace("{time}", NumberUtils.formatTimeLong(duration)));
-        }
-
-        ItemStack item = ItemUtils.createItem(material, cfg.getString("NAME", "&d&lamethyst tool"), resolvedLore);
-        item.setAmount(1);
-
-        List<String> enchants = cfg.getStringList("ENCHANTMENTS");
-        if (!enchants.isEmpty()) {
-            ItemUtils.addEnchantments(item, enchants);
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return item;
-        }
-
-        if (type == AmethystToolType.SHARD_BOOSTER && meta;
+            PotionMeta potionMeta = (PotionMeta) meta;
             potionMeta.setBasePotionType(PotionType.WATER);
             meta = potionMeta;
         }

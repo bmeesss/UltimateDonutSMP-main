@@ -354,7 +354,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         if (viewer == null || isTemporaryPlayer(viewer) || profileIds == null || profileIds.isEmpty()) {
             return;
         }
-        Set<UUID> profiles = Set.copyOf(profileIds);
+        Set<UUID> profiles = new java.util.HashSet<>(profileIds);
         plugin.getSpigotScheduler().runEntity(viewer, () -> {
             if (!viewer.isOnline() || isTemporaryPlayer(viewer)) {
                 return;
@@ -539,7 +539,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
             stopNametagRideTask();
             return;
         }
-        for (UUID targetUuid : Set.copyOf(nametagDisplays.keySet())) {
+        for (UUID targetUuid : new java.util.HashSet<>(nametagDisplays.keySet())) {
             Player target = Bukkit.getPlayer(targetUuid);
             TextDisplay display = nametagDisplay(targetUuid);
             if (target == null || !target.isOnline() || display == null) {
@@ -757,7 +757,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
             protocolManager.removePacketListener(playerInfoListener);
             playerInfoListener = null;
         }
-        for (UUID targetUuid : Set.copyOf(nametagDisplays.keySet())) {
+        for (UUID targetUuid : new java.util.HashSet<>(nametagDisplays.keySet())) {
             removeNametagDisplay(targetUuid);
         }
         nametagDisplayIds.clear();

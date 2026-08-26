@@ -47,7 +47,7 @@ public class CrashProtectionManager {
         }
     }
 
-public final class ValidationResult {
+public static final class ValidationResult {
     private final boolean allowed;
     private final String reason;
 
@@ -65,11 +65,11 @@ public final class ValidationResult {
         }
 
         public static ValidationResult blocked(String reason) {
-            return new ValidationResult(false, reason == null || reason.isBlank() ? "unsafe item data" : reason);
+            return new ValidationResult(false, reason == null || reason.trim().isEmpty() ? "unsafe item data" : reason);
         }
 
     @Override public String toString() {
-        return "ValidationResult[allowed=+allowed, reason=+reason]";
+        return "ValidationResult[allowed=" + allowed + ", reason=" + reason + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -82,7 +82,7 @@ public final class ValidationResult {
     }
 }
 
-public final class ContainerStats {
+public static final class ContainerStats {
     private final int itemCount;
 
     public ContainerStats(int itemCount) {
@@ -92,7 +92,7 @@ public final class ContainerStats {
     public int itemCount() { return itemCount; }
 
     @Override public String toString() {
-        return "ContainerStats[itemCount=+itemCount]";
+        return "ContainerStats[itemCount=" + itemCount + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -155,7 +155,7 @@ public final class ContainerStats {
 
         plugin.getLogger().warning("Crash protection blocked " + describeItem(item)
                 + " in " + displayContext(context)
-                + (source == null || source.isBlank() ? "" : " from " + source)
+                + (source == null || source.trim().isEmpty() ? "" : " from " + source)
                 + ": " + result.reason());
     }
 
@@ -214,148 +214,7 @@ public final class ContainerStats {
         }
 
         if (meta instanceof BookMeta) {
-            BookMeta bookMeta = (BookMeta) this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ValidationResult that = (ValidationResult) o;
-        return java.util.Objects.equals(allowed, that.allowed) && java.util.Objects.equals(reason, that.reason);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(allowed, reason);
-    }
-}
-
-public final class ContainerStats {
-    private final int itemCount;
-
-    public ContainerStats(int itemCount) {
-        this.itemCount = itemCount;
-    }
-
-    public int itemCount() { return itemCount; }
-
-    @Override public String toString() {
-        return "ContainerStats[itemCount=+itemCount]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ContainerStats that = (ContainerStats) o;
-        return java.util.Objects.equals(itemCount, that.itemCount);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(itemCount);
-    }
-}
-
-    public void reload() {
-        validateConfiguration();
-    }
-
-    public boolean isEnabled() {
-        return config().getBoolean(CONFIG_ROOT + ".ENABLED", true);
-    }
-
-    public ValidationResult validateForStorage(ItemStack item, Context context) {
-        if (!isEnabled() || isMissing(item)) {
-            return ValidationResult.permit();
-        }
-
-        try {
-            int serializedSize = ItemSerializationUtils.serializedByteSize(item);
-            int maxSerializedBytes = maxSerializedBytes();
-            if (serializedSize > maxSerializedBytes) {
-                return ValidationResult.blocked("item data is too large (" + serializedSize + "/" + maxSerializedBytes + " bytes)");
-            }
-        } catch (IOException exception) {
-            return ValidationResult.blocked("item data could not be serialized");
-        }
-
-        ValidationResult metaResult = validateMeta(item);
-        if (!metaResult.allowed()) {
-            return metaResult;
-        }
-
-        return validateContainers(item, 0).result();
-    }
-
-    public ValidationResult validateOrNotify(Player player, ItemStack item, Context context) {
-        ValidationResult result = validateForStorage(item, context);
-        if (!result.allowed()) {
-            notifyBlocked(player, item, context, result);
-        }
-        return result;
-    }
-
-    public boolean isAllowedForStorage(ItemStack item, Context context) {
-        return validateForStorage(item, context).allowed();
-    }
-
-    public void logBlockedItem(String source, ItemStack item, Context context, ValidationResult result) {
-        if (result == null || result.allowed()) {
-            return;
-        }
-
-        plugin.getLogger().warning("Crash protection blocked " + describeItem(item)
-                + " in " + displayContext(context)
-                + (source == null || source.isBlank() ? "" : " from " + source)
-                + ": " + result.reason());
-    }
-
-    private void notifyBlocked(Player player, ItemStack item, Context context, ValidationResult result) {
-        logBlockedItem(player == null ? "" : player.getName() + "/" + player.getUniqueId(), item, context, result);
-        if (player == null || !player.isOnline()) {
-            return;
-        }
-
-        String message = plugin.getConfigManager().getMessageOrDefault(
-                "CRASH_PROTECTION.ITEM_BLOCKED",
-                "&cThat item cannot be used here because its data looks unsafe. &7Context: &f{context}&7. Reason: &f{reason}",
-                "{context}", displayContext(context),
-                "{reason}", result.reason()
-        );
-        player.sendMessage(ColorUtils.toComponent(message));
-    }
-
-    private ValidationResult validateMeta(ItemStack item) {
-        if (!item.hasItemMeta()) {
-            return ValidationResult.permit();
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return ValidationResult.permit();
-        }
-
-        if (meta.hasDisplayName() && meta.getDisplayName() != null) {
-            int length = meta.getDisplayName().length();
-            int max = maxDisplayNameLength();
-            if (length > max) {
-                return ValidationResult.blocked("display name is too long (" + length + "/" + max + ")");
-            }
-        }
-
-        if (meta.hasLore() && meta.getLore() != null) {
-            int maxLines = maxLoreLines();
-            if (meta.getLore().size() > maxLines) {
-                return ValidationResult.blocked("lore has too many lines (" + meta.getLore().size() + "/" + maxLines + ")");
-            }
-
-            int maxLineLength = maxLoreLineLength();
-            for (String line : meta.getLore()) {
-                int length = line == null ? 0 : line.length();
-                if (length > maxLineLength) {
-                    return ValidationResult.blocked("lore line is too long (" + length + "/" + maxLineLength + ")");
-                }
-            }
-        }
-
-        int pdcKeys = meta.getPersistentDataContainer().getKeys().size();
-        int maxPdcKeys = maxPersistentDataKeys();
-        if (pdcKeys > maxPdcKeys) {
-            return ValidationResult.blocked("too many persistent data keys (" + pdcKeys + "/" + maxPdcKeys + ")");
-        }
-
-        if (meta;
+            BookMeta bookMeta = (BookMeta) meta;
             ValidationResult bookResult = validateBook(bookMeta);
             if (!bookResult.allowed()) {
                 return bookResult;
@@ -418,67 +277,7 @@ public final class ContainerStats {
 
             if (content.getItemMeta() instanceof BlockStateMeta nestedMeta
                     && nestedMeta.getBlockState() instanceof Container) {
-            Container nestedContainer = (Container) !bookResult.allowed()) {
-                return bookResult;
-            }
-        }
-
-        return ValidationResult.permit();
-    }
-
-    private ValidationResult validateBook(BookMeta meta) {
-        int pages = meta.getPageCount();
-        int maxPages = maxBookPages();
-        if (pages > maxPages) {
-            return ValidationResult.blocked("book has too many pages (" + pages + "/" + maxPages + ")");
-        }
-
-        int maxPageLength = maxBookPageLength();
-        int maxTotalChars = maxBookTotalChars();
-        int totalChars = 0;
-        for (String page : meta.getPages()) {
-            int pageLength = page == null ? 0 : page.length();
-            if (pageLength > maxPageLength) {
-                return ValidationResult.blocked("book page is too long (" + pageLength + "/" + maxPageLength + ")");
-            }
-            totalChars += pageLength;
-            if (totalChars > maxTotalChars) {
-                return ValidationResult.blocked("book has too much text (" + totalChars + "/" + maxTotalChars + ")");
-            }
-        }
-
-        return ValidationResult.permit();
-    }
-
-    private ContainerValidation validateContainers(ItemStack item, int depth) {
-        if (isMissing(item) || !(item.getItemMeta() instanceof BlockStateMeta blockStateMeta)) {
-            return ContainerValidation.allowed(0);
-        }
-
-        BlockState blockState = blockStateMeta.getBlockState();
-        if (!(blockState instanceof Container container)) {
-            return ContainerValidation.allowed(0);
-        }
-
-        int maxDepth = maxContainerDepth();
-        if (depth > maxDepth) {
-            return ContainerValidation.blocked("container nesting is too deep (" + depth + "/" + maxDepth + ")");
-        }
-
-        int nestedItems = 0;
-        int maxNestedItems = maxNestedContainerItems();
-        for (ItemStack content : container.getInventory().getContents()) {
-            if (isMissing(content)) {
-                continue;
-            }
-
-            nestedItems++;
-            if (nestedItems > maxNestedItems) {
-                return ContainerValidation.blocked("container has too many stored items (" + nestedItems + "/" + maxNestedItems + ")");
-            }
-
-            if (content.getItemMeta() instanceof BlockStateMeta nestedMeta
-                    && nestedMeta.getBlockState();
+                Container nestedContainer = (Container) nestedMeta.getBlockState();
                 if (blockNestedContainers()) {
                     boolean isShulker = org.bukkit.Tag.SHULKER_BOXES.isTagged(content.getType());
                     boolean hasItems = false;
@@ -512,7 +311,7 @@ public final class ContainerStats {
         return ContainerValidation.allowed(nestedItems);
     }
 
-public final class ContainerValidation {
+public static final class ContainerValidation {
     private final ValidationResult result;
     private final ContainerStats stats;
 
@@ -534,7 +333,7 @@ public final class ContainerValidation {
         }
 
     @Override public String toString() {
-        return "ContainerValidation[result=+result, stats=+stats]";
+        return "ContainerValidation[result=" + result + ", stats=" + stats + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

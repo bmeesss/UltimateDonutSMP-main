@@ -36,7 +36,7 @@ class ServerNotificationConfigurationTest {
             );
             String message = section.getString(announcement + ".MESSAGE");
             assertNotNull(message, announcement + " has no message");
-            assertFalse(message.isBlank(), announcement + " has a blank message");
+            assertFalse(message.trim().isEmpty(), announcement + " has a blank message");
             assertTrue(message.contains("{player}"), announcement + " never names the player");
         }
     }

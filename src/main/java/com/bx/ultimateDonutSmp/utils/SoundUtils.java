@@ -17,7 +17,7 @@ public class SoundUtils {
      * e.g. "minecraft:ui.button.click|1.0|1.0"
      */
     public static void play(Player player, String soundConfig) {
-        if (player == null || soundConfig == null || soundConfig.isBlank()) return;
+        if (player == null || soundConfig == null || soundConfig.trim().isEmpty()) return;
         String[] parts = soundConfig.split("\\|");
         String key = parts[0].trim();
         float volume = parseFloat(parts.length > 1 ? parts[1] : "1.0", 1.0f);
@@ -45,7 +45,7 @@ public class SoundUtils {
     }
 
     public static void play(Location location, String soundConfig) {
-        if (location == null || soundConfig == null || soundConfig.isBlank()) return;
+        if (location == null || soundConfig == null || soundConfig.trim().isEmpty()) return;
         World world = location.getWorld();
         if (world == null) return;
 

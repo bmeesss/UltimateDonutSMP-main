@@ -43,8 +43,23 @@ public class SpawnerCommand implements CommandExecutor {
             return true;
         }
 
-        return switch (args[0].toLowerCase(Locale.US)) {        case "give": handleGive(sender, args)            break;        case "reload": handleReload(sender)            break;        case "panel": handlePanel(sender)            break;        case "info": handleInfo(sender)            break;        case "split": handleSplit(sender, args)            break;        case "remove": case "forcebreak": handleRemove(sender)            break;        default: sendUsage(sender, label)            break;
-        };
+        switch (args[0].toLowerCase(Locale.US)) {
+            case "give":
+                return handleGive(sender, args);
+            case "reload":
+                return handleReload(sender);
+            case "panel":
+                return handlePanel(sender);
+            case "info":
+                return handleInfo(sender);
+            case "split":
+                return handleSplit(sender, args);
+            case "remove":
+            case "forcebreak":
+                return handleRemove(sender);
+            default:
+                return sendUsage(sender, label);
+        }
     }
 
     private boolean handleGive(CommandSender sender, String[] args) {

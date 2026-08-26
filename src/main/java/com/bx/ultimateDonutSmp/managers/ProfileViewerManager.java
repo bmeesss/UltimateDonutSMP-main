@@ -30,7 +30,7 @@ public class ProfileViewerManager {
     }
 
     public Optional<ProfileSnapshot> resolveProfile(String username) {
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return Optional.empty();
         }
 
@@ -61,10 +61,10 @@ public class ProfileViewerManager {
         }
 
         String username = isOnline ? online.getName() : null;
-        if ((username == null || username.isBlank()) && playerData != null) {
+        if ((username == null || username.trim().isEmpty()) && playerData != null) {
             username = playerData.getUsername();
         }
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             username = plugin.getDatabaseManager().getLastKnownUsername(uuid);
         }
 
@@ -80,7 +80,7 @@ public class ProfileViewerManager {
 
         boolean afk = isOnline && plugin.getAFKManager().isAfk(uuid);
 
-        if ((username == null || username.isBlank())
+        if ((username == null || username.trim().isEmpty())
                 && playerData == null
                 && homes.isEmpty()
                 && teamName == null
@@ -88,7 +88,7 @@ public class ProfileViewerManager {
             return Optional.empty();
         }
 
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             username = uuid.toString().substring(0, 8);
         }
 

@@ -169,12 +169,12 @@ public final class ToggleResult {
     }
 
     private String normalizeName(String ignoredName, UUID ignoredUuid) {
-        if (ignoredName != null && !ignoredName.isBlank()) {
+        if (ignoredName != null && !ignoredName.trim().isEmpty()) {
             return ignoredName.trim();
         }
 
         String lastKnownName = plugin.getDatabaseManager().getLastKnownUsername(ignoredUuid);
-        if (lastKnownName != null && !lastKnownName.isBlank()) {
+        if (lastKnownName != null && !lastKnownName.trim().isEmpty()) {
             return lastKnownName;
         }
 

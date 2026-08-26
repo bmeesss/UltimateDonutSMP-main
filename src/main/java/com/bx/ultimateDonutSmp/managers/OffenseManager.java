@@ -122,7 +122,7 @@ public final class OffenseRule {
      * Returns null if duration is permanent or 0 for warn/instant.
      */
     public static Long parseDurationToMillis(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 

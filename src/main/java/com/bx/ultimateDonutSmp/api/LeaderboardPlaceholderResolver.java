@@ -26,7 +26,7 @@ public class LeaderboardPlaceholderResolver {
     }
 
     public @Nullable String resolve(@Nullable OfflinePlayer offlinePlayer, @NotNull String params) {
-        if (params.isBlank() || !params.startsWith("top_")) {
+        if (params.trim().isEmpty() || !params.startsWith("top_")) {
             return null;
         }
 
@@ -92,11 +92,11 @@ public class LeaderboardPlaceholderResolver {
         }
 
         String username = entry.playerData().getUsername();
-        return username == null || username.isBlank() ? "unknown" : username;
+        return username == null || username.trim().isEmpty() ? "unknown" : username;
     }
 
     private boolean isPositiveInteger(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return false;
         }
 

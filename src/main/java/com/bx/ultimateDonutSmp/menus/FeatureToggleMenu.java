@@ -206,7 +206,7 @@ public class FeatureToggleMenu extends BaseMenu {
 
     private String firstNonBlank(String... values) {
         for (String value : values) {
-            if (value != null && !value.isBlank()) {
+            if (value != null && !value.trim().isEmpty()) {
                 return value;
             }
         }
@@ -214,8 +214,16 @@ public class FeatureToggleMenu extends BaseMenu {
     }
 
     private static String prettify(String key) {
-        return switch (key.toUpperCase(Locale.ROOT)) {        case "PREVIOUS": "previous"            break;        case "NEXT": "next"            break;        case "CLOSE": "close"            break;        default: key.toLowerCase(Locale.ROOT).replace('_', ' ')            break;
-        };
+        switch (key.toUpperCase(Locale.ROOT)) {
+            case "PREVIOUS":
+                return "previous";
+            case "NEXT":
+                return "next";
+            case "CLOSE":
+                return "close";
+            default:
+                return key.toLowerCase(Locale.ROOT).replace('_', ' ');
+        }
     }
 
     private FileConfiguration menus() {

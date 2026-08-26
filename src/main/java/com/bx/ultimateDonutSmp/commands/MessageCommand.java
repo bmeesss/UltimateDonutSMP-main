@@ -126,8 +126,30 @@ public class MessageCommand implements CommandExecutor {
     }
 
     private String message(String key, String fallback) {
-        String configured = switch (key) {        case "USAGE": configuredMessage("MESSAGES.USAGE", "PRIVATE-MESSAGE.USAGE")            break;        case "REPLY-USAGE": configuredMessage("MESSAGES.REPLY_USAGE", "PRIVATE-MESSAGE.REPLY-USAGE")            break;        case "PLAYER-ONLY-REPLY": configuredMessage("MESSAGES.PLAYER_ONLY_REPLY", "PRIVATE-MESSAGE.PLAYER-ONLY-REPLY")            break;        case "NO-PERMISSION": configuredMessage("MESSAGES.NO_PERMISSION", "PRIVATE-MESSAGE.NO-PERMISSION")            break;        case "DISABLED": configuredMessage("MESSAGES.DISABLED", "PRIVATE-MESSAGE.DISABLED")            break;        case "PLAYER-NOT-ONLINE": configuredMessage("MESSAGES.PLAYER_NOT_ONLINE", "PRIVATE-MESSAGE.PLAYER-NOT-ONLINE")            break;        default: plugin.getConfigManager().getMessages().getString("PRIVATE-MESSAGE." + key)            break;
-        };
+String;
+switch (key) {
+            case "USAGE":
+                configured = configuredMessage("MESSAGES.USAGE", "PRIVATE-MESSAGE.USAGE");
+                break;
+            case "REPLY-USAGE":
+                configured = configuredMessage("MESSAGES.REPLY_USAGE", "PRIVATE-MESSAGE.REPLY-USAGE");
+                break;
+            case "PLAYER-ONLY-REPLY":
+                configured = configuredMessage("MESSAGES.PLAYER_ONLY_REPLY", "PRIVATE-MESSAGE.PLAYER-ONLY-REPLY");
+                break;
+            case "NO-PERMISSION":
+                configured = configuredMessage("MESSAGES.NO_PERMISSION", "PRIVATE-MESSAGE.NO-PERMISSION");
+                break;
+            case "DISABLED":
+                configured = configuredMessage("MESSAGES.DISABLED", "PRIVATE-MESSAGE.DISABLED");
+                break;
+            case "PLAYER-NOT-ONLINE":
+                configured = configuredMessage("MESSAGES.PLAYER_NOT_ONLINE", "PRIVATE-MESSAGE.PLAYER-NOT-ONLINE");
+                break;
+            default:
+                configured = plugin.getConfigManager().getMessages().getString("PRIVATE-MESSAGE." + key);
+                break;
+        }
         return configured == null ? fallback : configured;
     }
 

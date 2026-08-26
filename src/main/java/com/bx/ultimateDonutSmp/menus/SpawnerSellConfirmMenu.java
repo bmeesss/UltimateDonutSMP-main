@@ -90,7 +90,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         }
 
         String infoMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.INFO-ICON.MATERIAL");
-        if (infoMatName != null && !infoMatName.isBlank() && Material.matchMaterial(infoMatName) != null) {
+        if (infoMatName != null && !infoMatName.trim().isEmpty() && Material.matchMaterial(infoMatName) != null) {
             set(infoSlot, ItemUtils.createItem(Material.matchMaterial(infoMatName), infoTitle, replacedInfoLore));
         } else {
             SpawnerTypeDefinition def = plugin.getSpawnerManager().getTypeDefinition(instance.getMobTypeKey());

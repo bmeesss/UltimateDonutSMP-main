@@ -7,7 +7,7 @@ public enum OrderStatus {
     CANCELLED;
 
     public static OrderStatus fromDatabase(String rawValue) {
-        if (rawValue == null || rawValue.isBlank()) {
+        if (rawValue == null || rawValue.trim().isEmpty()) {
             return ACTIVE;
         }
 

@@ -78,7 +78,7 @@ public class BillfordMenu extends BaseMenu {
 
         Set<ClickType> result = EnumSet.noneOf(ClickType.class);
         for (String raw : configured) {
-            if (raw == null || raw.isBlank()) {
+            if (raw == null || raw.trim().isEmpty()) {
                 continue;
             }
             try {
@@ -526,7 +526,7 @@ public class BillfordMenu extends BaseMenu {
         List<String> lore = new ArrayList<>();
         for (String line : template) {
             String replaced = replacePlaceholders(line, placeholders);
-            if (replaced.isBlank() && line.contains("{") && line.contains("}")) {
+            if (replaced.trim().isEmpty() && line.contains("{") && line.contains("}")) {
                 continue;
             }
             lore.add(replaced);

@@ -53,7 +53,7 @@ public class BountyManager {
     }
 
     public UUID resolvePlayerUuid(CommandSender viewer, String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -96,12 +96,12 @@ public class BountyManager {
         }
 
         String offlineName = Bukkit.getOfflinePlayer(playerUuid).getName();
-        if (offlineName != null && !offlineName.isBlank()) {
+        if (offlineName != null && !offlineName.trim().isEmpty()) {
             return offlineName;
         }
 
         String storedName = plugin.getDatabaseManager().getLastKnownUsername(playerUuid);
-        if (storedName != null && !storedName.isBlank()) {
+        if (storedName != null && !storedName.trim().isEmpty()) {
             return storedName;
         }
 

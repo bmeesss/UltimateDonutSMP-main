@@ -33,7 +33,17 @@ public class BountyCommand implements CommandExecutor {
             return true;
         }
 
-        switch (args[0].toLowerCase()) {        case "add": case "set": handleAdd(player, args)            break;        case "info": handleInfo(player, args)            break;        default: player.sendMessage(ColorUtils.toComponent("&cUsage: /bounty <add|info|list> [player] [amount]"))            break;
+        switch (args[0].toLowerCase()) {
+            case "add":
+            case "set":
+                handleAdd(player, args);
+                break;
+            case "info":
+                handleInfo(player, args);
+                break;
+            default:
+                player.sendMessage(ColorUtils.toComponent("&cUsage: /bounty <add|info|list> [player] [amount]"));
+                break;
         }
         return true;
     }

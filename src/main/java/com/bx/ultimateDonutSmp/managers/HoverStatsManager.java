@@ -31,7 +31,7 @@ public class HoverStatsManager {
     }
 
     public BaseComponent[] buildChatComponent(Player speaker, String prefix, String rawMessage, String chatFormat) {
-        String format = (chatFormat == null || chatFormat.isBlank()) ? DEFAULT_CHAT_FORMAT : chatFormat;
+        String format = (chatFormat == null || chatFormat.trim().isEmpty()) ? DEFAULT_CHAT_FORMAT : chatFormat;
         format = format.replace("%nick%", "%player%").replace("<nick>", "%player%");
 
         String displayName = resolveDisplayName(speaker);
@@ -100,7 +100,7 @@ public class HoverStatsManager {
 
     public ClickEvent buildClick(Player speaker) {
         ChatManager.ClickAction clickAction = plugin.getChatManager().getClickableNameAction(speaker);
-        if (clickAction == null || clickAction.command() == null || clickAction.command().isBlank()) {
+        if (clickAction == null || clickAction.command() == null || clickAction.command().trim().isEmpty()) {
             return null;
         }
         return clickAction.type() == ChatManager.ClickActionType.SUGGEST_COMMAND
@@ -210,29 +210,29 @@ public class HoverStatsManager {
 
     private BaseComponent[] buildMessageComponent(Player speaker, String rawMessage) {
         String messageColor = plugin.getChatManager().resolveMessageColor(speaker);
-        String prefix = messageColor == null || messageColor.isBlank() ? "&f" : messageColor;
+        String prefix = messageColor == null || messageColor.trim().isEmpty() ? "&f" : messageColor;
         return TextComponent.fromLegacyText(ColorUtils.colorize(prefix) + (rawMessage == null ? "" : rawMessage));
     }
 
     private String resolvePrefix(Player player, String fallbackPrefix) {
-        if (fallbackPrefix != null && !fallbackPrefix.isBlank()) {
+        if (fallbackPrefix != null && !fallbackPrefix.trim().isEmpty()) {
             return fallbackPrefix;
         }
         if (ColorUtils.hasPAPI()) {
             try {
                 String prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%luckperms_prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
                 prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%vault_prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
                 prefix = me.clip.placeholderapi.PlaceholderAPI
                         .setPlaceholders(player, "%prefix%");
-                if (prefix != null && !prefix.isBlank() && !prefix.startsWith("%")) {
+                if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
                     return prefix;
                 }
             } catch (Exception ignored) {
@@ -244,7 +244,7 @@ public class HoverStatsManager {
                         org.bukkit.Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
                 if (rsp != null && rsp.getProvider() != null) {
                     String prefix = rsp.getProvider().getPlayerPrefix(player);
-                    if (prefix != null && !prefix.isBlank()) {
+                    if (prefix != null && !prefix.trim().isEmpty()) {
                         return prefix;
                     }
                 }

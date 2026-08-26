@@ -39,7 +39,7 @@ public final class PunishmentRecord {
         this.targetUuid = targetUuid;
         this.targetNameSnapshot = targetNameSnapshot == null ? "" : targetNameSnapshot;
         this.type = type == null ? PunishmentType.WARN : type;
-        this.reason = reason == null || reason.isBlank() ? "no reason specified" : reason;
+        this.reason = reason == null || reason.trim().isEmpty() ? "no reason specified" : reason;
         this.issuerUuid = issuerUuid;
         this.issuerNameSnapshot = issuerNameSnapshot == null ? "" : issuerNameSnapshot;
         this.issuedAt = issuedAt;
@@ -48,7 +48,7 @@ public final class PunishmentRecord {
         this.removedByNameSnapshot = removedByNameSnapshot == null ? "" : removedByNameSnapshot;
         this.removedAt = removedAt;
         this.removalReason = removalReason == null ? "" : removalReason;
-        this.sourceServer = sourceServer == null || sourceServer.isBlank() ? "local" : sourceServer;
+        this.sourceServer = sourceServer == null || sourceServer.trim().isEmpty() ? "local" : sourceServer;
         this.scope = scope == null ? PunishmentScope.SERVER : scope;
     }
 

@@ -80,7 +80,7 @@ public final class LuckPermsStaffModeContextBridge {
     private String getContextKey() {
         String key = plugin.getConfigManager().getStaffMode()
                 .getString("STAFF-MODE.LUCKPERMS-CONTEXT.KEY", "staffmode");
-        return (key == null || key.isBlank()) ? "staffmode" : key.trim().toLowerCase();
+        return (key == null || key.trim().isEmpty()) ? "staffmode" : key.trim().toLowerCase();
     }
 
     private final class StaffModeContextCalculator implements ContextCalculator<Player> {

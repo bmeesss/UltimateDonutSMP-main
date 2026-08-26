@@ -93,6 +93,10 @@ public final class ShardCuboidConfig {
     private final Set<String> excludedWorlds;
 
     public ShardCuboidConfig(String id, String cuboidName, String world, Location rewardLocation, double rewardRadius, int priority, int intervalSeconds, long amountPerInterval, String countdownMessage, String rewardMessage, String boostedRewardMessage, String leaveMessage, int afkTimeoutSeconds, String afkCuboidName, Location afkLocation, String afkMessage, boolean teleportOnAfk, boolean resetOnLeave, int recentMovementWindowSeconds, int minimumMovementBlocks, String pausedMessage, String afkPausedMessage, String excludedWorldMessage, Set<String> excludedWorlds) {
+            rewardLocation = rewardLocation == null ? null : rewardLocation.clone();
+            rewardRadius = Math.max(0D, rewardRadius);
+            afkLocation = afkLocation == null ? null : afkLocation.clone();
+            excludedWorlds = excludedWorlds == null ? java.util.Collections.emptySet() : new java.util.HashSet<>(excludedWorlds);
         this.id = id;
         this.cuboidName = cuboidName;
         this.world = world;
@@ -145,12 +149,7 @@ public final class ShardCuboidConfig {
     public Set<String> excludedWorlds() { return excludedWorlds; }
 
 
-        public ShardCuboidConfig {
-            rewardLocation = rewardLocation == null ? null : rewardLocation.clone();
-            rewardRadius = Math.max(0D, rewardRadius);
-            afkLocation = afkLocation == null ? null : afkLocation.clone();
-            excludedWorlds = excludedWorlds == null ? java.util.Collections.emptySet() : Set.copyOf(excludedWorlds);
-        }
+
 
         public boolean matches(Player player, CuboidManager cuboidManager) {
             return matches(player, cuboidManager, null);
@@ -160,7 +159,7 @@ public final class ShardCuboidConfig {
             if (player == null || player.getWorld() == null) {
                 return false;
             }
-            if (world != null && !world.isBlank() && !player.getWorld().getName().equalsIgnoreCase(world)) {
+            if (world != null && !world.trim().isEmpty() && !player.getWorld().getName().equalsIgnoreCase(world)) {
                 return false;
             }
             CuboidManager.Cuboid cuboid = cuboidManager.getCuboid(cuboidName);
@@ -418,7 +417,7 @@ public final class ShardCuboidHudState {
         }
         String template = plugin.getConfigManager().getConfig()
                 .getString("SETTINGS.SHARDS-KILL-COOLDOWN-MESSAGE", "");
-        if (template == null || template.isBlank()) {
+        if (template == null || template.trim().isEmpty()) {
             return;
         }
         long remainingSeconds = getKillRewardCooldownRemainingSeconds(killer.getUniqueId(), victimId);
@@ -542,7 +541,7 @@ public final class ShardCuboidHudState {
                 : "+{amount_formatted}";
 
         String message = plugin.getConfigManager().getConfig().getString(path, fallback);
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             message = fallback;
         }
         return message
@@ -565,7 +564,7 @@ public final class ShardCuboidHudState {
         }
 
         String sound = plugin.getConfigManager().getSound("SHARDS.REWARD-BOOSTED");
-        if (sound == null || sound.isBlank()) {
+        if (sound == null || sound.trim().isEmpty()) {
             sound = "minecraft:entity.player.levelup|0.85|1.45";
         }
         SoundUtils.play(killer, sound);
@@ -737,7 +736,7 @@ public final class ShardCuboidHudState {
         if (config.afkLocation() != null) {
             return config.afkLocation();
         }
-        if (config.afkCuboidName() != null && !config.afkCuboidName().isBlank()) {
+        if (config.afkCuboidName() != null && !config.afkCuboidName().trim().isEmpty()) {
             Location cuboidDestination = plugin.getCuboidManager().getCuboidTeleportLocation(config.afkCuboidName());
             if (cuboidDestination != null) {
                 return cuboidDestination;
@@ -778,7 +777,7 @@ public final class ShardCuboidHudState {
         PlayerSettingUtils.sendActionBar(plugin, player, formatRewardMessage(player, config, amount, multiplier));
         String soundPath = multiplier > 1 ? "SHARDS.REWARD-BOOSTED" : "SHARDS.REWARD";
         String sound = plugin.getConfigManager().getSound(soundPath);
-        if (sound == null || sound.isBlank()) {
+        if (sound == null || sound.trim().isEmpty()) {
             sound = multiplier > 1
                     ? "minecraft:entity.player.levelup|0.85|1.45"
                     : "minecraft:entity.experience_orb.pickup|0.85|1.35";
@@ -798,7 +797,7 @@ public final class ShardCuboidHudState {
         );
 
         String sound = plugin.getConfigManager().getSound("SHARDS.CANCELLED");
-        if (sound == null || sound.isBlank()) {
+        if (sound == null || sound.trim().isEmpty()) {
             sound = "minecraft:entity.villager.no|0.8|1.1";
         }
         SoundUtils.play(player, sound);
@@ -895,7 +894,7 @@ public final class ShardCuboidHudState {
     }
 
     public boolean isEverywhereExcludedWorld(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return false;
         }
 
@@ -965,7 +964,7 @@ public final class ShardCuboidHudState {
 
         String soundPath = multiplier > 1 ? "SHARDS.REWARD-BOOSTED" : "SHARDS.REWARD";
         String sound = plugin.getConfigManager().getSound(soundPath);
-        if (sound == null || sound.isBlank()) {
+        if (sound == null || sound.trim().isEmpty()) {
             sound = multiplier > 1
                     ? "minecraft:entity.player.levelup|0.85|1.45"
                     : "minecraft:entity.experience_orb.pickup|0.85|1.35";
@@ -974,7 +973,7 @@ public final class ShardCuboidHudState {
     }
 
     private Location parseExplicitLocation(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.trim().isEmpty()) {
             return null;
         }
         return LocationUtils.parse(raw);
@@ -1087,7 +1086,7 @@ public final class ShardCuboidHudState {
     }
 
     private String emptyToNull(String value) {
-        if (value == null || value.isBlank() || value.equalsIgnoreCase("none") || value.equalsIgnoreCase("false") || value.equalsIgnoreCase("null")) {
+        if (value == null || value.trim().isEmpty() || value.equalsIgnoreCase("none") || value.equalsIgnoreCase("false") || value.equalsIgnoreCase("null")) {
             return null;
         }
         return value;

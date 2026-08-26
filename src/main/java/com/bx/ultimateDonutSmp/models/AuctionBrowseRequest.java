@@ -9,6 +9,10 @@ public final class AuctionBrowseRequest {
     private final String search;
 
     public AuctionBrowseRequest(int page, AuctionHouseManager.AuctionSort sort, AuctionCategory category, String search) {
+        page = Math.max(1, page);
+        sort = sort == null ? AuctionHouseManager.AuctionSort.NEWEST : sort;
+        category = category == null ? AuctionCategory.ALL : category;
+        search = search == null ? "" : search.trim();
         this.page = page;
         this.sort = sort;
         this.category = category;
@@ -21,12 +25,7 @@ public final class AuctionBrowseRequest {
     public String search() { return search; }
 
 
-    public AuctionBrowseRequest {
-        page = Math.max(1, page);
-        sort = sort == null ? AuctionHouseManager.AuctionSort.NEWEST : sort;
-        category = category == null ? AuctionCategory.ALL : category;
-        search = search == null ? "" : search.trim();
-    }
+
 
     public AuctionBrowseRequest withPage(int nextPage) {
         return new AuctionBrowseRequest(nextPage, sort, category, search);

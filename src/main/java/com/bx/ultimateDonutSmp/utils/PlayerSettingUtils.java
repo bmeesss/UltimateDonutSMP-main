@@ -42,8 +42,20 @@ public final class PlayerSettingUtils {
         if (data == null || channel == null) {
             return true;
         }
-        return switch (channel) {        case PUBLIC_CHAT: data.isPublicChatEnabled(); break;        case SERVER_BROADCAST: data.isServerBroadcastsEnabled(); break;        case AUCTION: data.isAuctionNotificationsEnabled(); break;        case ORDER: data.isOrderNotificationsEnabled(); break;        case TEAM_CHAT: data.isTeamChatVisible(); break;
-        };
+        switch (channel) {
+            case PUBLIC_CHAT:
+                return data.isPublicChatEnabled();
+            case SERVER_BROADCAST:
+                return data.isServerBroadcastsEnabled();
+            case AUCTION:
+                return data.isAuctionNotificationsEnabled();
+            case ORDER:
+                return data.isOrderNotificationsEnabled();
+            case TEAM_CHAT:
+                return data.isTeamChatVisible();
+            default:
+                return null;
+        }
     }
 
     public static boolean soundEnabled(UltimateDonutSmp plugin, Player player, SoundChannel channel) {
@@ -55,8 +67,14 @@ public final class PlayerSettingUtils {
         if (data == null || channel == null || channel == SoundChannel.GAMEPLAY) {
             return true;
         }
-        return switch (channel) {        case NOTIFICATION: data.isNotificationSoundsEnabled(); break;        case GAMEPLAY: true; break;
-        };
+        switch (channel) {
+            case NOTIFICATION:
+                return data.isNotificationSoundsEnabled();
+            case GAMEPLAY:
+                return true;
+            default:
+                return null;
+        }
     }
 
     public static boolean rtpCoordinatesEnabled(UltimateDonutSmp plugin, Player player) {

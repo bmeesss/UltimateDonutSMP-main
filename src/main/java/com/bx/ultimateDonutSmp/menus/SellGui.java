@@ -217,8 +217,40 @@ public final class SellGui extends BaseMenu {
                 return;
             }
 
-            String key = switch (result.reason()) {        case DISABLED: "AUCTION_HOUSE.DISABLED"; break;        case NO_PERMISSION: "AUCTION_HOUSE.NO_PERMISSION"; break;        case NO_ITEM: "AUCTION_HOUSE.NO_ITEM_IN_HAND"; break;        case INVALID_ITEM: case UNSAFE_ITEM: "AUCTION_HOUSE.ITEM_BLOCKED"; break;        case INVALID_PRICE: "AUCTION_HOUSE.PRICE_OUT_OF_RANGE"; break;        case INVALID_DURATION: "AUCTION_HOUSE.INVALID_DURATION"; break;        case NO_MONEY: "AUCTION_HOUSE.NO_MONEY_FOR_FEE"; break;        case MAX_LISTINGS_REACHED: "AUCTION_HOUSE.MAX_LISTINGS_REACHED"; break;        case NO_PLAYER_DATA: case DATABASE_ERROR: "AUCTION_HOUSE.CREATE_DATABASE_ERROR"; break;
-            };
+String;
+switch (result.reason()) {
+                case DISABLED:
+                    key = "AUCTION_HOUSE.DISABLED";
+                    break;
+                case NO_PERMISSION:
+                    key = "AUCTION_HOUSE.NO_PERMISSION";
+                    break;
+                case NO_ITEM:
+                    key = "AUCTION_HOUSE.NO_ITEM_IN_HAND";
+                    break;
+                case INVALID_ITEM:
+                case UNSAFE_ITEM:
+                    key = "AUCTION_HOUSE.ITEM_BLOCKED";
+                    break;
+                case INVALID_PRICE:
+                    key = "AUCTION_HOUSE.PRICE_OUT_OF_RANGE";
+                    break;
+                case INVALID_DURATION:
+                    key = "AUCTION_HOUSE.INVALID_DURATION";
+                    break;
+                case NO_MONEY:
+                    key = "AUCTION_HOUSE.NO_MONEY_FOR_FEE";
+                    break;
+                case MAX_LISTINGS_REACHED:
+                    key = "AUCTION_HOUSE.MAX_LISTINGS_REACHED";
+                    break;
+                case NO_PLAYER_DATA:
+                case DATABASE_ERROR:
+                    key = "AUCTION_HOUSE.CREATE_DATABASE_ERROR";
+                    break;
+                default:
+                    break;
+            }
             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage(key)));
             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.FAIL"));
             plugin.getAuctionHouseManager().startNavigating(player.getUniqueId());

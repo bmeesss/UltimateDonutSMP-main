@@ -44,8 +44,14 @@ public enum AuctionCategory {
         if (type == Material.AIR || type.name().endsWith("_AIR")) {
             return false;
         }
-        return switch (this) {        case BLOCKS: matches(type, type.isBlock(), false); break;        case FOOD: matches(type, false, type.isEdible()); break;        default: matches(type, false, false)            break;
-        };
+        switch (this) {
+            case BLOCKS:
+                return matches(type, type.isBlock(), false);
+            case FOOD:
+                return matches(type, false, type.isEdible());
+            default:
+                return matches(type, false, false);
+        }
     }
 
     public boolean matches(Material type, boolean block, boolean edible) {
@@ -56,13 +62,23 @@ public enum AuctionCategory {
             return false;
         }
         String name = type.name();
-        return switch (this) {        case ALL: true; break;        case BLOCKS: block; break;        case TOOLS: name.endsWith("_AXE")
+        switch (this) {
+            case ALL:
+                return true;
+            case BLOCKS:
+                return block;
+            case TOOLS:
+                return name.endsWith("_AXE")
                     || name.endsWith("_PICKAXE")
                     || name.endsWith("_SHOVEL")
                     || name.endsWith("_HOE")
                     || type == Material.SHEARS
                     || type == Material.FLINT_AND_STEEL
-                    || type == Material.FISHING_ROD            break;        case FOOD: edible; break;        case COMBAT: name.endsWith("_SWORD")
+                    || type == Material.FISHING_ROD;
+            case FOOD:
+                return edible;
+            case COMBAT:
+                return name.endsWith("_SWORD")
                     || name.endsWith("_AXE")
                     || name.endsWith("_HELMET")
                     || name.endsWith("_CHESTPLATE")
@@ -71,14 +87,20 @@ public enum AuctionCategory {
                     || name.endsWith("_BOW")
                     || type == Material.CROSSBOW
                     || type == Material.TRIDENT
-                    || type == Material.SHIELD            break;        case POTIONS: type == Material.POTION
+                    || type == Material.SHIELD;
+            case POTIONS:
+                return type == Material.POTION
                     || type == Material.SPLASH_POTION
                     || type == Material.LINGERING_POTION
-                    || type == Material.TIPPED_ARROW            break;        case BOOKS: type == Material.BOOK
+                    || type == Material.TIPPED_ARROW;
+            case BOOKS:
+                return type == Material.BOOK
                     || type == Material.WRITABLE_BOOK
                     || type == Material.WRITTEN_BOOK
                     || type == Material.ENCHANTED_BOOK
-                    || type == Material.KNOWLEDGE_BOOK            break;        case INGREDIENTS: type == Material.BLAZE_POWDER
+                    || type == Material.KNOWLEDGE_BOOK;
+            case INGREDIENTS:
+                return type == Material.BLAZE_POWDER
                     || type == Material.BLAZE_ROD
                     || type == Material.GUNPOWDER
                     || type == Material.STRING
@@ -92,7 +114,9 @@ public enum AuctionCategory {
                     || type == Material.SUGAR
                     || type == Material.REDSTONE
                     || type == Material.GLOWSTONE_DUST
-                    || type == Material.NETHER_WART            break;        case UTILITIES: type == Material.ENDER_CHEST
+                    || type == Material.NETHER_WART;
+            case UTILITIES:
+                return type == Material.ENDER_CHEST
                     || type == Material.CHEST
                     || type == Material.BARREL
                     || type == Material.SHULKER_BOX
@@ -102,12 +126,14 @@ public enum AuctionCategory {
                     || type == Material.NAME_TAG
                     || type == Material.COMPASS
                     || type == Material.RECOVERY_COMPASS
-                    || type == Material.CLOCK            break;
-        };
+                    || type == Material.CLOCK;
+            default:
+                return null;
+        }
     }
 
     public static AuctionCategory from(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.trim().isEmpty()) {
             return ALL;
         }
         try {

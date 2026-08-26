@@ -196,7 +196,7 @@ public class TeamInfoMenu extends BaseMenu {
         if (name == null) {
             name = plugin.getDatabaseManager().getLastKnownUsername(memberUuid);
         }
-        return name == null || name.isBlank() ? fallback : name;
+        return name == null || name.trim().isEmpty() ? fallback : name;
     }
 
     private FileConfiguration menus() {

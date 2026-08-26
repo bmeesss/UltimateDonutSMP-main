@@ -195,7 +195,7 @@ public class TablistManager {
             return;
         }
 
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             invalidateSkinCache(playerId);
             return;
         }
@@ -468,12 +468,12 @@ public class TablistManager {
     }
 
     public void rememberLuckPermsPermissionOverride(UUID playerId, String permission, boolean value) {
-        if (playerId == null || permission == null || permission.isBlank()) {
+        if (playerId == null || permission == null || permission.trim().isEmpty()) {
             return;
         }
 
         String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (normalized.isBlank()) {
+        if (normalized.trim().isEmpty()) {
             return;
         }
 
@@ -496,7 +496,7 @@ public class TablistManager {
 
     private void putPermissionOverride(Map<String, PermissionOverride> overrides, String permission, boolean value) {
         String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (!normalized.isBlank()) {
+        if (!normalized.trim().isEmpty()) {
             overrides.put(normalized, new PermissionOverride(value, System.currentTimeMillis() + 3_600_000L));
         }
     }
@@ -518,7 +518,7 @@ public class TablistManager {
                 ? player.getName()
                 : plugin.getHideManager().publicName(player);
 
-        if (showTeam && teamName != null && !teamName.isBlank()) {
+        if (showTeam && teamName != null && !teamName.trim().isEmpty()) {
             teamSuffix = " &7[&b" + teamName.toUpperCase() + "&7]";
         }
 
@@ -553,7 +553,7 @@ public class TablistManager {
     }
 
     private String normalizeTeamFormat(String text, boolean showTeam) {
-        if (text == null || text.isBlank() || showTeam) {
+        if (text == null || text.trim().isEmpty() || showTeam) {
             return text;
         }
 
@@ -569,7 +569,7 @@ public class TablistManager {
     }
 
     private boolean containsTeamPlaceholder(String text) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return false;
         }
 
@@ -580,7 +580,7 @@ public class TablistManager {
 
     private String resolvePrefix(Player player) {
         String luckPermsPrefix = resolveLuckPermsPrefix(player);
-        if (luckPermsPrefix != null && !luckPermsPrefix.isBlank()) {
+        if (luckPermsPrefix != null && !luckPermsPrefix.trim().isEmpty()) {
             return luckPermsPrefix;
         }
 
@@ -591,7 +591,7 @@ public class TablistManager {
         try {
             String prefix = me.clip.placeholderapi.PlaceholderAPI
                     .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.isBlank() || prefix.startsWith("%")) {
+            if (prefix == null || prefix.trim().isEmpty() || prefix.startsWith("%")) {
                 return "";
             }
             return prefix;
@@ -621,11 +621,11 @@ public class TablistManager {
         String iconFormat = config().getString("TABLIST.MEDIA-ICON-FORMAT", "&d<icon_media>");
         String permission = config().getString("TABLIST.MEDIA-BADGE-PERMISSION", "RANK.MEDIA");
 
-        if (iconFormat == null || iconFormat.isBlank() || iconMedia.isBlank()) {
+        if (iconFormat == null || iconFormat.trim().isEmpty() || iconMedia.trim().isEmpty()) {
             return "";
         }
 
-        if (!includeMediaBadge && permission != null && !permission.isBlank() && !hasLivePermission(player, permission)) {
+        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
             return "";
         }
 
@@ -636,11 +636,11 @@ public class TablistManager {
         String plusFormat = config().getString("TABLIST.MEDIA-PLUS-FORMAT", "&#37BFF9+");
         String permission = config().getString("TABLIST.MEDIA-PLUS-PERMISSION", "RANK.MEDIA.PLUS");
 
-        if (plusFormat == null || plusFormat.isBlank()) {
+        if (plusFormat == null || plusFormat.trim().isEmpty()) {
             return "";
         }
 
-        if (!includeMediaBadge && permission != null && !permission.isBlank() && !hasLivePermission(player, permission)) {
+        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
             return "";
         }
 
@@ -653,12 +653,12 @@ public class TablistManager {
                 "<media_icon_badge><media_plus_badge>"
         );
 
-        if (badgeFormat == null || badgeFormat.isBlank()) {
+        if (badgeFormat == null || badgeFormat.trim().isEmpty()) {
             return "";
         }
 
         if (!usesSplitMediaBadgePlaceholders(badgeFormat)) {
-            if (mediaIconBadge.isBlank() || iconMedia.isBlank()) {
+            if (mediaIconBadge.trim().isEmpty() || iconMedia.trim().isEmpty()) {
                 return "";
             }
             return badgeFormat.replace("<icon_media>", iconMedia);
@@ -669,7 +669,7 @@ public class TablistManager {
                 .replace("<media_icon_badge>", mediaIconBadge)
                 .replace("%media_plus_badge%", mediaPlusBadge)
                 .replace("<media_plus_badge>", mediaPlusBadge)
-                .replace("<icon_media>", mediaIconBadge.isBlank() ? "" : iconMedia);
+                .replace("<icon_media>", mediaIconBadge.trim().isEmpty() ? "" : iconMedia);
     }
 
     private boolean usesSplitMediaBadgePlaceholders(String text) {
@@ -680,7 +680,7 @@ public class TablistManager {
     }
 
     private boolean isMediaPermission(String permission) {
-        if (permission == null || permission.isBlank()) {
+        if (permission == null || permission.trim().isEmpty()) {
             return false;
         }
         String normalized = PermissionUtils.normalizePermissionNode(permission);
@@ -734,7 +734,7 @@ public class TablistManager {
     }
 
     private boolean hasLivePermission(Player player, String permission) {
-        if (player == null || permission == null || permission.isBlank()) {
+        if (player == null || permission == null || permission.trim().isEmpty()) {
             return false;
         }
 
@@ -847,7 +847,7 @@ public class TablistManager {
         String normalized = PermissionUtils.normalizePermissionNode(permission);
         boolean checked = false;
         for (String candidate : new java.util.ArrayList<>(java.util.Arrays.asList(permission,  normalized))) {
-            if (candidate == null || candidate.isBlank()) {
+            if (candidate == null || candidate.trim().isEmpty()) {
                 continue;
             }
 
@@ -920,7 +920,7 @@ public class TablistManager {
     }
 
     private boolean permissionMatches(String granted, String requested) {
-        if (granted == null || requested == null || granted.isBlank() || requested.isBlank()) {
+        if (granted == null || requested == null || granted.trim().isEmpty() || requested.trim().isEmpty()) {
             return false;
         }
         if (granted.equals(requested) || granted.equals("*")) {
@@ -1055,7 +1055,7 @@ public class TablistManager {
             return;
         }
 
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             invalidateSkinCache(playerId);
             return;
         }
@@ -1328,12 +1328,12 @@ public class TablistManager {
     }
 
     public void rememberLuckPermsPermissionOverride(UUID playerId, String permission, boolean value) {
-        if (playerId == null || permission == null || permission.isBlank()) {
+        if (playerId == null || permission == null || permission.trim().isEmpty()) {
             return;
         }
 
         String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (normalized.isBlank()) {
+        if (normalized.trim().isEmpty()) {
             return;
         }
 
@@ -1356,7 +1356,7 @@ public class TablistManager {
 
     private void putPermissionOverride(Map<String, PermissionOverride> overrides, String permission, boolean value) {
         String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (!normalized.isBlank()) {
+        if (!normalized.trim().isEmpty()) {
             overrides.put(normalized, new PermissionOverride(value, System.currentTimeMillis() + 3_600_000L));
         }
     }
@@ -1378,7 +1378,7 @@ public class TablistManager {
                 ? player.getName()
                 : plugin.getHideManager().publicName(player);
 
-        if (showTeam && teamName != null && !teamName.isBlank()) {
+        if (showTeam && teamName != null && !teamName.trim().isEmpty()) {
             teamSuffix = " &7[&b" + teamName.toUpperCase() + "&7]";
         }
 
@@ -1413,7 +1413,7 @@ public class TablistManager {
     }
 
     private String normalizeTeamFormat(String text, boolean showTeam) {
-        if (text == null || text.isBlank() || showTeam) {
+        if (text == null || text.trim().isEmpty() || showTeam) {
             return text;
         }
 
@@ -1429,7 +1429,7 @@ public class TablistManager {
     }
 
     private boolean containsTeamPlaceholder(String text) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return false;
         }
 
@@ -1440,7 +1440,7 @@ public class TablistManager {
 
     private String resolvePrefix(Player player) {
         String luckPermsPrefix = resolveLuckPermsPrefix(player);
-        if (luckPermsPrefix != null && !luckPermsPrefix.isBlank()) {
+        if (luckPermsPrefix != null && !luckPermsPrefix.trim().isEmpty()) {
             return luckPermsPrefix;
         }
 
@@ -1451,7 +1451,7 @@ public class TablistManager {
         try {
             String prefix = me.clip.placeholderapi.PlaceholderAPI
                     .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.isBlank() || prefix.startsWith("%")) {
+            if (prefix == null || prefix.trim().isEmpty() || prefix.startsWith("%")) {
                 return "";
             }
             return prefix;
@@ -1481,11 +1481,11 @@ public class TablistManager {
         String iconFormat = config().getString("TABLIST.MEDIA-ICON-FORMAT", "&d<icon_media>");
         String permission = config().getString("TABLIST.MEDIA-BADGE-PERMISSION", "RANK.MEDIA");
 
-        if (iconFormat == null || iconFormat.isBlank() || iconMedia.isBlank()) {
+        if (iconFormat == null || iconFormat.trim().isEmpty() || iconMedia.trim().isEmpty()) {
             return "";
         }
 
-        if (!includeMediaBadge && permission != null && !permission.isBlank() && !hasLivePermission(player, permission)) {
+        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
             return "";
         }
 
@@ -1496,11 +1496,11 @@ public class TablistManager {
         String plusFormat = config().getString("TABLIST.MEDIA-PLUS-FORMAT", "&#37BFF9+");
         String permission = config().getString("TABLIST.MEDIA-PLUS-PERMISSION", "RANK.MEDIA.PLUS");
 
-        if (plusFormat == null || plusFormat.isBlank()) {
+        if (plusFormat == null || plusFormat.trim().isEmpty()) {
             return "";
         }
 
-        if (!includeMediaBadge && permission != null && !permission.isBlank() && !hasLivePermission(player, permission)) {
+        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
             return "";
         }
 
@@ -1513,12 +1513,12 @@ public class TablistManager {
                 "<media_icon_badge><media_plus_badge>"
         );
 
-        if (badgeFormat == null || badgeFormat.isBlank()) {
+        if (badgeFormat == null || badgeFormat.trim().isEmpty()) {
             return "";
         }
 
         if (!usesSplitMediaBadgePlaceholders(badgeFormat)) {
-            if (mediaIconBadge.isBlank() || iconMedia.isBlank()) {
+            if (mediaIconBadge.trim().isEmpty() || iconMedia.trim().isEmpty()) {
                 return "";
             }
             return badgeFormat.replace("<icon_media>", iconMedia);
@@ -1529,7 +1529,7 @@ public class TablistManager {
                 .replace("<media_icon_badge>", mediaIconBadge)
                 .replace("%media_plus_badge%", mediaPlusBadge)
                 .replace("<media_plus_badge>", mediaPlusBadge)
-                .replace("<icon_media>", mediaIconBadge.isBlank() ? "" : iconMedia);
+                .replace("<icon_media>", mediaIconBadge.trim().isEmpty() ? "" : iconMedia);
     }
 
     private boolean usesSplitMediaBadgePlaceholders(String text) {
@@ -1540,7 +1540,7 @@ public class TablistManager {
     }
 
     private boolean isMediaPermission(String permission) {
-        if (permission == null || permission.isBlank()) {
+        if (permission == null || permission.trim().isEmpty()) {
             return false;
         }
         String normalized = PermissionUtils.normalizePermissionNode(permission);
@@ -1594,7 +1594,7 @@ public class TablistManager {
     }
 
     private boolean hasLivePermission(Player player, String permission) {
-        if (player == null || permission == null || permission.isBlank()) {
+        if (player == null || permission == null || permission.trim().isEmpty()) {
             return false;
         }
 
@@ -1707,7 +1707,7 @@ public class TablistManager {
         String normalized = PermissionUtils.normalizePermissionNode(permission);
         boolean checked = false;
         for (String candidate : new java.util.ArrayList<>(java.util.Arrays.asList(permission,  normalized))) {
-            if (candidate == null || candidate.isBlank()) {
+            if (candidate == null || candidate.trim().isEmpty()) {
                 continue;
             }
 
@@ -1780,7 +1780,7 @@ public class TablistManager {
     }
 
     private boolean permissionMatches(String granted, String requested) {
-        if (granted == null || requested == null || granted.isBlank() || requested.isBlank()) {
+        if (granted == null || requested == null || granted.trim().isEmpty() || requested.trim().isEmpty()) {
             return false;
         }
         if (granted.equals(requested) || granted.equals("*")) {
@@ -1823,7 +1823,7 @@ public class TablistManager {
             Object adapter = resolveLuckPermsPlayerAdapter();
             Object metaData = invokeCompatible(adapter, "getMetaData", player);
             String prefix = readStringNoArg(metaData, "getPrefix", "prefix");
-            if (prefix != null && !prefix.isBlank()) {
+            if (prefix != null && !prefix.trim().isEmpty()) {
                 return prefix;
             }
 
@@ -1831,7 +1831,7 @@ public class TablistManager {
             Object cachedData = invokeNoArg(user, "getCachedData", "cachedData");
             Object cachedMetaData = invokeNoArg(cachedData, "getMetaData", "metaData");
             prefix = readStringNoArg(cachedMetaData, "getPrefix", "prefix");
-            return prefix == null || prefix.isBlank() ? null : prefix;
+            return prefix == null || prefix.trim().isEmpty() ? null : prefix;
         } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
             return null;
         }
@@ -1850,7 +1850,7 @@ public class TablistManager {
     }
 
     private String applyInternalPlaceholders(String text, Player player) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
@@ -1875,7 +1875,7 @@ public class TablistManager {
     }
 
     private String parseTabText(String text, Player player) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
@@ -1892,7 +1892,7 @@ public class TablistManager {
     }
 
     private Component parseTabComponent(String text, Player player) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return null;
         }
 
@@ -1916,7 +1916,7 @@ public class TablistManager {
     private TagResolver headTagResolver(Player player) {
         return TagResolver.resolver("head", (arguments, context) -> {
             String source = arguments.hasNext() ? arguments.pop().value() : player.getName();
-            if (source == null || source.isBlank()) {
+            if (source == null || source.trim().isEmpty()) {
                 source = player.getName();
             }
 
@@ -1978,7 +1978,7 @@ public class TablistManager {
     }
 
     private boolean isSelfHeadSource(String source, Player player) {
-        if (source == null || source.isBlank()) {
+        if (source == null || source.trim().isEmpty()) {
             return true;
         }
 
@@ -1996,7 +1996,7 @@ public class TablistManager {
     }
 
     private UUID parseUuid(String value) {
-        if (value == null || value.isBlank()) {
+        if (value == null || value.trim().isEmpty()) {
             return null;
         }
 
@@ -2192,7 +2192,7 @@ public class TablistManager {
     }
 
     private SkinTexture resolveMojangNamedSkinTexture(String playerName) {
-        if (playerName == null || playerName.isBlank()) {
+        if (playerName == null || playerName.trim().isEmpty()) {
             return null;
         }
 
@@ -2245,7 +2245,7 @@ public class TablistManager {
     }
 
     private UUID uuidFromCompactString(String rawUuid) {
-        if (rawUuid == null || rawUuid.isBlank()) {
+        if (rawUuid == null || rawUuid.trim().isEmpty()) {
             return null;
         }
 
@@ -2292,12 +2292,12 @@ public class TablistManager {
     }
 
     private SkinTexture resolveUpdatedBukkitProfileTexture(UUID playerId, String playerName) {
-        if (playerId == null && (playerName == null || playerName.isBlank())) {
+        if (playerId == null && (playerName == null || playerName.trim().isEmpty())) {
             return null;
         }
 
         try {
-            Object profile = playerName != null && !playerName.isBlank()
+            Object profile = playerName != null && !playerName.trim().isEmpty()
                     ? Bukkit.createPlayerProfile(playerName)
                     : Bukkit.createPlayerProfile(playerId);
             Object updateResult = invokeNoArg(profile, "update");
@@ -2567,7 +2567,7 @@ public class TablistManager {
         String propertyName = readStringNoArg(source, "getName", "name");
         String value = readStringNoArg(source, "getValue", "value", "getTexture", "texture");
         String signature = readStringNoArg(source, "getSignature", "signature");
-        if (value != null && !value.isBlank()
+        if (value != null && !value.trim().isEmpty()
                 && (propertyName == null || propertyName.equalsIgnoreCase("textures"))) {
             return new SkinTexture(value, signature);
         }
@@ -2610,7 +2610,7 @@ public class TablistManager {
         String propertyName = stringValue(propertyNameValue);
         String value = stringValue(rawValue);
         String signature = stringValue(rawSignature);
-        if (value != null && !value.isBlank()
+        if (value != null && !value.trim().isEmpty()
                 && (propertyName == null || propertyName.equalsIgnoreCase("textures"))) {
             return new SkinTexture(value, signature);
         }
@@ -2887,7 +2887,7 @@ public class TablistManager {
     }
 
     private String stripUnsupportedHeadTags(String text) {
-        if (text == null || text.isBlank()) {
+        if (text == null || text.trim().isEmpty()) {
             return "";
         }
 
@@ -2943,8 +2943,54 @@ public class TablistManager {
     }
 
     private String legacyCodeToMiniMessage(char code) {
-        return switch (Character.toLowerCase(code)) {        case '0': "<black>"            break;        case '1': "<dark_blue>"            break;        case '2': "<dark_green>"            break;        case '3': "<dark_aqua>"            break;        case '4': "<dark_red>"            break;        case '5': "<dark_purple>"            break;        case '6': "<gold>"            break;        case '7': "<gray>"            break;        case '8': "<dark_gray>"            break;        case '9': "<blue>"            break;        case 'a': "<green>"            break;        case 'b': "<aqua>"            break;        case 'c': "<red>"            break;        case 'd': "<light_purple>"            break;        case 'e': "<yellow>"            break;        case 'f': "<white>"            break;        case 'k': "<obfuscated>"            break;        case 'l': "<bold>"            break;        case 'm': "<strikethrough>"            break;        case 'n': "<underlined>"            break;        case 'o': "<italic>"            break;        case 'r': "<reset>"            break;        default: String.valueOf(code)            break;
-        };
+        switch (Character.toLowerCase(code)) {
+            case '0':
+                return "<black>";
+            case '1':
+                return "<dark_blue>";
+            case '2':
+                return "<dark_green>";
+            case '3':
+                return "<dark_aqua>";
+            case '4':
+                return "<dark_red>";
+            case '5':
+                return "<dark_purple>";
+            case '6':
+                return "<gold>";
+            case '7':
+                return "<gray>";
+            case '8':
+                return "<dark_gray>";
+            case '9':
+                return "<blue>";
+            case 'a':
+                return "<green>";
+            case 'b':
+                return "<aqua>";
+            case 'c':
+                return "<red>";
+            case 'd':
+                return "<light_purple>";
+            case 'e':
+                return "<yellow>";
+            case 'f':
+                return "<white>";
+            case 'k':
+                return "<obfuscated>";
+            case 'l':
+                return "<bold>";
+            case 'm':
+                return "<strikethrough>";
+            case 'n':
+                return "<underlined>";
+            case 'o':
+                return "<italic>";
+            case 'r':
+                return "<reset>";
+            default:
+                return String.valueOf(code);
+        }
     }
 
     private FileConfiguration config() {
@@ -2965,7 +3011,7 @@ public final class SkinTexture {
 
 
         boolean isValid() {
-            return value != null && !value.isBlank();
+            return value != null && !value.trim().isEmpty();
         }
 
 

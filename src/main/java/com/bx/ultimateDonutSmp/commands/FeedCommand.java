@@ -74,7 +74,7 @@ public class FeedCommand implements CommandExecutor {
     }
 
     private Player findOnlinePlayer(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 

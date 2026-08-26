@@ -126,7 +126,7 @@ public class ServerNotificationManager {
     }
 
     private void broadcast(String message, PlayerSettingUtils.NotificationChannel channel) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return;
         }
         plugin.getSpigotScheduler().forEachOnlinePlayer(viewer -> {
@@ -146,7 +146,7 @@ public class ServerNotificationManager {
 
     /** Fills the placeholders in, treating a missing value as an empty one. */
     static String format(String message, String... replacements) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return null;
         }
         String result = message;

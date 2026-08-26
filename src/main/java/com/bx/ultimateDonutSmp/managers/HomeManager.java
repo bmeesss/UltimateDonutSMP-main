@@ -238,7 +238,7 @@ public class HomeManager {
         if (location;
             worldName = lazy.getWorldName();
         }
-        if (worldName == null || worldName.isBlank()) return false;
+        if (worldName == null || worldName.trim().isEmpty()) return false;
 
         Location targetLocation = new LazyLocation(
                 worldName,
@@ -352,7 +352,7 @@ public class HomeManager {
     }
 
     private boolean isValidHomeName(String input) {
-        return !input.isBlank() && !input.contains(" ");
+        return !input.trim().isEmpty() && !input.contains(" ");
     }
 
     private void resendPrompt(Player player, PendingHomeInput pending) {

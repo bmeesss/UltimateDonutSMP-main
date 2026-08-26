@@ -39,7 +39,7 @@ public class PunishmentManager {
     }
 
     public Optional<UUID> resolveTargetUuid(String username, boolean allowOfflineFallback) {
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return Optional.empty();
         }
 
@@ -82,12 +82,12 @@ public class PunishmentManager {
         }
 
         String knownName = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-        if (knownName != null && !knownName.isBlank()) {
+        if (knownName != null && !knownName.trim().isEmpty()) {
             return knownName;
         }
 
         String punishmentName = plugin.getDatabaseManager().getLatestPunishmentTargetName(uuid);
-        if (punishmentName != null && !punishmentName.isBlank()) {
+        if (punishmentName != null && !punishmentName.trim().isEmpty()) {
             return punishmentName;
         }
 
@@ -182,7 +182,7 @@ public class PunishmentManager {
     }
 
     public Optional<PunishmentRecord> getActiveRecord(UUID targetUuid, String targetName, PunishmentType type) {
-        if ((targetUuid == null && (targetName == null || targetName.isBlank())) || type == null) {
+        if ((targetUuid == null && (targetName == null || targetName.trim().isEmpty())) || type == null) {
             return Optional.empty();
         }
 
@@ -201,7 +201,7 @@ public class PunishmentManager {
     }
 
     public Optional<PunishmentRecord> getActiveRecord(UUID targetUuid, String targetName, PunishmentType... types) {
-        if ((targetUuid == null && (targetName == null || targetName.isBlank())) || types == null || types.length == 0) {
+        if ((targetUuid == null && (targetName == null || targetName.trim().isEmpty())) || types == null || types.length == 0) {
             return Optional.empty();
         }
 
@@ -220,7 +220,7 @@ public class PunishmentManager {
     }
 
     public boolean markActiveRecordsRemoved(UUID targetUuid, String targetName, PunishmentType type, PunishmentRemovalRequest request) {
-        if ((targetUuid == null && (targetName == null || targetName.isBlank())) || type == null || request == null) {
+        if ((targetUuid == null && (targetName == null || targetName.trim().isEmpty())) || type == null || request == null) {
             return false;
         }
 
@@ -262,7 +262,7 @@ public class PunishmentManager {
                 "",
                 null,
                 "",
-                request.sourceServer() == null || request.sourceServer().isBlank() ? "local" : request.sourceServer(),
+                request.sourceServer() == null || request.sourceServer().trim().isEmpty() ? "local" : request.sourceServer(),
                 request.scope() == null ? PunishmentScope.SERVER : request.scope()
         );
 
@@ -303,7 +303,7 @@ public class PunishmentManager {
         String removedByName = resolveNameSnapshot(request.removedByUuid(), request.removedByNameSnapshot(), true);
         long removedAt = request.removedAt() > 0L ? request.removedAt() : System.currentTimeMillis();
         String removalReason = request.removalReason();
-        if (removalReason == null || removalReason.isBlank()) {
+        if (removalReason == null || removalReason.trim().isEmpty()) {
             removalReason = getState(existing) == PunishmentState.EXPIRED ? "Expired" : "Removed";
         }
 
@@ -344,8 +344,14 @@ public class PunishmentManager {
         if (!record.isTemporary()) {
             return record.getType().name();
         }
-        return switch (record.getType()) {        case BAN: "TEMPBAN"; break;        case MUTE: "TEMPMUTE"; break;        default: record.getType().name()            break;
-        };
+        switch (record.getType()) {
+            case BAN:
+                return "TEMPBAN";
+            case MUTE:
+                return "TEMPMUTE";
+            default:
+                return record.getType().name();
+        }
     }
 
     private UUID parseUuid(String value) {
@@ -361,7 +367,7 @@ public class PunishmentManager {
     }
 
     private String resolveNameSnapshot(UUID uuid, String providedSnapshot, boolean fallbackToConsole) {
-        if (providedSnapshot != null && !providedSnapshot.isBlank()) {
+        if (providedSnapshot != null && !providedSnapshot.trim().isEmpty()) {
             return providedSnapshot;
         }
 
@@ -372,12 +378,12 @@ public class PunishmentManager {
             }
 
             String knownName = plugin.getDatabaseManager().getLastKnownUsername(uuid);
-            if (knownName != null && !knownName.isBlank()) {
+            if (knownName != null && !knownName.trim().isEmpty()) {
                 return knownName;
             }
 
             String punishmentName = plugin.getDatabaseManager().getLatestPunishmentTargetName(uuid);
-            if (punishmentName != null && !punishmentName.isBlank()) {
+            if (punishmentName != null && !punishmentName.trim().isEmpty()) {
                 return punishmentName;
             }
 

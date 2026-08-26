@@ -296,13 +296,18 @@ public class PlayerRespawnListener implements Listener {
     }
 
     private static int getPreferredHotbarSlot(Material material) {
-        return switch (material) {
-            case STONE_SWORD -> 0;
-            case STONE_PICKAXE -> 1;
-            case STONE_AXE -> 2;
-            case STONE_SHOVEL -> 3;
-            default -> -1;
-        };
+        switch (material) {
+            case STONE_SWORD:
+                return 0;
+            case STONE_PICKAXE:
+                return 1;
+            case STONE_AXE:
+                return 2;
+            case STONE_SHOVEL:
+                return 3;
+            default:
+                return -1;
+        }
     }
 
     private static boolean isEmpty(ItemStack item) {

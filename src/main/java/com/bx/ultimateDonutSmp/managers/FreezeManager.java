@@ -151,7 +151,7 @@ public class FreezeManager {
     }
 
     public FreezeState findActiveState(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
 
@@ -164,7 +164,7 @@ public class FreezeManager {
     }
 
     public Player findOnlineTarget(String username) {
-        if (username == null || username.isBlank()) {
+        if (username == null || username.trim().isEmpty()) {
             return null;
         }
 
@@ -183,7 +183,7 @@ public class FreezeManager {
 
     public boolean hasKnownPlayer(String username) {
         return username != null
-                && !username.isBlank()
+                && !username.trim().isEmpty()
                 && plugin.getDatabaseManager().findPlayerUuidByUsername(username) != null;
     }
 
@@ -424,7 +424,7 @@ public class FreezeManager {
     }
 
     private void broadcastStaffMessage(String message) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return;
         }
 
@@ -454,11 +454,11 @@ public class FreezeManager {
 
     private String getServerName() {
         String configured = getConfig().getString("FREEZE.SERVER-NAME", "local");
-        return configured == null || configured.isBlank() ? "local" : configured;
+        return configured == null || configured.trim().isEmpty() ? "local" : configured;
     }
 
     private String normalizeCommand(String rawCommand) {
-        if (rawCommand == null || rawCommand.isBlank()) {
+        if (rawCommand == null || rawCommand.trim().isEmpty()) {
             return "";
         }
 

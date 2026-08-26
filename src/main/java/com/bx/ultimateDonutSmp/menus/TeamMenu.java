@@ -34,7 +34,7 @@ public class TeamMenu extends BaseMenu {
     public TeamMenu withState(int page, SortMode sortMode, String searchQuery) {
         this.page = Math.max(0, page);
         this.sortMode = sortMode == null ? SortMode.DEFAULT : sortMode;
-        this.searchQuery = searchQuery == null || searchQuery.isBlank() ? null : searchQuery.trim();
+        this.searchQuery = searchQuery == null || searchQuery.trim().isEmpty() ? null : searchQuery.trim();
         return this;
     }
 
@@ -54,7 +54,7 @@ public class TeamMenu extends BaseMenu {
             return;
         }
 
-        if (searchQuery == null || searchQuery.isBlank()) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
             searchQuery = plugin.getTeamManager().getActiveSearchQuery(player.getUniqueId());
         }
 
@@ -201,7 +201,7 @@ public class TeamMenu extends BaseMenu {
         }
 
         String configuredLore = menus().getString(MENU_PATH + ".PLAYER-BUTTON.LORE", "&fClick to edit");
-        if (configuredLore != null && !configuredLore.isBlank()) {
+        if (configuredLore != null && !configuredLore.trim().isEmpty()) {
             lore.add(configuredLore);
         }
 
@@ -211,7 +211,7 @@ public class TeamMenu extends BaseMenu {
     private void renderSearchButton() {
         String path = MENU_PATH + ".SEARCH-BUTTON";
         List<String> lore = new ArrayList<>(menus().getStringList(path + ".LORE"));
-        if (searchQuery == null || searchQuery.isBlank()) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
             lore.removeIf(line -> line.toLowerCase().contains("in development"));
             lore.add("&7Current: &fnone");
             lore.add("&7Left-click to type a search.");
@@ -352,7 +352,7 @@ public class TeamMenu extends BaseMenu {
     }
 
     private boolean matchesSearch(UUID memberUuid) {
-        if (searchQuery == null || searchQuery.isBlank()) {
+        if (searchQuery == null || searchQuery.trim().isEmpty()) {
             return true;
         }
 

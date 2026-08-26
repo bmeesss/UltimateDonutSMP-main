@@ -45,12 +45,21 @@ public class ChatCommand implements CommandExecutor {
             return true;
         }
 
-        return switch (args[0].toLowerCase(Locale.ROOT)) {        case "mute": handleMute(sender)            break;        case "unmute": handleUnmute(sender)            break;        case "delay": handleDelay(sender, args, label)            break;        case "clear": handleClear(sender)            break;        default: {
-
-                            sendHelp(sender);
-                            true;
-                        break;        }
-        };
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "mute":
+                return handleMute(sender);
+            case "unmute":
+                return handleUnmute(sender);
+            case "delay":
+                return handleDelay(sender, args, label);
+            case "clear":
+                return handleClear(sender);
+            default: {
+                sendHelp(sender);
+                true;
+                return break;
+            }
+        }
     }
 
     private boolean handleMute(CommandSender sender) {
@@ -183,12 +192,21 @@ public class ChatCommand implements CommandExecutor {
             return true;
         }
 
-        return switch (args[0].toLowerCase(Locale.ROOT)) {        case "mute": handleMute(sender)            break;        case "unmute": handleUnmute(sender)            break;        case "delay": handleDelay(sender, args, label)            break;        case "clear": handleClear(sender)            break;        default: {
-
-                            sendHelp(sender);
-                            true;
-                        break;        }
-        };
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "mute":
+                return handleMute(sender);
+            case "unmute":
+                return handleUnmute(sender);
+            case "delay":
+                return handleDelay(sender, args, label);
+            case "clear":
+                return handleClear(sender);
+            default: {
+                sendHelp(sender);
+                true;
+                return break;
+            }
+        }
     }
 
     private boolean handleMute(CommandSender sender) {

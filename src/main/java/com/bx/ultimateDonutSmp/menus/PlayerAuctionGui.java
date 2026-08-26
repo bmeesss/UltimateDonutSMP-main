@@ -137,8 +137,29 @@ public final class PlayerAuctionGui extends BaseMenu {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-                            String key = switch (result.reason()) {        case DISABLED: "AUCTION_HOUSE.DISABLED"; break;        case NO_PERMISSION: "AUCTION_HOUSE.NO_PERMISSION"; break;        case LISTING_NOT_FOUND: "AUCTION_HOUSE.LISTING_NOT_FOUND"; break;        case NOT_OWNER: "AUCTION_HOUSE.NOT_YOUR_LISTING"; break;        case NOT_ACTIVE: "AUCTION_HOUSE.LISTING_NOT_ACTIVE"; break;        case DATABASE_ERROR: "AUCTION_HOUSE.CANCEL_DATABASE_ERROR"; break;
-                            };
+String;
+switch (result.reason()) {
+                                case DISABLED:
+                                    key = "AUCTION_HOUSE.DISABLED";
+                                    break;
+                                case NO_PERMISSION:
+                                    key = "AUCTION_HOUSE.NO_PERMISSION";
+                                    break;
+                                case LISTING_NOT_FOUND:
+                                    key = "AUCTION_HOUSE.LISTING_NOT_FOUND";
+                                    break;
+                                case NOT_OWNER:
+                                    key = "AUCTION_HOUSE.NOT_YOUR_LISTING";
+                                    break;
+                                case NOT_ACTIVE:
+                                    key = "AUCTION_HOUSE.LISTING_NOT_ACTIVE";
+                                    break;
+                                case DATABASE_ERROR:
+                                    key = "AUCTION_HOUSE.CANCEL_DATABASE_ERROR";
+                                    break;
+                                default:
+                                    break;
+                            }
                             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage(key)));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.FAIL"));
                         }
@@ -161,8 +182,33 @@ public final class PlayerAuctionGui extends BaseMenu {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-                            String key = switch (result.reason()) {        case DISABLED: "AUCTION_HOUSE.DISABLED"; break;        case NO_PERMISSION: "AUCTION_HOUSE.NO_PERMISSION"; break;        case CLAIM_NOT_FOUND: "AUCTION_HOUSE.CLAIM_NOT_FOUND"; break;        case NOT_OWNER: "AUCTION_HOUSE.NOT_YOUR_CLAIM"; break;        case ALREADY_CLAIMED: "AUCTION_HOUSE.CLAIM_ALREADY_CLAIMED"; break;        case INVENTORY_FULL: "AUCTION_HOUSE.CLAIM_INVENTORY_FULL"; break;        case NO_PLAYER_DATA: case DATABASE_ERROR: "AUCTION_HOUSE.CLAIM_DATABASE_ERROR"; break;
-                            };
+String;
+switch (result.reason()) {
+                                case DISABLED:
+                                    key = "AUCTION_HOUSE.DISABLED";
+                                    break;
+                                case NO_PERMISSION:
+                                    key = "AUCTION_HOUSE.NO_PERMISSION";
+                                    break;
+                                case CLAIM_NOT_FOUND:
+                                    key = "AUCTION_HOUSE.CLAIM_NOT_FOUND";
+                                    break;
+                                case NOT_OWNER:
+                                    key = "AUCTION_HOUSE.NOT_YOUR_CLAIM";
+                                    break;
+                                case ALREADY_CLAIMED:
+                                    key = "AUCTION_HOUSE.CLAIM_ALREADY_CLAIMED";
+                                    break;
+                                case INVENTORY_FULL:
+                                    key = "AUCTION_HOUSE.CLAIM_INVENTORY_FULL";
+                                    break;
+                                case NO_PLAYER_DATA:
+                                case DATABASE_ERROR:
+                                    key = "AUCTION_HOUSE.CLAIM_DATABASE_ERROR";
+                                    break;
+                                default:
+                                    break;
+                            }
                             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage(key)));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.FAIL"));
                         }

@@ -40,7 +40,7 @@ public class EconomyLeaderboardExpansion extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onRequest(OfflinePlayer offlinePlayer, @NotNull String params) {
-        if (params.isBlank()) {
+        if (params.trim().isEmpty()) {
             return null;
         }
 
@@ -76,8 +76,22 @@ public class EconomyLeaderboardExpansion extends PlaceholderExpansion {
         String fullValue = entry == null ? "0" : plugin.getLeaderboardManager().formatValue(type, entry.playerData(), false, false);
         String shortValue = entry == null ? "0" : plugin.getLeaderboardManager().formatValue(type, entry.playerData(), true, false);
 
-        return switch (outputKey) {        case "name": entryName            break;        case "value": fullValue            break;        case "value_short": case "value-short": case "short": shortValue            break;        case "rank": String.valueOf(position)            break;        case "display": "#" + position + " " + entryName + ": " + shortValue            break;        default: null            break;
-        };
+        switch (outputKey) {
+            case "name":
+                return entryName;
+            case "value":
+                return fullValue;
+            case "value_short":
+            case "value-short":
+            case "short":
+                return shortValue;
+            case "rank":
+                return String.valueOf(position);
+            case "display":
+                return "#" + position + " " + entryName + ": " + shortValue;
+            default:
+                return null;
+        }
     }
 
     private String resolveEntryName(LeaderboardManager.LeaderboardEntry entry) {
@@ -86,11 +100,11 @@ public class EconomyLeaderboardExpansion extends PlaceholderExpansion {
         }
 
         String username = entry.playerData().getUsername();
-        return username == null || username.isBlank() ? "unknown" : username;
+        return username == null || username.trim().isEmpty() ? "unknown" : username;
     }
 
     private boolean isPositiveInteger(String input) {
-        if (input == null || input.isBlank()) {
+        if (input == null || input.trim().isEmpty()) {
             return false;
         }
 

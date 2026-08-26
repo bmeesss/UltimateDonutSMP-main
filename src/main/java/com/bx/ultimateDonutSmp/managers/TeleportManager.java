@@ -133,7 +133,7 @@ public final class PlayerDistanceState {
                 "TELEPORT.WARNING",
                 "{seconds}", String.valueOf(seconds)
         );
-        if (warning == null || warning.isBlank()) {
+        if (warning == null || warning.trim().isEmpty()) {
             return;
         }
         player.sendMessage(ColorUtils.toComponent(warning));

@@ -1401,7 +1401,7 @@ public class StaffModeManager {
     }
 
     private void broadcastToStaff(String message, UUID... excludedUuids) {
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return;
         }
 
@@ -1516,7 +1516,7 @@ public class StaffModeManager {
                 "STAFF-MODE.VANISH-ACTIONBAR.MESSAGE",
                 "&avanished &7>> &fyou are hidden from regular players"
         );
-        if (message == null || message.isBlank()) {
+        if (message == null || message.trim().isEmpty()) {
             return;
         }
 
@@ -1935,7 +1935,7 @@ public class StaffModeManager {
         boolean dispatched = false;
         for (String command : customItem.commands()) {
             String resolved = applyCustomItemPlaceholders(command, staff, target);
-            if (resolved.isBlank()) {
+            if (resolved.trim().isEmpty()) {
                 continue;
             }
             if (resolved.contains("{target}") || resolved.contains("{target_uuid}")) {
@@ -2056,9 +2056,21 @@ public class StaffModeManager {
     }
 
     private int defaultSlot(StaffToolType toolType) {
-        return switch (toolType) {        case VANISH: 0; break;        case FREEZE: 1; break;        case STAFF_LIST: 4; break;        case BETTER_VIEW: 7; break;        case RANDOM_TELEPORT: 8; break;
+        switch (toolType) {
+            case VANISH:
+                return 0;
+            case FREEZE:
+                return 1;
+            case STAFF_LIST:
+                return 4;
+            case BETTER_VIEW:
+                return 7;
+            case RANDOM_TELEPORT:
+                return 8; break;
             // Custom items carry their own SLOT, so this branch only exists to keep the switch exhaustive.        case CUSTOM: 0; break;
-        };
+            default:
+                return null;
+        }
     }
 
     private NamespacedKey toolKey() {
@@ -2071,7 +2083,7 @@ public class StaffModeManager {
 
     private String resolveSourceServer() {
         String configured = plugin.getConfigManager().getNetwork().getString("NETWORK-STATUS.LOCAL-SERVER-ID", "local");
-        return configured == null || configured.isBlank() ? "local" : configured.trim().toLowerCase(Locale.ROOT);
+        return configured == null || configured.trim().isEmpty() ? "local" : configured.trim().toLowerCase(Locale.ROOT);
     }
 
     private ConfigurationSection menuSection(String menuKey) {

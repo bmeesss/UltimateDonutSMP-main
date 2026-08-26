@@ -60,7 +60,7 @@ public class ItemDropListener implements Listener {
             });
             String message = plugin.getConfigManager().getConfig().getString(
                     "PREVENT-ITEM-DROP.MESSAGE", "&c✗ You are not allowed to drop items in spawn or AFK areas!");
-            if (message != null && !message.isBlank()) {
+            if (message != null && !message.trim().isEmpty()) {
                 player.sendMessage(ColorUtils.toComponent(message));
             }
         }
@@ -91,7 +91,7 @@ public class ItemDropListener implements Listener {
         }
         // Check legacy AFK cuboid name from config
         String legacyAfk = plugin.getConfigManager().getConfig().getString("AFK-SYSTEM.AFK-CUBOID-NAME");
-        if (legacyAfk != null && !legacyAfk.isBlank() && plugin.getCuboidManager().isInCuboid(player, legacyAfk.toLowerCase())) {
+        if (legacyAfk != null && !legacyAfk.trim().isEmpty() && plugin.getCuboidManager().isInCuboid(player, legacyAfk.toLowerCase())) {
             return true;
         }
         return false;

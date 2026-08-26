@@ -32,8 +32,18 @@ public class SocialCommand implements CommandExecutor {
             return true;
         }
 
-        String key = switch (normalizedLabel) {        case "twitter": "SOCIAL.TWITTER"            break;        case "store": "SOCIAL.STORE"            break;        default: null            break;
-        };
+String;
+switch (normalizedLabel) {
+            case "twitter":
+                key = "SOCIAL.TWITTER";
+                break;
+            case "store":
+                key = "SOCIAL.STORE";
+                break;
+            default:
+                key = null;
+                break;
+        }
 
         if (key != null) {
             List<String> lines = plugin.getConfigManager().getMessages().getStringList(key);

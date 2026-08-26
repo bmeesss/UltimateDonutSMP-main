@@ -95,7 +95,7 @@ public final class RTPDestination {
         this.slot = slot;
         this.material = material;
         this.displayName = displayName;
-        this.lore = lore;
+        this.lore = new java.util.ArrayList<>(lore == null ? java.util.Collections.emptyList() : lore);
         this.worldName = worldName;
         this.enabled = enabled;
     }
@@ -108,10 +108,6 @@ public final class RTPDestination {
     public String worldName() { return worldName; }
     public boolean enabled() { return enabled; }
 
-
-        public RTPDestination {
-            lore = new java.util.ArrayList<>(lore == null ? java.util.Collections.emptyList() : lore);
-        }
 
     @Override public String toString() {
         return "RTPDestination[id=+id, slot=+slot, material=+material, displayName=+displayName, lore=+lore, worldName=+worldName, enabled=+enabled]";
@@ -351,288 +347,7 @@ public final class RTPQueueEntry {
         if (section != null) {
             Map<String, Object> values = section.getValues(true);
             for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue() instanceof Number) {
-            Number number = (Number) this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SearchSettings that = (SearchSettings) o;
-        return java.util.Objects.equals(worldName, that.worldName) && java.util.Objects.equals(minRadius, that.minRadius) && java.util.Objects.equals(maxRadius, that.maxRadius) && java.util.Objects.equals(centerX, that.centerX) && java.util.Objects.equals(centerZ, that.centerZ) && java.util.Objects.equals(maxAttempts, that.maxAttempts) && java.util.Objects.equals(maxChunkSamples, that.maxChunkSamples) && java.util.Objects.equals(attemptIntervalTicks, that.attemptIntervalTicks);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(worldName, minRadius, maxRadius, centerX, centerZ, maxAttempts, maxChunkSamples, attemptIntervalTicks);
-    }
-}
-
-public final class RTPDestination {
-    private final String id;
-    private final int slot;
-    private final org.bukkit.Material material;
-    private final String displayName;
-    private final List<String> lore;
-    private final String worldName;
-    private final boolean enabled;
-
-    public RTPDestination(String id, int slot, org.bukkit.Material material, String displayName, List<String> lore, String worldName, boolean enabled) {
-        this.id = id;
-        this.slot = slot;
-        this.material = material;
-        this.displayName = displayName;
-        this.lore = lore;
-        this.worldName = worldName;
-        this.enabled = enabled;
-    }
-
-    public String id() { return id; }
-    public int slot() { return slot; }
-    public org.bukkit.Material material() { return material; }
-    public String displayName() { return displayName; }
-    public List<String> lore() { return lore; }
-    public String worldName() { return worldName; }
-    public boolean enabled() { return enabled; }
-
-
-        public RTPDestination {
-            lore = new java.util.ArrayList<>(lore == null ? java.util.Collections.emptyList() : lore);
-        }
-
-    @Override public String toString() {
-        return "RTPDestination[id=+id, slot=+slot, material=+material, displayName=+displayName, lore=+lore, worldName=+worldName, enabled=+enabled]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RTPDestination that = (RTPDestination) o;
-        return java.util.Objects.equals(id, that.id) && java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(material, that.material) && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(worldName, that.worldName) && java.util.Objects.equals(enabled, that.enabled);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(id, slot, material, displayName, lore, worldName, enabled);
-    }
-}
-
-    private static final long SEARCH_ACTIONBAR_REFRESH_TICKS = 1L;
-    private static final long MIN_SEARCH_DISPLAY_TICKS = 30L;
-    private static final int DEFAULT_SEARCH_ATTEMPTS_PER_TICK = 1;
-    private static final long FOUND_ACTIONBAR_DELAY_TICKS = 20L;
-    private static final int DEFAULT_MAX_CONCURRENT_RTP = 1;
-    private static final int MIN_MAX_ATTEMPTS = 32;
-    private static final int MIN_MAX_CHUNK_SAMPLES = 64;
-    private static final int DEFAULT_MAX_ATTEMPTS = 64;
-    private static final int DEFAULT_MAX_CHUNK_SAMPLES = 128;
-    private static final int DEFAULT_ATTEMPT_INTERVAL_TICKS = 2;
-    private static final int CHUNK_COLUMN_CHECKS = 8;
-    private static final int NETHER_ROOF_PADDING_BLOCKS = 8;
-    private static final int PLAYER_CLEARANCE_BLOCKS = 2;
-    private static final String GENERATE_CHUNKS_SETTING = "SETTINGS.GENERATE-CHUNKS";
-    private static final String GENERATE_FALLBACK_CHUNKS_SETTING = "SETTINGS.GENERATE-FALLBACK-CHUNKS";
-    private static final String GENERATE_FALLBACK_AFTER_SETTING = "SETTINGS.GENERATE-FALLBACK-AFTER-SAMPLES";
-    private static final String MAX_GENERATE_FALLBACK_SAMPLES_SETTING = "SETTINGS.MAX-GENERATE-FALLBACK-SAMPLES";
-    private static final String LOAD_GENERATED_CHUNKS_SETTING = "SETTINGS.LOAD-GENERATED-CHUNKS";
-    private static final String LOADED_CHUNK_FALLBACK_SETTING = "SETTINGS.FALLBACK-TO-LOADED-CHUNKS";
-    private static final String LOADED_CHUNK_FALLBACK_AFTER_SETTING = "SETTINGS.LOADED-CHUNK-FALLBACK-AFTER-SAMPLES";
-    private static final String PRELOAD_TELEPORT_CHUNKS_SETTING = "SETTINGS.PRELOAD-TELEPORT-CHUNKS";
-    private static final String PRELOAD_RADIUS_SETTING = "SETTINGS.PRELOAD-RADIUS";
-    private static final String PRELOAD_CHUNKS_PER_TICK_SETTING = "SETTINGS.PRELOAD-CHUNKS-PER-TICK";
-    private static final String PRELOAD_MAX_TICKS_SETTING = "SETTINGS.PRELOAD-MAX-TICKS";
-    private static final String POST_TELEPORT_CHUNK_THROTTLE_SETTING = "SETTINGS.POST-TELEPORT-CHUNK-THROTTLE";
-    private static final String POST_TELEPORT_VIEW_DISTANCE_SETTING = "SETTINGS.POST-TELEPORT-VIEW-DISTANCE";
-    private static final String COOLDOWN_PERMISSION_PREFIX = "ultimatedonutsmp.rtp.cooldown.";
-    private static final int DEFAULT_GENERATE_FALLBACK_AFTER_SAMPLES = 32;
-    private static final int DEFAULT_MAX_GENERATE_FALLBACK_SAMPLES = 32;
-    private static final String LOCATION_CACHE_ENABLED_SETTING = "SETTINGS.LOCATION-CACHE.ENABLED";
-    private static final String LOCATION_CACHE_SIZE_SETTING = "SETTINGS.LOCATION-CACHE.SIZE";
-    private static final String LOCATION_CACHE_MAX_AGE_SETTING = "SETTINGS.LOCATION-CACHE.MAX-AGE-SECONDS";
-    private static final String LOCATION_CACHE_GENERATE_CHUNKS_SETTING = "SETTINGS.LOCATION-CACHE.GENERATE-CHUNKS";
-    private static final int DEFAULT_LOCATION_CACHE_SIZE = 3;
-    private static final int MAX_LOCATION_CACHE_SIZE = 16;
-    private static final int DEFAULT_LOCATION_CACHE_MAX_AGE_SECONDS = 600;
-    private static final int PRE_CACHE_PARALLEL_ATTEMPTS = 4;
-    private static final long PRE_CACHE_SEARCH_TIMEOUT_MILLIS = 30_000L;
-    private static final long PRE_CACHE_SEARCH_COOLDOWN_MILLIS = 5_000L;
-    private static final long PRE_CACHE_BACKOFF_START_MILLIS = 30_000L;
-    private static final long PRE_CACHE_BACKOFF_MAX_MILLIS = 600_000L;
-
-    private static final class SearchProgress {
-        private final String worldName;
-        private final SearchSettings settings;
-        private long elapsedTicks;
-        private int attemptsUsed;
-        private int chunkSamplesUsed;
-        private int generateFallbackSamplesUsed;
-        private long lastElapsedSecond;
-        private int activeAttemptsInFlight;
-        private Location pendingFoundLocation;
-
-        private SearchProgress(String worldName, SearchSettings settings) {
-            this.worldName = worldName;
-            this.settings = settings;
-        }
-    }
-
-public final class LocationAttempt {
-    private final Location location;
-    private final boolean countedAttempt;
-
-    public LocationAttempt(Location location, boolean countedAttempt) {
-        this.location = location;
-        this.countedAttempt = countedAttempt;
-    }
-
-    public Location location() { return location; }
-    public boolean countedAttempt() { return countedAttempt; }
-
-    @Override public String toString() {
-        return "LocationAttempt[location=+location, countedAttempt=+countedAttempt]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        LocationAttempt that = (LocationAttempt) o;
-        return java.util.Objects.equals(location, that.location) && java.util.Objects.equals(countedAttempt, that.countedAttempt);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(location, countedAttempt);
-    }
-}
-
-public final class CachedLocation {
-    private final Location location;
-    private final long cachedAtMillis;
-
-    public CachedLocation(Location location, long cachedAtMillis) {
-        this.location = location;
-        this.cachedAtMillis = cachedAtMillis;
-    }
-
-    public Location location() { return location; }
-    public long cachedAtMillis() { return cachedAtMillis; }
-
-    @Override public String toString() {
-        return "CachedLocation[location=+location, cachedAtMillis=+cachedAtMillis]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CachedLocation that = (CachedLocation) o;
-        return java.util.Objects.equals(location, that.location) && java.util.Objects.equals(cachedAtMillis, that.cachedAtMillis);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(location, cachedAtMillis);
-    }
-}
-
-    private static final class DirectSearchState {
-        private final SearchSettings settings;
-        /** Whether this particular search may generate terrain, regardless of what the config allows. */
-        private final boolean allowChunkGeneration;
-        /** Whether this search is the background warm-up rather than one somebody is waiting on. */
-        private final boolean backgroundWarmUp;
-        private final AtomicInteger attemptsUsed = new AtomicInteger();
-        private final AtomicInteger chunkSamplesUsed = new AtomicInteger();
-        private final AtomicInteger generateFallbackSamplesUsed = new AtomicInteger();
-        private final AtomicInteger activeChains = new AtomicInteger();
-
-        private DirectSearchState(SearchSettings settings, boolean allowChunkGeneration, boolean backgroundWarmUp) {
-            this.settings = settings;
-            this.allowChunkGeneration = allowChunkGeneration;
-            this.backgroundWarmUp = backgroundWarmUp;
-        }
-    }
-
-public final class RTPQueueEntry {
-    private final UUID playerId;
-    private final String worldName;
-    private final int priority;
-    private final long queueTimeMillis;
-
-    public RTPQueueEntry(UUID playerId, String worldName, int priority, long queueTimeMillis) {
-        this.playerId = playerId;
-        this.worldName = worldName;
-        this.priority = priority;
-        this.queueTimeMillis = queueTimeMillis;
-    }
-
-    public UUID playerId() { return playerId; }
-    public String worldName() { return worldName; }
-    public int priority() { return priority; }
-    public long queueTimeMillis() { return queueTimeMillis; }
-
-    @Override public String toString() {
-        return "RTPQueueEntry[playerId=+playerId, worldName=+worldName, priority=+priority, queueTimeMillis=+queueTimeMillis]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RTPQueueEntry that = (RTPQueueEntry) o;
-        return java.util.Objects.equals(playerId, that.playerId) && java.util.Objects.equals(worldName, that.worldName) && java.util.Objects.equals(priority, that.priority) && java.util.Objects.equals(queueTimeMillis, that.queueTimeMillis);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(playerId, worldName, priority, queueTimeMillis);
-    }
-}
-
-    private static final Comparator<RTPQueueEntry> QUEUE_COMPARATOR = Comparator
-            .comparingInt(RTPQueueEntry::priority).reversed()
-            .thenComparingLong(RTPQueueEntry::queueTimeMillis);
-
-    private final UltimateDonutSmp plugin;
-    private final Map<UUID, Map<String, Long>> lastRtpUseByPlayer = new ConcurrentHashMap<>();
-    private final Map<UUID, BukkitTask> activeSearchTasks = new ConcurrentHashMap<>();
-    private final Map<UUID, BukkitTask> activeResultTasks = new ConcurrentHashMap<>();
-    private final Map<UUID, CompletableFuture<Location>> activeDirectSearches = new ConcurrentHashMap<>();
-    private final Map<UUID, SearchProgress> activeSearches = new ConcurrentHashMap<>();
-    private final Map<String, java.util.Queue<CachedLocation>> locationPreCache = new ConcurrentHashMap<>();
-    private final java.util.concurrent.atomic.AtomicReference<CompletableFuture<Location>> preCacheSearch =
-            new java.util.concurrent.atomic.AtomicReference<>();
-    private final AtomicInteger preCacheRotation = new AtomicInteger();
-    private final Map<String, Integer> preCacheFailureStreak = new ConcurrentHashMap<>();
-    private final Map<String, Long> preCacheRetryAtMillis = new ConcurrentHashMap<>();
-    private volatile long preCacheSearchDeadlineMillis;
-    private volatile long nextPreCacheSearchAtMillis;
-    private volatile boolean warnedPreCacheCannotPrepareChunks;
-    private final List<RTPQueueEntry> waitingQueue = java.util.Collections.synchronizedList(new ArrayList<>());
-    private List<RTPDestination> configuredDestinations = java.util.Collections.emptyList();
-    private List<RTPDestination> menuDestinations = java.util.Collections.emptyList();
-
-    public RTPManager(UltimateDonutSmp plugin) {
-        this.plugin = plugin;
-        reload();
-    }
-
-    public void reload() {
-        clearAllSearches();
-        clearQueue();
-        lastRtpUseByPlayer.clear();
-        locationPreCache.clear();
-        cancelPreCacheSearch();
-        nextPreCacheSearchAtMillis = 0L;
-        preCacheFailureStreak.clear();
-        preCacheRetryAtMillis.clear();
-        warnedPreCacheCannotPrepareChunks = false;
-        configuredDestinations = loadConfiguredDestinations();
-        menuDestinations = buildMenuDestinations(configuredDestinations);
-        refillPreCacheAllWorlds();
-    }
-
-    public boolean isPriorityQueueEnabled() {
-        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getRtp() == null) {
-            return true;
-        }
-        return plugin.getConfigManager().getRtp().getBoolean("SETTINGS.PRIORITY-QUEUE.ENABLED", true);
-    }
-
-    public int getPlayerPriority(Player player) {
-        if (player == null || !isPriorityQueueEnabled()) {
-            return 0;
-        }
-
-        int maxPriority = plugin.getConfigManager().getRtp()
-                .getInt("SETTINGS.PRIORITY-QUEUE.DEFAULT-PRIORITY", 0);
-
-        ConfigurationSection section = plugin.getConfigManager().getRtp()
-                .getConfigurationSection("SETTINGS.PRIORITY-QUEUE.PERMISSIONS");
-        if (section != null) {
-            Map<String, Object> values = section.getValues(true);
-            for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue();
+                if (entry.getValue() instanceof Number number) {
                     String permNode = entry.getKey();
                     if (player.hasPermission(permNode)) {
                         int val = number.intValue();
@@ -798,7 +513,7 @@ public final class RTPQueueEntry {
 
     /** @return whether a background search was actually started for this world. */
     public boolean refillPreCache(String worldName) {
-        if (!isPreCacheReady() || worldName == null || worldName.isBlank()) {
+        if (!isPreCacheReady() || worldName == null || worldName.trim().isEmpty()) {
             return false;
         }
         int cacheSize = getPreCacheSize();
@@ -1020,7 +735,7 @@ public final class RTPQueueEntry {
     }
 
     private Location pollPreCachedLocation(String worldName) {
-        if (worldName == null || worldName.isBlank() || getPreCacheSize() <= 0) {
+        if (worldName == null || worldName.trim().isEmpty() || getPreCacheSize() <= 0) {
             return null;
         }
         java.util.Queue<CachedLocation> cached = locationPreCache.get(normalizeWorldKey(worldName));
@@ -1157,531 +872,7 @@ public final class RTPQueueEntry {
         if (section != null) {
             Map<String, Object> values = section.getValues(true);
             for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue() instanceof Number) {
-            Number number = (Number) player.hasPermission(permNode)) {
-                        int val = number.intValue();
-                        if (val > maxPriority) {
-                            maxPriority = val;
-                        }
-                    }
-                }
-            }
-        }
-
-        for (org.bukkit.permissions.PermissionAttachmentInfo pai : player.getEffectivePermissions()) {
-            String perm = pai.getPermission();
-            if (perm != null && pai.getValue() && perm.toLowerCase(Locale.ROOT).startsWith("ultimatedonutsmp.rtp.priority.")) {
-                String sub = perm.substring("ultimatedonutsmp.rtp.priority.".length());
-                try {
-                    int val = Integer.parseInt(sub);
-                    if (val > maxPriority) {
-                        maxPriority = val;
-                    }
-                } catch (NumberFormatException ignored) {
-                }
-            }
-        }
-
-        return maxPriority;
-    }
-
-    public boolean isInQueue(UUID playerId) {
-        if (playerId == null) {
-            return false;
-        }
-        synchronized (waitingQueue) {
-            for (RTPQueueEntry entry : waitingQueue) {
-                if (entry.playerId().equals(playerId)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public int getQueuePosition(UUID playerId) {
-        if (playerId == null) {
-            return -1;
-        }
-        synchronized (waitingQueue) {
-            List<RTPQueueEntry> sorted = new ArrayList<>(waitingQueue);
-            sorted.sort(QUEUE_COMPARATOR);
-            for (int i = 0; i < sorted.size(); i++) {
-                if (sorted.get(i).playerId().equals(playerId)) {
-                    return i + 1;
-                }
-            }
-        }
-        return -1;
-    }
-
-    public void removeFromQueue(UUID playerId) {
-        if (playerId == null) {
-            return;
-        }
-        synchronized (waitingQueue) {
-            waitingQueue.removeIf(entry -> entry.playerId().equals(playerId));
-        }
-    }
-
-    public void clearQueue() {
-        synchronized (waitingQueue) {
-            waitingQueue.clear();
-        }
-    }
-
-    public int getQueueSize() {
-        return waitingQueue.size();
-    }
-
-    public synchronized void processNextInQueue() {
-        if (!isPriorityQueueEnabled()) {
-            return;
-        }
-        if (isQueueFull(null)) {
-            return;
-        }
-
-        List<RTPQueueEntry> sorted;
-        synchronized (waitingQueue) {
-            if (waitingQueue.isEmpty()) {
-                return;
-            }
-            sorted = new ArrayList<>(waitingQueue);
-            sorted.sort(QUEUE_COMPARATOR);
-        }
-
-        for (RTPQueueEntry entry : sorted) {
-            removeFromQueue(entry.playerId());
-
-            Player player = Bukkit.getPlayer(entry.playerId());
-            if (player == null || !player.isOnline()) {
-                continue;
-            }
-
-            if (hasActiveRtpFlow(entry.playerId()) || plugin.getTeleportManager().hasPendingType(entry.playerId(), "RTP")) {
-                continue;
-            }
-
-            SearchSettings settings = getWorldSearchSettings(entry.worldName());
-            if (settings != null) {
-                startSearch(player, entry.worldName(), settings);
-                break;
-            }
-        }
-    }
-
-    public boolean isPreCacheEnabled() {
-        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getRtp() == null) {
-            return false;
-        }
-        return plugin.getConfigManager().getRtp().getBoolean(LOCATION_CACHE_ENABLED_SETTING, true);
-    }
-
-    public int getPreCacheSize() {
-        if (!isPreCacheEnabled()) {
-            return 0;
-        }
-        int size = plugin.getConfigManager().getRtp().getInt(LOCATION_CACHE_SIZE_SETTING, DEFAULT_LOCATION_CACHE_SIZE);
-        return Math.min(MAX_LOCATION_CACHE_SIZE, Math.max(0, size));
-    }
-
-    public int getSearchAttemptsPerTick() {
-        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getRtp() == null) {
-            return DEFAULT_SEARCH_ATTEMPTS_PER_TICK;
-        }
-        return Math.max(1, plugin.getConfigManager().getRtp().getInt("SETTINGS.SEARCH-ATTEMPTS-PER-TICK", DEFAULT_SEARCH_ATTEMPTS_PER_TICK));
-    }
-
-    public void refillPreCacheAllWorlds() {
-        if (!isPreCacheReady() || getPreCacheSize() <= 0) {
-            return;
-        }
-
-        expireOverduePreCacheSearch();
-
-        Set<String> worldNames = new LinkedHashSet<>();
-        for (RTPDestination destination : configuredDestinations) {
-            if (destination.enabled()) {
-                worldNames.add(destination.worldName());
-            }
-        }
-        if (worldNames.isEmpty()) {
-            return;
-        }
-
-        // Rotate where the sweep starts so a world that always finds a spot cannot starve the rest.
-        List<String> ordered = new ArrayList<>(worldNames);
-        int start = Math.floorMod(preCacheRotation.getAndIncrement(), ordered.size());
-        for (int offset = 0; offset < ordered.size(); offset++) {
-            if (refillPreCache(ordered.get((start + offset) % ordered.size()))) {
-                return;
-            }
-        }
-    }
-
-    /** @return whether a background search was actually started for this world. */
-    public boolean refillPreCache(String worldName) {
-        if (!isPreCacheReady() || worldName == null || worldName.isBlank()) {
-            return false;
-        }
-        int cacheSize = getPreCacheSize();
-        if (cacheSize <= 0) {
-            return false;
-        }
-
-        String worldKey = normalizeWorldKey(worldName);
-        java.util.Queue<CachedLocation> cached = locationPreCache
-                .computeIfAbsent(worldKey, ignored -> new ConcurrentLinkedQueue<>());
-        cached.removeIf(entry -> !isCachedLocationUsable(entry));
-        if (cached.size() >= cacheSize) {
-            return false;
-        }
-
-        if (isDeniedWorld(worldName) || isConfiguredDestinationDisabled(worldName)) {
-            return false;
-        }
-        if (!canPrepareChunks(isPreCacheChunkGenerationEnabled())) {
-            warnPreCacheCannotPrepareChunksOnce();
-            return false;
-        }
-        if (System.currentTimeMillis() < preCacheRetryAtMillis.getOrDefault(worldKey, 0L)) {
-            return false;
-        }
-        SearchSettings settings = getWorldSearchSettings(worldName);
-        if (settings == null || getLoadedWorld(worldName) == null || !isSearchRequestValid(settings)) {
-            return false;
-        }
-
-        return startPreCacheSearch(worldKey, settings);
-    }
-
-    /**
-     * Whether a search under the current config can get hold of a chunk at all.
-     *
-     * <p>A sample is only ever prepared by generating the chunk or by reading one that is already
-     * generated. Forbid both and every random sample returns nothing without so much as touching the
-     * world, so the search burns its whole budget and fails on a world that is perfectly fine. The
-     * background warm-up is the one that suffers for it, because it is not allowed to generate and
-     * so depends entirely on {@code LOAD-GENERATED-CHUNKS} being on.</p>
-     */
-    private boolean canPrepareChunks(boolean allowChunkGeneration) {
-        FileConfiguration rtp = plugin.getConfigManager().getRtp();
-        if (rtp.getBoolean(LOAD_GENERATED_CHUNKS_SETTING, true)) {
-            return true;
-        }
-        return allowChunkGeneration
-                && (rtp.getBoolean(GENERATE_CHUNKS_SETTING, false)
-                || rtp.getBoolean(GENERATE_FALLBACK_CHUNKS_SETTING, true));
-    }
-
-    private void warnPreCacheCannotPrepareChunksOnce() {
-        if (warnedPreCacheCannotPrepareChunks) {
-            return;
-        }
-        warnedPreCacheCannotPrepareChunks = true;
-        warn("the rtp location cache is off because nothing lets it reach a chunk. Turn on"
-                + " SETTINGS.LOAD-GENERATED-CHUNKS to read pregenerated terrain, or"
-                + " SETTINGS.LOCATION-CACHE.GENERATE-CHUNKS to let the warm-up generate its own.");
-    }
-
-    /**
-     * Slows a world's warm-up down after it comes back empty-handed.
-     *
-     * <p>A world nobody has explored has no terrain to offer, and no amount of retrying changes
-     * that. Without a backoff the sweep starts another doomed search every few seconds and buries
-     * the console in warnings for a server that is behaving exactly as configured. Each failure
-     * doubles the wait for that world alone, so a world that is fine keeps its normal cadence, and
-     * one success puts the failing world straight back to it.</p>
-     */
-    private void backOffPreCacheWorld(String worldKey) {
-        int streak = preCacheFailureStreak.merge(worldKey, 1, Integer::sum);
-        long wait = Math.min(
-                PRE_CACHE_BACKOFF_MAX_MILLIS,
-                PRE_CACHE_BACKOFF_START_MILLIS << Math.min(streak - 1, 20)
-        );
-        preCacheRetryAtMillis.put(worldKey, System.currentTimeMillis() + wait);
-        if (streak == 1) {
-            warn("no safe rtp location was found in '" + worldKey + "' while warming the cache up."
-                    + " That world most likely has no generated terrain inside its rtp radius yet."
-                    + " Pregenerate it, or turn on SETTINGS.LOCATION-CACHE.GENERATE-CHUNKS to have the"
-                    + " warm-up build its own. Retrying quietly from here on.");
-        }
-    }
-
-    private void clearPreCacheBackoff(String worldKey) {
-        preCacheFailureStreak.remove(worldKey);
-        preCacheRetryAtMillis.remove(worldKey);
-    }
-
-    /**
-     * Starts the one background search this server is allowed to have running.
-     *
-     * <p>The ceiling is deliberately low. A search may generate terrain, and on a world that has
-     * never been walked that is the expensive part, so the warm-up takes one world at a time with a
-     * pause between searches rather than filling every world at once.</p>
-     *
-     * @return whether the search was started
-     */
-    private boolean startPreCacheSearch(String worldKey, SearchSettings settings) {
-        expireOverduePreCacheSearch();
-        if (System.currentTimeMillis() < nextPreCacheSearchAtMillis) {
-            return false;
-        }
-
-        CompletableFuture<Location> future = new CompletableFuture<>();
-        if (!preCacheSearch.compareAndSet(null, future)) {
-            return false;
-        }
-        preCacheSearchDeadlineMillis = System.currentTimeMillis() + PRE_CACHE_SEARCH_TIMEOUT_MILLIS;
-
-        future.whenComplete((location, throwable) -> {
-            preCacheSearch.compareAndSet(future, null);
-            if (throwable instanceof java.util.concurrent.CancellationException) {
-                return;
-            }
-            nextPreCacheSearchAtMillis = System.currentTimeMillis() + PRE_CACHE_SEARCH_COOLDOWN_MILLIS;
-            if (throwable != null || location == null) {
-                backOffPreCacheWorld(worldKey);
-                return;
-            }
-            clearPreCacheBackoff(worldKey);
-            java.util.Queue<CachedLocation> target = locationPreCache
-                    .computeIfAbsent(worldKey, ignored -> new ConcurrentLinkedQueue<>());
-            if (target.size() < getPreCacheSize()) {
-                target.add(new CachedLocation(location, System.currentTimeMillis()));
-            }
-        });
-
-        try {
-            startDirectSearch(
-                    settings,
-                    future,
-                    getPreCacheParallelAttempts(),
-                    isPreCacheChunkGenerationEnabled(),
-                    true
-            );
-        } catch (RuntimeException exception) {
-            future.complete(null);
-            throw exception;
-        }
-        return true;
-    }
-
-    /**
-     * Ends a background search that has outstayed its deadline.
-     *
-     * <p>Completing the future is what stops it. Every chain checks the future before its next step,
-     * so this winds the search down for real. Merely dropping the record of it would leave it
-     * generating chunks alongside the replacement that took its place, and each round of that makes
-     * the next search slower and more likely to overrun in turn.</p>
-     */
-    private void expireOverduePreCacheSearch() {
-        CompletableFuture<Location> running = preCacheSearch.get();
-        if (running == null || System.currentTimeMillis() < preCacheSearchDeadlineMillis) {
-            return;
-        }
-        running.complete(null);
-    }
-
-    /**
-     * Drops the running warm-up on reload. Cancelling rather than completing it keeps the search
-     * from being counted as a world that had nothing to offer, which it never got the chance to
-     * decide either way.
-     */
-    private void cancelPreCacheSearch() {
-        CompletableFuture<Location> running = preCacheSearch.getAndSet(null);
-        if (running != null) {
-            running.cancel(false);
-        }
-    }
-
-    /**
-     * Whether one sample of a search may generate the chunk it lands on.
-     *
-     * <p>A search that is not allowed to generate never does, whatever the config says. That is what
-     * keeps the background warm-up off chunk generation on servers where {@code GENERATE-CHUNKS} is
-     * on for players.</p>
-     */
-    static boolean shouldGenerateForSample(
-            boolean allowChunkGeneration,
-            boolean generateChunksConfigured,
-            boolean generateFallback
-    ) {
-        return allowChunkGeneration && (generateChunksConfigured || generateFallback);
-    }
-
-    /**
-     * Whether the background warm-up may generate terrain.
-     *
-     * <p>Off by default, and deliberately separate from {@code SETTINGS.GENERATE-CHUNKS}. Generating
-     * on demand for a player who asked costs a burst; generating in the background costs it over and
-     * over on a world nobody has walked yet, which is enough to bury a small box. An admin with the
-     * headroom can turn it on and get a cache that fills on brand new terrain.</p>
-     */
-    public boolean isPreCacheChunkGenerationEnabled() {
-        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getRtp() == null) {
-            return false;
-        }
-        return plugin.getConfigManager().getRtp().getBoolean(LOCATION_CACHE_GENERATE_CHUNKS_SETTING, false);
-    }
-
-    /**
-     * Background searches run on fewer parallel chains than a player-facing one. Nobody is waiting
-     * on the result, so the warm-up has no business claiming the chunk throughput a waiting player
-     * gets.
-     */
-    private int getPreCacheParallelAttempts() {
-        return Math.max(1, Math.min(PRE_CACHE_PARALLEL_ATTEMPTS, getSearchAttemptsPerTick()));
-    }
-
-    private boolean isPreCacheReady() {
-        return plugin != null
-                && plugin.getConfigManager() != null
-                && plugin.getConfigManager().getRtp() != null
-                && plugin.getFeatureManager() != null
-                && plugin.getSpigotScheduler() != null;
-    }
-
-    private Location pollPreCachedLocation(String worldName) {
-        if (worldName == null || worldName.isBlank() || getPreCacheSize() <= 0) {
-            return null;
-        }
-        java.util.Queue<CachedLocation> cached = locationPreCache.get(normalizeWorldKey(worldName));
-        if (cached == null) {
-            return null;
-        }
-
-        CachedLocation entry;
-        while ((entry = cached.poll()) != null) {
-            if (isCachedLocationUsable(entry)) {
-                return entry.location().clone();
-            }
-        }
-        return null;
-    }
-
-    private boolean isCachedLocationUsable(CachedLocation entry) {
-        if (entry == null) {
-            return false;
-        }
-        long maxAgeMillis = getPreCacheMaxAgeMillis();
-        if (maxAgeMillis > 0L && System.currentTimeMillis() - entry.cachedAtMillis() > maxAgeMillis) {
-            return false;
-        }
-        return isPreCachedLocationValid(entry.location());
-    }
-
-    private long getPreCacheMaxAgeMillis() {
-        int seconds = plugin.getConfigManager().getRtp()
-                .getInt(LOCATION_CACHE_MAX_AGE_SETTING, DEFAULT_LOCATION_CACHE_MAX_AGE_SECONDS);
-        return seconds <= 0 ? 0L : seconds * 1000L;
-    }
-
-    private boolean isPreCachedLocationValid(Location loc) {
-        if (loc == null || loc.getWorld() == null) {
-            return false;
-        }
-        World world = getLoadedWorld(loc.getWorld().getName());
-        if (world != loc.getWorld()) {
-            return false;
-        }
-        SearchSettings settings = getWorldSearchSettings(world.getName());
-        return settings == null || isWithinRadius(settings, loc, true);
-    }
-
-    public boolean isEnabled() {
-        return plugin != null
-                && plugin.getFeatureManager() != null
-                && plugin.getFeatureManager().isEnabled(FeatureManager.Feature.RTP)
-                && plugin.getConfigManager() != null
-                && plugin.getConfigManager().getRtp() != null
-                && plugin.getConfigManager().getRtp().getBoolean("ENABLED", true);
-    }
-
-    public void clearSearch(UUID playerId) {
-        stopSearch(playerId, true);
-    }
-
-    private void stopSearch(UUID playerId, boolean clearActionBar) {
-        BukkitTask task = activeSearchTasks.remove(playerId);
-        if (task != null) {
-            task.cancel();
-        }
-        BukkitTask resultTask = activeResultTasks.remove(playerId);
-        if (resultTask != null) {
-            resultTask.cancel();
-        }
-        activeSearches.remove(playerId);
-        CompletableFuture<Location> directSearch = activeDirectSearches.remove(playerId);
-        if (directSearch != null) {
-            directSearch.complete(null);
-        }
-
-        removeFromQueue(playerId);
-
-        if (clearActionBar) {
-            Player player = Bukkit.getPlayer(playerId);
-            if (player != null && player.isOnline()) {
-                PlayerSettingUtils.clearActionBar(player);
-            }
-        }
-
-        processNextInQueue();
-    }
-
-    public List<RTPDestination> getMenuDestinations() {
-        return menuDestinations;
-    }
-
-    public boolean hasMenuDestinations() {
-        return !menuDestinations.isEmpty();
-    }
-
-    public RTPDestination getDestinationBySlot(int slot) {
-        for (RTPDestination destination : menuDestinations) {
-            if (destination.slot() == slot) {
-                return destination;
-            }
-        }
-        return null;
-    }
-
-    public int getPlayersInWorld(String worldName) {
-        World world = getLoadedWorld(worldName);
-        return world == null ? 0 : world.getPlayers().size();
-    }
-
-    public int getWorldCooldownSeconds(String worldName) {
-        ConfigurationSection settings = getWorldSettingsSection(worldName);
-        return settings == null ? 0 : Math.max(0, settings.getInt("COOLDOWN", 0));
-    }
-
-    public boolean isRankCooldownsEnabled() {
-        if (plugin == null || plugin.getConfigManager() == null || plugin.getConfigManager().getRtp() == null) {
-            return true;
-        }
-        return plugin.getConfigManager().getRtp().getBoolean("SETTINGS.RANK-COOLDOWNS.ENABLED", true);
-    }
-
-    public int getPlayerCooldownSeconds(Player player, String worldName) {
-        int worldCooldown = getWorldCooldownSeconds(worldName);
-        if (player == null || !isRankCooldownsEnabled()) {
-            return worldCooldown;
-        }
-
-        int lowest = Integer.MAX_VALUE;
-
-        ConfigurationSection rtpConfig = plugin == null || plugin.getConfigManager() == null
-                ? null
-                : plugin.getConfigManager().getRtp();
-        ConfigurationSection section = rtpConfig == null
-                ? null
-                : rtpConfig.getConfigurationSection("SETTINGS.RANK-COOLDOWNS.PERMISSIONS");
-        if (section != null) {
-            Map<String, Object> values = section.getValues(true);
-            for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue();
+                if (entry.getValue() instanceof Number number) {
                     String permNode = entry.getKey();
                     if (player.hasPermission(permNode)) {
                         int val = Math.max(0, number.intValue());
@@ -1774,7 +965,7 @@ public final class RTPQueueEntry {
         int attemptIntervalTicks = plugin.getConfigManager().getRtp().getInt("SETTINGS.ATTEMPT-INTERVAL-TICKS", DEFAULT_ATTEMPT_INTERVAL_TICKS);
         String configuredWorld = plugin.getConfigManager().getConfig().getString("FIRST-JOIN-RTP.WORLD.NAME", "");
         String worldName = normalizeConfiguredWorldName(
-                configuredWorld == null || configuredWorld.isBlank() ? fallbackWorldName : configuredWorld
+                configuredWorld == null || configuredWorld.trim().isEmpty() ? fallbackWorldName : configuredWorld
         );
         if (isDeniedWorld(worldName) || !isWorldAvailable(worldName)) {
             return null;
@@ -1795,9 +986,9 @@ public final class RTPQueueEntry {
     public SearchSettings getRespawnSearchSettings(String deathWorldName) {
         String configuredWorld = plugin.getConfigManager().getConfig().getString("RESPAWN-RTP.WORLD.NAME", "");
         String worldName = normalizeConfiguredWorldName(
-                configuredWorld == null || configuredWorld.isBlank() ? deathWorldName : configuredWorld
+                configuredWorld == null || configuredWorld.trim().isEmpty() ? deathWorldName : configuredWorld
         );
-        if (worldName == null || worldName.isBlank() || isDeniedWorld(worldName) || !isWorldAvailable(worldName)) {
+        if (worldName == null || worldName.trim().isEmpty() || isDeniedWorld(worldName) || !isWorldAvailable(worldName)) {
             return null;
         }
 
@@ -1834,7 +1025,7 @@ public final class RTPQueueEntry {
         for (RTPDestination destination : configuredDestinations) {
             if (destination.worldName().equalsIgnoreCase(worldName)) {
                 String displayName = ColorUtils.strip(destination.displayName()).trim();
-                if (!displayName.isBlank()) {
+                if (!displayName.trim().isEmpty()) {
                     return displayName;
                 }
             }
@@ -1874,7 +1065,7 @@ public final class RTPQueueEntry {
             return false;
         }
         String worldName = resolveWorldSelector(selector);
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getRtp().getString("MESSAGES.WORLD-NOT-EXIST", "&cWorld not found.")
             ));
@@ -1888,7 +1079,7 @@ public final class RTPQueueEntry {
             return false;
         }
         String worldName = resolveWorldSelector(selector);
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return false;
         }
         if (isDeniedWorld(worldName) || isConfiguredDestinationDisabled(worldName)) {
@@ -1986,7 +1177,7 @@ public final class RTPQueueEntry {
         if (!plugin.getFeatureManager().isEnabled(FeatureManager.Feature.RTP)) {
             return false;
         }
-        return settings != null && settings.worldName() != null && !settings.worldName().isBlank();
+        return settings != null && settings.worldName() != null && !settings.worldName().trim().isEmpty();
     }
 
     private void startDirectSearch(SearchSettings settings, CompletableFuture<Location> future) {
@@ -2591,7 +1782,7 @@ public final class RTPQueueEntry {
     }
 
     private LocationAttempt tryFindSafeLocationAttempt(SearchSettings settings) {
-        if (settings == null || settings.worldName() == null || settings.worldName().isBlank()) {
+        if (settings == null || settings.worldName() == null || settings.worldName().trim().isEmpty()) {
             return new LocationAttempt(null, false);
         }
 
@@ -2841,7 +2032,7 @@ public final class RTPQueueEntry {
      * thread check and finds nothing.</p>
      */
     private LocationAttempt tryLoadedChunkLocationAttempt(SearchSettings settings, int chunkX, int chunkZ) {
-        if (settings == null || settings.worldName() == null || settings.worldName().isBlank()) {
+        if (settings == null || settings.worldName() == null || settings.worldName().trim().isEmpty()) {
             return new LocationAttempt(null, false);
         }
 
@@ -3006,7 +2197,7 @@ public final class RTPQueueEntry {
             }
 
             String worldName = button.getString("WORLD", "").trim();
-            if (worldName.isBlank()) {
+            if (worldName.trim().isEmpty()) {
                 warn("RTP-MENU.BUTTONS." + key + " is missing world.");
                 continue;
             }
@@ -3072,7 +2263,7 @@ public final class RTPQueueEntry {
         }
 
         String trimmed = selector.trim();
-        if (trimmed.isBlank()) {
+        if (trimmed.trim().isEmpty()) {
             return null;
         }
 
@@ -3121,7 +2312,7 @@ public final class RTPQueueEntry {
     }
 
     private ConfigurationSection getWorldSettingsSection(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return null;
         }
 
@@ -3166,7 +2357,7 @@ public final class RTPQueueEntry {
     }
 
     private World getLoadedWorld(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return null;
         }
 
@@ -3267,7 +2458,7 @@ public final class RTPQueueEntry {
     }
 
     private String findWorldFolderName(String worldName) {
-        if (worldName == null || worldName.isBlank()) {
+        if (worldName == null || worldName.trim().isEmpty()) {
             return null;
         }
 
@@ -3304,7 +2495,7 @@ public final class RTPQueueEntry {
 
     private String normalizeConfiguredWorldName(String worldName) {
         String trimmed = worldName == null ? "" : worldName.trim();
-        if (trimmed.isBlank()) {
+        if (trimmed.trim().isEmpty()) {
             return "world";
         }
 
@@ -3320,8 +2511,21 @@ public final class RTPQueueEntry {
                 .replace('h', 'h')
                 .replace('a', 'a')
                 .replace('s', 's');
-        return switch (ascii.toLowerCase(Locale.ROOT)) {        case "overworld": case "world": getLoadedNormalWorldName()            break;        case "nether": case "world_nether": getLoadedNetherWorldName()            break;        case "end": case "the_end": case "the-end": case "world_the_end": getLoadedEndWorldName()            break;        default: trimmed            break;
-        };
+        switch (ascii.toLowerCase(Locale.ROOT)) {
+            case "overworld":
+            case "world":
+                return getLoadedNormalWorldName();
+            case "nether":
+            case "world_nether":
+                return getLoadedNetherWorldName();
+            case "end":
+            case "the_end":
+            case "the-end":
+            case "world_the_end":
+                return getLoadedEndWorldName();
+            default:
+                return trimmed;
+        }
     }
 
     private int normalizeSearchLimit(int limit) {
@@ -3540,7 +2744,7 @@ public final class RTPQueueEntry {
                 )
                 .replace("{world}", describeWorld(worldName))
                 .replace("{countdown}", String.valueOf(teleportCountdown));
-        if (!warning.isBlank()) {
+        if (!warning.trim().isEmpty()) {
             player.sendMessage(ColorUtils.toComponent(warning));
         }
     }

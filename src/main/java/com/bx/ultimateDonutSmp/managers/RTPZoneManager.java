@@ -57,11 +57,11 @@ public class RTPZoneManager {
         );
         successMessage = plugin.getConfigManager().getConfig().getString("RTP-ZONE.SUCCESS-MESSAGE", "");
         countdownSound = plugin.getConfigManager().getSound("RTP-ZONE.COUNTDOWN");
-        if (countdownSound == null || countdownSound.isBlank()) {
+        if (countdownSound == null || countdownSound.trim().isEmpty()) {
             countdownSound = plugin.getConfigManager().getSound("TELEPORT.COUNTDOWN");
         }
         cancelledSound = plugin.getConfigManager().getSound("RTP-ZONE.CANCELLED");
-        if (cancelledSound == null || cancelledSound.isBlank()) {
+        if (cancelledSound == null || cancelledSound.trim().isEmpty()) {
             cancelledSound = plugin.getConfigManager().getSound("TELEPORT.CANCELLED");
         }
         searchSettings = plugin.getRtpManager().getZoneSearchSettings();
@@ -76,7 +76,7 @@ public class RTPZoneManager {
             return;
         }
 
-        if (!enabled || cuboidName == null || cuboidName.isBlank()) {
+        if (!enabled || cuboidName == null || cuboidName.trim().isEmpty()) {
             clearState(player);
             return;
         }
@@ -94,7 +94,7 @@ public class RTPZoneManager {
                 fadeOutTitle(player, remaining);
                 clearState(uuid);
                 SoundUtils.play(player, cancelledSound);
-                if (cancelledMessage != null && !cancelledMessage.isBlank()) {
+                if (cancelledMessage != null && !cancelledMessage.trim().isEmpty()) {
                     player.sendMessage(ColorUtils.toComponent(cancelledMessage));
                 }
             }
@@ -125,7 +125,7 @@ public class RTPZoneManager {
     }
 
     public boolean isInZone(Player player) {
-        if (player == null || !enabled || cuboidName == null || cuboidName.isBlank()) {
+        if (player == null || !enabled || cuboidName == null || cuboidName.trim().isEmpty()) {
             return false;
         }
 
@@ -151,7 +151,7 @@ public class RTPZoneManager {
             pendingTeleports.remove(uuid);
             plugin.getSpigotScheduler().runEntity(player, () -> {
                 if (throwable != null || destination == null) {
-                    if (failedMessage != null && !failedMessage.isBlank()) {
+                    if (failedMessage != null && !failedMessage.trim().isEmpty()) {
                         player.sendMessage(ColorUtils.toComponent(failedMessage));
                     }
                     return;
@@ -162,7 +162,7 @@ public class RTPZoneManager {
                                 return;
                             }
                             SoundUtils.play(player, plugin.getConfigManager().getSound("TELEPORT.SUCCESS"));
-                            if (successMessage != null && !successMessage.isBlank()) {
+                            if (successMessage != null && !successMessage.trim().isEmpty()) {
                                 player.sendMessage(ColorUtils.toComponent(successMessage));
                             }
                         }));
@@ -194,7 +194,7 @@ public class RTPZoneManager {
     }
 
     private void hardClearActiveTitles() {
-        for (UUID uuid : Set.copyOf(countdowns.keySet())) {
+        for (UUID uuid : new java.util.HashSet<>(countdowns.keySet())) {
             Player player = plugin.getServer().getPlayer(uuid);
             if (player != null) {
                 TitleUtils.clearTitle(player);

@@ -45,7 +45,7 @@ public class PunishmentCommandAliasListener implements Listener {
     }
 
     private String rewrite(String commandLine, boolean slashPrefixed) {
-        if (commandLine == null || commandLine.isBlank()) {
+        if (commandLine == null || commandLine.trim().isEmpty()) {
             return null;
         }
 
@@ -57,7 +57,7 @@ public class PunishmentCommandAliasListener implements Listener {
             trimmed = trimmed.substring(1);
         }
 
-        if (trimmed.isBlank()) {
+        if (trimmed.trim().isEmpty()) {
             return null;
         }
 

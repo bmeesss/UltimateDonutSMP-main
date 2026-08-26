@@ -34,13 +34,29 @@ public class TPACommand implements CommandExecutor {
         }
 
         String sub = label.toLowerCase();
-        switch (sub) {        case "tpa": handleTpa(player, args)            break;        case "tpahere": handleTpaHere(player, args)            break;        case "tpaccept": handleAccept(player, args)            break;        case "tpadeny": handleDeny(player)            break;        case "tpacancel": {
-
-                            plugin.getTPAManager().cancelRequestsByRequester(player.getUniqueId());
-                            send(player, plugin.getConfigManager().getMessage("TPA.CANCELLED-REQUESTS"));
-                        break;        }        default: {
-
-                        break;        }
+        switch (sub) {
+            case "tpa":
+                handleTpa(player, args);
+                break;
+            case "tpahere":
+                handleTpaHere(player, args);
+                break;
+            case "tpaccept":
+                handleAccept(player, args);
+                break;
+            case "tpadeny":
+                handleDeny(player);
+                break;
+            case "tpacancel": {
+                plugin.getTPAManager().cancelRequestsByRequester(player.getUniqueId());
+                send(player, plugin.getConfigManager().getMessage("TPA.CANCELLED-REQUESTS"));
+                break;
+                break;
+            }
+            default: {
+                break;
+                break;
+            }
         }
         return true;
     }

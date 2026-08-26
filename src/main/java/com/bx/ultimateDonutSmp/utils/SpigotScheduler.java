@@ -261,7 +261,7 @@ public final class SpigotScheduler {
      * @return the dispatch result when the command ran inline, or {@code true} when it was scheduled
      */
     public boolean dispatchConsoleCommand(String command) {
-        if (command == null || command.isBlank()) {
+        if (command == null || command.trim().isEmpty()) {
             return false;
         }
 
@@ -292,7 +292,7 @@ public final class SpigotScheduler {
      * @return the dispatch result when the command ran inline, or {@code true} when it was scheduled
      */
     public boolean dispatchPlayerCommand(Player player, String command) {
-        if (player == null || command == null || command.isBlank()) {
+        if (player == null || command == null || command.trim().isEmpty()) {
             return false;
         }
 

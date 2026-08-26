@@ -30,7 +30,7 @@ public class AnvilModerationManager {
     }
 
     public boolean addBannedWord(String word) {
-        if (word == null || word.isBlank()) {
+        if (word == null || word.trim().isEmpty()) {
             return false;
         }
         String normalizedWord = word.trim();

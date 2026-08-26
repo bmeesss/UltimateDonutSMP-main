@@ -106,7 +106,7 @@ public class CrateEditorMenu extends BaseMenu {
                 // [MONEY] <amount>
                 // [SHARDS] <amount>
                 if (display.startsWith("[CMD] ")) {
-                    String consoleCommand = display.substring(6).strip();
+                    String consoleCommand = display.substring(6).trim();
                     CrateManager.ActionResult result = plugin.getCrateManager().addCommandReward(crateId, rawSlot, java.util.Collections.singletonList(consoleCommand));
                     player.sendMessage(ColorUtils.toComponent(result.message()));
                     if (result.success()) {
@@ -115,7 +115,7 @@ public class CrateEditorMenu extends BaseMenu {
                     }
                     return;
                 } else if (display.startsWith("[MONEY] ")) {
-                    String amountStr = display.substring(8).strip();
+                    String amountStr = display.substring(8).trim();
                     Double parsed = null;
                     try {
                         parsed = Double.parseDouble(amountStr);
@@ -132,7 +132,7 @@ public class CrateEditorMenu extends BaseMenu {
                     }
                     return;
                 } else if (display.startsWith("[SHARDS] ")) {
-                    String amountStr = display.substring(9).strip();
+                    String amountStr = display.substring(9).trim();
                     Long parsed = null;
                     try {
                         parsed = Long.parseLong(amountStr);
@@ -199,7 +199,7 @@ public class CrateEditorMenu extends BaseMenu {
 
     private ItemStack createEditorItem(CrateManager.CrateReward reward) {
         ItemStack item = null;
-        if (reward.grant().serializedItemData() != null && !reward.grant().serializedItemData().isBlank()) {
+        if (reward.grant().serializedItemData() != null && !reward.grant().serializedItemData().trim().isEmpty()) {
             try {
                 item = com.bx.ultimateDonutSmp.utils.ItemSerializationUtils.deserialize(reward.grant().serializedItemData());
             } catch (Exception ignored) {
@@ -244,7 +244,7 @@ public class CrateEditorMenu extends BaseMenu {
         String[] parts = material.name().toLowerCase().split("_");
         StringBuilder builder = new StringBuilder();
         for (String part : parts) {
-            if (part.isBlank()) {
+            if (part.trim().isEmpty()) {
                 continue;
             }
             if (!builder.isEmpty()) {
