@@ -62,8 +62,28 @@ public class LeaderboardPlaceholderResolver {
         String fullValue = entry == null ? "0" : plugin.getLeaderboardManager().formatValue(type, entry.playerData(), false, false);
         String shortValue = entry == null ? "0" : plugin.getLeaderboardManager().formatValue(type, entry.playerData(), true, false);
 
-        return switch (outputKey) {        case "name": entryName            break;        case "value": fullValue            break;        case "value_short": shortValue            break;        case "rank": String.valueOf(position)            break;        case "display": "#" + position + " " + entryName + ": " + shortValue            break;        default: null            break;
-        };
+        String result;
+        switch (outputKey) {
+            case "name":
+                result = entryName;
+                break;
+            case "value":
+                result = fullValue;
+                break;
+            case "value_short":
+                result = shortValue;
+                break;
+            case "rank":
+                result = String.valueOf(position);
+                break;
+            case "display":
+                result = "#" + position + " " + entryName + ": " + shortValue;
+                break;
+            default:
+                result = null;
+                break;
+        }
+        return result;
     }
 
     private String resolveEntryName(LeaderboardManager.@Nullable LeaderboardEntry entry) {

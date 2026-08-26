@@ -53,30 +53,7 @@ public class FeatureCommandExecutor implements CommandExecutor, TabCompleter {
             }
         }
         if (delegate instanceof TabCompleter) {
-            TabCompleter tabCompleter = (TabCompleter) feature != null && !plugin.getFeatureManager().isEnabled(feature)) {
-                FeatureManager.DisabledCommandAction action = plugin.getFeatureManager().getDisabledCommandAction();
-                if (action == FeatureManager.DisabledCommandAction.UNREGISTER) {
-                    return false;
-                }
-                if (action == FeatureManager.DisabledCommandAction.UNKNOWN) {
-                    sender.sendMessage(com.bx.ultimateDonutSmp.utils.ColorUtils.toComponent("&cUnknown command. Type \"/help\" for help."));
-                } else {
-                    plugin.getFeatureManager().sendDisabledMessage(sender, feature, label);
-                }
-                return true;
-            }
-        }
-        return delegate.onCommand(sender, command, label, args);
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        for (FeatureManager.Feature feature : requiredFeatures) {
-            if (feature != null && !plugin.getFeatureManager().isEnabled(feature)) {
-                return Collections.emptyList();
-            }
-        }
-        if (delegate;
+            TabCompleter tabCompleter = (TabCompleter) delegate;
             return tabCompleter.onTabComplete(sender, command, alias, args);
         }
         return Collections.emptyList();

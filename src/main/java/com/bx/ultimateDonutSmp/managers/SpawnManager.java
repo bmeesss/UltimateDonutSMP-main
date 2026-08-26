@@ -69,12 +69,6 @@ public final class TeleportArea {
     public Location locationOverride() { return locationOverride; }
     public String locationOverrideRaw() { return locationOverrideRaw; }
 
-
-        public TeleportArea {
-            lore = new java.util.ArrayList<>(lore == null ? java.util.Collections.emptyList() : lore);
-            locationOverride = locationOverride == null ? null : locationOverride.clone();
-        }
-
     @Override public String toString() {
         return "TeleportArea[id=+id, type=+type, slot=+slot, material=+material, displayName=+displayName, lore=+lore, cuboidName=+cuboidName, capacity=+capacity, locationOverride=+locationOverride, locationOverrideRaw=+locationOverrideRaw]";
     }

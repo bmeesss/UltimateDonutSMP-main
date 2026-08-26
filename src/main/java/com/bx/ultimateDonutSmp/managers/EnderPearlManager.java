@@ -46,9 +46,10 @@ public class EnderPearlManager implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onProjectileHit(ProjectileHitEvent event) {
-        if (!(event.getEntity() instanceof EnderPearl pearl)) {
+        if (!(event.getEntity() instanceof EnderPearl)) {
             return;
         }
+        EnderPearl pearl = (EnderPearl) event.getEntity();
 
         UUID victimUuid = trackedPearls.remove(pearl.getUniqueId());
         if (victimUuid == null) {

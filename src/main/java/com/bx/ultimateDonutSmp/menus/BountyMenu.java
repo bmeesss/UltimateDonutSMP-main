@@ -204,9 +204,10 @@ public class BountyMenu extends BaseMenu {
         }
 
         ItemStack item = ItemUtils.createItem(material, displayName, lore);
-        if (!(item.getItemMeta() instanceof SkullMeta meta)) {
+        if (!(item.getItemMeta() instanceof SkullMeta)) {
             return item;
         }
+        SkullMeta meta = (SkullMeta) item.getItemMeta();
 
         meta.setOwningPlayer(resolveOfflinePlayer(bounty.getTargetUuid()));
         item.setItemMeta(meta);
