@@ -24,8 +24,8 @@ public class FeedCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-            player.sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
+        if (sender instanceof Player && !PermissionUtils.has((Player) sender, PERMISSION)) {
+            ((Player) sender).sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
             return true;
         }
 
@@ -36,11 +36,11 @@ public class FeedCommand implements CommandExecutor {
 
         Player target;
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <player>"));
                 return true;
             }
-            target = player;
+            target = (Player) sender;
         } else {
             target = findOnlinePlayer(args[0]);
             if (target == null) {
@@ -50,14 +50,14 @@ public class FeedCommand implements CommandExecutor {
         }
 
         feed(target);
-        if (sender instanceof Player player && player.getUniqueId().equals(target.getUniqueId())) {
-            player.sendMessage(ColorUtils.toComponent(
+        if (sender instanceof Player && ((Player) sender).getUniqueId().equals(target.getUniqueId())) {
+            ((Player) sender).sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getMessageOrDefault("FEED.SELF", "&7Your hunger has been satisfied!")
             ));
             return true;
         }
 
-        String senderName = sender instanceof Player player ? player.getName() : sender.getName();
+        String senderName = sender instanceof Player ? ((Player) sender).getName() : sender.getName();
         sender.sendMessage(ColorUtils.toComponent(
                 plugin.getConfigManager().getMessageOrDefault("FEED.OTHER", "&7You fed &d%player%", "%player%", target.getName())
         ));

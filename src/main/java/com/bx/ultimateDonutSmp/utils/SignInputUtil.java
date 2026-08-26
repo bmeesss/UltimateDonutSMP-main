@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -113,7 +114,7 @@ public final class SignInputUtil {
 
         player.setMetadata(META_SIGN_INPUT, new FixedMetadataValue(plugin, true));
 
-        var scheduler = getScheduler(plugin);
+        SpigotScheduler scheduler = getScheduler(plugin);
 
         // Close inventory immediately so player is ready for sign input
         try {
@@ -138,10 +139,12 @@ public final class SignInputUtil {
             Block block = loc.getBlock();
             block.setType(Material.OAK_SIGN, false);
 
-            if (!(block.getState() instanceof Sign sign)) {
+            BlockState blockState = block.getState();
+            if (!(blockState instanceof Sign)) {
                 finish(player, null);
                 return;
             }
+            Sign sign = (Sign) blockState;
 
             // Set sign lines (supporting 1.20+ Side API via reflection)
             try {
@@ -233,7 +236,7 @@ public final class SignInputUtil {
             player.removeMetadata(META_SIGN_INPUT, plugin);
         }
 
-        var scheduler = getScheduler(plugin);
+        SpigotScheduler scheduler = getScheduler(plugin);
 
         if (loc != null && oldData != null && plugin != null && scheduler != null) {
             // Restore block in the world
@@ -349,7 +352,7 @@ public final class Placement {
                         finish(player, null);
 
                         if (plugin != null && origLines != null && cb != null) {
-                            var scheduler = getScheduler(plugin);
+                            SpigotScheduler scheduler = getScheduler(plugin);
                             if (scheduler != null) {
                                 scheduler.runEntity(player, () -> {
                                     open(plugin, player, origLines, inputIdx, cb);

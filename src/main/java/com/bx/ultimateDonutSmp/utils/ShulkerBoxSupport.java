@@ -1,8 +1,10 @@
 package com.bx.ultimateDonutSmp.utils;
 
 import org.bukkit.Material;
+import org.bukkit.block.BlockState;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.block.ShulkerBox;
 
 import java.util.ArrayList;
@@ -27,13 +29,17 @@ public final class ShulkerBoxSupport {
             return java.util.Collections.emptyList();
         }
 
-        if (!(item.getItemMeta() instanceof BlockStateMeta bsm)) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return java.util.Collections.emptyList();
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return java.util.Collections.emptyList();
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         List<ItemStack> list = new ArrayList<>();
         ItemStack[] contents = box.getInventory().getContents();
@@ -50,13 +56,17 @@ public final class ShulkerBoxSupport {
             return 0;
         }
 
-        if (!(item.getItemMeta() instanceof BlockStateMeta bsm)) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return 0;
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return 0;
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         int count = 0;
         ItemStack[] contents = box.getInventory().getContents();

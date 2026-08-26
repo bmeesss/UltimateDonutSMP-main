@@ -152,9 +152,10 @@ public class FreezeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getEntity();
 
         if (deny(player)) {
             event.setCancelled(true);
@@ -170,9 +171,10 @@ public class FreezeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (deny(player)) {
             event.setCancelled(true);
@@ -182,9 +184,10 @@ public class FreezeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (deny(player)) {
             event.setCancelled(true);
@@ -244,9 +247,12 @@ public class FreezeListener implements Listener {
             return player;
         }
 
-        if (event.getDamager() instanceof Projectile projectile && projectile.getShooter() instanceof Player) {
-            Player player = (Player) projectile.getShooter();
-            return player;
+        if (event.getDamager() instanceof Projectile) {
+            Projectile projectile = (Projectile) event.getDamager();
+            if (projectile.getShooter() instanceof Player) {
+                Player player = (Player) projectile.getShooter();
+                return player;
+            }
         }
 
         return null;

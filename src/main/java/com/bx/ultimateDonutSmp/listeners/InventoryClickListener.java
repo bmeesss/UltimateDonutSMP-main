@@ -30,9 +30,11 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (!(event.getWhoClicked() instanceof Player)) return;
+        Player player = (Player) event.getWhoClicked();
         Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
+        if (!(inv.getHolder() instanceof BaseMenu)) return;
+        BaseMenu menu = (BaseMenu) inv.getHolder();
         Inventory topInventory = event.getView().getTopInventory();
 
         if (menu instanceof SellMenu) {
@@ -90,7 +92,8 @@ public class InventoryClickListener implements Listener {
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
         Inventory inv = event.getInventory();
-        if (!(inv.getHolder() instanceof BaseMenu menu)) return;
+        if (!(inv.getHolder() instanceof BaseMenu)) return;
+        BaseMenu menu = (BaseMenu) inv.getHolder();
 
         if (menu instanceof com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu) {
             com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu spawnerStorageMenu = (com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu) menu;
@@ -141,9 +144,11 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) return;
-        if (event.getInventory().getHolder() instanceof BaseMenu menu) {
-            menu.onClose(player);
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        org.bukkit.inventory.InventoryHolder holder = event.getInventory().getHolder();
+        if (holder instanceof BaseMenu) {
+            ((BaseMenu) holder).onClose(player);
         }
     }
 

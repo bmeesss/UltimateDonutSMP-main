@@ -35,9 +35,10 @@ public class GodModeListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onDamage(EntityDamageEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+        if (!(event.getEntity() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getEntity();
 
         if (!plugin.getGodModeManager().isInGodMode(player.getUniqueId())) {
             return;
@@ -71,11 +72,11 @@ public class GodModeListener implements Listener {
     }
 
     private void applyKnockback(Player player, EntityDamageEvent event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageByEntity)) {
+        if (!(event instanceof EntityDamageByEntityEvent)) {
             return;
         }
 
-        Entity damager = damageByEntity.getDamager();
+        Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
         Vector direction = resolveKnockbackDirection(player, damager);
         if (direction == null) {
             return;
@@ -86,7 +87,7 @@ public class GodModeListener implements Listener {
                 : BASE_ENTITY_KNOCKBACK;
         horizontalStrength += resolveKnockbackLevel(damager) * EXTRA_KNOCKBACK_PER_LEVEL;
 
-        if (damager instanceof Player attacker && attacker.isSprinting()) {
+        if (damager instanceof Player && ((Player) damager).isSprinting()) {
             horizontalStrength += SPRINT_KNOCKBACK_BONUS;
         }
 
@@ -151,11 +152,11 @@ public class GodModeListener implements Listener {
     }
 
     private float resolveHurtYaw(Player player, EntityDamageEvent event) {
-        if (!(event instanceof EntityDamageByEntityEvent damageByEntity)) {
+        if (!(event instanceof EntityDamageByEntityEvent)) {
             return player.getLocation().getYaw();
         }
 
-        Entity damager = damageByEntity.getDamager();
+        Entity damager = ((EntityDamageByEntityEvent) event).getDamager();
         double x = damager.getLocation().getX() - player.getLocation().getX();
         double z = damager.getLocation().getZ() - player.getLocation().getZ();
         return (float) Math.toDegrees(Math.atan2(-x, z));
