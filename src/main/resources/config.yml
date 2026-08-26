@@ -408,7 +408,7 @@ FAST-CRYSTALS:
   DEFAULT-PLAYER-STATE: true
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
+
   # Configuration section for Place.
   PLACE:
     # The numerical value for Enabled Cooldown Ticks. Available options: Any valid integer
@@ -441,38 +441,6 @@ RESPAWN-ANCHOR:
 ENDER-CHEST:
   # Determines whether Six Row is enabled or disabled. Available options: true, false
   SIX-ROW: true
-# Configuration section for Lunar Client.
-LUNAR-CLIENT:
-  # Configuration section for Rich Presence.
-  RICH-PRESENCE:
-    # Determines whether Enabled is enabled or disabled. Available options: true, false
-    ENABLED: true
-    # The numerical value for Update. Available options: Any valid integer
-    UPDATE: 1
-    # The text or value for Player State. Available options: Any valid string text
-    PLAYER-STATE: Playing
-    # The text or value for Game State. Available options: Any valid string text
-    GAME-STATE: Playing
-    # The text or value for Game Name. Available options: Any valid string text
-    GAME-NAME: Economy
-    # The text or value for Variant. Available options: Any valid string text
-    VARIANT: '%economy_username% ($%economy_nicestMoney%)'
-    # The text or value for World Name. Available options: Any valid string text
-    WORLD-NAME: Economy
-    # The text or value for Sub Server Name. Available options: Any valid string text
-    SUB-SERVER-NAME: SMP
-    # The text or value for Team Current Size. Available options: Any valid string text
-    TEAM-CURRENT-SIZE: '{team_size}'
-    # The text or value for Team Max Size. Available options: Any valid string text
-    TEAM-MAX-SIZE: '{team_max_size}'
-    # The numerical value for Max Field Length. Available options: Any valid integer
-    MAX-FIELD-LENGTH: 128
-  # Configuration section for Team View.
-  TEAM-VIEW:
-    # Determines whether Enabled is enabled or disabled. Available options: true, false
-    ENABLED: true
-    # The numerical value for Update. Available options: Any valid integer
-    UPDATE: 20
 # Configuration section for Shards.
 SHARDS:
   # The numerical value for Every. Available options: Any valid integer
@@ -530,7 +498,7 @@ SHARDS:
         TELEPORT-ON-AFK: true
         # Configuration section for Excluded Worlds.
         EXCLUDED-WORLDS:
-        - duels
+
         # The numerical value for Recent Movement Window. Available options: Any valid integer
         RECENT-MOVEMENT-WINDOW: 15
         # The numerical value for Min Movement Blocks. Available options: Any valid integer
@@ -567,7 +535,7 @@ SHARDS:
       text &8[Everywhere] &7(Total: &#A303F9%total%&7)'
     # Configuration section for Excluded Worlds.
     EXCLUDED-WORLDS:
-    - duels
+
   # The numerical value for Booster Multiplier. Available options: Any valid integer
   BOOSTER-MULTIPLIER: 4
   # Determines whether the shard booster also multiplies player kill rewards.
@@ -727,7 +695,7 @@ CLEAR-LAG:
   MIN-ITEM-AGE-SECONDS: 60
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
+
   EXCLUDE-NAMED: true
   EXCLUDE-TAMED: true
   EXCLUDE-VILLAGERS: true
@@ -769,7 +737,7 @@ COMBAT-MANAGER:
   - /tpa
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
+
 # Configuration section for Rtp Zone.
 RTP-ZONE:
   # Determines whether Enabled is enabled or disabled. Available options: true, false
@@ -890,12 +858,12 @@ TELEPORT-COOLDOWN:
 BOUNTY:
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
+
 # Configuration section for Amethyst Tools.
 AMETHYST-TOOLS:
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
+
   # Configuration section for Pickaxe.
   PICKAXE:
     # Configuration section for Particle.

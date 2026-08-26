@@ -49,7 +49,7 @@ public final class AuctionHouseManager {
         EXPIRING_SOON;
 
         public static AuctionSort fromConfig(String rawValue) {
-            if (rawValue == null || rawValue.isBlank()) {
+            if (rawValue == null || rawValue.trim().isEmpty()) {
                 return NEWEST;
             }
             try {
@@ -123,7 +123,6 @@ public final class CreateListingResult {
     public CrashProtectionManager.ValidationResult safetyResult() { return safetyResult; }
 
 
-        public
 
 
     @Override public String toString() {
@@ -155,7 +154,6 @@ public final class PurchaseListingResult {
     public boolean deliveryPending() { return deliveryPending; }
 
 
-        public
 
 
     @Override public String toString() {
@@ -583,7 +581,7 @@ public final class ClaimResult {
         ItemStack storedItem = sanitizeListedItem(escrowItem);
         double listingFee = getListingFee();
         if (listingFee > 0D) {
-            var withdrawal = plugin.getEconomyManager().withdraw(
+            EconomyTransactionResult withdrawal = plugin.getEconomyManager().withdraw(
                     seller,
                     listingFee,
                     EconomyReason.AUCTION_LISTING_FEE
@@ -681,7 +679,7 @@ public final class ClaimResult {
             );
         }
 
-        var withdrawal = plugin.getEconomyManager().withdraw(
+        EconomyTransactionResult withdrawal = plugin.getEconomyManager().withdraw(
                 buyer,
                 listing.price(),
                 EconomyReason.AUCTION_PURCHASE
@@ -1000,7 +998,7 @@ public final class ClaimResult {
         }
 
         if (claim.moneyClaim()) {
-            var deposit = plugin.getEconomyManager().deposit(
+            EconomyTransactionResult deposit = plugin.getEconomyManager().deposit(
                     player,
                     claim.moneyAmount(),
                     EconomyReason.AUCTION_CLAIM
@@ -1021,7 +1019,7 @@ public final class ClaimResult {
                             return;
                         }
 
-                        var compensation = plugin.getEconomyManager().withdraw(
+                        EconomyTransactionResult compensation = plugin.getEconomyManager().withdraw(
                                 player,
                                 claim.moneyAmount(),
                                 EconomyReason.AUCTION_REFUND
@@ -1147,7 +1145,7 @@ public final class ClaimResult {
                 for (String line : lore) {
                     String plain = ColorUtils.strip(ColorUtils.toLegacyString(line)).toLowerCase(Locale.ROOT);
                     for (String term : blockedTerms) {
-                        if (term != null && !term.isBlank() && plain.contains(term.toLowerCase(Locale.ROOT))) {
+                        if (term != null && !term.trim().isEmpty() && plain.contains(term.toLowerCase(Locale.ROOT))) {
                             return false;
                         }
                     }
@@ -1361,39 +1359,4 @@ public final class ClaimResult {
         }
     }
 
-    public int countActiveBotListings(java.util.Collection<String> botNames) {
-        long now = System.currentTimeMillis();
-        return (int) listingCache.get().stream()
-                .filter(listing -> listing.active() && listing.expiresAt() > now)
-                .filter(listing -> botNames.contains(listing.sellerName()))
-                .count();
-    }
-
-    public CompletableFuture<AuctionListing> createBotListingDirect(
-            UUID botUuid,
-            String botName,
-            ItemStack item,
-            double price,
-            int durationHours,
-            String categoryKey
-    ) {
-        long now = System.currentTimeMillis();
-        long expiresAt = now + TimeUnitHours.toMillis(durationHours);
-        return repository.createListing(
-                botUuid,
-                botName,
-                price,
-                0D,
-                item,
-                now,
-                expiresAt,
-                categoryKey,
-                Integer.MAX_VALUE
-        ).thenCompose(result -> {
-            if (result.created()) {
-                return refreshCache().thenApply(ignored -> result.listing());
-            }
-            return CompletableFuture.completedFuture(null);
-        });
-    }
 }

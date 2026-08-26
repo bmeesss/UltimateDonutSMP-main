@@ -55,20 +55,13 @@ public class OrdersCommand implements CommandExecutor {
         }
 
         if (args.length == 0) {
-            if (plugin.getOrdersBedrockManager() != null
-                    && plugin.getOrdersBedrockManager().openMain(player)) {
-                return true;
-            }
             new OrdersBrowseMenu(plugin, 1, plugin.getOrdersManager().getDefaultSort(), "ALL").open(player);
             return true;
         }
 
         switch (subcommand) {        case "my": {
 
-                            if (plugin.getOrdersBedrockManager() == null
-                                    || !plugin.getOrdersBedrockManager().openMyOrders(player)) {
-                                new OrdersMyOrdersMenu(plugin, 1, plugin.getOrdersManager().getDefaultSort()).open(player);
-                            }
+                            new OrdersMyOrdersMenu(plugin, 1, plugin.getOrdersManager().getDefaultSort()).open(player);
                         break;        }        case "collect": {
 
                             if (!plugin.getOrdersManager().isClaimsEnabled()) {
@@ -78,23 +71,17 @@ public class OrdersCommand implements CommandExecutor {
                                 )));
                                 return true;
                             }
-                            if (plugin.getOrdersBedrockManager() == null
-                                    || !plugin.getOrdersBedrockManager().openCollect(player)) {
-                                new OrdersCollectMenu(plugin, 1).open(player);
-                            }
+                            new OrdersCollectMenu(plugin, 1).open(player);
                         break;        }        default: {
 
                             String query = String.join(" ", args);
-                            if (plugin.getOrdersBedrockManager() == null
-                                    || !plugin.getOrdersBedrockManager().openMain(player, query)) {
-                                new OrdersBrowseMenu(
-                                        plugin,
-                                        1,
-                                        plugin.getOrdersManager().getUiState(player.getUniqueId()).sort(),
-                                        plugin.getOrdersManager().getUiState(player.getUniqueId()).filter(),
-                                        query
-                                ).open(player);
-                            }
+                            new OrdersBrowseMenu(
+                                    plugin,
+                                    1,
+                                    plugin.getOrdersManager().getUiState(player.getUniqueId()).sort(),
+                                    plugin.getOrdersManager().getUiState(player.getUniqueId()).filter(),
+                                    query
+                            ).open(player);
                         break;        }
         }
 

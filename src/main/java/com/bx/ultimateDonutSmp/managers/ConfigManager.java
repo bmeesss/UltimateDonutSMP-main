@@ -47,16 +47,13 @@ public class ConfigManager {
             "orders.yml", 
             "enchantments.yml", 
             "filter.yml", 
-            "duels.yml", 
-            "crates.yml", 
+            "crates.yml",
             "spawners.yml", 
             "spawn-stash.yml", 
-            "network.yml", 
             "staff-mode.yml", 
             "hide.yml", 
             "database.yml", 
             "server-wipe.yml", 
-            "discord.yml", 
             "anvil-moderation.yml"
     ));
 
@@ -83,16 +80,13 @@ public class ConfigManager {
     private FileConfiguration freeze;
     private FileConfiguration auctionHouse;
     private FileConfiguration orders;
-    private FileConfiguration duels;
     private FileConfiguration crates;
     private FileConfiguration spawners;
     private FileConfiguration spawnStash;
-    private FileConfiguration network;
     private FileConfiguration staffMode;
     private FileConfiguration hide;
     private FileConfiguration database;
     private FileConfiguration serverWipe;
-    private FileConfiguration discord;
     private FileConfiguration anvilModeration;
     private FileConfiguration enchantments;
     private FileConfiguration filter;
@@ -128,16 +122,13 @@ public class ConfigManager {
         freeze       = load("freeze.yml", freeze);
         auctionHouse = load("auction-house.yml", auctionHouse);
         orders       = load("orders.yml", orders);
-        duels        = load("duels.yml", duels);
         crates       = load("crates.yml", crates);
         spawners     = load("spawners.yml", spawners);
         spawnStash   = load("spawn-stash.yml", spawnStash);
-        network      = load("network.yml", network);
         staffMode    = load("staff-mode.yml", staffMode);
         hide         = load("hide.yml", hide);
         database     = load("database.yml", database);
         serverWipe   = load("server-wipe.yml", serverWipe);
-        discord      = load("discord.yml", discord);
         anvilModeration = load("anvil-moderation.yml", anvilModeration);
         enchantments = load("enchantments.yml", enchantments);
         filter       = load("filter.yml", filter);
@@ -1821,14 +1812,7 @@ public class ConfigManager {
         }
 
         // Arena sections are written by admin commands and store live map/region data.
-        if (("duels.yml".equals(resourceName))
-                && (path.equals("ARENA_SETTINGS") || path.startsWith("ARENA_SETTINGS."))) {
-            return true;
-        }
-
-        // Bot settings and item definitions are customized by server admins.
-        if (("orders.yml".equals(resourceName) || "auction-house.yml".equals(resourceName))
-                && (path.equals("BOTS") || path.startsWith("BOTS.") || path.equals("ITEMS") || path.startsWith("ITEMS."))) {
+        if ((path.equals("ARENA_SETTINGS") || path.startsWith("ARENA_SETTINGS."))) {
             return true;
         }
 
@@ -2049,20 +2033,17 @@ public class ConfigManager {
     public FileConfiguration getAuctionHouse()  { return localized("CONFIG.AUCTION_HOUSE", auctionHouse); }
     public FileConfiguration getOrders()        { return localized("CONFIG.ORDERS", orders); }
     public FileConfiguration getOrdersConfig()  { return getOrders(); }
-    public FileConfiguration getDuels()         { return localized("CONFIG.DUELS", duels); }
     public FileConfiguration getCrates()        { return localized("CONFIG.CRATES", crates); }
     public FileConfiguration getOriginalCrates() { return crates; }
-    public FileConfiguration getOriginalDuels() { return duels; }
     public FileConfiguration getOriginalMenus() { return menus; }
     public FileConfiguration getOriginalShop() { return shop; }
     public FileConfiguration getSpawners()      { return localized("CONFIG.SPAWNERS", spawners); }
     public FileConfiguration getSpawnStash()    { return localized("CONFIG.SPAWN_STASH", spawnStash); }
-    public FileConfiguration getNetwork()       { return localized("CONFIG.NETWORK", network); }
+    public FileConfiguration getNetwork()       { return new YamlConfiguration(); }
     public FileConfiguration getStaffMode()     { return localized("CONFIG.STAFF_MODE", staffMode); }
     public FileConfiguration getHide()          { return hide; }
     public FileConfiguration getDatabase()      { return database; }
     public FileConfiguration getServerWipe()    { return localized("CONFIG.SERVER_WIPE", serverWipe); }
-    public FileConfiguration getDiscord()       { return discord; }
     public FileConfiguration getAnvilModeration() { return anvilModeration; }
     public FileConfiguration getEnchantments()  { return enchantments; }
     public FileConfiguration getFilter()        { return filter; }
@@ -2083,27 +2064,23 @@ public class ConfigManager {
     public void reloadFreeze() { freeze = load("freeze.yml", freeze); }
     public void reloadAuctionHouse() { auctionHouse = load("auction-house.yml", auctionHouse); }
     public void reloadOrders() { orders = load("orders.yml", orders); }
-    public void reloadDuels() { duels = load("duels.yml", duels); }
     public void reloadCrates() { crates = load("crates.yml", crates); }
     public void reloadSpawners() { spawners = load("spawners.yml", spawners); }
     public void reloadSpawnStash() { spawnStash = load("spawn-stash.yml", spawnStash); }
-    public void reloadNetwork() { network = load("network.yml", network); }
+    public void reloadNetwork() { }
     public void reloadStaffMode() { staffMode = load("staff-mode.yml", staffMode); }
     public void reloadHide() { hide = load("hide.yml", hide); }
     public void reloadDatabase() { database = load("database.yml", database); }
-    public void reloadDiscord() { discord = load("discord.yml", discord); }
     public void reloadAnvilModeration() { anvilModeration = load("anvil-moderation.yml", anvilModeration); }
     public void reloadEnchantments() { enchantments = load("enchantments.yml", enchantments); }
     public void reloadFilter() { filter = load("filter.yml", filter); }
     public boolean saveConfig() { return save("config.yml", config); }
-    public boolean saveDuels() { return save("duels.yml", duels); }
     public boolean saveCrates() { return save("crates.yml", crates); }
     public boolean saveShop() { return save("shop.yml", shop); }
     public boolean saveMenus() { return save("menus.yml", menus); }
     public boolean saveAuctionHouse() { return save("auction-house.yml", auctionHouse); }
     public boolean saveDatabase() { return save("database.yml", database); }
-    public boolean saveNetwork() { return save("network.yml", network); }
-    public boolean saveDiscord() { return save("discord.yml", discord); }
+    public boolean saveNetwork() { return false; }
     public boolean saveAnvilModeration() { return save("anvil-moderation.yml", anvilModeration); }
 
     // ── Convenience helpers ────────────────────────────────────────────────────

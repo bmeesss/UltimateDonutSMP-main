@@ -32,7 +32,7 @@ public class SocialCommand implements CommandExecutor {
             return true;
         }
 
-        String key = switch (normalizedLabel) {        case "discord": "SOCIAL.DISCORD"            break;        case "twitter": "SOCIAL.TWITTER"            break;        case "store": "SOCIAL.STORE"            break;        default: null            break;
+        String key = switch (normalizedLabel) {        case "twitter": "SOCIAL.TWITTER"            break;        case "store": "SOCIAL.STORE"            break;        default: null            break;
         };
 
         if (key != null) {
@@ -40,7 +40,7 @@ public class SocialCommand implements CommandExecutor {
             for (String line : lines) player.sendMessage(ColorUtils.toComponent(line));
         } else {
             // /social - show all
-            for (String section : new java.util.ArrayList<>(java.util.Arrays.asList("SOCIAL.DISCORD",  "SOCIAL.TWITTER",  "SOCIAL.STORE"))) {
+            for (String section : new java.util.ArrayList<>(java.util.Arrays.asList("SOCIAL.TWITTER",  "SOCIAL.STORE"))) {
                 List<String> lines = plugin.getConfigManager().getMessages().getStringList(section);
                 for (String line : lines) player.sendMessage(ColorUtils.toComponent(line));
             }

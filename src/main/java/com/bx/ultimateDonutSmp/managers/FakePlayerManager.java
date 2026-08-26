@@ -218,12 +218,12 @@ public class FakePlayerManager {
                 if (tablistManager != null && skinSourceMode != SkinSourceMode.GAMEPROFILE) {
                     resolvedTexture = tablistManager.resolveSkinTextureForFakePlayer(creatorId, creatorName);
                     if (resolvedTexture != null && resolvedTexture.isValid()) {
-                        resolvedSource = "SkinsRestorer";
+                        resolvedSource = "Tablist";
                     }
                 }
             } catch (RuntimeException | LinkageError error) {
                 plugin.getLogger().log(Level.FINE,
-                        "Unable to resolve fakeplayer SkinsRestorer skin for " + creatorName + ".", error);
+                        "Unable to resolve fakeplayer skin for " + creatorName + ".", error);
             }
 
             if ((resolvedTexture == null || !resolvedTexture.isValid())
@@ -295,9 +295,7 @@ public class FakePlayerManager {
             return;
         }
 
-        String resolver = source.equalsIgnoreCase("SkinsRestorer")
-                ? "skinsrestorer-only-v3"
-                : source.toLowerCase(Locale.ROOT);
+        String resolver = source.toLowerCase(Locale.ROOT);
         plugin.getLogger().info("[FakePlayer] Using " + source + " skin texture for " + playerName
                 + " (resolver=" + resolver
                 + ", valueLength=" + texture.value().length()
@@ -1117,7 +1115,6 @@ public final class SpawnResult {
 
     private enum SkinSourceMode {
         AUTO("auto"),
-        SKINSRESTORER("SkinsRestorer"),
         GAMEPROFILE("GameProfile");
 
         private final String displayName;

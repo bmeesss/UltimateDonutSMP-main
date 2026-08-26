@@ -115,10 +115,6 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
 
         applyRuntimeEffect(type, onlineTarget, record);
 
-        if (plugin.getDiscordWebhookManager() != null) {
-            plugin.getDiscordWebhookManager().sendPunishment(record);
-        }
-
         String durationDisplay = expiresAt == null ? "Permanent" : NumberUtils.formatCountdown(Math.max(0L, (expiresAt - System.currentTimeMillis()) / 1000L));
         sendMessage(sender, "&aSuccessfully issued &f" + type.name() + " &apunishment to &b" + target.name() + "&a! [Duration: &f" + durationDisplay + "&a, Reason: &f" + reasonDisplay + "&a]");
         return true;
@@ -356,10 +352,6 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
         }
 
         applyRuntimeEffect(type, onlineTarget, record);
-
-        if (plugin.getDiscordWebhookManager() != null) {
-            plugin.getDiscordWebhookManager().sendPunishment(record);
-        }
 
         String durationDisplay = expiresAt == null ? "Permanent" : NumberUtils.formatCountdown(Math.max(0L, (expiresAt - System.currentTimeMillis()) / 1000L));
         sendMessage(sender, "&aSuccessfully issued &f" + type.name() + " &apunishment to &b" + target.name() + "&a! [Duration: &f" + durationDisplay + "&a, Reason: &f" + reasonDisplay + "&a]");

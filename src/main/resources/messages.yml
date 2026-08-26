@@ -1071,21 +1071,6 @@ PLAYTIME:
   MESSAGE: '&a%time% &eplaying on &a%server%'
   # The text or value for Other. Available options: Any valid string text
   OTHER: '&e%player% &7has played for &a%time% &7on &a%server%'
-# Configuration section for Staffchat.
-STAFFCHAT:
-  # The text or value for No Permission. Available options: Any valid string text
-  NO_PERMISSION: '&cYou do not have permission to use staff chat.'
-  # The text or value for Usage. Available options: Any valid string text
-  USAGE: '&cUsage: /staffchat <message>'
-  # The text or value for Format. Available options: Any valid string text
-  FORMAT: '&8[&6StaffChat&8] &e%player%&7: %message%'
-  # The text or value for Disabled. Available options: Any valid string text
-  DISABLED: '&cNetwork staff chat is currently disabled.'
-  # The text or value for Message Too Long. Available options: Any valid string text
-  MESSAGE_TOO_LONG: '&cStaff chat message is too long. Max: %max% characters.'
-  # The text or value for Redis Unavailable. Available options: Any valid string text
-  REDIS_UNAVAILABLE: '&eStaff chat was delivered locally, but Redis is unavailable
-    for cross-server delivery.'
 # Configuration section for Helpop.
 HELPOP:
   # The text or value for No Permission. Available options: Any valid string text
@@ -1100,9 +1085,6 @@ HELPOP:
   MESSAGE_TOO_LONG: '&cYour request is too long. Max: %max% characters.'
   # The text or value for Cooldown. Available options: Any valid string text
   COOLDOWN: '&cPlease wait %seconds%s before using helpop again.'
-  # The text or value for Redis Unavailable. Available options: Any valid string text
-  REDIS_UNAVAILABLE: '&eYour request was delivered locally, but Redis is unavailable
-    for cross-server delivery.'
   # Configuration section for Format.
   FORMAT:
   - ''
@@ -1129,9 +1111,6 @@ REPORT:
   MESSAGE_TOO_LONG: '&cYour report reason is too long. Max: %max% characters.'
   # The text or value for Cooldown. Available options: Any valid string text
   COOLDOWN: '&cPlease wait %seconds%s before reporting again.'
-  # The text or value for Redis Unavailable. Available options: Any valid string text
-  REDIS_UNAVAILABLE: '&eYour report was delivered locally, but Redis is unavailable
-    for cross-server delivery.'
   # Configuration section for Format.
   FORMAT:
   - ''

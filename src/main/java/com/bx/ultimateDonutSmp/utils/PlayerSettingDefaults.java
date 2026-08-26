@@ -158,8 +158,6 @@ public final class PlayerSettingDefaults {
         bindings.put("SERVER_BROADCASTS", bool(
                 PlayerData::isServerBroadcastsEnabled, PlayerData::setServerBroadcastsEnabled));
         bindings.put("TEAM_CHAT_VISIBILITY", bool(PlayerData::isTeamChatVisible, PlayerData::setTeamChatVisible));
-        bindings.put("LUNAR_TEAMMATES", bool(
-                PlayerData::isLunarTeammatesEnabled, PlayerData::setLunarTeammatesEnabled));
         bindings.put("TPA_CONFIRM_MENUS", bool(
                 PlayerData::isTpaConfirmMenuEnabled, PlayerData::setTpaConfirmMenuEnabled));
         bindings.put("DESTROY_PEARL_ON_DEATH", bool(
@@ -215,7 +213,6 @@ public final class PlayerSettingDefaults {
                 PlayerData::isAuctionNotificationsEnabled, PlayerData::setAuctionNotificationsEnabled));
         bindings.put("AMETHYST_BREAK_MESSAGES", bool(
                 PlayerData::isAmethystBreakMessagesEnabled, PlayerData::setAmethystBreakMessagesEnabled));
-        bindings.put("DUEL_REQUESTS", bool(PlayerData::isDuelRequestsEnabled, PlayerData::setDuelRequestsEnabled));
         bindings.put("DEATH_MESSAGES", twoChoice(
                 PlayerData::getDeathMessagesChoice, PlayerData::setDeathMessagesChoice));
         bindings.put("KEY_ALL_NOTIFICATIONS", bool(

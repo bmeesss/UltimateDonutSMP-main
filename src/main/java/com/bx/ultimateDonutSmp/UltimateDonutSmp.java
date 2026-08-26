@@ -54,7 +54,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
     private PrivateMessageManager privateMessageManager;
     private TeamManager teamManager;
     private HomeManager homeManager;
-    private HomeBedrockManager homeBedrockManager;
+
     private BountyManager bountyManager;
     private WarpManager warpManager;
     private CuboidManager cuboidManager;
@@ -73,12 +73,10 @@ public final class UltimateDonutSmp extends JavaPlugin {
     private MoneyNametagManager moneyNametagManager;
     private ShopManager shopManager;
     private OrdersManager ordersManager;
-    private OrdersBedrockManager ordersBedrockManager;
+
     private EnchantmentsManager enchantmentsManager;
     private FilterManager filterManager;
-    private DuelManager duelManager;
     private AuctionHouseManager auctionHouseManager;
-    private AuctionOrderBotManager auctionOrderBotManager;
     private ServerNotificationManager serverNotificationManager;
     private BillfordManager billfordManager;
     private LeaderboardManager leaderboardManager;
@@ -107,18 +105,12 @@ public final class UltimateDonutSmp extends JavaPlugin {
     private SpawnStashManager spawnStashManager;
     private FakePlayerManager fakePlayerManager;
     private HideManager hideManager;
-    private NetworkStatusManager networkStatusManager;
-    private RedisManager redisManager;
     private MaintenanceManager maintenanceManager;
-    private NetworkStaffChatManager networkStaffChatManager;
-    private NetworkStaffAlertManager networkStaffAlertManager;
     private StaffModeManager staffModeManager;
-    private DiscordWebhookManager discordWebhookManager;
-    private LunarRichPresenceManager lunarRichPresenceManager;
     private PingManager pingManager;
     private LuckPermsTablistRefreshBridge luckPermsTablistRefreshBridge;
     private LuckPermsStaffModeContextBridge luckPermsStaffModeContextBridge;
-    private SkinsRestorerTablistRefreshBridge skinsRestorerTablistRefreshBridge;
+
     private OptimizationManager optimizationManager;
     private CrashProtectionManager crashProtectionManager;
     private AnvilModerationManager anvilModerationManager;
@@ -206,21 +198,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
         filterManager = new FilterManager(this);
         enchantmentsManager = new EnchantmentsManager(this);
         ordersManager = new OrdersManager(this);
-        if (getServer().getPluginManager().isPluginEnabled("floodgate")) {
-            try {
-                ordersBedrockManager = new OrdersBedrockManager(this);
-            } catch (LinkageError error) {
-                getLogger().warning("Floodgate is present but its API could not be loaded; Orders will use Java GUIs.");
-            }
-            try {
-                homeBedrockManager = new HomeBedrockManager(this);
-            } catch (LinkageError error) {
-                getLogger().warning("Floodgate is present but its API could not be loaded; Homes will use Java GUIs.");
-            }
-        }
-        duelManager = new DuelManager(this);
         auctionHouseManager = new AuctionHouseManager(this);
-        auctionOrderBotManager = new AuctionOrderBotManager(this);
         serverNotificationManager = new ServerNotificationManager(this);
         billfordManager = new BillfordManager(this);
         billfordManager.load();
@@ -242,18 +220,9 @@ public final class UltimateDonutSmp extends JavaPlugin {
         antiEspManager = new AntiEspManager(this);
         spawnStashManager = new SpawnStashManager(this);
         fakePlayerManager = new FakePlayerManager(this);
-        redisManager = new RedisManager(this);
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
-        networkStatusManager = new NetworkStatusManager(this);
-        networkStaffChatManager = new NetworkStaffChatManager(this);
-        networkStaffAlertManager = new NetworkStaffAlertManager(this);
-        ordersManager.initializeNetworkSync();
         maintenanceManager = new MaintenanceManager(this);
-        maintenanceManager.initializeRedisListener();
-        duelManager.initializeCrossServer();
-        discordWebhookManager = new DiscordWebhookManager(this);
         pingManager = new PingManager(this);
-        initializeLunarRichPresenceManager();
 
         // 4. Display managers
         scoreboardManager = new ScoreboardManager(this);
@@ -269,7 +238,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         portalManager.loadAll();
         initializeLuckPermsTablistRefreshBridge();
         initializeLuckPermsStaffModeContextBridge();
-        initializeSkinsRestorerTablistRefreshBridge();
 
         // 5. Listeners
         registerListeners();
@@ -289,14 +257,11 @@ public final class UltimateDonutSmp extends JavaPlugin {
         KeyAllTask.start(this);
         AutoSaveTask.start(this);
         AFKCheckTask.start(this);
-        LunarTeammatesTask.start(this);
         BillfordTask.start(this); // Billford trade rotation check (every 30 s)
         OrdersExpiryTask.start(this);
         AuctionHouseExpiryTask.start(this);
-        AuctionOrderBotTask.start(this);
         AmethystToolsTask.start(this);
         SpawnerGenerationTask.start(this);
-        DuelMatchTask.start(this);
 
         // 8. PlaceholderAPI expansion
         if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
@@ -307,10 +272,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
             new EconomyLeaderboardExpansion(this).register();
             new EconomyRankExpansion(this).register();
             getLogger().info("PlaceholderAPI expansion registered.");
-        }
-
-        if (maintenanceManager != null && !maintenanceManager.isMaintenanceActive()) {
-            maintenanceManager.broadcastOnline();
         }
 
         updateManager = new UpdateManager(this);
@@ -370,38 +331,17 @@ public final class UltimateDonutSmp extends JavaPlugin {
         if (playerVisibilityManager != null) {
             playerVisibilityManager.clear();
         }
-        if (networkStatusManager != null) {
-            networkStatusManager.shutdown();
-        }
-        if (networkStaffChatManager != null) {
-            networkStaffChatManager.shutdown();
-        }
-        if (networkStaffAlertManager != null) {
-            networkStaffAlertManager.shutdown();
-        }
         if (luckPermsTablistRefreshBridge != null) {
             luckPermsTablistRefreshBridge.shutdown();
         }
         if (luckPermsStaffModeContextBridge != null) {
             luckPermsStaffModeContextBridge.shutdown();
         }
-        if (skinsRestorerTablistRefreshBridge != null) {
-            skinsRestorerTablistRefreshBridge.shutdown();
-        }
-        if (lunarRichPresenceManager != null) {
-            lunarRichPresenceManager.shutdown();
-        }
         if (optimizationManager != null) {
             optimizationManager.shutdown();
         }
         if (ordersManager != null) {
             ordersManager.shutdown();
-        }
-        if (redisManager != null) {
-            redisManager.shutdown();
-        }
-        if (duelManager != null) {
-            duelManager.shutdown();
         }
         if (spawnerManager != null && !suppressWipeSaves) {
             spawnerManager.shutdown();
@@ -462,7 +402,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
         console.sendMessage("");
         console.sendMessage("§8  ═══════════════════════════════════════════════════════════════════════════════");
         console.sendMessage("§7                       §fMade by §b§lbeestoxd §8| §fversion §a§l" + v);
-        console.sendMessage("§7                   §fDiscord: §9§nhttps://dsc.gg/hellstarr");
+        console.sendMessage("§7                   §fDonate: §9§nhttps://dsc.gg/hellstarr");
         console.sendMessage("§8  ═══════════════════════════════════════════════════════════════════════════════");
         console.sendMessage("");
         console.sendMessage("§8  ╔═══════════════════════════════════════════════════════════════════════════╗");
@@ -470,7 +410,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
         console.sendMessage("§8  ║  §e§l⚠ §6§lNote                                                              §8║");
         console.sendMessage("§8  ║                                                                         ║");
         console.sendMessage("§8  ║  §fGuys, please donate to this project or this plugin if you really      §8║");
-        console.sendMessage("§8  ║  §fLike this plugin, for the donation link just DM me on Discord,        §8║");
+        console.sendMessage("§8  ║  §fLike this plugin, for the donation link just check the server discord,        §8║");
         console.sendMessage("§8  ║  §fAnd for those who have donated to me, may god bless you and may       §8║");
         console.sendMessage("§8  ║  §fYou always be healthy and i am very grateful for the donations        §8║");
         console.sendMessage("§8  ║  §fThat have been given to me §e:)                                       §8║");
@@ -526,7 +466,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         } else {
             pm.registerEvents(new WorthDisplayListener(this), this);
         }
-        pm.registerEvents(new DuelListener(this), this);
         pm.registerEvents(new AmethystToolsListener(this), this);
         pm.registerEvents(new SpawnerBlockListener(this), this);
         pm.registerEvents(new SpawnerInteractListener(this), this);
@@ -623,12 +562,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         setExecutor("shopedit", shopEditCommand, FeatureManager.Feature.SHOP);
         setTabCompleter("shopedit", shopEditCommand);
         setExecutor("orders", new OrdersCommand(this), FeatureManager.Feature.ORDERS);
-        setExecutor("duel", new DuelCommand(this), FeatureManager.Feature.DUELS);
-        setExecutor("create", new CreateCommand(this), FeatureManager.Feature.DUELS);
-        setExecutor("queue", new QueueCommand(this), FeatureManager.Feature.DUELS);
-        setExecutor("leave", new LeaveCommand(this));
-        setExecutor("draw", new DrawCommand(this), FeatureManager.Feature.DUELS);
-        setExecutor("arena", new ArenaCommand(this), FeatureManager.Feature.DUELS);
         AuctionHouseCommand auctionHouseCommand = new AuctionHouseCommand(this);
         setExecutor("auctionhouse", auctionHouseCommand, FeatureManager.Feature.AUCTION_HOUSE);
         setTabCompleter("auctionhouse", auctionHouseCommand);
@@ -671,9 +604,8 @@ public final class UltimateDonutSmp extends JavaPlugin {
         setTabCompleter("gamemode", gamemodeCommand);
         setExecutor("staffmode", new StaffModeCommand(this));
         setExecutor("stafflist", new StaffListCommand(this), FeatureManager.Feature.STAFF_MODE);
-        setExecutor("staffchat", new StaffChatCommand(this), FeatureManager.Feature.STAFF_CHAT);
-        setExecutor("helpop", new HelpopCommand(this), FeatureManager.Feature.STAFF_ALERTS);
-        setExecutor("report", new ReportCommand(this), FeatureManager.Feature.STAFF_ALERTS);
+        setExecutor("helpop", new HelpopCommand(this));
+        setExecutor("report", new ReportCommand(this));
         setExecutor("rename", new RenameCommand(this));
         setExecutor("randomteleport", new RandomTeleportCommand(this));
         setExecutor("teleport", new TeleportCommand(this));
@@ -727,7 +659,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
 
         // Social / info
         SocialCommand socialCmd = new SocialCommand(this);
-        setExecutor("discord", socialCmd, FeatureManager.Feature.SOCIAL);
         setExecutor("twitter", socialCmd, FeatureManager.Feature.SOCIAL);
         setExecutor("store", socialCmd, FeatureManager.Feature.SOCIAL);
         setExecutor("social", socialCmd, FeatureManager.Feature.SOCIAL);
@@ -741,7 +672,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         setTabCompleter("friends", new FriendsTabCompleter(this));
         setTabCompleter("friend", new FriendsTabCompleter(this));
         setExecutor("help", new HelpCommand(this), FeatureManager.Feature.HELP);
-        setExecutor("servers", new ServersCommand(this), FeatureManager.Feature.NETWORK_SERVERS);
 
         // Billford
         setExecutor("billford", new BillfordCommand(this), FeatureManager.Feature.BILLFORD);
@@ -879,25 +809,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         getLogger().info("Vault economy provider registered.");
     }
 
-    public void initializeLunarRichPresenceManager() {
-        if (!featureManager.isEnabled(FeatureManager.Feature.LUNAR_RICH_PRESENCE)
-                || !configManager.getConfig().getBoolean("LUNAR-CLIENT.RICH-PRESENCE.ENABLED", true)) {
-            return;
-        }
-
-        if (!isClassAvailable("com.lunarclient.apollo.Apollo")) {
-            getLogger().warning("Lunar Rich Presence is enabled, but the Apollo plugin/API is not installed.");
-            return;
-        }
-
-        try {
-            lunarRichPresenceManager = new LunarRichPresenceManager(this);
-        } catch (Throwable error) {
-            lunarRichPresenceManager = null;
-            getLogger().log(java.util.logging.Level.WARNING, "Failed to initialize Lunar Rich Presence.", error);
-        }
-    }
-
     private void initializeLuckPermsTablistRefreshBridge() {
         if (getServer().getPluginManager().getPlugin("LuckPerms") == null
                 && !isClassAvailable("net.luckperms.api.LuckPermsProvider")) {
@@ -930,20 +841,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         }
     }
 
-    private void initializeSkinsRestorerTablistRefreshBridge() {
-        if (!isClassAvailable("net.skinsrestorer.api.SkinsRestorerProvider")) {
-            return;
-        }
-
-        try {
-            skinsRestorerTablistRefreshBridge = new SkinsRestorerTablistRefreshBridge(this);
-            skinsRestorerTablistRefreshBridge.start();
-        } catch (Throwable error) {
-            skinsRestorerTablistRefreshBridge = null;
-            getLogger().log(java.util.logging.Level.WARNING, "Failed to initialize SkinsRestorer tablist refresh bridge.",
-                    error);
-        }
-    }
 
     private boolean isClassAvailable(String className) {
         try {
@@ -1039,11 +936,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
         moneyNametagManager.reload();
         shopManager.reload();
         ordersManager.reload();
-        duelManager.reload();
         auctionHouseManager.reload();
-        if (auctionOrderBotManager != null) {
-            auctionOrderBotManager.reload();
-        }
         billfordManager.load();
         rtpManager.reload();
         portalManager.loadAll();
@@ -1063,19 +956,13 @@ public final class UltimateDonutSmp extends JavaPlugin {
         invseeManager.reload();
         configManager.reloadSpawners();
         configManager.reloadSpawnStash();
-        configManager.reloadNetwork();
         configManager.reloadDatabase();
-        configManager.reloadDiscord();
         spawnerManager.reload();
         antiEspManager.reload();
         antiEspManager.refreshAllPlayers();
         spawnStashManager.reload();
         fakePlayerManager.reload();
         hideManager.reload();
-        networkStatusManager.reload();
-        networkStaffChatManager.reload();
-        networkStaffAlertManager.reload();
-        discordWebhookManager.reload();
         if (maintenanceManager != null) {
             maintenanceManager.load();
         }
@@ -1088,11 +975,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         leaderboardManager.invalidateAll();
         scoreboardManager.updateAll();
         tablistManager.updateAll();
-        if (lunarRichPresenceManager != null) {
-            lunarRichPresenceManager.reload();
-        } else {
-            initializeLunarRichPresenceManager();
-        }
 
         if (playerDataManager != null) {
             playerDataManager.refreshRemovedSettingOptions();
@@ -1275,13 +1157,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
         return ordersManager;
     }
 
-    public OrdersBedrockManager getOrdersBedrockManager() {
-        return ordersBedrockManager;
-    }
-
-    public HomeBedrockManager getHomeBedrockManager() {
-        return homeBedrockManager;
-    }
 
     public PingManager getPingManager() {
         return pingManager;
@@ -1295,16 +1170,8 @@ public final class UltimateDonutSmp extends JavaPlugin {
         return filterManager;
     }
 
-    public DuelManager getDuelManager() {
-        return duelManager;
-    }
-
     public AuctionHouseManager getAuctionHouseManager() {
         return auctionHouseManager;
-    }
-
-    public AuctionOrderBotManager getAuctionOrderBotManager() {
-        return auctionOrderBotManager;
     }
 
     public ServerNotificationManager getServerNotificationManager() {
@@ -1419,32 +1286,8 @@ public final class UltimateDonutSmp extends JavaPlugin {
         return antiEspManager;
     }
 
-    public NetworkStatusManager getNetworkStatusManager() {
-        return networkStatusManager;
-    }
-
-    public RedisManager getRedisManager() {
-        return redisManager;
-    }
-
     public MaintenanceManager getMaintenanceManager() {
         return maintenanceManager;
-    }
-
-    public NetworkStaffChatManager getNetworkStaffChatManager() {
-        return networkStaffChatManager;
-    }
-
-    public NetworkStaffAlertManager getNetworkStaffAlertManager() {
-        return networkStaffAlertManager;
-    }
-
-    public DiscordWebhookManager getDiscordWebhookManager() {
-        return discordWebhookManager;
-    }
-
-    public LunarRichPresenceManager getLunarRichPresenceManager() {
-        return lunarRichPresenceManager;
     }
 
     public OptimizationManager getOptimizationManager() {

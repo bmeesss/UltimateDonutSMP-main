@@ -4,7 +4,6 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PortalDefinition;
-import com.bx.ultimateDonutSmp.models.ServerStatusSnapshot;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
@@ -527,10 +526,6 @@ public class PortalManager {
             return;
         }
 
-        if (plugin.getNetworkStatusManager() != null && plugin.getNetworkStatusManager().isEnabled()) {
-            plugin.getNetworkStatusManager().requestImmediateRefreshAll();
-        }
-
         for (long delayTicks : new long[]{1L, 20L, 60L, 100L, 200L}) {
             scheduleHologramRefresh(delayTicks);
         }
@@ -783,19 +778,12 @@ public class PortalManager {
                 ? "0"
                 : String.valueOf(plugin.getRtpManager().getPlayersInWorld(worldName));
         String serverId = getHologramServerId(portal);
-        ServerStatusSnapshot serverSnapshot = getHologramServerSnapshot(serverId);
         boolean localServer = shouldUseLocalHologramPlayers(serverId);
-        String totalPlayers = String.valueOf(localServer
-                ? Bukkit.getOnlinePlayers().size()
-                : serverSnapshot == null ? 0 : serverSnapshot.playerCount());
+        String totalPlayers = String.valueOf(localServer ? Bukkit.getOnlinePlayers().size() : 0);
         String maxPlayers = String.valueOf(Bukkit.getMaxPlayers());
         String region = getHologramRegion(portal);
-        String serverDisplay = localServer
-                ? getLocalServerDisplayName()
-                : serverSnapshot == null ? serverId : serverSnapshot.displayName();
-        String serverStatus = localServer
-                ? "online"
-                : serverSnapshot != null && serverSnapshot.online() ? "online" : "offline";
+        String serverDisplay = localServer ? getLocalServerDisplayName() : serverId;
+        String serverStatus = localServer ? "online" : "offline";
 
         return line
                 .replace("{id}", portal.id())
@@ -852,27 +840,8 @@ public class PortalManager {
         return serverId.toLowerCase(Locale.ROOT);
     }
 
-    private ServerStatusSnapshot getHologramServerSnapshot(String serverId) {
-        if (serverId == null || serverId.isBlank()) {
-            return null;
-        }
-        if (shouldUseLocalHologramPlayers(serverId)) {
-            return null;
-        }
-        if (plugin.getNetworkStatusManager() == null || !plugin.getNetworkStatusManager().isEnabled()) {
-            return null;
-        }
-        return plugin.getNetworkStatusManager().getSnapshot(serverId);
-    }
-
     private boolean shouldUseLocalHologramPlayers(String serverId) {
-        if (isLocalHologramServerId(serverId)) {
-            return true;
-        }
-        if (plugin.getNetworkStatusManager() == null || !plugin.getNetworkStatusManager().isEnabled()) {
-            return true;
-        }
-        return !plugin.getNetworkStatusManager().isKnownServer(serverId);
+        return true;
     }
 
     private boolean isLocalHologramServerId(String serverId) {

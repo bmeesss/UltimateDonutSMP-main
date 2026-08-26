@@ -711,16 +711,6 @@ public class SellStatsExporter {
     private String resolvePlayerSkinHeadUrl(java.util.UUID uuid, String playerName) {
         String textureHash = null;
 
-        // 1. Try SkinsRestorer API to get actual skin property Base64 value
-        if (plugin.getServer().getPluginManager().isPluginEnabled("SkinsRestorer")) {
-            try {
-                TablistManager.SkinTexture texture = SkinsRestorerSkinLookup.resolve(uuid, playerName);
-                if (texture != null && texture.value() != null && !texture.value().isBlank()) {
-                    textureHash = parseTextureHashFromBase64(texture.value());
-                }
-            } catch (Throwable ignored) {}
-        }
-
         // 2. Try online player profile if online
         if (textureHash == null && uuid != null) {
             Player onlinePlayer = plugin.getServer().getPlayer(uuid);

@@ -39,7 +39,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     private static final String OPTIMIZE_PERMISSION = "ultimatedonutsmp.admin.optimize";
     private static final String SETUP_PERMISSION = "ultimatedonutsmp.admin.setup";
     private static final String FEATURES_PERMISSION = "ultimatedonutsmp.admin.features";
-    private static final String DEFAULT_WEBHOOK_PLACEHOLDER = "https://discord.com/api/webhooks/your_webhook_here";
     private static final int COMMANDS_PER_PAGE = 8;
 
     private static final List<String> ROOT_COMPLETIONS = new java.util.ArrayList<>(java.util.Arrays.asList("reload",  "statswipe",  "optimize",  "setup",  "features",  "maintenance"));
@@ -399,11 +398,9 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             FileConfiguration config = plugin.getConfigManager().getConfig();
             FileConfiguration database = plugin.getConfigManager().getDatabase();
             FileConfiguration network = plugin.getConfigManager().getNetwork();
-            FileConfiguration discord = plugin.getConfigManager().getDiscord();
 
             config.set("SETTINGS.SPAWN-MENU", true);
             config.set("SETTINGS.AFK-MENU", true);
-            config.set("LUNAR-CLIENT.RICH-PRESENCE.ENABLED", false);
 
             database.set("DATABASE.TYPE", "SQLITE");
             database.set("DATABASE.SQLITE.FILE", "data/data.db");
@@ -417,12 +414,9 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
             network.set("NETWORK-STATUS.SERVERS.LOCAL.DISPLAY", "local");
             network.set("NETWORK-STATUS.SERVERS.LOCAL.SOURCE.TYPE", "LOCAL");
 
-            discord.set("WEBHOOKS.ENABLED", false);
-
             boolean saved = plugin.getConfigManager().saveConfig()
                     & plugin.getConfigManager().saveDatabase()
-                    & plugin.getConfigManager().saveNetwork()
-                    & plugin.getConfigManager().saveDiscord();
+                    & plugin.getConfigManager().saveNetwork();
             if (!saved) {
                 sender.sendMessage(ColorUtils.toComponent("&cSingle paper preset was applied in memory, but one or more files failed to save. Check console."));
                 return;
@@ -472,7 +466,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     private void sendSetupStatus(CommandSender sender, String label) {
         FileConfiguration config = plugin.getConfigManager().getConfig();
         FileConfiguration database = plugin.getConfigManager().getDatabase();
-        FileConfiguration discord = plugin.getConfigManager().getDiscord();
 
         sender.sendMessage(ColorUtils.toComponent("&8&m---------- &bUltimateDonutSMP setup &8&m----------"));
         sendCheck(sender, isJava21OrNewer(), "java",
@@ -483,8 +476,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                 database.getString("DATABASE.TYPE", "SQLITE").toUpperCase(Locale.ROOT) + " configured");
         sendCheck(sender, isRedisReadyForSingleServer(database), "redis",
                 redisDetail(database));
-        sendCheck(sender, isDiscordWebhookReady(discord), "discord webhook",
-                discordWebhookDetail(discord));
         sendCheck(sender, plugin.getSpawnManager().hasSpawn(), "spawn",
                 plugin.getSpawnManager().hasSpawn() ? "ready" : "use /" + label + " setup setspawn");
         sendCheck(sender, plugin.getSpawnManager().hasAfk(), "afk",
@@ -577,7 +568,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
         return switch (category) {        case "starter": new java.util.ArrayList<>(java.util.Arrays.asList(
                     "spawn",  "afk",  "home",  "homes",  "sethome",  "delhome",  "renamehome", 
                     "rtp",  "warp",  "tpa",  "tpahere",  "tpaccept",  "tpadeny",  "tpacancel", 
-                    "settings",  "stats",  "ping",  "playtime",  "social",  "discord",  "twitter", 
+                     "settings",  "stats",  "ping",  "playtime",  "social",  "twitter",
                     "store",  "rules",  "help",  "servers"
             ))            break;        case "economy": new java.util.ArrayList<>(java.util.Arrays.asList(
                     "balance",  "pay",  "addmoney",  "removemoney",  "setmoney",  "shards",  "shardpay", 
@@ -585,8 +576,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                     "shop",  "sell",  "sellhand",  "sellall",  "sellhistory",  "worth"
             ))            break;        case "market": new java.util.ArrayList<>(java.util.Arrays.asList(
                     "auctionhouse",  "orders",  "billford",  "bounty",  "crate",  "crates",  "keys",  "spawner"
-            ))            break;        case "pvp": new java.util.ArrayList<>(java.util.Arrays.asList(
-                     "duel",  "queue",  "leave",  "draw",  "arena"
             ))            break;        case "staff": new java.util.ArrayList<>(java.util.Arrays.asList(
                     "staffmode",  "stafflist",  "staffchat",  "helpop",  "report",  "freeze",  "fly",  "flyspeed", 
                     "heal",  "feed",  "gamemode",  "randomteleport",  "teleport",  "alts",  "vanish", 
@@ -649,40 +638,14 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean isRedisReadyForSingleServer(FileConfiguration database) {
-        return !database.getBoolean("REDIS.ENABLED", false)
-                || (plugin.getRedisManager() != null && plugin.getRedisManager().isConnected());
+        return !database.getBoolean("REDIS.ENABLED", false);
     }
 
     private String redisDetail(FileConfiguration database) {
         if (!database.getBoolean("REDIS.ENABLED", false)) {
             return "disabled for single-server setup";
         }
-        return plugin.getRedisManager() != null && plugin.getRedisManager().isConnected()
-                ? "enabled and connected"
-                : "enabled but not connected";
-    }
-
-    private boolean isDiscordWebhookReady(FileConfiguration discord) {
-        ConfigurationSection root = discord.getConfigurationSection("WEBHOOKS");
-        if (root == null || !root.getBoolean("ENABLED", true)) {
-            return true;
-        }
-
-        String url = root.getString("URL", "");
-        return !url.isBlank() && !DEFAULT_WEBHOOK_PLACEHOLDER.equalsIgnoreCase(url);
-    }
-
-    private String discordWebhookDetail(FileConfiguration discord) {
-        ConfigurationSection root = discord.getConfigurationSection("WEBHOOKS");
-        if (root == null || !root.getBoolean("ENABLED", true)) {
-            return "disabled";
-        }
-
-        String url = root.getString("URL", "");
-        if (url.isBlank() || DEFAULT_WEBHOOK_PLACEHOLDER.equalsIgnoreCase(url)) {
-            return "enabled with placeholder URL";
-        }
-        return "enabled";
+        return "disabled (Redis removed)";
     }
 
     private List<String> availableRtpWorlds() {
@@ -705,7 +668,7 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     private String optionalIntegrationDetail() {
         List<String> installed = new ArrayList<>();
         List<String> missing = new ArrayList<>();
-        for (String pluginName : new java.util.ArrayList<>(java.util.Arrays.asList("PlaceholderAPI",  "LuckPerms",  "Vault",  "ProtocolLib",  "Apollo"))) {
+        for (String pluginName : new java.util.ArrayList<>(java.util.Arrays.asList("PlaceholderAPI",  "LuckPerms",  "Vault",  "ProtocolLib"))) {
             if (plugin.getServer().getPluginManager().getPlugin(pluginName) == null) {
                 missing.add(pluginName);
             } else {
@@ -754,7 +717,6 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
                 + optimizationManager.getTotalSkippedRuns()
                 + " &8(&7Scoreboard=&f" + optimizationManager.getSkippedRuns(OptimizationManager.OptimizedTask.SCOREBOARD)
                 + "&8, &7Tablist=&f" + optimizationManager.getSkippedRuns(OptimizationManager.OptimizedTask.TABLIST)
-                + "&8, &7Lunar=&f" + optimizationManager.getSkippedRuns(OptimizationManager.OptimizedTask.LUNAR_TEAMMATES)
                 + "&8)"));
         sender.sendMessage(ColorUtils.toComponent("&7Usage: &f/" + label + " optimize [status|reload|reset]"));
     }

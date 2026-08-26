@@ -32,7 +32,6 @@ public class PlayerData {
     private boolean bountyAlertsEnabled;
     private boolean tpaConfirmMenuEnabled;
     private boolean chainmailOnRespawnEnabled;
-    private boolean lunarTeammatesEnabled;
     private ThreeChoice tpaRequestsChoice;
     private boolean autoTpaHereEnabled;
     private ThreeChoice tpaHereRequestsChoice;
@@ -44,7 +43,6 @@ public class PlayerData {
     private boolean amethystBreakMessagesEnabled;
     private ThreeChoice privateMessagesChoice;
     private boolean keyAllNotificationsEnabled;
-    private boolean duelRequestsEnabled;
     private boolean publicChatEnabled;
     private boolean serverBroadcastsEnabled;
     private boolean auctionNotificationsEnabled;
@@ -54,7 +52,6 @@ public class PlayerData {
     private boolean rtpCoordinatesEnabled;
     private boolean orderNotificationsEnabled;
     private boolean teamChatVisible;
-    private boolean duelMusicEnabled;
     private boolean quietSpawnEnabled;
     private boolean nightVisionEnabled;
     private long keyAllRemainingSeconds;
@@ -103,7 +100,6 @@ public class PlayerData {
         this.bountyAlertsEnabled = true;
         this.tpaConfirmMenuEnabled = true;
         this.chainmailOnRespawnEnabled = true;
-        this.lunarTeammatesEnabled = true;
         this.tpaRequestsChoice = ThreeChoice.ANYONE;
         this.autoTpaHereEnabled = false;
         this.tpaHereRequestsChoice = ThreeChoice.ANYONE;
@@ -115,7 +111,6 @@ public class PlayerData {
         this.amethystBreakMessagesEnabled = true;
         this.privateMessagesChoice = ThreeChoice.ANYONE;
         this.keyAllNotificationsEnabled = true;
-        this.duelRequestsEnabled = true;
         this.publicChatEnabled = true;
         this.serverBroadcastsEnabled = true;
         this.auctionNotificationsEnabled = true;
@@ -125,7 +120,6 @@ public class PlayerData {
         this.rtpCoordinatesEnabled = true;
         this.orderNotificationsEnabled = true;
         this.teamChatVisible = true;
-        this.duelMusicEnabled = true;
         this.quietSpawnEnabled = false;
         this.nightVisionEnabled = false;
         this.keyAllRemainingSeconds = -1L;
@@ -507,15 +501,6 @@ public class PlayerData {
         dirty = true;
     }
 
-    public boolean isLunarTeammatesEnabled() {
-        return lunarTeammatesEnabled;
-    }
-
-    public void setLunarTeammatesEnabled(boolean lunarTeammatesEnabled) {
-        this.lunarTeammatesEnabled = lunarTeammatesEnabled;
-        dirty = true;
-    }
-
     public boolean isTpaRequestsEnabled() {
         return tpaRequestsChoice != ThreeChoice.OFF;
     }
@@ -658,15 +643,6 @@ public class PlayerData {
         dirty = true;
     }
 
-    public boolean isDuelRequestsEnabled() {
-        return duelRequestsEnabled;
-    }
-
-    public void setDuelRequestsEnabled(boolean duelRequestsEnabled) {
-        this.duelRequestsEnabled = duelRequestsEnabled;
-        dirty = true;
-    }
-
     public boolean isPublicChatEnabled() {
         return publicChatEnabled;
     }
@@ -745,15 +721,6 @@ public class PlayerData {
 
     public void setTeamChatVisible(boolean teamChatVisible) {
         this.teamChatVisible = teamChatVisible;
-        dirty = true;
-    }
-
-    public boolean isDuelMusicEnabled() {
-        return duelMusicEnabled;
-    }
-
-    public void setDuelMusicEnabled(boolean duelMusicEnabled) {
-        this.duelMusicEnabled = duelMusicEnabled;
         dirty = true;
     }
 

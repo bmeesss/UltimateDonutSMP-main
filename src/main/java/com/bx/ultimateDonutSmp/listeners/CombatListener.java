@@ -42,7 +42,8 @@ public class CombatListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageByEntityEvent event) {
         if (!plugin.getCombatManager().isEnabled()) return;
-        if (!(event.getEntity() instanceof Player victim)) return;
+        if (!(event.getEntity() instanceof Player)) return;
+        Player victim = (Player) event.getEntity();
 
         DamageSource source = resolveDamageSource(event.getDamager());
         if (!shouldTagVictim(
@@ -52,7 +53,6 @@ public class CombatListener implements Listener {
         )) return;
 
         Player attacker = resolvePlayerAttacker(event.getDamager());
-        if (shouldBypassGlobalCombat(attacker, victim)) return;
 
         if (plugin.getCombatManager().isExcludedWorld(victim.getWorld().getName())) return;
 
@@ -71,11 +71,11 @@ public class CombatListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onRespawnAnchorDamage(EntityDamageByBlockEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        Player victim = (Player) event.getEntity();
         if (!plugin.getCombatManager().isEnabled()
                 || !plugin.getCombatManager().isRespawnAnchorCombatEnabled()
-                || !(event.getEntity() instanceof Player victim)
                 || !isRespawnAnchorDamage(event)
-                || shouldBypassGlobalCombat(null, victim)
                 || plugin.getCombatManager().isExcludedWorld(victim.getWorld().getName())) {
             return;
         }
@@ -92,8 +92,7 @@ public class CombatListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (shouldBypassGlobalCombat(null, player)
-                || plugin.getCombatManager().isExcludedWorld(player.getWorld().getName())) {
+        if (plugin.getCombatManager().isExcludedWorld(player.getWorld().getName())) {
             return;
         }
 
@@ -101,8 +100,17 @@ public class CombatListener implements Listener {
     }
 
     static boolean shouldTagVictim(DamageSource source, boolean mobsEnabled, boolean enderCrystalsEnabled) {
-        return switch (source) {        case PLAYER: true; break;        case MOB: mobsEnabled; break;        case ENDER_CRYSTAL: enderCrystalsEnabled; break;        case OTHER: false; break;
-        };
+        switch (source) {
+            case PLAYER:
+                return true;
+            case MOB:
+                return mobsEnabled;
+            case ENDER_CRYSTAL:
+                return enderCrystalsEnabled;
+            case OTHER:
+            default:
+                return false;
+        }
     }
 
     private DamageSource resolveDamageSource(Entity damager) {
@@ -119,84 +127,7 @@ public class CombatListener implements Listener {
             return DamageSource.MOB;
         }
         if (damager instanceof Projectile) {
-            Projectile projectile = (Projectile) !plugin.getCombatManager().isEnabled()) return;
-        if (!(event.getEntity() instanceof Player victim)) return;
-
-        DamageSource source = resolveDamageSource(event.getDamager());
-        if (!shouldTagVictim(
-                source,
-                plugin.getCombatManager().isMobCombatEnabled(),
-                plugin.getCombatManager().isEnderCrystalCombatEnabled()
-        )) return;
-
-        Player attacker = resolvePlayerAttacker(event.getDamager());
-        if (shouldBypassGlobalCombat(attacker, victim)) return;
-
-        if (plugin.getCombatManager().isExcludedWorld(victim.getWorld().getName())) return;
-
-        if (attacker != null && !attacker.getUniqueId().equals(victim.getUniqueId())
-                && plugin.getTeamManager().areTeammates(attacker.getUniqueId(), victim.getUniqueId())) {
-            Team team = plugin.getTeamManager().getTeam(attacker);
-            if (team != null && !team.isFriendlyFireEnabled()) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-
-        plugin.getCombatManager().tag(victim);
-        if (attacker != null) plugin.getCombatManager().tag(attacker);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onRespawnAnchorDamage(EntityDamageByBlockEvent event) {
-        if (!plugin.getCombatManager().isEnabled()
-                || !plugin.getCombatManager().isRespawnAnchorCombatEnabled()
-                || !(event.getEntity() instanceof Player victim)
-                || !isRespawnAnchorDamage(event)
-                || shouldBypassGlobalCombat(null, victim)
-                || plugin.getCombatManager().isExcludedWorld(victim.getWorld().getName())) {
-            return;
-        }
-
-        plugin.getCombatManager().tag(victim);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onEnderPearlTeleport(PlayerTeleportEvent event) {
-        if (!plugin.getCombatManager().isEnabled()
-                || !plugin.getCombatManager().isEnderPearlCombatEnabled()
-                || event.getCause() != PlayerTeleportEvent.TeleportCause.ENDER_PEARL) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (shouldBypassGlobalCombat(null, player)
-                || plugin.getCombatManager().isExcludedWorld(player.getWorld().getName())) {
-            return;
-        }
-
-        plugin.getCombatManager().tag(player);
-    }
-
-    static boolean shouldTagVictim(DamageSource source, boolean mobsEnabled, boolean enderCrystalsEnabled) {
-        return switch (source) {        case PLAYER: true; break;        case MOB: mobsEnabled; break;        case ENDER_CRYSTAL: enderCrystalsEnabled; break;        case OTHER: false; break;
-        };
-    }
-
-    private DamageSource resolveDamageSource(Entity damager) {
-        if (damager instanceof EnderCrystal) {
-            return DamageSource.ENDER_CRYSTAL;
-        }
-        if (damager instanceof EnderPearl) {
-            return plugin.getCombatManager().isEnderPearlCombatEnabled() ? DamageSource.PLAYER : DamageSource.OTHER;
-        }
-        if (resolvePlayerAttacker(damager) != null) {
-            return DamageSource.PLAYER;
-        }
-        if (damager instanceof LivingEntity) {
-            return DamageSource.MOB;
-        }
-        if (damager;
+            Projectile projectile = (Projectile) damager;
             ProjectileSource shooter = projectile.getShooter();
             if (shooter instanceof LivingEntity) {
                 return DamageSource.MOB;
@@ -207,20 +138,13 @@ public class CombatListener implements Listener {
 
     private Player resolvePlayerAttacker(Entity damager) {
         if (damager instanceof Player) {
-            Player player = (Player) shooter instanceof LivingEntity) {
-                return DamageSource.MOB;
+            return (Player) damager;
+        }
+        if (damager instanceof Projectile) {
+            Projectile projectile = (Projectile) damager;
+            if (!(damager instanceof EnderPearl) && projectile.getShooter() instanceof Player) {
+                return (Player) projectile.getShooter();
             }
-        }
-        return DamageSource.OTHER;
-    }
-
-    private Player resolvePlayerAttacker(Entity damager) {
-        if (damager;
-            return player;
-        }
-        if (damager instanceof Projectile projectile && !(damager instanceof EnderPearl) && projectile.getShooter() instanceof Player) {
-            Player player = (Player) damager instanceof Projectile projectile && !(damager instanceof EnderPearl) && projectile.getShooter();
-            return player;
         }
         return null;
     }
@@ -234,15 +158,8 @@ public class CombatListener implements Listener {
         return state != null && state.getType() == Material.RESPAWN_ANCHOR;
     }
 
-    private boolean shouldBypassGlobalCombat(Player attacker, Player victim) {
-        if (plugin.getDuelManager() != null && plugin.getDuelManager().shouldBypassGlobalCombat(attacker, victim)) {
-            return true;
-        }
-        return false;
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onCommand(PlayerCommandPreprocessEvent event) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onCommandPreprocess(PlayerCommandPreprocessEvent event) {
         if (!plugin.getCombatManager().isEnabled()) return;
         Player player = event.getPlayer();
         if (!plugin.getCombatManager().isInCombat(player.getUniqueId())) return;
@@ -266,20 +183,7 @@ public class CombatListener implements Listener {
         if (player.isDead()) return;
         if (plugin.getCombatManager().isExcludedWorld(player.getWorld().getName())) return;
         if (!plugin.getCombatManager().isInCombat(player.getUniqueId())) return;
-        if (isHandledBySpecialCombatSession(player)) return;
 
         player.setHealth(0.0D);
-    }
-
-    private boolean isHandledBySpecialCombatSession(Player player) {
-        UUID uuid = player.getUniqueId();
-        if (plugin.getDuelManager() != null
-                && (plugin.getDuelManager().isInQueue(uuid)
-                || plugin.getDuelManager().isInDuel(uuid)
-                || plugin.getDuelManager().isTransitioning(uuid))) {
-            return true;
-        }
-
-        return false;
     }
 }

@@ -351,7 +351,6 @@ public class ServerInfoMenu extends BaseMenu {
                 action = ButtonAction.command("stats");
                 break;
             case "SOCIAL":
-            case "DISCORD":
                 action = ButtonAction.command("social");
                 break;
             case "MEDIA":

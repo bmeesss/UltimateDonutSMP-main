@@ -52,7 +52,7 @@ public class FeatureManager {
         SHOP("SHOP", "shop", "shop command and purchase menus.", "CHEST", "SHOP"),
         ENDER_CHEST("ENDER_CHEST", "ender chest", "custom ender chest command and listener.", "ENDER_CHEST", "ENDERCHEST"),
         GAMEMODE("GAMEMODE", "gamemode", "staff gamemode commands.", "GRASS_BLOCK", "GAMEMODE"),
-        SOCIAL("SOCIAL", "social", "discord, twitter/x, store, and media commands.", "BOOK", "SOCIAL"),
+        SOCIAL("SOCIAL", "social", "social media, store, and media commands.", "BOOK", "SOCIAL"),
         SPAWN("SPAWN", "spawn", "spawn command and spawn menu.", "BEACON", "SPAWN"),
         STATS("STATS", "stats", "stats, ping, and playtime commands.", "PLAYER_HEAD", "STATS"),
         TPA("TPA", "tpa", "teleport request commands and confirm menu.", "ENDER_PEARL", "TPA"),
@@ -61,15 +61,11 @@ public class FeatureManager {
         CRATES("CRATES", "crates", "crate commands, menus, key-all, and visual effects.", "TRIPWIRE_HOOK", "CRATE"),
         RULES("RULES", "rules", "rules command and rules menu.", "BOOKSHELF", "RULES"),
         HELP("HELP", "help", "help command and server info menu.", "KNOWLEDGE_BOOK", "HELP"),
-        NETWORK_SERVERS("NETWORK_SERVERS", "network servers", "network server status command and menu.", "NETHER_STAR", "SERVERS"),
         SCOREBOARD("SCOREBOARD", "scoreboard", "sidebar scoreboard task and display.", "MAP", null),
         TABLIST("TABLIST", "tablist", "tablist header, footer, and player list names.", "NAME_TAG", null),
         AUCTION_HOUSE("AUCTION_HOUSE", "auction house", "auction house commands, listings, claims, and expiry task.", "GOLD_INGOT", null),
         ORDERS("ORDERS", "orders", "orders board commands, menus, and expiry task.", "WRITABLE_BOOK", null),
-        DUELS("DUELS", "duels", "duel commands, queues, arenas, matches, and tasks.", "DIAMOND_SWORD", null),
         STAFF_MODE("STAFF_MODE", "staff mode", "staff mode command, hotbar, vanish, and staff tools.", "NETHERITE_CHESTPLATE", null),
-        STAFF_CHAT("STAFF_CHAT", "staff chat", "staff chat command and network staff chat.", "ECHO_SHARD", null),
-        STAFF_ALERTS("STAFF_ALERTS", "staff alerts", "helpop, reports, and network staff alerts.", "BELL", null),
         SPAWN_STASH("SPAWN_STASH", "SpawnStash", "Staff bait stash spawning, alerts, and rollback cleanup.", "CHEST", "SPAWN-STASH"),
         FREEZE("FREEZE", "freeze", "freeze command, listeners, and freeze state enforcement.", "PACKED_ICE", null),
         INVSEE("INVSEE", "invsee", "inventory inspection command and sessions.", "CHEST_MINECART", null),
@@ -82,8 +78,6 @@ public class FeatureManager {
         COMBAT("COMBAT", "combat", "combat tagging listener and command blocking.", "SHIELD", null),
         FAST_CRYSTALS("FAST_CRYSTALS", "fast crystals", "fast crystal placement/breaking behavior.", "END_CRYSTAL", null),
         KEY_ALL("KEY_ALL", "key-all", "automatic crate key-all rewards.", "TRIPWIRE_HOOK", null),
-        LUNAR_RICH_PRESENCE("LUNAR_RICH_PRESENCE", "lunar rich presence", "lunar client rich presence integration.", "ENDER_EYE", null),
-        LUNAR_TEAM_VIEW("LUNAR_TEAM_VIEW", "lunar team view", "lunar teammate overlay integration.", "LEATHER_HELMET", null),
         OPTIMIZATION("OPTIMIZATION", "optimization", "runtime optimization monitor and adaptive task skipping.", "REDSTONE", null),
         MAINTENANCE("MAINTENANCE", "maintenance", "seamless maintenance system with lobby redirection.", "REDSTONE_LAMP", "MAINTENANCE"),
         HIDE("HIDE", "Hide", "Persistent player identity scrambling and configured disguises.", "NAME_TAG", "HIDE"),
@@ -203,10 +197,10 @@ public class FeatureManager {
 
     public static Feature[] featuresForCommand(String commandName) {
         String key = commandName == null ? "" : commandName.trim().toLowerCase(Locale.ROOT);
-        return switch (key) {        case "team": new Feature[]{Feature.TEAMS}            break;        case "chat": new Feature[]{Feature.CHAT}            break;        case "ignore": case "unignore": new Feature[]{Feature.IGNORE}            break;        case "msg": case "reply": case "pm": new Feature[]{Feature.MESSAGING}            break;        case "home": case "homes": case "sethome": case "delhome": case "renamehome": new Feature[]{Feature.HOMES}            break;        case "spawn": new Feature[]{Feature.SPAWN}            break;        case "afk": new Feature[]{Feature.AFK}            break;        case "tpa": case "tpahere": case "tpaccept": case "tpadeny": case "tpacancel": new Feature[]{Feature.TPA}            break;        case "tpauto": case "tpahereauto": new Feature[]{Feature.TPA, Feature.TPA_AUTO}            break;        case "shards": case "shardpay": case "addshards": case "removeshards": case "setshards": new Feature[]{Feature.SHARDS}            break;        case "crate": case "crates": case "keys": new Feature[]{Feature.CRATES}            break;        case "shop": new Feature[]{Feature.SHOP}            break;        case "shardshop": new Feature[]{Feature.SHOP, Feature.SHARDS}            break;        case "orders": new Feature[]{Feature.ORDERS}            break;                case "duel": case "create": case "queue": case "draw": case "arena": new Feature[]{Feature.DUELS}            break;
-        case "auctionhouse": new Feature[]{Feature.AUCTION_HOUSE}            break;        case "enderchest": case "ecsee": new Feature[]{Feature.ENDER_CHEST}            break;        case "sell": case "sellhand": case "sellall": case "sellhistory": new Feature[]{Feature.SELL}            break;        case "worth": new Feature[]{Feature.SELL, Feature.WORTH}            break;        case "rtp": new Feature[]{Feature.RTP}            break;        case "stats": case "ping": case "playtime": new Feature[]{Feature.STATS}            break;        case "leaderboard": new Feature[]{Feature.LEADERBOARDS}            break;        case "freeze": new Feature[]{Feature.FREEZE}            break;        case "gamemode": new Feature[]{Feature.GAMEMODE}            break;        case "staffmode": case "stafflist": case "vanish": case "fakeplayer": new Feature[]{Feature.STAFF_MODE}            break;        case "staffchat": new Feature[]{Feature.STAFF_CHAT}            break;        case "helpop": case "report": new Feature[]{Feature.STAFF_ALERTS}            break;        case "spawnstash": new Feature[]{Feature.SPAWN_STASH}            break;        case "invsee": new Feature[]{Feature.INVSEE}            break;        case "profileviewer": case "seehomes": new Feature[]{Feature.PROFILE_VIEWER}            break;
+        return switch (key) {        case "team": new Feature[]{Feature.TEAMS}            break;        case "chat": new Feature[]{Feature.CHAT}            break;        case "ignore": case "unignore": new Feature[]{Feature.IGNORE}            break;        case "msg": case "reply": case "pm": new Feature[]{Feature.MESSAGING}            break;        case "home": case "homes": case "sethome": case "delhome": case "renamehome": new Feature[]{Feature.HOMES}            break;        case "spawn": new Feature[]{Feature.SPAWN}            break;        case "afk": new Feature[]{Feature.AFK}            break;        case "tpa": case "tpahere": case "tpaccept": case "tpadeny": case "tpacancel": new Feature[]{Feature.TPA}            break;        case "tpauto": case "tpahereauto": new Feature[]{Feature.TPA, Feature.TPA_AUTO}            break;        case "shards": case "shardpay": case "addshards": case "removeshards": case "setshards": new Feature[]{Feature.SHARDS}            break;        case "crate": case "crates": case "keys": new Feature[]{Feature.CRATES}            break;        case "shop": new Feature[]{Feature.SHOP}            break;        case "shardshop": new Feature[]{Feature.SHOP, Feature.SHARDS}            break;        case "orders": new Feature[]{Feature.ORDERS}            break;
+        case "auctionhouse": new Feature[]{Feature.AUCTION_HOUSE}            break;        case "enderchest": case "ecsee": new Feature[]{Feature.ENDER_CHEST}            break;        case "sell": case "sellhand": case "sellall": case "sellhistory": new Feature[]{Feature.SELL}            break;        case "worth": new Feature[]{Feature.SELL, Feature.WORTH}            break;        case "rtp": new Feature[]{Feature.RTP}            break;        case "stats": case "ping": case "playtime": new Feature[]{Feature.STATS}            break;        case "leaderboard": new Feature[]{Feature.LEADERBOARDS}            break;        case "freeze": new Feature[]{Feature.FREEZE}            break;        case "gamemode": new Feature[]{Feature.GAMEMODE}            break;        case "staffmode": case "stafflist": case "vanish": case "fakeplayer": new Feature[]{Feature.STAFF_MODE}            break;        case "staffchat": new Feature[0]            break;        case "helpop": case "report": new Feature[0]            break;        case "spawnstash": new Feature[]{Feature.SPAWN_STASH}            break;        case "invsee": new Feature[]{Feature.INVSEE}            break;        case "profileviewer": case "seehomes": new Feature[]{Feature.PROFILE_VIEWER}            break;
             case "punishments", "ban", "tempban", "mute", "tempmute", "warn", "kick", "blacklist",
-                    "unban", "unmute", "unblacklist" -> new Feature[]{Feature.PUNISHMENTS};        case "bounty": new Feature[]{Feature.BOUNTY}            break;        case "warp": case "warpmanager": case "setwarp": case "delwarp": new Feature[]{Feature.WARPS}            break;        case "portalmanager": new Feature[]{Feature.PORTALS}            break;        case "nightvision": new Feature[]{Feature.NIGHT_VISION}            break;        case "phantom": new Feature[]{Feature.PHANTOM}            break;        case "findplayer": new Feature[]{Feature.FIND_PLAYER}            break;        case "settings": new Feature[]{Feature.SETTINGS}            break;        case "discord": case "twitter": case "store": case "social": new Feature[]{Feature.SOCIAL}            break;        case "rules": new Feature[]{Feature.RULES}            break;        case "help": new Feature[]{Feature.HELP}            break;        case "servers": new Feature[]{Feature.NETWORK_SERVERS}            break;        case "billford": new Feature[]{Feature.BILLFORD}            break;        case "spawner": new Feature[]{Feature.SPAWNERS}            break;        case "clearlag": new Feature[]{Feature.CLEAR_LAG}            break;        case "hide": case "disguise": new Feature[]{Feature.HIDE}            break;        case "cuboid": new Feature[]{Feature.CUBOIDS}            break;        case "amethysttool": new Feature[]{Feature.AMETHYST_TOOLS}            break;        case "friends": case "friend": new Feature[]{Feature.FRIENDS}            break;        case "safety": new Feature[]{Feature.SAFETY}            break;        default: new Feature[0]            break;
+                    "unban", "unmute", "unblacklist" -> new Feature[]{Feature.PUNISHMENTS};        case "bounty": new Feature[]{Feature.BOUNTY}            break;        case "warp": case "warpmanager": case "setwarp": case "delwarp": new Feature[]{Feature.WARPS}            break;        case "portalmanager": new Feature[]{Feature.PORTALS}            break;        case "nightvision": new Feature[]{Feature.NIGHT_VISION}            break;        case "phantom": new Feature[]{Feature.PHANTOM}            break;        case "findplayer": new Feature[]{Feature.FIND_PLAYER}            break;        case "settings": new Feature[]{Feature.SETTINGS}            break;        case "twitter": case "store": case "social": new Feature[]{Feature.SOCIAL}            break;        case "rules": new Feature[]{Feature.RULES}            break;        case "help": new Feature[]{Feature.HELP}            break;        case "servers": new Feature[0]            break;        case "billford": new Feature[]{Feature.BILLFORD}            break;        case "spawner": new Feature[]{Feature.SPAWNERS}            break;        case "clearlag": new Feature[]{Feature.CLEAR_LAG}            break;        case "hide": case "disguise": new Feature[]{Feature.HIDE}            break;        case "cuboid": new Feature[]{Feature.CUBOIDS}            break;        case "amethysttool": new Feature[]{Feature.AMETHYST_TOOLS}            break;        case "friends": case "friend": new Feature[]{Feature.FRIENDS}            break;        case "safety": new Feature[]{Feature.SAFETY}            break;        default: new Feature[0]            break;
         };
     }
 
@@ -360,27 +354,7 @@ public class FeatureManager {
                             if (plugin.getOrdersManager() != null) {
                                 plugin.getOrdersManager().reload();
                             }
-                        break;        }        case DUELS: {
-
-                            if (plugin.getDuelManager() != null) {
-                                plugin.getDuelManager().reload();
-                            }
-                        break;        }        case NETWORK_SERVERS: {
-
-                            if (plugin.getNetworkStatusManager() != null) {
-                                plugin.getNetworkStatusManager().reload();
-                            }
-                        break;        }        case STAFF_CHAT: {
-
-                            if (plugin.getNetworkStaffChatManager() != null) {
-                                plugin.getNetworkStaffChatManager().reload();
-                            }
-                        break;        }        case STAFF_ALERTS: {
-
-                            if (plugin.getNetworkStaffAlertManager() != null) {
-                                plugin.getNetworkStaffAlertManager().reload();
-                            }
-                        break;        }        case SPAWN_STASH: {
+                        break;        }        case AUCTION_HOUSE: {
 
                             if (plugin.getSpawnStashManager() != null) {
                                 if (isEnabled(feature)) {
@@ -388,15 +362,6 @@ public class FeatureManager {
                                 } else {
                                     plugin.getSpawnStashManager().shutdown();
                                 }
-                            }
-                        break;        }        case LUNAR_RICH_PRESENCE: {
-
-                            if (!isEnabled(feature) && plugin.getLunarRichPresenceManager() != null) {
-                                plugin.getLunarRichPresenceManager().shutdown();
-                            } else if (plugin.getLunarRichPresenceManager() != null) {
-                                plugin.getLunarRichPresenceManager().reload();
-                            } else {
-                                plugin.initializeLunarRichPresenceManager();
                             }
                         break;        }        case OPTIMIZATION: {
 

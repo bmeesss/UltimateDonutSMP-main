@@ -397,20 +397,6 @@ public class TeamManager {
         }
     }
 
-    private void refreshRichPresence(UUID uuid) {
-        LunarRichPresenceManager richPresenceManager = plugin.getLunarRichPresenceManager();
-        if (richPresenceManager != null) {
-            richPresenceManager.refreshPlayer(uuid);
-        }
-    }
-
-    private void refreshRichPresence(Collection<UUID> uuids) {
-        LunarRichPresenceManager richPresenceManager = plugin.getLunarRichPresenceManager();
-        if (richPresenceManager != null) {
-            richPresenceManager.refreshPlayers(new ArrayList<>(uuids));
-        }
-    }
-
     @FunctionalInterface
     private interface PermissionAccessor {
         boolean hasPermission(Team.TeamMember member);

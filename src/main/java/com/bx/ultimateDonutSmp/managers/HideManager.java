@@ -913,14 +913,6 @@ public final class HeadTexture {
     }
 
     private HeadTexture resolveCustomSkin(String source) {
-        SkinsRestorerHideBridge.ResolvedSkin skinsRestorer = null;
-        try {
-            skinsRestorer = SkinsRestorerHideBridge.resolve(source);
-        } catch (Throwable ignored) {
-        }
-        if (skinsRestorer != null) {
-            return new HeadTexture(skinsRestorer.value(), skinsRestorer.signature());
-        }
         if (isSkinUrl(source)) {
             return null;
         }
@@ -982,24 +974,16 @@ public final class HeadTexture {
         if (player == null || state == null || !state.hasTexture()) {
             return;
         }
-        boolean applied = applyWithSkinsRestorer(
-                player, state.textureValue(), state.textureSignature());
-        if (!applied) {
-            try {
-                applied = NativeGameProfileFactory.applyTexture(
-                        WrappedGameProfile.fromPlayer(player),
-                        state.textureValue(),
-                        state.textureSignature()
-                );
-            } catch (RuntimeException | LinkageError ignored) {
-                applied = false;
-            }
+        try {
+            NativeGameProfileFactory.applyTexture(
+                    WrappedGameProfile.fromPlayer(player),
+                    state.textureValue(),
+                    state.textureSignature()
+            );
+        } catch (RuntimeException | LinkageError ignored) {
         }
         syncTablistSkinTexture(player, state.textureValue(), state.textureSignature());
         refresh(player);
-        if (!applied) {
-            plugin.getLogger().fine("Disguise texture could not be applied directly to " + player.getName() + ".");
-        }
     }
 
     private void restoreOriginalSkin(Player player) {
@@ -1036,14 +1020,6 @@ public final class HeadTexture {
         TablistManager tablist = plugin.getTablistManager();
         if (player != null && tablist != null) {
             tablist.updateSkinTexture(player.getUniqueId(), value, signature);
-        }
-    }
-
-    private boolean applyWithSkinsRestorer(Player player, String value, String signature) {
-        try {
-            return SkinsRestorerHideBridge.apply(player, value, signature);
-        } catch (Throwable ignored) {
-            return false;
         }
     }
 

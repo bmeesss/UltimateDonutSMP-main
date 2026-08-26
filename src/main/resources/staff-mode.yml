@@ -78,8 +78,6 @@ STAFF-MODE:
     EXCLUDE-VANISHED: true
     # Determines whether Exclude Frozen is enabled or disabled. Available options: true, false
     EXCLUDE-FROZEN: false
-    # Determines whether Exclude Duels is enabled or disabled. Available options: true, false
-    EXCLUDE-DUELS: true
     # Determines whether Notify Target is enabled or disabled. Available options: true, false
     NOTIFY-TARGET: false
 ITEMS:

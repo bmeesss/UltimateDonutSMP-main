@@ -155,12 +155,6 @@ public class SafetyCommand implements CommandExecutor {
 
         List<String> defaultPages = java.util.Collections.singletonList(
                 "&0⚠ Watch out!\n\n" +
-                "Fake discords or\n" +
-                "mods can steal your\n" +
-                "account.\n\n" +
-                "The only official\n" +
-                "discord can be found\n" +
-                "using &1/discord&0.\n\n" +
                 "Never download files\n" +
                 "or mods from random\n" +
                 "people."

@@ -7,9 +7,7 @@ depend:
 softdepend:
 - LuckPerms
 - Vault
-- Apollo
 - Multiverse-Core
-- floodgate
 loadbefore:
 - EconomyShopGUI
 - EconomyShopGUI-Premium
@@ -126,31 +124,24 @@ commands:
     usage: /orders [my|collect|reload]
     permission: ultimatedonutsmp.command.orders
     permission-message: "&cYou do not have permission to use /orders."
-  duel:
-    description: Challenge or manage duels
-    usage: /duel [player|accept|deny|claims|reload]
-    permission: ultimatedonutsmp.command.duel
-    permission-message: "&cYou do not have permission to use /duel."
   queue:
-    description: Open or join the duel queue
+    description: Open the queue
     usage: /queue [join|leave]
     permission: ultimatedonutsmp.command.queue
     permission-message: "&cYou do not have permission to use /queue."
   leave:
-    description: Leave a duel queue/match
+    description: Leave a queue
     usage: /leave
     permission: ultimatedonutsmp.command.leave
     permission-message: "&cYou do not have permission to use /leave."
   draw:
-    description: Request or accept a duel draw
+    description: Request or accept a draw
     usage: /draw
     permission: ultimatedonutsmp.command.draw
     permission-message: "&cYou do not have permission to use /draw."
   arena:
-    description: Manage duel arenas
+    description: Manage arenas
     usage: /arena <create|delete|setpos1|setpos2|setreturn|setdisplay|enable|disable|queue|list|reload>
-    aliases:
-    - duelarena
     permission: ultimatedonutsmp.command.arena
     permission-message: "&cYou do not have permission to use /arena."
   auctionhouse:
@@ -335,13 +326,6 @@ commands:
     usage: /stafflist
     permission: ultimatedonutsmp.command.stafflist
     permission-message: "&cYou do not have permission to use /stafflist."
-  staffchat:
-    description: Send a message to staff chat
-    usage: /staffchat <message>
-    aliases:
-    - sc
-    permission: ultimatedonutsmp.command.staffchat
-    permission-message: "&cYou do not have permission to use /staffchat."
   helpop:
     description: Request staff assistance
     usage: /helpop <message>
@@ -558,11 +542,6 @@ commands:
     usage: /settings
     permission: ultimatedonutsmp.command.settings
     permission-message: "&cYou do not have permission to use /settings."
-  discord:
-    description: Get Discord link
-    usage: /discord
-    permission: ultimatedonutsmp.command.discord
-    permission-message: "&cYou do not have permission to use /discord."
   twitter:
     description: Get Twitter/X link
     usage: /twitter
@@ -590,11 +569,6 @@ commands:
     usage: /help
     permission: ultimatedonutsmp.command.help
     permission-message: "&cYou do not have permission to use /help."
-  servers:
-    description: View network server status
-    usage: /servers
-    permission: ultimatedonutsmp.command.servers
-    permission-message: "&cYou do not have permission to use /servers."
   billford:
     description: Open Billford trade
     usage: /billford
@@ -745,7 +719,6 @@ permissions:
       ultimatedonutsmp.command.*: true
       ultimatedonutsmp.admin.shop: true
       ultimatedonutsmp.admin.orders: true
-      ultimatedonutsmp.admin.duels: true
       ultimatedonutsmp.admin.auctionhouse: true
       ultimatedonutsmp.admin.clearlag: true
       ultimatedonutsmp.admin.cuboid: true
@@ -794,17 +767,7 @@ permissions:
       ultimatedonutsmp.staff.mode.randomtp: true
       ultimatedonutsmp.staff.mode.seevanished: true
       ultimatedonutsmp.staff.mode.others: true
-      ultimatedonutsmp.staff.chat.use: true
-      ultimatedonutsmp.staff.chat.mute: true
-      ultimatedonutsmp.staff.chat.unmute: true
-      ultimatedonutsmp.staff.chat.delay: true
-      ultimatedonutsmp.staff.chat.clear: true
-      ultimatedonutsmp.staff.chat.bypass.mute: true
-      ultimatedonutsmp.staff.chat.bypass.delay: true
-      ultimatedonutsmp.staff.chat.bypass.filter: true
-      ultimatedonutsmp.staff.alerts.receive: true
-      ultimatedonutsmp.staff.alerts.bypass-cooldown: true
-      ultimatedonutsmp.staff.teleport: true
+       ultimatedonutsmp.staff.teleport: true
       ultimatedonutsmp.staff.rename: true
       ultimatedonutsmp.staff.alts: true
       ultimatedonutsmp.staff.invsee: true
@@ -813,18 +776,11 @@ permissions:
       ultimatedonutsmp.staff.punishments.view: true
       ultimatedonutsmp.staff.punishments.create: true
       ultimatedonutsmp.staff.punishments.remove: true
-      ultimatedonutsmp.staff.punishments.delete: true
-      ultimatedonutsmp.servers: true
-      ultimatedonutsmp.shards.everywhere: true
+       ultimatedonutsmp.staff.punishments.delete: true
+       ultimatedonutsmp.shards.everywhere: true
       ultimatedonutsmp.admin.ecsee: true
-  ultimatedonutsmp.servers:
-    description: Access the network servers status menu
-    default: false
   ultimatedonutsmp.admin.clearlag:
     description: Manually clear lag
-    default: op
-  ultimatedonutsmp.admin.duels:
-    description: Manage duel system and arenas
     default: op
   ultimatedonutsmp.admin.cuboid:
     description: Manage cuboid regions
@@ -955,13 +911,10 @@ permissions:
       ultimatedonutsmp.staff.mode.randomtp: true
       ultimatedonutsmp.staff.mode.seevanished: true
       ultimatedonutsmp.staff.mode.others: true
-      ultimatedonutsmp.staff.chat.use: true
-      ultimatedonutsmp.staff.teleport: true
+       ultimatedonutsmp.staff.teleport: true
       ultimatedonutsmp.staff.rename: true
       ultimatedonutsmp.staff.alts: true
-      ultimatedonutsmp.staff.alerts.receive: true
-      ultimatedonutsmp.staff.alerts.bypass-cooldown: true
-      ultimatedonutsmp.staff.invsee: true
+       ultimatedonutsmp.staff.invsee: true
       ultimatedonutsmp.staff.profileviewer: true
       ultimatedonutsmp.staff.seehomes: true
       ultimatedonutsmp.staff.punishments.view: true
@@ -985,50 +938,17 @@ permissions:
   ultimatedonutsmp.staff.mode.seevanished:
     description: See staff members who are vanished
     default: op
-  ultimatedonutsmp.staff.chat.use:
-    description: Send and receive network staff chat
-    default: op
-  ultimatedonutsmp.staff.chat.mute:
-    description: Mute the global chat
-    default: op
-  ultimatedonutsmp.staff.chat.unmute:
-    description: Unmute the global chat
-    default: op
-  ultimatedonutsmp.staff.chat.delay:
-    description: Configure global chat delay
-    default: op
-  ultimatedonutsmp.staff.chat.clear:
-    description: Clear the global chat visually
-    default: op
-  ultimatedonutsmp.staff.chat.bypass.mute:
-    description: Bypass the global chat mute
-    default: op
-  ultimatedonutsmp.staff.chat.bypass.delay:
-    description: Bypass the global chat delay
-    default: op
-  ultimatedonutsmp.staff.chat.bypass.filter:
-    description: Bypass global chat filters
-    default: op
   ultimatedonutsmp.helpop:
     description: Use helpop to request staff assistance
     default: true
   ultimatedonutsmp.report:
     description: Report players to staff
     default: true
-  ultimatedonutsmp.staff.alerts.receive:
-    description: Receive staff alerts from helpop and report
-    default: op
-    children:
-      ultimatedonutsmp.staff.helpop.receive: true
-      ultimatedonutsmp.staff.report.receive: true
   ultimatedonutsmp.staff.helpop.receive:
     description: Receive helpop alerts
     default: op
   ultimatedonutsmp.staff.report.receive:
     description: Receive report alerts
-    default: op
-  ultimatedonutsmp.staff.alerts.bypass-cooldown:
-    description: Bypass helpop and report cooldowns
     default: op
   ultimatedonutsmp.staff.teleport:
     description: Access staff teleport commands
@@ -1184,10 +1104,6 @@ permissions:
       ultimatedonutsmp.command.rtp: true
       ultimatedonutsmp.command.shop: true
       ultimatedonutsmp.command.orders: true
-      ultimatedonutsmp.command.duel: true
-      ultimatedonutsmp.command.queue: true
-      ultimatedonutsmp.command.leave: true
-      ultimatedonutsmp.command.draw: true
       ultimatedonutsmp.command.arena: true
       ultimatedonutsmp.command.auctionhouse: true
       ultimatedonutsmp.command.enderchest: true
@@ -1219,7 +1135,6 @@ permissions:
       ultimatedonutsmp.command.gamemode: true
       ultimatedonutsmp.command.staffmode: true
       ultimatedonutsmp.command.stafflist: true
-      ultimatedonutsmp.command.staffchat: true
       ultimatedonutsmp.command.helpop: true
       ultimatedonutsmp.command.report: true
       ultimatedonutsmp.command.rename: true
@@ -1257,13 +1172,11 @@ permissions:
       ultimatedonutsmp.command.phantom: true
       ultimatedonutsmp.command.findplayer: true
       ultimatedonutsmp.command.settings: true
-      ultimatedonutsmp.command.discord: true
       ultimatedonutsmp.command.twitter: true
       ultimatedonutsmp.command.store: true
       ultimatedonutsmp.command.social: true
       ultimatedonutsmp.command.rules: true
       ultimatedonutsmp.command.help: true
-      ultimatedonutsmp.command.servers: true
       ultimatedonutsmp.command.billford: true
       ultimatedonutsmp.command.spawner: true
       ultimatedonutsmp.command.clearlag: true
@@ -1342,18 +1255,6 @@ permissions:
     default: true
   ultimatedonutsmp.command.orders:
     description: Access to /orders command
-    default: true
-  ultimatedonutsmp.command.duel:
-    description: Access to /duel command
-    default: true
-  ultimatedonutsmp.command.queue:
-    description: Access to /queue command
-    default: true
-  ultimatedonutsmp.command.leave:
-    description: Access to /leave command
-    default: true
-  ultimatedonutsmp.command.draw:
-    description: Access to /draw command
     default: true
   ultimatedonutsmp.command.arena:
     description: Access to /arena command
@@ -1450,9 +1351,6 @@ permissions:
     default: op
   ultimatedonutsmp.command.stafflist:
     description: Access to /stafflist command
-    default: op
-  ultimatedonutsmp.command.staffchat:
-    description: Access to /staffchat command
     default: op
   ultimatedonutsmp.command.helpop:
     description: Access to /helpop command
@@ -1590,13 +1488,10 @@ permissions:
   ultimatedonutsmp.command.settings:
     description: Access to /settings command
     default: true
-  ultimatedonutsmp.command.discord:
-    description: Access to /discord command
-    default: true
-  ultimatedonutsmp.command.twitter:
-    description: Access to /twitter command
-    default: true
-  ultimatedonutsmp.command.store:
+   ultimatedonutsmp.command.twitter:
+     description: Access to /twitter command
+     default: true
+   ultimatedonutsmp.command.store:
     description: Access to /store command
     default: true
   ultimatedonutsmp.command.social:
@@ -1608,9 +1503,6 @@ permissions:
   ultimatedonutsmp.command.help:
     description: Access to /help command
     default: true
-  ultimatedonutsmp.command.servers:
-    description: Access to /servers command
-    default: op
   ultimatedonutsmp.command.billford:
     description: Access to /billford command
     default: true

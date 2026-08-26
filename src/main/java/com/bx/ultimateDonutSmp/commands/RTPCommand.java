@@ -18,10 +18,11 @@ public class RTPCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (!plugin.getConfigManager().isCommandEnabled("RTP")) {
             player.sendMessage(ColorUtils.toComponent("&cRTP command is currently disabled."));

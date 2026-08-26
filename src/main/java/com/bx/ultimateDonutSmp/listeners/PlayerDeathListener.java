@@ -49,10 +49,6 @@ public class PlayerDeathListener implements Listener {
             }
         }
 
-        if (plugin.getDuelManager() != null && plugin.getDuelManager().handleDuelDeath(event)) {
-            return;
-        }
-
         plugin.getStaffModeManager().handleDeath(event);
         String deathMsg = buildDeathMessage(event, victim, killer);
 
@@ -224,10 +220,6 @@ public class PlayerDeathListener implements Listener {
             } else if (plugin.getEnderPearlManager() != null) {
                 plugin.getEnderPearlManager().handlePlayerDeath(victim);
             }
-        }
-
-        if (plugin.getDuelManager() != null && plugin.getDuelManager().handleDuelDeath(event)) {
-            return;
         }
 
         plugin.getStaffModeManager().handleDeath(event);

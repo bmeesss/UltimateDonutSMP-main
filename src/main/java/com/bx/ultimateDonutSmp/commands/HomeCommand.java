@@ -19,7 +19,8 @@ public class HomeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
 
         if (plugin.getCombatManager().isInCombat(player.getUniqueId())) {
             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getConfig()
@@ -30,21 +31,11 @@ public class HomeCommand implements CommandExecutor {
         String sub = label.toLowerCase();
 
         if (sub.equals("homes")) {
-            if (plugin.getHomeBedrockManager() != null && plugin.getHomeBedrockManager().isBedrockPlayer(player)) {
-                plugin.getHomeBedrockManager().openMain(player);
-            } else {
-                new HomeMenu(plugin).open(player);
-            }
+            new HomeMenu(plugin).open(player);
             return true;
         }
 
         if (sub.equals("sethome")) {
-            if (plugin.getDuelManager() != null && (plugin.getDuelManager().isInDuel(player.getUniqueId())
-                    || plugin.getDuelManager().isTransitioning(player.getUniqueId())
-                    || plugin.getDuelManager().isLocationInDuelArena(player.getLocation()))) {
-                player.sendMessage(ColorUtils.toComponent("&cYou cannot set a home inside a duel arena or duel world."));
-                return true;
-            }
             String name = args.length > 0 ? args[0] : "home";
             boolean success = plugin.getHomeManager().setHome(player, name);
             if (success) {
@@ -59,11 +50,7 @@ public class HomeCommand implements CommandExecutor {
 
         if (sub.equals("delhome")) {
             if (args.length == 0) {
-                if (plugin.getHomeBedrockManager() != null && plugin.getHomeBedrockManager().isBedrockPlayer(player)) {
-                    plugin.getHomeBedrockManager().openDeleteSelect(player);
-                } else {
-                    player.sendMessage(ColorUtils.toComponent("&cUsage: /delhome <name>"));
-                }
+                player.sendMessage(ColorUtils.toComponent("&cUsage: /delhome <name>"));
                 return true;
             }
             boolean removed = plugin.getHomeManager().deleteHome(player.getUniqueId(), args[0]);
@@ -87,11 +74,7 @@ public class HomeCommand implements CommandExecutor {
         Home home = plugin.getHomeManager().getHome(player.getUniqueId(), homeName);
         if (home == null) {
             if (plugin.getHomeManager().getHomeCount(player.getUniqueId()) == 0) {
-                if (plugin.getHomeBedrockManager() != null && plugin.getHomeBedrockManager().isBedrockPlayer(player)) {
-                    plugin.getHomeBedrockManager().openMain(player);
-                } else {
-                    new HomeMenu(plugin).open(player);
-                }
+                new HomeMenu(plugin).open(player);
             } else {
                 player.sendMessage(ColorUtils.toComponent("&cHome '&e" + homeName + "&c' not found."));
             }

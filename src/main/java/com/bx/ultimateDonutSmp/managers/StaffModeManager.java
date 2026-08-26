@@ -2009,11 +2009,6 @@ public class StaffModeManager {
                 && plugin.getFreezeManager().isFrozen(target.getUniqueId())) {
             return false;
         }
-        if (getConfig().getBoolean("STAFF-MODE.RANDOM-TELEPORT.EXCLUDE-DUELS", true)
-                && (plugin.getDuelManager().isInDuel(target.getUniqueId())
-                || plugin.getDuelManager().isInQueue(target.getUniqueId()))) {
-            return false;
-        }
         return true;
     }
 

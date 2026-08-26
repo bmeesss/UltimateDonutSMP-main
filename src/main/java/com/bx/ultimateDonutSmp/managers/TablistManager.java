@@ -61,7 +61,6 @@ public class TablistManager {
     private final AdventureHeadComponentBridge headComponentBridge;
     private final Set<UUID> refreshedSkinHeads = ConcurrentHashMap.newKeySet();
     private final Set<UUID> pendingSkinHeadTextureRefreshes = ConcurrentHashMap.newKeySet();
-    private final Set<UUID> skinsRestorerSkinHeadTextures = ConcurrentHashMap.newKeySet();
     private final Map<UUID, SkinTexture> skinHeadTextures = new ConcurrentHashMap<>();
     private final Map<UUID, Long> skinHeadTextureRefreshTimes = new ConcurrentHashMap<>();
     private final Map<UUID, Map<String, PermissionOverride>> luckPermsCommandOverrides = new ConcurrentHashMap<>();
@@ -156,7 +155,7 @@ public class TablistManager {
     /**
      * Forces a skin head refresh for the given player, bypassing the once-per-join
      * deduplication guard. This should be used when a permission change or skin
-     * change is detected at runtime (e.g. via LuckPerms or SkinsRestorer events)
+     * change is detected at runtime (e.g. via permission changes)
      * so the tablist updates without requiring a rejoin.
      */
     public void forceRefreshSkinHeads(Player player) {
@@ -178,7 +177,7 @@ public class TablistManager {
 
     /**
      * Invalidates the cached skin texture for the given player so the next
-     * refresh cycle re-fetches the texture from the game profile or SkinsRestorer.
+     * refresh cycle re-fetches the texture from the game profile.
      */
     public void invalidateSkinCache(UUID playerId) {
         removeCachedSkinTexture(playerId);
@@ -189,7 +188,7 @@ public class TablistManager {
 
     /**
      * Updates the cached skin texture for the given player and refreshes their tablist entry.
-     * This is typically called when SkinsRestorer applies a new skin.
+     * This is typically called when a skin change is detected.
      */
     public void updateSkinTexture(UUID playerId, String value, String signature) {
         if (playerId == null) {
@@ -202,7 +201,7 @@ public class TablistManager {
         }
 
         SkinTexture texture = new SkinTexture(value, signature);
-        cacheSkinTexture(playerId, texture, true);
+        cacheSkinTexture(playerId, texture);
         skinHeadTextureRefreshTimes.put(playerId, System.currentTimeMillis());
         refreshedSkinHeads.add(playerId);
 
@@ -224,30 +223,14 @@ public class TablistManager {
             return null;
         }
 
-        SkinTexture cachedSkinsRestorerTexture = cachedSkinsRestorerTexture(player.getUniqueId());
-        if (cachedSkinsRestorerTexture != null && cachedSkinsRestorerTexture.isValid()) {
-            return cachedSkinsRestorerTexture;
-        }
-
-        SkinTexture skinsRestorerTexture = resolveSkinsRestorerCurrentTextureSync(player.getUniqueId(), player.getName());
-        if (skinsRestorerTexture != null && skinsRestorerTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), skinsRestorerTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, skinsRestorerTexture);
-            return skinsRestorerTexture;
-        }
-
-        skinsRestorerTexture = resolveSkinsRestorerStoredTextureSync(player.getUniqueId());
-        if (skinsRestorerTexture != null && skinsRestorerTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), skinsRestorerTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, skinsRestorerTexture);
-            return skinsRestorerTexture;
+        SkinTexture cached = cachedSkinTexture(player.getUniqueId());
+        if (cached != null && cached.isValid()) {
+            return cached;
         }
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
@@ -268,24 +251,16 @@ public class TablistManager {
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
 
         SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture, false);
+            cacheSkinTexture(player.getUniqueId(), profileTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return profileTexture;
-        }
-
-        SkinTexture storedTexture = resolveSkinsRestorerStoredTextureSync(player.getUniqueId());
-        if (storedTexture != null && storedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), storedTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, storedTexture);
-            return storedTexture;
         }
 
         return null;
@@ -298,14 +273,14 @@ public class TablistManager {
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
 
         SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture, false);
+            cacheSkinTexture(player.getUniqueId(), profileTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return profileTexture;
         }
@@ -339,13 +314,8 @@ public class TablistManager {
 
     SkinTexture resolveSkinTextureForFakePlayer(UUID playerId, String playerName) {
         SkinTexture texture = !Bukkit.isPrimaryThread()
-                ? resolveSkinsRestorerTexture(playerId, playerName)
-                : resolveSkinsRestorerCurrentTextureSync(playerId, playerName);
-        if (texture != null && texture.isValid()) {
-            return texture;
-        }
-
-        texture = resolveSkinsRestorerStoredTextureSync(playerId);
+                ? resolveGameProfileSkinTexture(playerId, playerName)
+                : resolveLiveGameProfileSkinTexture(playerId, playerName);
         if (texture != null && texture.isValid()) {
             return texture;
         }
@@ -361,12 +331,6 @@ public class TablistManager {
         return cached != null && cached.isValid() ? cached : null;
     }
 
-    SkinTexture cachedSkinsRestorerTexture(UUID playerId) {
-        if (playerId == null || !skinsRestorerSkinHeadTextures.contains(playerId)) {
-            return null;
-        }
-        return cachedSkinTexture(playerId);
-    }
 
     public void refreshTablistEntry(Player player, boolean forceSkinTextureRefresh) {
         if (player == null || !player.isOnline()) {
@@ -429,19 +393,10 @@ public class TablistManager {
         }
 
         UUID playerId = player.getUniqueId();
-        SkinTexture storedTexture = resolveSkinsRestorerStoredTextureSync(playerId);
-        if (storedTexture != null && storedTexture.isValid()) {
-            boolean changed = cacheAndApplySkinTexture(player, storedTexture, false, true);
-            if (changed) {
-                updateTablistName(player);
-                update(player);
-            }
-            return;
-        }
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            boolean changed = cacheAndApplySkinTexture(player, paperAppliedTexture, false, false);
+            boolean changed = cacheAndApplySkinTexture(player, paperAppliedTexture, false);
             if (changed) {
                 updateTablistName(player);
                 update(player);
@@ -457,7 +412,7 @@ public class TablistManager {
             return;
         }
 
-        boolean changed = cacheAndApplySkinTexture(player, profileTexture, false, false);
+        boolean changed = cacheAndApplySkinTexture(player, profileTexture, false);
         if (changed) {
             updateTablistName(player);
             update(player);
@@ -1060,7 +1015,7 @@ public class TablistManager {
     /**
      * Forces a skin head refresh for the given player, bypassing the once-per-join
      * deduplication guard. This should be used when a permission change or skin
-     * change is detected at runtime (e.g. via LuckPerms or SkinsRestorer events)
+     * change is detected at runtime (e.g. via permission changes)
      * so the tablist updates without requiring a rejoin.
      */
     public void forceRefreshSkinHeads(Player player) {
@@ -1082,7 +1037,7 @@ public class TablistManager {
 
     /**
      * Invalidates the cached skin texture for the given player so the next
-     * refresh cycle re-fetches the texture from the game profile or SkinsRestorer.
+     * refresh cycle re-fetches the texture from the game profile.
      */
     public void invalidateSkinCache(UUID playerId) {
         removeCachedSkinTexture(playerId);
@@ -1093,7 +1048,7 @@ public class TablistManager {
 
     /**
      * Updates the cached skin texture for the given player and refreshes their tablist entry.
-     * This is typically called when SkinsRestorer applies a new skin.
+     * This is typically called when a skin change is detected.
      */
     public void updateSkinTexture(UUID playerId, String value, String signature) {
         if (playerId == null) {
@@ -1106,7 +1061,7 @@ public class TablistManager {
         }
 
         SkinTexture texture = new SkinTexture(value, signature);
-        cacheSkinTexture(playerId, texture, true);
+        cacheSkinTexture(playerId, texture);
         skinHeadTextureRefreshTimes.put(playerId, System.currentTimeMillis());
         refreshedSkinHeads.add(playerId);
 
@@ -1128,30 +1083,14 @@ public class TablistManager {
             return null;
         }
 
-        SkinTexture cachedSkinsRestorerTexture = cachedSkinsRestorerTexture(player.getUniqueId());
-        if (cachedSkinsRestorerTexture != null && cachedSkinsRestorerTexture.isValid()) {
-            return cachedSkinsRestorerTexture;
-        }
-
-        SkinTexture skinsRestorerTexture = resolveSkinsRestorerCurrentTextureSync(player.getUniqueId(), player.getName());
-        if (skinsRestorerTexture != null && skinsRestorerTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), skinsRestorerTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, skinsRestorerTexture);
-            return skinsRestorerTexture;
-        }
-
-        skinsRestorerTexture = resolveSkinsRestorerStoredTextureSync(player.getUniqueId());
-        if (skinsRestorerTexture != null && skinsRestorerTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), skinsRestorerTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, skinsRestorerTexture);
-            return skinsRestorerTexture;
+        SkinTexture cached = cachedSkinTexture(player.getUniqueId());
+        if (cached != null && cached.isValid()) {
+            return cached;
         }
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
@@ -1172,24 +1111,16 @@ public class TablistManager {
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
 
         SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture, false);
+            cacheSkinTexture(player.getUniqueId(), profileTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return profileTexture;
-        }
-
-        SkinTexture storedTexture = resolveSkinsRestorerStoredTextureSync(player.getUniqueId());
-        if (storedTexture != null && storedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), storedTexture, true);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            applySkinTexture(player, storedTexture);
-            return storedTexture;
         }
 
         return null;
@@ -1202,14 +1133,14 @@ public class TablistManager {
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture, false);
+            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return paperAppliedTexture;
         }
 
         SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture, false);
+            cacheSkinTexture(player.getUniqueId(), profileTexture);
             skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
             return profileTexture;
         }
@@ -1243,13 +1174,8 @@ public class TablistManager {
 
     SkinTexture resolveSkinTextureForFakePlayer(UUID playerId, String playerName) {
         SkinTexture texture = !Bukkit.isPrimaryThread()
-                ? resolveSkinsRestorerTexture(playerId, playerName)
-                : resolveSkinsRestorerCurrentTextureSync(playerId, playerName);
-        if (texture != null && texture.isValid()) {
-            return texture;
-        }
-
-        texture = resolveSkinsRestorerStoredTextureSync(playerId);
+                ? resolveGameProfileSkinTexture(playerId, playerName)
+                : resolveLiveGameProfileSkinTexture(playerId, playerName);
         if (texture != null && texture.isValid()) {
             return texture;
         }
@@ -1265,12 +1191,6 @@ public class TablistManager {
         return cached != null && cached.isValid() ? cached : null;
     }
 
-    SkinTexture cachedSkinsRestorerTexture(UUID playerId) {
-        if (playerId == null || !skinsRestorerSkinHeadTextures.contains(playerId)) {
-            return null;
-        }
-        return cachedSkinTexture(playerId);
-    }
 
     public void refreshTablistEntry(Player player, boolean forceSkinTextureRefresh) {
         if (player == null || !player.isOnline()) {
@@ -1333,19 +1253,10 @@ public class TablistManager {
         }
 
         UUID playerId = player.getUniqueId();
-        SkinTexture storedTexture = resolveSkinsRestorerStoredTextureSync(playerId);
-        if (storedTexture != null && storedTexture.isValid()) {
-            boolean changed = cacheAndApplySkinTexture(player, storedTexture, false, true);
-            if (changed) {
-                updateTablistName(player);
-                update(player);
-            }
-            return;
-        }
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            boolean changed = cacheAndApplySkinTexture(player, paperAppliedTexture, false, false);
+            boolean changed = cacheAndApplySkinTexture(player, paperAppliedTexture, false);
             if (changed) {
                 updateTablistName(player);
                 update(player);
@@ -1361,7 +1272,7 @@ public class TablistManager {
             return;
         }
 
-        boolean changed = cacheAndApplySkinTexture(player, profileTexture, false, false);
+        boolean changed = cacheAndApplySkinTexture(player, profileTexture, false);
         if (changed) {
             updateTablistName(player);
             update(player);
@@ -2035,7 +1946,7 @@ public class TablistManager {
                 }
             }
 
-            // Check if we have a cached custom texture (SkinsRestorer) for the target player
+            // Check if we have a cached skin texture for the target player
             SkinTexture skinTexture = targetId != null ? skinHeadTextures.get(targetId) : null;
             if (skinTexture != null && skinTexture.isValid()) {
                 builder.name(targetPlayer != null ? targetPlayer.getName() : source);
@@ -2120,19 +2031,12 @@ public class TablistManager {
 
         SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
         if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheAndApplySkinTexture(player, paperAppliedTexture, force, false);
+            cacheAndApplySkinTexture(player, paperAppliedTexture, force);
             pendingSkinHeadTextureRefreshes.remove(playerId);
             return;
         }
 
-        SkinTexture skinsRestorerTexture = resolveSkinsRestorerStoredTextureSync(playerId);
-        if (skinsRestorerTexture != null && skinsRestorerTexture.isValid()) {
-            cacheAndApplySkinTexture(player, skinsRestorerTexture, force, true);
-            pendingSkinHeadTextureRefreshes.remove(playerId);
-            return;
-        }
 
-        SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
             cacheAndApplySkinTexture(player, profileTexture, force, false);
             pendingSkinHeadTextureRefreshes.remove(playerId);
@@ -2142,10 +2046,6 @@ public class TablistManager {
         String playerName = player.getName();
         plugin.getSpigotScheduler().runAsync(() -> {
             SkinTexture skinTexture = null;
-            try {
-                skinTexture = resolveSkinsRestorerTexture(playerId, playerName);
-            } catch (RuntimeException | LinkageError ignored) {
-            }
 
             SkinTexture resolvedTexture = skinTexture;
             plugin.getSpigotScheduler().runGlobal(() -> finishSkinHeadTextureRefresh(playerId, resolvedTexture, force));
@@ -2174,140 +2074,6 @@ public class TablistManager {
         }
     }
 
-    private SkinTexture resolveSkinsRestorerTexture(UUID playerId, String playerName) {
-        if (Bukkit.isPrimaryThread()) {
-            return null;
-        }
-
-        SkinTexture apiTexture = resolveSkinsRestorerApiTexture(playerId, playerName);
-        if (apiTexture != null && apiTexture.isValid()) {
-            return apiTexture;
-        }
-
-        try {
-            Class<?> providerClass = findSkinsRestorerClass("net.skinsrestorer.api.SkinsRestorerProvider");
-            Object skinsRestorer = invokeStaticNoArg(providerClass, "get");
-            if (skinsRestorer == null) {
-                return null;
-            }
-
-            Object playerStorage = invokeNoArg(skinsRestorer, "getPlayerStorage", "playerStorage");
-            Object skinStorage = invokeNoArg(skinsRestorer, "getSkinStorage", "skinStorage");
-            SkinTexture texture = resolveSkinsRestorerStoredTexture(skinsRestorer, playerStorage, playerId);
-            if (texture != null && texture.isValid()) {
-                return texture;
-            }
-
-            texture = resolveSkinsRestorerPlayerStorageTexture(
-                    playerStorage,
-                    skinStorage,
-                    playerId,
-                    playerName
-            );
-            if (texture != null && texture.isValid()) {
-                return texture;
-            }
-
-            return null;
-        } catch (ReflectiveOperationException | LinkageError ignored) {
-            return null;
-        }
-    }
-
-    private SkinTexture resolveSkinsRestorerStoredTexture(Object skinsRestorer, Object playerStorage, UUID playerId)
-            throws ReflectiveOperationException {
-        if (skinsRestorer == null || playerStorage == null) {
-            return null;
-        }
-
-        SkinTexture texture = null;
-        try {
-            texture = extractSkinTexture(unwrapOptional(invokeCompatible(playerStorage, "getSkinOfPlayer", playerId)));
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-        }
-        if (texture != null && texture.isValid()) {
-            return texture;
-        }
-
-        Object skinId = null;
-        try {
-            skinId = unwrapOptional(invokeCompatible(playerStorage, "getSkinIdOfPlayer", playerId));
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-        }
-        if (skinId == null) {
-            return null;
-        }
-
-        Object skinStorage = invokeNoArg(skinsRestorer, "getSkinStorage", "skinStorage");
-        if (skinStorage == null) {
-            return null;
-        }
-
-        try {
-            texture = extractSkinTexture(unwrapOptional(invokeCompatible(skinStorage, "getSkinDataByIdentifier", skinId)));
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-            texture = null;
-        }
-        if (texture != null && texture.isValid()) {
-            return texture;
-        }
-
-        try {
-            texture = extractSkinTexture(unwrapOptional(invokeCompatible(skinStorage, "findSkinData", String.valueOf(skinId))));
-        } catch (ReflectiveOperationException | RuntimeException ignored) {
-            texture = null;
-        }
-        return texture != null && texture.isValid() ? texture : null;
-    }
-
-    private SkinTexture resolveSkinsRestorerPlayerStorageTexture(
-            Object playerStorage,
-            Object skinStorage,
-            UUID playerId,
-            String playerName
-    )
-            throws ReflectiveOperationException {
-        if (playerStorage == null) {
-            return null;
-        }
-
-        // This can contact Mojang through SkinsRestorer, so callers must keep it off the server thread.
-        List<Object[]> attempts = new java.util.ArrayList<>(java.util.Arrays.asList(
-                new Object[]{playerId,  playerName,  false}, 
-                new Object[]{playerId,  playerName}, 
-                new Object[]{playerId,  playerName,  true}, 
-                new Object[]{playerId,  true}, 
-                new Object[]{playerId}, 
-                new Object[]{playerName,  true}, 
-                new Object[]{playerName}
-        ));
-        for (Object[] args : attempts) {
-            try {
-                Object result = unwrapOptional(invokeCompatible(playerStorage, "getSkinForPlayer", args));
-                SkinTexture texture = extractSkinTexture(result);
-                if (texture != null && texture.isValid()) {
-                    return texture;
-                }
-            } catch (ReflectiveOperationException | RuntimeException ignored) {
-            }
-        }
-
-        if (skinStorage != null) {
-            for (Object[] args : attempts) {
-                try {
-                    Object skinId = unwrapOptional(invokeCompatible(playerStorage, "getSkinIdForPlayer", args));
-                    SkinTexture texture = resolveSkinStorageIdentifierTexture(skinStorage, skinId);
-                    if (texture != null && texture.isValid()) {
-                        return texture;
-                    }
-                } catch (ReflectiveOperationException | RuntimeException ignored) {
-                }
-            }
-        }
-
-        return null;
-    }
-
     private SkinTexture resolveSkinStorageIdentifierTexture(Object skinStorage, Object skinId)
             throws ReflectiveOperationException {
         skinId = unwrapOptional(skinId);
@@ -2328,66 +2094,10 @@ public class TablistManager {
         return texture != null && texture.isValid() ? texture : null;
     }
 
-    private SkinTexture resolveSkinsRestorerStoredTextureSync(UUID playerId) {
-        try {
-            Class<?> providerClass = findSkinsRestorerClass("net.skinsrestorer.api.SkinsRestorerProvider");
-            Object skinsRestorer = invokeStaticNoArg(providerClass, "get");
-            if (skinsRestorer == null) {
-                return null;
-            }
-
-            Object playerStorage = invokeNoArg(skinsRestorer, "getPlayerStorage", "playerStorage");
-            return resolveSkinsRestorerStoredTexture(skinsRestorer, playerStorage, playerId);
-        } catch (Throwable ignored) {
-            return null;
-        }
-    }
-
-    private SkinTexture resolveSkinsRestorerCurrentTextureSync(UUID playerId, String playerName) {
-        if (playerId == null || playerName == null || playerName.isBlank()) {
-            return null;
-        }
-
-        SkinTexture apiTexture = resolveSkinsRestorerApiTexture(playerId, playerName);
-        if (apiTexture != null && apiTexture.isValid()) {
-            return apiTexture;
-        }
-
-        try {
-            Class<?> providerClass = findSkinsRestorerClass("net.skinsrestorer.api.SkinsRestorerProvider");
-            Object skinsRestorer = invokeStaticNoArg(providerClass, "get");
-            if (skinsRestorer == null) {
-                return null;
-            }
-
-            Object playerStorage = invokeNoArg(skinsRestorer, "getPlayerStorage", "playerStorage");
-            Object skinStorage = invokeNoArg(skinsRestorer, "getSkinStorage", "skinStorage");
-            SkinTexture texture = resolveSkinsRestorerPlayerStorageTexture(
-                    playerStorage,
-                    skinStorage,
-                    playerId,
-                    playerName
-            );
-            return texture != null && texture.isValid() ? texture : null;
-        } catch (Throwable ignored) {
-            return null;
-        }
-    }
-
-    private SkinTexture resolveSkinsRestorerApiTexture(UUID playerId, String playerName) {
-        try {
-            SkinTexture texture = SkinsRestorerSkinLookup.resolve(playerId, playerName);
-            return texture != null && texture.isValid() ? texture : null;
-        } catch (Throwable ignored) {
-            return null;
-        }
-    }
-
     private boolean cacheAndApplySkinTexture(
             Player player,
             SkinTexture skinTexture,
-            boolean force,
-            boolean fromSkinsRestorer
+            boolean force
     ) {
         if (player == null || !player.isOnline() || skinTexture == null || !skinTexture.isValid()) {
             return false;
@@ -2395,7 +2105,7 @@ public class TablistManager {
 
         UUID playerId = player.getUniqueId();
         skinHeadTextureRefreshTimes.put(playerId, System.currentTimeMillis());
-        SkinTexture previous = cacheSkinTexture(playerId, skinTexture, fromSkinsRestorer);
+        SkinTexture previous = cacheSkinTexture(playerId, skinTexture);
         boolean applied = applySkinTexture(player, skinTexture);
         boolean changed = force || applied || !skinTexture.equals(previous);
         if (changed) {
@@ -2420,24 +2130,17 @@ public class TablistManager {
         return changed;
     }
 
-    private SkinTexture cacheSkinTexture(UUID playerId, SkinTexture skinTexture, boolean fromSkinsRestorer) {
-        if (playerId == null) {
+    private SkinTexture cacheSkinTexture(UUID playerId, SkinTexture skinTexture) {
+        if (skinTexture == null || !skinTexture.isValid()) {
             return null;
         }
-        SkinTexture previous = skinHeadTextures.put(playerId, skinTexture);
-        if (fromSkinsRestorer) {
-            skinsRestorerSkinHeadTextures.add(playerId);
-        } else {
-            skinsRestorerSkinHeadTextures.remove(playerId);
-        }
-        return previous;
+        return skinHeadTextures.put(playerId, skinTexture);
     }
 
     private SkinTexture removeCachedSkinTexture(UUID playerId) {
         if (playerId == null) {
             return null;
         }
-        skinsRestorerSkinHeadTextures.remove(playerId);
         return skinHeadTextures.remove(playerId);
     }
 
@@ -2945,10 +2648,6 @@ public class TablistManager {
         return method.invoke(null);
     }
 
-    private Class<?> findSkinsRestorerClass(String className) throws ClassNotFoundException {
-        return findOptionalPluginClass("SkinsRestorer", className);
-    }
-
     private Class<?> findOptionalPluginClass(String pluginName, String className) throws ClassNotFoundException {
         ClassNotFoundException missing = null;
         for (ClassLoader loader : optionalPluginClassLoaders(pluginName)) {
@@ -2964,10 +2663,6 @@ public class TablistManager {
         } catch (ClassNotFoundException exception) {
             throw missing == null ? exception : missing;
         }
-    }
-
-    private List<ClassLoader> skinsRestorerClassLoaders() {
-        return optionalPluginClassLoaders("SkinsRestorer");
     }
 
     private List<ClassLoader> optionalPluginClassLoaders(String pluginName) {
@@ -3314,3 +3009,5 @@ public final class PermissionOverride {
     }
 }
 }
+
+

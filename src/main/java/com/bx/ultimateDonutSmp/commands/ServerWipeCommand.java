@@ -90,8 +90,7 @@ public class ServerWipeCommand implements CommandExecutor, TabCompleter {
                 + " &8| &7Ender chests: &f" + database.count("ender_chests")
                 + " &8| &7Bounties: &f" + database.count("bounties"));
         send(sender, "&7Auctions: &f" + database.count("auctions")
-                + " &8| &7Orders: &f" + database.count("orders")
-                + " &8| &7PvP records: &f" + database.count("duels"));
+                + " &8| &7Orders: &f" + database.count("orders"));
         send(sender, "&7Reset-world spawners: &f" + database.count("spawners")
                 + " &8| &7Crate blocks: &f" + database.count("crate_blocks"));
 

@@ -21,14 +21,15 @@ public class BillfordCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         String permission = plugin.getConfigManager().getBillford()
                 .getString("ACCESS.PERMISSION", "");
-        if (!permission.isBlank() && !PermissionUtils.has(player, permission)) {
+        if (!permission.trim().isEmpty() && !PermissionUtils.has(player, permission)) {
             player.sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getMessage(
                             "BILLFORD.NO-PERMISSION",

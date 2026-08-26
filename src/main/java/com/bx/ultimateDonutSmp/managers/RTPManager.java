@@ -3243,7 +3243,6 @@ public final class RTPQueueEntry {
             if (world.getEnvironment() == World.Environment.NORMAL) {
                 String name = world.getName();
                 if (!name.equalsIgnoreCase("afk")
-                        && !name.equalsIgnoreCase("duels")
                         && !name.equalsIgnoreCase("lobby")
                         && !name.equalsIgnoreCase("hub")
                         && !name.equalsIgnoreCase("spawn")
@@ -3255,7 +3254,7 @@ public final class RTPQueueEntry {
         for (World world : Bukkit.getWorlds()) {
             if (world.getEnvironment() == World.Environment.NORMAL) {
                 String name = world.getName();
-                if (!name.equalsIgnoreCase("afk") && !name.equalsIgnoreCase("duels") && !name.equalsIgnoreCase("lobby")) {
+                if (!name.equalsIgnoreCase("afk") && !name.equalsIgnoreCase("lobby")) {
                     return name;
                 }
             }

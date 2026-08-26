@@ -190,24 +190,16 @@ public class PlayerJoinQuitListener implements Listener {
         plugin.getPortalManager().refreshHologramsSoon();
         plugin.getFreezeManager().handleJoin(player);
         plugin.getStaffModeManager().handleJoin(player);
-        plugin.getNetworkStaffChatManager().handleStaffJoin(player);
-        if (plugin.getLunarRichPresenceManager() != null) {
-            plugin.getLunarRichPresenceManager().handleJoin(player);
-        }
 
         // Initialize cuboid-shard countdown so the player cannot receive shards
         // the instant they join – they must wait the full interval first.
         plugin.getShardManager().initCountdown(player.getUniqueId());
         plugin.getRtpZoneManager().clearState(player.getUniqueId());
-        if (plugin.getDuelManager() != null) {
-            plugin.getDuelManager().handleJoin(player);
-        }
         if (player.isInvulnerable()) {
             boolean inGodMode = plugin.getGodModeManager() != null && plugin.getGodModeManager().isInGodMode(player.getUniqueId());
             boolean inStaffMode = plugin.getStaffModeManager() != null && plugin.getStaffModeManager().isInStaffMode(player.getUniqueId());
-            boolean inDuel = plugin.getDuelManager() != null && (plugin.getDuelManager().isTransitioning(player.getUniqueId()) || plugin.getDuelManager().isInDuel(player.getUniqueId()));
 
-            if (!inGodMode && !inStaffMode && !inDuel) {
+            if (!inGodMode && !inStaffMode) {
                 player.setInvulnerable(false);
             }
         }
@@ -349,16 +341,6 @@ public class PlayerJoinQuitListener implements Listener {
         event.setQuitMessage(null);
 
         TitleUtils.cancelPendingReset(player.getUniqueId());
-        plugin.getNetworkStaffChatManager().handleStaffLeave(player);
-        plugin.getNetworkStaffChatManager().clearPlayerState(player.getUniqueId());
-        plugin.getNetworkStaffAlertManager().clearPlayerState(player.getUniqueId());
-        if (plugin.getLunarRichPresenceManager() != null) {
-            plugin.getLunarRichPresenceManager().handleQuit(player);
-        }
-
-        if (plugin.getDuelManager() != null) {
-            plugin.getDuelManager().handleQuit(player);
-        }
 
         // Clear combat tag
         plugin.getCombatManager().clearTag(player.getUniqueId());

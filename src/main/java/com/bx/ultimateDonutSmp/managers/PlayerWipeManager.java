@@ -37,13 +37,12 @@ public class PlayerWipeManager {
             "bounties", 
             "auctions", 
             "orders", 
-            "duels", 
             "friends", 
             "ignores", 
             "logs"
     ));
 
-    private static final Map<String, String> COUNT_LABELS = new java.util.LinkedHashMap(){{ put("stats",  "Stats and balance"); put("homes",  "Homes"); put("team",  "Team membership"); put("ender_chest",  "Ender chest"); put("crate_keys",  "Crate keys"); put("shop_favorites",  "Shop favourites"); put("sell_records",  "Sell records"); put("bounties",  "Bounties"); put("auctions",  "Auction house"); put("orders",  "Orders"); put("duels",  "Duels"); put("friends",  "Friends"); put("ignores",  "Ignores"); put("logs",  "Activity logs"); }};
+    private static final Map<String, String> COUNT_LABELS = new java.util.LinkedHashMap(){{ put("stats",  "Stats and balance"); put("homes",  "Homes"); put("team",  "Team membership"); put("ender_chest",  "Ender chest"); put("crate_keys",  "Crate keys"); put("shop_favorites",  "Shop favourites"); put("sell_records",  "Sell records"); put("bounties",  "Bounties"); put("auctions",  "Auction house"); put("orders",  "Orders"); put("friends",  "Friends"); put("ignores",  "Ignores"); put("logs",  "Activity logs"); }};
 
 public final class Target {
     private final UUID uuid;
@@ -228,7 +227,6 @@ public final class WipeResult {
         plugin.getHomeManager().unloadHomes(playerUuid);
         plugin.getIgnoreManager().unloadPlayer(playerUuid);
         plugin.getBountyManager().removeBounty(playerUuid);
-        plugin.getDuelManager().forgetStats(playerUuid);
         if (plugin.getFriendsManager() != null) {
             plugin.getFriendsManager().unloadPlayer(playerUuid);
         }

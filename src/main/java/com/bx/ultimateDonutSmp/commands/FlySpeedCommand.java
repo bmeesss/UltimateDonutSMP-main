@@ -30,15 +30,8 @@ public class FlySpeedCommand implements CommandExecutor {
             return true;
         }
 
-        // Permission check
         if (sender instanceof Player) {
-            Player player = (Player) args.length == 0 || args.length > 2) {
-            sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <1-10> [player]"));
-            return true;
-        }
-
-        // Permission check
-        if (sender;
+            Player player = (Player) sender;
             String playerFlyPerm = plugin.getConfigManager().getConfig()
                     .getString("FLY-SYSTEM.PLAYER-FLY-PERMISSION", "ultimatedonutsmp.player.fly");
             boolean hasPerm = PermissionUtils.has(player, PERMISSION)
@@ -61,11 +54,11 @@ public class FlySpeedCommand implements CommandExecutor {
         Player target = null;
 
         if (args.length == 1) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <1-10> <player>"));
                 return true;
             }
-            target = player;
+            target = (Player) sender;
             parsedSpeed = parseSpeed(args[0]);
         } else { // args.length == 2
             // Try args[0] as speed, args[1] as player
@@ -89,15 +82,18 @@ public class FlySpeedCommand implements CommandExecutor {
                 return true;
             }
             // Check permissions for setting others' flyspeed
-            if (sender instanceof Player player && !player.getUniqueId().equals(target.getUniqueId())) {
-                boolean isStaff = PermissionUtils.has(player, STAFF_PERMISSION)
-                        || PermissionUtils.has(player, FLY_STAFF_PERMISSION)
-                        || PermissionUtils.has(player, "ultimatedonutsmp.command.flyspeed.others");
-                if (!isStaff) {
-                    player.sendMessage(ColorUtils.toComponent(
-                            plugin.getConfigManager().getMessageOrDefault("STAFF.NO_PERMISSION_OTHERS", "&cYou do not have permission.")
-                    ));
-                    return true;
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (!player.getUniqueId().equals(target.getUniqueId())) {
+                    boolean isStaff = PermissionUtils.has(player, STAFF_PERMISSION)
+                            || PermissionUtils.has(player, FLY_STAFF_PERMISSION)
+                            || PermissionUtils.has(player, "ultimatedonutsmp.command.flyspeed.others");
+                    if (!isStaff) {
+                        player.sendMessage(ColorUtils.toComponent(
+                                plugin.getConfigManager().getMessageOrDefault("STAFF.NO_PERMISSION_OTHERS", "&cYou do not have permission.")
+                        ));
+                        return true;
+                    }
                 }
             }
         }
@@ -119,10 +115,17 @@ public class FlySpeedCommand implements CommandExecutor {
         String setMsg = plugin.getConfigManager().getMessageOrDefault("FLYSPEED.SET", "&aFly speed set to &f{speed}&a.", "{speed}", speedStr, "%speed%", speedStr);
         target.sendMessage(ColorUtils.toComponent(setMsg, target));
 
-        if (!(sender instanceof Player player) || !player.getUniqueId().equals(target.getUniqueId())) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent(
                     "&7Fly speed for &e" + target.getName() + " &7set to &a" + speedStr + "&7."
             ));
+        } else {
+            Player player = (Player) sender;
+            if (!player.getUniqueId().equals(target.getUniqueId())) {
+                sender.sendMessage(ColorUtils.toComponent(
+                        "&7Fly speed for &e" + target.getName() + " &7set to &a" + speedStr + "&7."
+                ));
+            }
         }
 
         return true;

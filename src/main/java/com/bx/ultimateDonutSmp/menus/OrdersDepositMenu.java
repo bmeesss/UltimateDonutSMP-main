@@ -78,10 +78,11 @@ public class OrdersDepositMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             event.setCancelled(true);
             return;
         }
+        Player player = (Player) event.getWhoClicked();
         int rawSlot = event.getRawSlot();
         if (rawSlot == confirmSlot()) {
             event.setCancelled(true);
@@ -169,7 +170,18 @@ public class OrdersDepositMenu extends BaseMenu {
     }
 
     private String resolveFailure(String failureCode) {
-        return switch (failureCode == null ? "" : failureCode) {        case "OWN_ORDER": OrdersMenuSupport.text(plugin, "ORDERS.CANNOT_DELIVER_OWN", "&cYou cannot deliver to your own order.")            break;        case "NO_MATCHING_ITEMS": OrdersMenuSupport.text(plugin, "ORDERS.NO_MATCHING_ITEMS", "&cNo matching items were deposited.")            break;        case "ORDER_FULL": OrdersMenuSupport.text(plugin, "ORDERS.ORDER_FULL", "&cThat order is already full.")            break;        case "PAYOUT_ERROR": OrdersMenuSupport.text(plugin, "ORDERS.DELIVERY_FAILED_ECONOMY", "&cThe order escrow could not cover this delivery.")            break;        default: OrdersMenuSupport.text(plugin, "ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.")            break;
-        };
+        String code = failureCode == null ? "" : failureCode;
+        switch (code) {
+            case "OWN_ORDER":
+                return OrdersMenuSupport.text(plugin, "ORDERS.CANNOT_DELIVER_OWN", "&cYou cannot deliver to your own order.");
+            case "NO_MATCHING_ITEMS":
+                return OrdersMenuSupport.text(plugin, "ORDERS.NO_MATCHING_ITEMS", "&cNo matching items were deposited.");
+            case "ORDER_FULL":
+                return OrdersMenuSupport.text(plugin, "ORDERS.ORDER_FULL", "&cThat order is already full.");
+            case "PAYOUT_ERROR":
+                return OrdersMenuSupport.text(plugin, "ORDERS.DELIVERY_FAILED_ECONOMY", "&cThe order escrow could not cover this delivery.");
+            default:
+                return OrdersMenuSupport.text(plugin, "ORDERS.ORDER_NOT_ACTIVE", "&cThat order is no longer active.");
+        }
     }
 }

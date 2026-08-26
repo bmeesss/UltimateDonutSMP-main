@@ -32,10 +32,11 @@ public class SeeHomesCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (!canSeeHomes(player)) {
             player.sendMessage(ColorUtils.toComponent("&cYou do not have permission to view other players' homes."));

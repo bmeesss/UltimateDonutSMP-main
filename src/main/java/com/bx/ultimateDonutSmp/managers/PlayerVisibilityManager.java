@@ -14,7 +14,6 @@ public final class PlayerVisibilityManager {
 
     public enum Reason {
         PLAYER_SETTING,
-        DUEL,
         STAFF_VANISH
     }
 

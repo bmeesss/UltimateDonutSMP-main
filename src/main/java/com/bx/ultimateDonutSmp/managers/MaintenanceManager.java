@@ -19,8 +19,6 @@ import java.util.logging.Level;
 
 public class MaintenanceManager {
 
-    private static final String REDIS_MAINTENANCE_CHANNEL = "ultimatedonutsmp:maintenance";
-
     private final UltimateDonutSmp plugin;
     private final File stateFile;
     private boolean maintenanceActive;
@@ -71,15 +69,15 @@ public class MaintenanceManager {
         if (customLobbyServer != null && !customLobbyServer.isBlank()) {
             return customLobbyServer;
         }
-        return plugin.getConfigManager().getNetwork().getString("MAINTENANCE.LOBBY_SERVER", "lobby");
+        return "lobby";
     }
 
     public boolean isUseProxy() {
-        return plugin.getConfigManager().getNetwork().getBoolean("MAINTENANCE.USE_PROXY", true);
+        return false;
     }
 
     public String getLobbyWorld() {
-        return plugin.getConfigManager().getNetwork().getString("MAINTENANCE.LOBBY_WORLD", "WORLD");
+        return "WORLD";
     }
 
     public void setLobbyServer(String lobbyServer) {
@@ -87,28 +85,15 @@ public class MaintenanceManager {
         save();
     }
 
-    public void initializeRedisListener() {
-        if (plugin.getRedisManager() != null && plugin.getRedisManager().isEnabled()) {
-            plugin.getRedisManager().subscribe(REDIS_MAINTENANCE_CHANNEL, this::handleIncomingRedisPayload);
-        }
-    }
-
-    public void broadcastOnline() {
-        if (plugin.getRedisManager() != null && plugin.getRedisManager().isConnected()) {
-            String serverId = plugin.getConfigManager().getNetwork().getString("NETWORK.LOCAL_SERVER_ID", "local");
-            plugin.getRedisManager().publish(REDIS_MAINTENANCE_CHANNEL, "online:" + serverId);
-        }
-    }
-
     public void startMaintenance() {
         setMaintenanceActive(true);
         save();
 
-        FileConfiguration config = plugin.getConfigManager().getNetwork();
+        FileConfiguration config = plugin.getConfigManager().getConfig();
         String bypassPerm = config.getString("MAINTENANCE.BYPASS_PERMISSION", "ULTIMATEDONUTSMP.ADMIN.MAINTENANCE.BYPASS");
         String enteringMessage = config.getString("MAINTENANCE.MESSAGES.ENTERING", "&d[Maintenance] &7server is entering maintenance. Moving you to the lobby...");
         String lobby = getLobbyServer();
-        String localServerId = config.getString("NETWORK.LOCAL_SERVER_ID", "local");
+        String localServerId = "local";
         boolean useProxy = isUseProxy();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -166,7 +151,6 @@ public class MaintenanceManager {
     public void stopMaintenance() {
         setMaintenanceActive(false);
         save();
-        broadcastOnline();
     }
 
     public void sendToLobby(Player player, String lobby) {
@@ -185,65 +169,4 @@ public class MaintenanceManager {
         }
     }
 
-    private void handleIncomingRedisPayload(String payload) {
-        if (payload == null || !payload.startsWith("online:")) {
-            return;
-        }
-
-        String targetServerId = payload.substring(7);
-        String localServerId = plugin.getConfigManager().getNetwork().getString("NETWORK.LOCAL_SERVER_ID", "local");
-        if (localServerId.equalsIgnoreCase(targetServerId)) {
-            return; // We are the server that just came online
-        }
-
-        // Retrieve players who have saved locations for that target server
-        List<UUID> playerUuids = plugin.getDatabaseManager().getMaintenancePlayers(targetServerId);
-        if (playerUuids.isEmpty()) {
-            return;
-        }
-
-        for (UUID uuid : playerUuids) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null && player.isOnline()) {
-                // Reconnect sequence
-                startReconnectSequence(player, targetServerId);
-            }
-        }
-    }
-
-    private void startReconnectSequence(Player player, String targetServerId) {
-        FileConfiguration config = plugin.getConfigManager().getNetwork();
-        int delaySeconds = config.getInt("MAINTENANCE.RECONNECT_DELAY_SECONDS", 5);
-        if (delaySeconds <= 0) {
-            sendToLobby(player, targetServerId);
-            return;
-        }
-
-        String titleMsg = config.getString("MAINTENANCE.MESSAGES.RECONNECTING_TITLE", "&a&lServer online");
-        String subtitleMsg = config.getString("MAINTENANCE.MESSAGES.RECONNECTING_SUBTITLE", "&7Sending you back in %seconds% seconds...");
-
-        final int[] countdown = {delaySeconds};
-        final org.bukkit.scheduler.BukkitTask[] taskRef = new org.bukkit.scheduler.BukkitTask[1];
-        taskRef[0] = plugin.getSpigotScheduler().runEntityTimer(player, () -> {
-            if (!player.isOnline()) {
-                if (taskRef[0] != null) {
-                    taskRef[0].cancel();
-                }
-                return;
-            }
-
-            if (countdown[0] <= 0) {
-                sendToLobby(player, targetServerId);
-                if (taskRef[0] != null) {
-                    taskRef[0].cancel();
-                }
-                return;
-            }
-
-            String subtitle = subtitleMsg.replace("%seconds%", String.valueOf(countdown[0]));
-            TitleUtils.sendTitle(player, titleMsg, subtitle, 0, 25, 0);
-
-            countdown[0]--;
-        }, 0L, 20L);
-    }
 }

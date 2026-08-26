@@ -76,14 +76,6 @@ public class RTPZoneManager {
             return;
         }
 
-        if (plugin.getDuelManager() != null) {
-            UUID uuid = player.getUniqueId();
-            if (plugin.getDuelManager().isInDuel(uuid) || plugin.getDuelManager().isTransitioning(uuid)) {
-                clearState(player);
-                return;
-            }
-        }
-
         if (!enabled || cuboidName == null || cuboidName.isBlank()) {
             clearState(player);
             return;

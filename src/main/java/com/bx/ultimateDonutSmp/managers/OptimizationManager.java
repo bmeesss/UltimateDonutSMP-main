@@ -41,8 +41,7 @@ public class OptimizationManager {
 
     public enum OptimizedTask {
         SCOREBOARD("SCOREBOARD", "Scoreboard"),
-        TABLIST("TABLIST", "Tablist"),
-        LUNAR_TEAMMATES("LUNAR-TEAMMATES", "lunar team view");
+        TABLIST("TABLIST", "Tablist");
 
         private final String configKey;
         private final String displayName;

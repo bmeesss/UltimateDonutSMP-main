@@ -125,7 +125,7 @@ public class PurchaseShopMenu extends BaseMenu {
         }
 
         String priceLine = getCurrencyPreviewLore();
-        if (!priceLine.isBlank()) {
+        if (!priceLine.trim().isEmpty()) {
             lore.add(replaceCommonPlaceholders(priceLine));
         }
         lore.add("&7Quantity: &f" + quantity);
@@ -276,24 +276,42 @@ public class PurchaseShopMenu extends BaseMenu {
     }
 
     private String resolveErrorMessage(ShopManager.PurchaseResult result) {
-        return switch (result.reason()) {        case NO_MONEY: getMenus().getString(
-                    "PURCHASE-SHOP-MENU.MESSAGES.ERROR.NO_MONEY",
-                    "&cYou don't have enough "
-                            + plugin.getCurrencyManager().plural(CurrencyManager.CurrencyType.MONEY)
-                            + "."
-            )            break;        case NO_SHARDS: getMenus().getString(
-                    "PURCHASE-SHOP-MENU.MESSAGES.ERROR.NO_SHARDS",
-                    "&cYou don't have enough "
-                            + plugin.getCurrencyManager().plural(CurrencyManager.CurrencyType.SHARDS)
-                            + "."
-            )            break;        case INVENTORY_FULL: getMenus().getString(
-                    "PURCHASE-SHOP-MENU.MESSAGES.ERROR.FULL_INVENTORY",
-                    "&cYour inventory is full."
-            )            break;        case NO_PERMISSION: "&cYou do not have permission to buy this item."; break;        case INVALID_QUANTITY: "&cThe selected quantity is not allowed for this item."; break;        case INVALID_ITEM: "&cThis item cannot be purchased right now."; break;        case NO_PLAYER_DATA: "&cYour player data could not be loaded. Try again."; break;        case REWARD_FAILED: getMenus().getString(
-                    "PURCHASE-SHOP-MENU.MESSAGES.ERROR.REWARD_FAILED",
-                    "&cPurchase failed because the reward could not be delivered."
-            )            break;
-        };
+        switch (result.reason()) {
+            case NO_MONEY:
+                return getMenus().getString(
+                        "PURCHASE-SHOP-MENU.MESSAGES.ERROR.NO_MONEY",
+                        "&cYou don't have enough "
+                                + plugin.getCurrencyManager().plural(CurrencyManager.CurrencyType.MONEY)
+                                + "."
+                );
+            case NO_SHARDS:
+                return getMenus().getString(
+                        "PURCHASE-SHOP-MENU.MESSAGES.ERROR.NO_SHARDS",
+                        "&cYou don't have enough "
+                                + plugin.getCurrencyManager().plural(CurrencyManager.CurrencyType.SHARDS)
+                                + "."
+                );
+            case INVENTORY_FULL:
+                return getMenus().getString(
+                        "PURCHASE-SHOP-MENU.MESSAGES.ERROR.FULL_INVENTORY",
+                        "&cYour inventory is full."
+                );
+            case NO_PERMISSION:
+                return "&cYou do not have permission to buy this item.";
+            case INVALID_QUANTITY:
+                return "&cThe selected quantity is not allowed for this item.";
+            case INVALID_ITEM:
+                return "&cThis item cannot be purchased right now.";
+            case NO_PLAYER_DATA:
+                return "&cYour player data could not be loaded. Try again.";
+            case REWARD_FAILED:
+                return getMenus().getString(
+                        "PURCHASE-SHOP-MENU.MESSAGES.ERROR.REWARD_FAILED",
+                        "&cPurchase failed because the reward could not be delivered."
+                );
+            default:
+                return "&cPurchase failed.";
+        }
     }
 
     private String getCurrencyPreviewLore() {
@@ -382,7 +400,7 @@ public class PurchaseShopMenu extends BaseMenu {
     }
 
     private String resolveItemName() {
-        if (item.displayName() != null && !item.displayName().isBlank()) {
+        if (item.displayName() != null && !item.displayName().trim().isEmpty()) {
             return ColorUtils.strip(item.displayName());
         }
         return plugin.getWorthManager().prettifyMaterial(item.material());
@@ -394,7 +412,7 @@ public class PurchaseShopMenu extends BaseMenu {
         }
 
         String singleLine = getMenus().getString(path);
-        if (singleLine == null || singleLine.isBlank()) {
+        if (singleLine == null || singleLine.trim().isEmpty()) {
             return java.util.Collections.emptyList();
         }
         return java.util.Collections.singletonList(singleLine);

@@ -29,13 +29,13 @@ public final class PlayerSettingsMenu extends BaseMenu {
 
     private static final Set<String> VALID_SETTINGS = new java.util.LinkedHashSet<>(java.util.Arrays.asList(
             "PUBLIC_CHAT",  "PRIVATE_MESSAGES",  "SERVER_BROADCASTS",  "TEAM_CHAT_VISIBILITY", 
-            "LUNAR_TEAMMATES",  "TPA_CONFIRM_MENUS",  "QUICK_AUCTION_PURCHASE",  "DESTROY_PEARL_ON_DEATH", 
+            "TPA_CONFIRM_MENUS",  "QUICK_AUCTION_PURCHASE",  "DESTROY_PEARL_ON_DEATH", 
             "PAY_CONFIRM_MENUS",  "AUTO_CONFIRM_TPAS",  "HOTBAR_MESSAGES",  "NOTIFICATION_SOUNDS", 
             "FOLLOW_ALERT_SETTINGS",  "DISPLAY_DONUT_PLUS",  "CHAINMAIL_ON_RESPAWN",  "EXPLOSION_PARTICLES", 
             "EXPLOSION_SOUNDS",  "TELEPORT_ALERTS",  "FAST_CRYSTALS",  "RANDOMIZED_COORDS", 
             "TPA_REQUESTS",  "TPA_HERE_REQUESTS",  "PAYMENTS",  "WORTH_DISPLAY",  "MONEY_NAMETAGS", 
             "JOIN_LEAVE_MESSAGES",  "PAY_ALERTS",  "ADVANCEMENT_MESSAGES",  "AUCTION_NOTIFICATIONS", 
-            "AMETHYST_BREAK_MESSAGES",  "DUEL_REQUESTS",  "DEATH_MESSAGES",  "KEY_ALL_NOTIFICATIONS", 
+            "AMETHYST_BREAK_MESSAGES",  "DEATH_MESSAGES",  "KEY_ALL_NOTIFICATIONS", 
             "QUICK_AUCTION_SELL",  "ORDER_NOTIFICATIONS",  "DISABLE_MOB_SPAWN",  "DISABLE_PHANTOM_SPAWN", 
             "NIGHT_VISION",  "BOUNTY_ALERTS"
     ));
@@ -180,8 +180,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
                         break;        }        case "NOTIFICATION_SOUNDS": toggle(player, "Notification Sounds",
                     !data.isNotificationSoundsEnabled(), data::setNotificationSoundsEnabled)            break;        case "RTP_COORDINATES": toggle(player, "RTP Coordinates",
                     !data.isRtpCoordinatesEnabled(), data::setRtpCoordinatesEnabled)            break;        case "ORDER_NOTIFICATIONS": toggle(player, "Order Notifications",
-                    !data.isOrderNotificationsEnabled(), data::setOrderNotificationsEnabled)            break;        case "DUEL_REQUESTS": toggle(player, "Duel Requests",
-                    !data.isDuelRequestsEnabled(), data::setDuelRequestsEnabled)            break;        case "TPA_REQUESTS": {
+                    !data.isOrderNotificationsEnabled(), data::setOrderNotificationsEnabled)            break;        case "TPA_REQUESTS": {
 
                             data.setTpaRequestsChoice(nextThreeChoice(data.getTpaRequestsChoice()));
                             sendChoiceMessage(player, "TPA Requests", formatThreeChoice(data.getTpaRequestsChoice()));
@@ -205,14 +204,12 @@ public final class PlayerSettingsMenu extends BaseMenu {
                             data.setMoneyNametagsEnabled(!data.isMoneyNametagsEnabled());
                             plugin.getMoneyNametagManager().refreshViewer(player);
                             sendToggleMessage(player, "Money Nametags", data.isMoneyNametagsEnabled());
-                        break;        }        case "DUEL_MUSIC": toggle(player, "Duel Music",
-                    !data.isDuelMusicEnabled(), data::setDuelMusicEnabled)            break;        case "QUIET_SPAWN": toggle(player, "Quiet Spawn Teleportation",
+                         break;        }        case "QUIET_SPAWN": toggle(player, "Quiet Spawn Teleportation",
                     !data.isQuietSpawnEnabled(), data::setQuietSpawnEnabled)            break;        case "CLEAR_ENTITIES_MESSAGES": toggle(player, "Clear Entities Messages",
                     !data.isClearEntitiesMessagesEnabled(), data::setClearEntitiesMessagesEnabled)            break;        case "AMETHYST_BREAK_MESSAGES": toggle(player, "Amethyst Break Messages",
                     !data.isAmethystBreakMessagesEnabled(), data::setAmethystBreakMessagesEnabled)            break;        case "KEY_ALL_NOTIFICATIONS": toggle(player, "Key-All Notifications",
                     !data.isKeyAllNotificationsEnabled(), data::setKeyAllNotificationsEnabled)            break;        case "TPA_CONFIRM_MENUS": toggle(player, "TPA Confirmation Menus",
-                    !data.isTpaConfirmMenuEnabled(), data::setTpaConfirmMenuEnabled)            break;        case "LUNAR_TEAMMATES": toggle(player, "Lunar Teammates",
-                    !data.isLunarTeammatesEnabled(), data::setLunarTeammatesEnabled)            break;        case "TPA_HERE_REQUESTS": {
+                     !data.isTpaConfirmMenuEnabled(), data::setTpaConfirmMenuEnabled)            break;        case "TPA_HERE_REQUESTS": {
 
                             data.setTpaHereRequestsChoice(nextThreeChoice(data.getTpaHereRequestsChoice()));
                             sendChoiceMessage(player, "TPA Here Requests", formatThreeChoice(data.getTpaHereRequestsChoice()));
@@ -349,7 +346,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
                                 }
                             }
                             state(disabled);
-                        break;        }        case "HIDE_ALL_PLAYERS": state(data.isHideAllPlayersEnabled())            break;        case "SCOREBOARD_VISIBILITY": state(data.isScoreboardVisible())            break;        case "AUTO_CONFIRM_TPAS": state(data.isTpauto() && data.isAutoTpaHereEnabled())            break;        case "NOTIFICATION_SOUNDS": state(data.isNotificationSoundsEnabled())            break;        case "RTP_COORDINATES": state(data.isRtpCoordinatesEnabled())            break;        case "ORDER_NOTIFICATIONS": state(data.isOrderNotificationsEnabled())            break;        case "DUEL_REQUESTS": state(data.isDuelRequestsEnabled())            break;        case "TPA_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaRequestsChoice()), true)            break;        case "TEAM_INVITES": state(data.isTeamInvitesEnabled())            break;        case "PAYMENTS": new ButtonState(formatThreeChoice(data.getPaymentsChoice()), true)            break;        case "TEAM_CHAT_VISIBILITY": state(data.isTeamChatVisible())            break;        case "WORTH_DISPLAY": state(data.isWorthDisplayEnabled())            break;        case "MONEY_NAMETAGS": state(data.isMoneyNametagsEnabled())            break;        case "DUEL_MUSIC": state(data.isDuelMusicEnabled())            break;        case "QUIET_SPAWN": state(data.isQuietSpawnEnabled())            break;        case "CLEAR_ENTITIES_MESSAGES": state(data.isClearEntitiesMessagesEnabled())            break;        case "AMETHYST_BREAK_MESSAGES": state(data.isAmethystBreakMessagesEnabled())            break;        case "KEY_ALL_NOTIFICATIONS": state(data.isKeyAllNotificationsEnabled())            break;        case "TPA_CONFIRM_MENUS": state(data.isTpaConfirmMenuEnabled())            break;        case "LUNAR_TEAMMATES": state(data.isLunarTeammatesEnabled())            break;        case "TPA_HERE_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaHereRequestsChoice()), true)            break;        case "DISABLE_PHANTOM_SPAWN": {
+                        break;        }        case "HIDE_ALL_PLAYERS": state(data.isHideAllPlayersEnabled())            break;        case "SCOREBOARD_VISIBILITY": state(data.isScoreboardVisible())            break;        case "AUTO_CONFIRM_TPAS": state(data.isTpauto() && data.isAutoTpaHereEnabled())            break;        case "NOTIFICATION_SOUNDS": state(data.isNotificationSoundsEnabled())            break;        case "RTP_COORDINATES": state(data.isRtpCoordinatesEnabled())            break;        case "ORDER_NOTIFICATIONS": state(data.isOrderNotificationsEnabled())            break;        case "TPA_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaRequestsChoice()), true)            break;        case "TEAM_INVITES": state(data.isTeamInvitesEnabled())            break;        case "PAYMENTS": new ButtonState(formatThreeChoice(data.getPaymentsChoice()), true)            break;        case "TEAM_CHAT_VISIBILITY": state(data.isTeamChatVisible())            break;        case "WORTH_DISPLAY": state(data.isWorthDisplayEnabled())                                     break;        case "MONEY_NAMETAGS": state(data.isMoneyNametagsEnabled())            break;        case "QUIET_SPAWN": state(data.isQuietSpawnEnabled())            break;        case "CLEAR_ENTITIES_MESSAGES": state(data.isClearEntitiesMessagesEnabled())            break;        case "AMETHYST_BREAK_MESSAGES": state(data.isAmethystBreakMessagesEnabled())            break;        case "KEY_ALL_NOTIFICATIONS": state(data.isKeyAllNotificationsEnabled())            break;        case "TPA_CONFIRM_MENUS":                     state(data.isTpaConfirmMenuEnabled())            break;        case "TPA_HERE_REQUESTS": new ButtonState(formatThreeChoice(data.getTpaHereRequestsChoice()), true)            break;        case "DISABLE_PHANTOM_SPAWN": {
 
                             boolean disabled = !data.isPhantomEnabled();
                             if (disabled && data.getPhantomDisabledUntil() > 0) {
@@ -543,8 +540,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
         if (!VALID_SETTINGS.contains(key)) {
             return false;
         }
-        return !"DUEL_REQUESTS".equals(key)
-                || (plugin.getDuelManager() != null && plugin.getDuelManager().isEnabled());
+        return !"TPA_REQUESTS".equals(key)
     }
 
     private void rebuildIfOpen(Player player) {

@@ -29,10 +29,11 @@ public class ShardsCommand implements CommandExecutor {
             return handleEverywhere(sender, label, args);
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (args.length == 0) {
             PlayerData data = plugin.getPlayerDataManager().get(player);
@@ -70,52 +71,7 @@ public class ShardsCommand implements CommandExecutor {
         if (args.length >= 3) {
             target = Bukkit.getPlayerExact(args[2]);
         } else if (sender instanceof Player) {
-            Player player = (Player) args.length > 0 && args[0].equalsIgnoreCase("everywhere")) {
-            return handleEverywhere(sender, label, args);
-        }
-
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage("Player only.");
-            return true;
-        }
-
-        if (args.length == 0) {
-            PlayerData data = plugin.getPlayerDataManager().get(player);
-            if (data == null) return true;
-            String msg = plugin.getConfigManager().getMessage("BALANCE.YOUR-SHARDS",
-                    "{amount}", String.valueOf(data.getShards()),
-                    "{shards}", plugin.getCurrencyManager().formatShards(data.getShards()));
-            player.sendMessage(ColorUtils.toComponent(msg));
-        } else {
-            OfflinePlayer target = Bukkit.getOfflinePlayer(args[0]);
-            PlayerData data = plugin.getPlayerDataManager().get(target.getUniqueId());
-            if (data == null) data = plugin.getDatabaseManager().loadPlayer(target.getUniqueId());
-            if (data == null) { player.sendMessage(ColorUtils.toComponent("&cPlayer not found.")); return true; }
-            String msg = plugin.getConfigManager().getMessage("BALANCE.OTHER-SHARDS",
-                    "{player}", target.getName() != null ? target.getName() : args[0],
-                    "{amount}", String.valueOf(data.getShards()),
-                    "{shards}", plugin.getCurrencyManager().formatShards(data.getShards()));
-            player.sendMessage(ColorUtils.toComponent(msg));
-        }
-        return true;
-    }
-
-    private boolean handleEverywhere(CommandSender sender, String label, String[] args) {
-        if (!PermissionUtils.has(sender, ADMIN_PERMISSION)) {
-            sender.sendMessage(ColorUtils.toComponent("&cYou do not have permission to inspect shards everywhere."));
-            return true;
-        }
-
-        if (args.length < 2 || (!args[1].equalsIgnoreCase("status") && !args[1].equalsIgnoreCase("debug"))) {
-            sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " everywhere <status|debug> [player]"));
-            return true;
-        }
-
-        Player target;
-        if (args.length >= 3) {
-            target = Bukkit.getPlayerExact(args[2]);
-        } else if (sender;
-            target = player;
+            target = (Player) sender;
         } else {
             sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " everywhere <status|debug> <player>"));
             return true;
@@ -190,7 +146,21 @@ public class ShardsCommand implements CommandExecutor {
     }
 
     private String formatEligibility(ShardManager.EverywhereEligibilityResult result) {
-        return switch (result) {        case ELIGIBLE: "eligible"; break;        case DISABLED: "disabled"; break;        case NO_PERMISSION: "no permission"; break;        case EXCLUDED_WORLD: "excluded world"; break;        case AFK: "afk"; break;        case NO_RECENT_MOVEMENT: "no recent movement"; break;        case IN_SHARD_CUBOID: "in shard cuboid"; break;
-        };
+        if (result == ShardManager.EverywhereEligibilityResult.ELIGIBLE) {
+            return "eligible";
+        } else if (result == ShardManager.EverywhereEligibilityResult.DISABLED) {
+            return "disabled";
+        } else if (result == ShardManager.EverywhereEligibilityResult.NO_PERMISSION) {
+            return "no permission";
+        } else if (result == ShardManager.EverywhereEligibilityResult.EXCLUDED_WORLD) {
+            return "excluded world";
+        } else if (result == ShardManager.EverywhereEligibilityResult.AFK) {
+            return "afk";
+        } else if (result == ShardManager.EverywhereEligibilityResult.NO_RECENT_MOVEMENT) {
+            return "no recent movement";
+        } else if (result == ShardManager.EverywhereEligibilityResult.IN_SHARD_CUBOID) {
+            return "in shard cuboid";
+        }
+        return result.name();
     }
 }

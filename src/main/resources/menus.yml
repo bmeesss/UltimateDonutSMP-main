@@ -830,13 +830,6 @@ SETTINGS-MENU:
       LORE:
       - '&7Show message when amethyst cluster breaks'
       - '&fCurrently: {status}'
-    DUEL_REQUESTS:
-      DISPLAY-NAME: '&#6BF18DDuel Requests'
-      MATERIAL: IRON_SWORD
-      SLOT: 39
-      LORE:
-      - '&7Receive incoming duel requests'
-      - '&fCurrently: {status}'
     DEATH_MESSAGES:
       DISPLAY-NAME: '&#6BF18DDeath Messages'
       MATERIAL: SKELETON_SKULL

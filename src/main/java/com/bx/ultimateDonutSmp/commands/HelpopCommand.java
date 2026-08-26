@@ -45,7 +45,23 @@ public class HelpopCommand implements CommandExecutor {
             return true;
         }
 
-        plugin.getNetworkStaffAlertManager().sendHelpop(player, String.join(" ", args));
+        String message = String.join(" ", args);
+
+        String formatted = plugin.getConfigManager().getMessageOrDefault(
+                "HELPOP.ALERT",
+                "&9[Helpop] &f{player}&9: &7{message}"
+        ).replace("{player}", player.getName()).replace("{message}", message);
+
+        for (Player staff : plugin.getServer().getOnlinePlayers()) {
+            if (staff.hasPermission("ultimatedonutsmp.staff.mode")) {
+                staff.sendMessage(ColorUtils.toComponent(formatted));
+            }
+        }
+
+        player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
+                "HELPOP.SENT",
+                "&aYour help request has been sent to staff."
+        )));
         return true;
     }
 }

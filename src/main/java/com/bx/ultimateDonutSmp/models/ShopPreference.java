@@ -1,5 +1,6 @@
 package com.bx.ultimateDonutSmp.models;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -10,17 +11,11 @@ public final class ShopPreference {
 
     public ShopPreference(UUID playerId, Set<String> favorites) {
         this.playerId = playerId;
-        this.favorites = favorites;
+        this.favorites = favorites == null ? Collections.emptySet() : Collections.unmodifiableSet(new LinkedHashSet<>(favorites));
     }
 
     public UUID playerId() { return playerId; }
     public Set<String> favorites() { return favorites; }
-
-
-
-    public ShopPreference {
-        favorites = favorites == null ? java.util.Collections.emptySet() : Set.copyOf(new LinkedHashSet<>(favorites));
-    }
 
     public ShopPreference withFavorite(String favoriteId, boolean favorite) {
         LinkedHashSet<String> updated = new LinkedHashSet<>(favorites);
@@ -32,7 +27,7 @@ public final class ShopPreference {
         return new ShopPreference(playerId, updated);
     }
     @Override public String toString() {
-        return "ShopPreference[playerId=+playerId, favorites=+favorites]";
+        return "ShopPreference[playerId=" + playerId + ", favorites=" + favorites + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

@@ -150,10 +150,6 @@ SORTING:
 # Visual layout style mode
 DONUT-STYLE: DEPOSIT_GUI
 
-# Geyser/Floodgate Bedrock player compatibility
-BEDROCK:
-  ENABLED: true
-
 # Cross-server Redis sync for orders
 NETWORK:
   ENABLED: true

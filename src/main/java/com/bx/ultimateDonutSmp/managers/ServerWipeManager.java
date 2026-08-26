@@ -458,7 +458,6 @@ public final class MovedPath {
         plugin.getCrateManager().prepareForServerWipe();
         plugin.getAuctionHouseManager().prepareForServerWipe();
         plugin.getOrdersManager().prepareForServerWipe();
-        plugin.getDuelManager().shutdown();
         plugin.getSpawnerManager().setServerWipeMode(true);
     }
 
@@ -486,11 +485,6 @@ public final class MovedPath {
     private void resumeAfterFailure(Exception exception) {
         plugin.getSpawnerManager().setServerWipeMode(false);
         plugin.getEnderChestManager().reload();
-        try {
-            plugin.getDuelManager().reload();
-        } catch (Exception reloadError) {
-            plugin.getLogger().log(Level.WARNING, "Failed to restore PvP managers after wipe failure", reloadError);
-        }
         synchronized (this) {
             state = State.FAILED;
             maintenanceMode = false;

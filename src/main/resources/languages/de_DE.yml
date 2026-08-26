@@ -1,4 +1,4 @@
-META:
+﻿META:
   NAME: Deutsch
 ORDERS:
   DISABLED: '&cBestellungen sind derzeit deaktiviert.'
@@ -883,10 +883,7 @@ MENUS:
         LORE:
         - '&7Show message when amethyst cluster breaks'
         - '&fCurrently: {status}'
-      DUEL_REQUESTS:
-        DISPLAY-NAME: '&#6BF18DDuel requests'
         LORE:
-        - '&7Receive incoming duel requests'
         - '&fCurrently: {status}'
       DEATH_MESSAGES:
         DISPLAY-NAME: '&#6BF18DDeath messages'
@@ -1980,9 +1977,7 @@ CONFIG:
       - Price
       - ''
       input-line: 0
-  DUELS:
     COMMAND_BLOCK:
-      MESSAGE: "&cSie können diesen befehl nicht während eines duells verwenden."
     CROSS_SERVER:
       PROXY_SERVER_NAME: Lokal
     START-COUNTDOWN:
@@ -2009,9 +2004,7 @@ CONFIG:
       QUEUE:
         TITLE: "&8Casual queue"
       CREATE:
-        TITLE: "&8Create duel -> {player}"
       CLAIMS:
-        TITLE: "&8Duel claims"
   CRATES:
     SETTINGS:
       LIST-MENU:
@@ -2961,7 +2954,6 @@ BUILTIN:
   03f7d7ba6fe4edd8c46f: '&7Claimed &f'
   8862dc0497985c7d535b: '&7Configured=&f'
   9e14ddfc3f2acdda844d: '&7Enabled=&f'
-  d672b425bdf5dc8a6314: '&7Or &f/duel verweigern'
   757115b658b2a438f634: '&7Pos1=&f'
   b4971fc2dbf2be237b59: '&7Pos2=&f'
   405eb1a83ba8610d169f: '&7From &b'
@@ -2992,11 +2984,9 @@ BUILTIN:
   ddb4ce639260a9bd4cef: '&aMore time(s).'
   1bab421be3780dc123cc: '&aMore time(s).'
   dccfc2adf65ef0de9ba2: '&cExpired.'
-  3769be6d7e7177583013: '&eHas been sent to your duel claims.'
   fa44782041828cb87396: '&f'
   61d7eec6a6c9d11f8d99: '&fX'
   f3946e6130951410e3ae: '&fHas requested a draw. use &f/draw &fto accept.'
-  4f6f035e8a0f716c99c8: '&fHas challenged you to a duel.'
   b6c6b134161811c9a4be: '&fWon this match!'
   ac1487ddaad0c35648ce: '&fWon the match!'
   e2361d61c346b630023a: <type> &7- Spawn a bait stash
@@ -3145,21 +3135,16 @@ BUILTIN:
   5cd7b5cd7407990acda7: '&7Automatische annahme der &b/tpahere&7-anfrage von &f'
   965f5a0a53aaaa8532a3: '&7Automatische annahme ausstehend &b'
   05d1a5b91c3b9f12b6b0: '&7Beste serie: &f'
-  e3c9d37cb09a3d554f67: "&7Wählen sie eine karte aus, um eine duellanfrage zu senden."
-  009a05ef8e9ec72a8d47: '&7Klicken sie, um der duellwarteschlange beizutreten.'
-  789d5e17cd20abe3199f: '&7Klicken sie hier, um die duellwarteschlange zu verlassen.'
   ede3d9a315bc1661110d: '&7Klicken sie, um eine vorschau dieses beutepakets anzuzeigen.'
   46971c0f9626940e8cf8: "&7Konfigurieren sie arenen oder aktivieren sie zufällige
     biome."
   6c29e1113f81288c9e4c: "&7Konfigurieren sie warteschlangenarenen oder aktivieren
     sie zufällige biome."
-  2f5404c789c91bc071c7: '&7Direktes einladungsduell.'
   182348d0b2458605900d: '&7Ziehungen: &f'
   9a63507ff21439b78fe1: '&7Aktivieren sie vanilla_pool.runtime_generation.'
   38ffbd2b48062023a771: "&7Läuft ab: &f{expires}"
   3a35a7caccb64a1d9299: '&7Id: &f#'
   01730e5fdeab6c76cc61: '&7Tasten: &f'
-  c6bedc48e5f925980f3c: '&7Beute aus duellsiegen wird hier angezeigt.'
   0490f5adeb7aac042aa8: '&7Verluste: &f'
   512dc7bb5acba609b2c9: '&7Karte: &f'
   75e02c6d3d4a2f8d39de: "&7Übereinstimmung: &f#"
@@ -3168,8 +3153,6 @@ BUILTIN:
   672d35ff0786d724fdaf: '&7Modus: &fvanilla-generierung deaktiviert'
   fe4106765c01d20caa4c: '&7Spitzname: &f{player}'
   3b682568a491267a775e: "&7Es ist keine karte ausgewählt."
-  b559feacd592f5b4db5f: "&7Nur mitglieder desselben teams können dieses duell annehmen."
-  ccc0452ee863b195f1b7: '&7Offene duell-beutepakete.'
   2ac84f362949bcb9b626: '&7Spieler in der warteschlange: &f'
   8a9cbc62547f0d88c6cd: '&7Spieler: &f'
   03705cd52fed57070bd1: '&7Datenschutz: &f'
@@ -3186,8 +3169,6 @@ BUILTIN:
   1aa60756dbface3c90d0: '&7Tps: &f'
   0753f42fa4d1523b0184: '&7Ziel: &f'
   c34b2ef9ef6577f575b6: '&7Dieser spieler ist nicht mehr online.'
-  e484dd4a0d12b0b61d26: '&7Verwendet eine konfigurierte benutzerdefinierte duellkarte.'
-  9cfea04890cf5f7e3d01: "&7Verwendet eine verfügbare konfigurierte duell-arena."
   87ca8a08adaa04013613: "&7Verwendet leichtgewichtiges, flaches gelände."
   ea0fbdb44940f5f4e43b: '&7Siege: &f'
   793ee7d98c932cb007b0: '&7Welten: &f'
@@ -3241,7 +3222,6 @@ BUILTIN:
   fbc8d119747f9c092636: '&7Search: &f'
   1031afd7e6ec7fce4fee: '&7Searching team members for &f'
   89f3eaf2a7ddbe34e8b0: '&7Seconds since movement: &f'
-  599614ad9117e53c7815: '&7Set duel arenas first with &f/arena&7.'
   fb4d93449d869266ef93: '&7Skipped task runs: &f'
   70fabb46a21ef06c0892: '&7Source: &fserver materials'
   e9c2bf52d7a178bacebd: '&7Source: &fserver.jar'
@@ -3340,7 +3320,6 @@ BUILTIN:
     &7to abort.'
   10418d04b074bf657942: '&7Type a team member name or &ccancel&7.'
   23e289b9983667b76c10: '&7Type: &f'
-  45dd2369f85d7a3389bd: '&7This duel loot package no longer exists.'
   09e5e54b0f2d64f5aa60: '&7This order no longer exists.'
   193468491980c6d628ca: '&7Target: &f'
   9f90528711852f4a1a4d: '&7Team: &f'
@@ -3349,7 +3328,6 @@ BUILTIN:
   d9c62d7bef70f0c5a5dd: '&7Use &f/arena setpos1 <id> &7and &f/arena setpos2 <id>'
   592a9557654fc68438c6: '&7Use &f/crates &7to open crates and &f/keys &7to view your
     keys.'
-  3ab30d2a4a29b32dd220: '&7Use &f/duel akzeptieren'
   9ea339959430ea40c7f5: '&7Use &f/leave &7to leave the arena.'
   2a7e49f5374ae75185d4: '&7Use &f/leave &7to surrender.'
   1d36a62ac8acd5d4bb62: '&7Use &f/tpa <player> &7to request teleporting to them.'
@@ -3387,7 +3365,6 @@ BUILTIN:
   c0798ac51a6e82717bbe: '&8, &7Tablist=&f'
   4902c6fdf497a0c86629: '&8Auktion #'
   695388b4f9df6d90a2d0: "&8Löschen ist in der vorschau verfügbar."
-  b3a74b280812572e62e3: "&8Duellkarte auswählen"
   28560369e43ec651f680: '&8[&a+&8] &a%player% &7Joined &b%server%'
   1097cbf293c16a2bfc22: '&8[&b'
   e2821a2d929b0e8272dc: '&8[&bCrates&8] &7click item di inventory kamu untuk memilih
@@ -3437,8 +3414,6 @@ BUILTIN:
   897c7ee91f0621e2034e: '&a. Click a crate slot to place it.'
   76bfae8cab082b6bf11c: '&a. This now acts as spawn 1 and rollback anchor.'
   d8e478b5d2f9e0dc2b87: '&a. This now acts as spawn 2 and rollback anchor.'
-  93609516bcf8b4797a58: "&aServerübergreifendes duell gefunden. spiel wird vorbereitet..."
-  5eec68952ddd859faa35: "&aServerübergreifendes duell gefunden. übertragung an den
     matchserver..."
   fe85b54f917869cb0fa1: "&aDerzeit ausgewählt."
   325c02ea0fa1faf73833: '&a Treten sie der casual-warteschlange bei'
@@ -3453,8 +3428,6 @@ BUILTIN:
   094dfd7451c0246075be: '&aNext page'
   f26cbed5d20a46ec14c4: '&aNew order'
   c7a275c8f7bf66ee00d1: '&aNormal'
-  e146c9b4edee609ca78f: '&aReloaded duel arenas and config.'
-  2051f2182565e2680173: '&aReloaded ffa arenas and config.'
   ff0cd4d1e658df271171: '&aRemoved reward in slot &f'
   678270bcc9294c37ad7e: '&aRemoved active &f{type} &apunishment(s) for &b{player}&a.'
   f251f848b15eb2677e7e: '&aRemoved crate binding from &f'
@@ -3471,7 +3444,6 @@ BUILTIN:
   e27a19cab3b5045f9bff: '&aSingle paper setup preset applied.'
   c3c764a98ee930108ec9: '&aSingle-paper setup preset applied.'
   640a724478ba473ae916: '&aShop config reloaded.'
-  fc248a4ce5ef3c8d46b8: '&aSent a duel request to &f'
   b216039e6ea7ad333072: '&aSelection complete. &7cuboid wand removed from your inventory.'
   2af672e007cd89a052f5: '&aSelected &f'
   3d4ec4b5076bb6d64053: '&aSearch'
@@ -3481,7 +3453,6 @@ BUILTIN:
   dd6170ce354a29c8dc65: '&aSet crate &f'
   4e6d3dc09d5587909778: '&aSet pos 1 for arena &f'
   c20978655284627520cc: '&aSet pos 2 for arena &f'
-  c3b90e19cc4e7ef8b6d5: '&aSet ffa arena center for &f'
   f3fabdc237def0c4a714: '&aSort: &f'
   7284c87845948fca00eb: '&aSold &f'
   75ae458b588226bebd3f: '&aSpawn location saved at &f'
@@ -3494,11 +3465,8 @@ BUILTIN:
   708cff719b793c37249d: '&aCrate settings reloaded.'
   5443ebbeb216639bebb0: '&aCreated &f{type} &apunishment for &b{player}&a. id: &f#{id}'
   80ec221663d4eb81dfa8: '&aCreated crate &f'
-  ce981883320c7c6675ea: '&aCreated duel arena &f'
-  16d42efdbe8d31ea69c6: '&aCreated ffa arena &f'
   d47808563f525c9ed95d: "&aClick to open and choose 1 ​​reward."
   d4692dd6f0218c441bde: '&aClaim all'
-  b0a8cbdae1ae03a28748: '&aClaimed duel loot from &f'
   6e3fc8d1b73eb54fea22: '&aClaimed escrow refund of {amount_formatted}&a.'
   ba56b34d064d3c2113ee: '&aConfirm delivery'
   c906bf06d1706152fac6: '&aConfirm order'
@@ -3510,15 +3478,7 @@ BUILTIN:
   a9d0838047bece8df445: '&aDeliver items'
   fe1d7c2aae29f121fda4: '&aDelivered &e{quantity} {item}&a and received {payout_formatted}&a.'
   60bb8b92e4ca2c8c6095: '&aDeleted crate &f'
-  5e1f6c0448c891ce9e54: '&aDeleted duel arena &f'
-  0ab16107a93355b5e993: '&aDeleted ffa arena &f'
-  ef993e587c9caa573dd5: '&aDuel started against &f'
-  88520f5640a3aedff8d0: '&aDuel found against &f'
-  b5c9b3c648dea8ef97a0: '&aDuels config reloaded.'
-  b51596ab3271f3b2f21c: '&aEnabled duel arena &f'
-  08e042d97e602d9c3ee6: '&aEnabled ffa arena &f'
   1a2c318bd73816d367bc: '&aEscrow refund'
-  b551cd2e234475d53eda: '&aJoined the casual duel queue.'
   67f98e21df1c581034aa: '&aMoney'
   1c8285a9fc72c4345f1b: '&aMoney: &f%money%'
   2666d5f3c0709fd7f8da: '&aOn'
@@ -3532,26 +3492,18 @@ BUILTIN:
   859a91922c2192da0f2a: '&aPrevious page'
   facfa7ced608a88f5ff8: '&aPlayers: &a%players% online'
   f008b58b955b7353dea7: '&aPlayers: &a%players% online'
-  c3477fa8dffab7425093: '&aPlaced &f'
   9f42aabb60f398160bf5: '&aTrue'
   462605df1c962a91ac52: '&aTeleported to spawner at &f'
-  e6eceafdc278cd10cc7e: '&aTeleported to ffa arena &f'
   e7f15ed2a97a97758e98: '&aTemporary spawner registered.'
   87862e8d1aec2c4544cc: '&aTemporary spawner removed.'
   74a6795553c59e770a2c: '&aUltimatedonutsmp configuration reloaded.'
   3d9c707c1f7693233a62: '&aUpdated queue status for &f'
   5444425106fd6b0e00cf: '&aUpdated crate chest at &f'
   3f3161ba8813a61d9d07: '&aUpdated display name for arena &f'
-  7f4c765afaabe488b8a1: '&aUpdated display name for ffa arena &f'
   1b24d2f5054f53e306a2: "&a■"
   455c59b2d066e713ea75: '&aFight!'
   2f2047c39e46fef5eedb: '&aFirst position set at &f'
   d67f092be5cd3af6d73d: '&aFlight mode activated'
-  0702dffb2a82a3c6169e: '&aFfa restarted against &f'
-  93d9483d9e9c4d74a03e: '&aFfa resumed against &f'
-  9371135ebcf3dc18e79f: '&aFfa started against &f'
-  3d9b5ef7fb3864aaf544: '&aFfa arena &f'
-  dbbe677157314f0569a8: '&aFfa config reloaded.'
   d41449e6263dcb766cf1: '&b'
   ca032482e498e6998856: '&b%server%'
   6a22bf738894cbbc30b9: '&b&lChat manager &7(befehle)'
@@ -3664,27 +3616,18 @@ BUILTIN:
   1b5027c924f41a4b4253: "&cBetrag muss größer als null sein."
   5670885372f15c0e0a1a: "&cDer betrag muss null oder größer sein."
   b6103232a52f05d3a495: '&cDiese beute konnte derzeit nicht beansprucht werden.'
-  0cf00e752e5468b91479: "&cDer duellanspruch konnte derzeit nicht gelöscht werden."
-  f2478a172d07f0b575ca: "&cServerübergreifendes duell konnte nicht gestartet werden,
     da keine arena verfügbar ist."
-  360065c709f3979e10b6: "&cDuell abgebrochen, da ein spieler nicht mehr verfügbar
     ist."
-  1ff9e6975eb07346f62b: '&cDuell abgebrochen, weil ein spieler die vorbereitung verlassen
     hat.'
-  6b075d2a959c3395334a: '&cDuelle sind derzeit deaktiviert.'
   96d5cab743be40671ded: "&cAbgelaufene amethyst-gegenstände können nicht als kistenbelohnungen
     verwendet werden."
   b4e22355679e7e4691c7: '&cFehler beim speichern von config.yml.'
   f117562619f3eb6b3102: "&cDieser artikel für die kistenbelohnung konnte nicht serialisiert
     werden."
-  5dba194e96ae90acd144: "&cDuelle nur mit freunden können nur auf mitglieder ihres
     teams abzielen."
-  c56e286d154841ce457c: "&cFür duelle nur mit freunden müssen beide spieler im selben
     team sein."
   89fa0273b7210398746f: '&cWarteschlange verlassen'
   6d286cbc27c885285df2: "&cSprachschlüssel fehlt:"
-  fa7b5443635e42014534: "&cIm moment ist keine duell-biome-arena verfügbar."
-  b9639b80b7012307a2b5: "&cKeine duellkarten verfügbar"
   de84b9a17265204a9393: "&cKeine ausstehenden ansprüche"
   53962bf273fa4c596325: '&cKeine berechtigung.'
   e7fa74a6c79996dbd2c8: "&cKeine warteschlangenzuordnungen verfügbar"
@@ -3700,13 +3643,9 @@ BUILTIN:
   747c32da44db1da748d4: '&cZiel offline'
   947447d608f76d588c39: "&cDieser amethyst-gegenstand hat ungültige metadaten und
     kann nicht als kistenbelohnung verwendet werden."
-  decd04e0c7d2c1545300: '&cDieser duellanspruch besteht nicht mehr.'
-  3756ca10cdcfd5946942: "&cDiese duellkarte ist nicht verfügbar."
-  6be5364342151f8c96ec: '&cDieser spieler akzeptiert keine duellanfragen.'
   baa77723b76d97d2312f: '&cDieser spieler ist nicht online.'
   02c55e5cced4f07cbf80: "&cDiese in der warteschlange befindliche anfrage ist nicht
     mehr verfügbar."
-  3fef3526ed0e3cd03094: '&cDas duell konnte nicht beginnen, da ihr gegner unsichere
     gegenstandsdaten hat.'
   8c0399103c6a30b12a4b: '&cEs gibt keine anfragen in der warteschlange zum annehmen.'
   1161b4adfe4be95ba25e: '&cUnbekannter shard-administratorbefehl.'
@@ -3714,7 +3653,6 @@ BUILTIN:
   064a6c0534e86d33cccf: '&cVerwendung: /create freunde <player> [karte]'
   f37e8140d698691b1b7b: '&cVerwendung: /create einladen <player> [karte]'
   924fe3ce777c5cd594d1: "&cSie sind nicht berechtigt, serverlöschungen zu überprüfen."
-  f00038ba65f1f4471ba7: '&cDeine duell-arena bereitet sich vor.'
   e857a26465083a0c9747: '&c[Freeze] &4%player% &cleft while frozen on &4%server%'
   668035e73c3259866e10: '&cQueue arenas exist but are not ready yet.'
   8ecacc7ebb703543ad31: '&cInvalid quantity.'
@@ -3746,8 +3684,6 @@ BUILTIN:
   f939e2de5714cc09e0b5: '&cNo available items'
   e152ba956c04b096311a: '&cNo afk areas'
   901eb35b90d40e076902: '&cNo commands found for category: &f'
-  4b310ea92774f48c8daf: '&cNo duel arena is available right now.'
-  7f1a4976d9025b4a4eff: '&cNo duel arenas configured.'
   359a99f07aabe5d3dea1: '&cNo members found'
   396aa99d93d3474d4fc4: '&cNo orders yet'
   581b5c619dd456662901: '&cNo other players available for random teleport'
@@ -3759,7 +3695,6 @@ BUILTIN:
   c8a4998ee12bd5da601b: '&cNo usable help buttons'
   9de43ab8188d524b6a3f: '&cNo usable server buttons'
   80ac60f2cd2422a7c4b7: '&cNo valid area is available right now.'
-  aa5efee79492bd9c51c1: '&cNo ffa arenas configured.'
   0611230ef51e8b76557f: '&cNothing here'
   d3b71bec24d9bcd7f48c: '&cNothing to collect'
   dd09392b436532c51174: '&cRtp is disabled.'
@@ -3767,21 +3702,10 @@ BUILTIN:
   637c335e36831c6f2e91: '&cRtp command is currently disabled.'
   e4828dcea34ad987e1a4: '&cRules command is currently disabled.'
   b6feccaa2aa36324f553: '&cYou no longer have a key for'
-  6a9080a8347afc1eb3e4: '&cYou have no pending duel request.'
-  a4c1cd699d34d030832e: '&cYou lost the duel against &f'
-  1f87d7da855dd7f22ca7: '&cYou are not in a duel or queue.'
-  054b08942830ebf751f1: '&cYou are not in a duel or ffa arena/match.'
-  851463bf8dba8c46ba4b: '&cYou are not in a duel or ffa arena/match.'
-  a63b7db8929f1cfb9fe9: '&cYou are not inside an ffa arena or match.'
   37e703765813433ed471: '&cYou are not part of the team.'
   09c8165bfc5bfe09848e: '&c. Session.'
-  d4362e3abe9d56923787: '&cYou are already in a duel.'
   c4b15bd483c2bbed5da7: '&cYou are already in the queue.'
-  542763c7e2434f8a3dc9: '&cYou are already in ffa.'
-  b16a8eba19e3c78946ec: '&cYou are already inside an ffa arena.'
   8323a38cc0758213867f: '&cYou are afk. move to resume shard gain'
-  a2bbc7c2efceb0d58bce: '&cYou already have a pending duel request.'
-  fa08a4885ff8f89ad8f7: '&cYou can only request a draw during an active duel.'
   d063a95395d51eae7c2f: '&cYou can only stack the same spawner type onto this block.'
   750171d97a9f69dd866c: '&cYou can''t do this yourself!'
   a04c5630ae8486f35ed8: '&cYou can''t use this in combat.'
@@ -3791,15 +3715,10 @@ BUILTIN:
   52eff623e1b72d32048d: '&cYou cannot repeat the same message!'
   08f1e754cb5edb7176c9: '&cYou cannot rtp in this world.'
   3ac4113a9c6dda85021c: '&cYou cannot create another home right now.'
-  49a292be95bde155a455: '&cYou cannot duel yourself.'
   ca9a4d85f94dc2591269: '&cYou cannot edit the team home.'
   c10505da9c5e13f51c11: '&c. Pending.'
   b0ae6c0a417c2f3aa6bf: '&c.'
-  4115d213c887981b6a8c: '&cYou cannot join ffa while using the duel system.'
   3b1376795333aa9fe711: '&c.'
-  5b5ed6a3545c127f50ef: '&cYou cannot use duels while inside the ffa system.'
-  98d1c30468ff978c57d2: '&cYou cannot use that command during a duel.'
-  1f21d3e58c987b0f32d9: '&cYou cannot use that command during ffa.'
   4eb58795897d3708685a: '&cYou cannot visit the team home.'
   d445630ea2c37114f8d6: '&cYou do not have any'
   1b1df1d3298e97e21db5: '&cYou do not have access to that spawner.'
@@ -3811,9 +3730,7 @@ BUILTIN:
   e6c2ed957ac870bbbd4f: '&cYou do not have permission to reload shop settings.'
   ab8ad56aa49a708dd2ee: '&cYou do not have permission to reload spawners.'
   743d5c93626ed1661984: '&cYou do not have permission to reload crate settings.'
-  540d46eea27b8e0127bb: '&cYou do not have permission to reload duels.'
   b76a70b3247280ff72c2: '&cYou do not have permission to reload plugin settings.'
-  fa2eab8c681b32190dbb: '&cYou do not have permission to reload ffa.'
   a600de4e38e5f8e6a467: '&cYou do not have permission to remove spawners.'
   c590b5a56e8fc19bc187: '&cYou do not have permission to run crate key-all.'
   3f7b491a979fd439df6b: '&cYou do not have permission to bind crate chests.'
@@ -3822,9 +3739,7 @@ BUILTIN:
   1b3d8d8992a87903e0f2: '&cYou do not have permission to create crates.'
   9c1093492aadfcd2e0b4: '&cYou do not have permission to change crate types.'
   f52edf77dd2e1994694c: '&cYou do not have permission to delete crates.'
-  ddc7d3b29253c4662271: '&cYou do not have permission to manage duel arenas.'
   4f0f145b7377125302f7: '&cYou do not have permission to manage feature toggles.'
-  eccee69dde46f6a782b3: '&cYou do not have permission to manage ffa arenas.'
   9690388730dec64d4f08: '&cYou do not have permission to modify crate rewards.'
   08c98a1a11e409b63c17: '&cYou do not have permission to modify crate keys.'
   055e22bf4e19a7b64a85: '&cYou do not have permission to open this crate.'
@@ -3855,10 +3770,6 @@ BUILTIN:
   3b850b0cccf02702375d: '&cYour report reason is too long. max: %max% characters.'
   6157f0d7a588a04ffb2e: '&cYour rtp is already in progress.'
   3535ba9e8acd412bf8b0: '&cYour draw request expired.'
-  562d88e5c996f094249f: '&cYour duel request could not start because no arena is available.'
-  5045599210b865eb75a1: '&cYour duel request to &f'
-  898f0489f337b8118c74: '&cYour duel request was cleared.'
-  207d09d93c775c263d6b: '&cYour duel request from &f'
   1f66ac1d2b969456af9e: '&cYour message is too long! (max: %max%)'
   ca796baa738358aa76e3: '&cYour message is too short! (min: %min%)'
   7b357d67b12fe6aed193: '&cYour message contains characters that are not allowed on
@@ -3867,7 +3778,6 @@ BUILTIN:
   171e61a8d6404a151649: '&cYour player data could not be loaded.'
   60f84b7c6c3a2783c018: '&cYour player data could not be loaded. try again in a moment.'
   28cd1538a316170d30bd: '&cYour player data could not be loaded. try again.'
-  d032a439e6a4a271c030: '&cYour pending duel request is from &f'
   9a0a4d73f4ea508598d8: '&cBillford could not complete the'
   bc7ad9a8843c789caed1: '&cBillford could not complete the money reward.'
   516e03bd68c5187649db: '&c.'
@@ -3937,25 +3847,12 @@ BUILTIN:
   205e6927e4e8803e51a6: '&cCancel order'
   6700383b3a60b2554c5a: '&cConfirm {target}'
   03e547d378b789180688: '&cCoordinates must be valid numbers.'
-  a01dde9550a88098e5b0: '&cCould not restart ffa right now.'
   804309b62cb16a1bfc41: '&c.'
   f0e82a76eb13bd0e0ce9: '&cCould not set pos 1 for that arena.'
   cc5de9e94bcdd122b4e7: '&cCould not set pos 2 for that arena.'
   1c5ed4bebd0fe0c53c84: '&c.'
-  c49862aa40ef54472c77: '&cCould not start the duel right now.'
-  5d36995450a72ea9d36a: '&cCould not start ffa right now.'
-  011cf9a6da133162bf43: '&cCould not create that duel arena.'
-  0ca730b3649b9e003a69: '&cCould not create that ffa arena.'
   8008949ca119f6ba9e3c: '&cCould not claim that loot right now.'
-  a868fc451f95c5cf7d1b: '&cCould not disable that duel arena.'
-  dc46a0250d737f5c9f96: '&cCould not disable that ffa arena.'
   cdcea1a5b2c84b6a2c71: '&cCould not delete this'
-  aabd4136d2bdfc1c6c84: '&cCould not delete that duel arena.'
-  5871b71942b564db5ec7: '&cCould not delete that duel claim right now.'
-  5b0dedeec0595829bee1: '&cCould not delete that ffa arena.'
-  673e9270919eb671c55c: '&cCould not enable that duel arena.'
-  ce7c93f3f498ddaba912: '&cCould not enable that ffa arena.'
-  18f06a54e85ed5b358fe: '&cCould not enter ffa right now.'
   7b20b7d73252addc42c7: '&cCould not update queue status for that arena.'
   546002c68bad63d23488: '&cCould not update that arena display name.'
   8b2f242c901a64635c07: '&c.'
@@ -3964,8 +3861,6 @@ BUILTIN:
   d6801acaa15cce77b172: '&cCould not find a safe location after %attempts% attempts.'
   d8f4458c56c1cf44d0fe: '&cCuboid not found: &f'
   b31f6f513db13e78cac4: '&cDelete claim'
-  c34f2b756913a0d888c1: '&cDeleted duel loot claim from &f'
-  5a3c85f42d17285b3c50: '&cDuels are currently disabled.'
   50ee805faa260dc4602a: '&cExpired'
   3c5d959004afb210d9b0: '&cEdit locked'
   82d4e7797123b563a1c8: '&cKills: &f%kills%'
@@ -4059,20 +3954,15 @@ BUILTIN:
     is unbound.'
   ba60f253f601f9699050: '&cThat crate does not have any rewards configured.'
   3f09bc942676b5b3d785: '&cThat challenger is no longer online.'
-  18843b6d914a03fce984: '&cThat duel request has expired.'
-  bbbf36fe27f46a97acc2: '&cThat duel request was cancelled.'
-  b12e1934c7fbdfa9c43e: '&cThat duel claim no longer exists.'
   52d3936f9101e7832703: '&cThat player is no longer online.'
   780a0a4bd9665d967bf7: '&cThat player was not found.'
   e63b2c5c9b2f8fa02257: "&cThat would exceed the max štack per block (&f"
   646a583ebaf6bf978ebf: '&c.'
-  e530ce422c68efed154f: '&cThat ffa arena does not exist.'
   df0205c7e875f8af0265: '&cThe /enderchest command is disabled.'
   f231276a1a21970bfb1b: '&cThe {feature} feature is currently disabled.'
   81f43184c1b7ef260c43: "&cThe selected quantity is not allowed ɰor this item."
   4e1a37bd8dc9de61e4cf: '&cThere is no loot stored in that spawner.'
   71c8d32de61cf4926ca8: '&cThere are no sellable items stored in that spawner.'
-  6442908bcf9dfc5e563b: '&cThere are no duel arenas ready yet.'
   ac63095890c4e7344ac3: '&cThere was no space to collect your spawner loot.'
   36738787d32ea2095380: '&cTarget offline'
   46e1e85360ad4b5de651: '&cTarget player must be online for shards everywhere checks.'
@@ -4081,7 +3971,6 @@ BUILTIN:
   f8070b45822a50806876: '&cTeam name must be 3-5 alphanumeric characters.'
   a1dd2305be7116bb5e05: '&cTemporary spawner needs a player and block.'
   f077a67d1a26f27c3cf7: '&cTemporary spawners cannot be stacked.'
-  97f6b2e8bd4680280f0b: '&cToggle must be &ftrue &cor &ffalse&c.'
   3cc71507b3eac5fde632: '&cTotal order budget cannot exceed &f{max_formatted}&c.'
   626e503d58a329de2134: '&cTpahere auto-accept&7 was disabled.'
   578c3a405d6e901d5539: '&cUnknown role.'
@@ -4091,9 +3980,7 @@ BUILTIN:
   c3d23cfac92ae68044dc: '&cUnknown arena subcommand.'
   43f09e396650deb7a4d3: '&cUnknown command category. available: &f'
   279b904f3f0318eb2fcf: '&cUnknown feature: &f{feature}'
-  efb1388619bc0faa250b: '&cUnknown ffa arena setting. use: nohunger, noweather, alwaysmorning,
     nofalldamage'
-  796ffcf4a1447747cb42: '&cUnknown ffa arena subcommand.'
   392ca6e8d3cb48a6231c: '&cUsage: /'
   978fe9da9d3182761b29: '&cUsage: /%label% <player>'
   03389aa963eac44220fa: '&cUsage: /%label% <survival|creative|adventure|spectator>
@@ -4178,8 +4065,6 @@ BUILTIN:
   68ef0324bc05ec38afb4: '&cFailed to update {feature}.'
   ee0bbbedf13e705ad17f: '&cFalse'
   4e9244002a46b6acf7a5: '&cIs currently disabled.'
-  3b5fb52fa7be967af909: '&cFfa arena is resetting right now. try again in a moment.'
-  d3b4f60d6db3b5b32fe9: '&cFfa arenas exist but are not ready yet. &7check: &f'
   aed96afb3e552f728e76: '&d'
   60f0e2c9546b4fd15360: '&d%player% &7Is now in &e%mode% mode'
   29536a93ba89a6627f39: '&d%sender% &7Restored your health'
@@ -4221,7 +4106,6 @@ BUILTIN:
   4edda7a78f13ea4f8697: '&e/arena Setpos1 <id>'
   9b1249e6d46cd262b9fa: '&e/arena Setpos2 <id>'
   151e943c52fb02efb1f1: '&e/arena Setreturn <id>'
-  265163f985c02189f2a1: '&e/ffastats [Spieler]'
   de8f9f5b008a622bcf3b: '&e/leave'
   26e99be48c23d91b6622: "&eZurück"
   dd019333370577a93543: '&eKlicken sie zum akzeptieren.'
@@ -4230,28 +4114,15 @@ BUILTIN:
   86b3218d4be33e6e13db: "&eZum auswählen klicken."
   9be4b6bfd9890d79dbfc: '&eKlicken sie hier, um die herausforderung zu senden.'
   4e355d5a9c5d508ffd05: '&eBeute von &f'
-  7ff87d71952749a5cc9e: '&eDuell-biom-arena wird vorbereitet...'
   5c056e60ea8385a7f7de: '&eZiel: &f'
-  bd9048f5a71f2ade5b81: '&eDeine duellstatistiken'
-  7332cd7aa362d32e4ecf: '&eDein vorbereitungsduell wurde abgesagt.'
   c77b14567116b97c2389: '&e[Timer] &ftime limit reached! match ended as a &edraw &f-
     streaks unchanged.'
   02840708f6b53fa3d201: '&eQuery: &f'
   007cf2235227e728f965: '&e. Changes are fully applied.'
   ba08b01dd83e2a7a8608: '&eRefresh'
-  1b5d2b24041c92614045: '&eYou remain in the ffa arena.'
-  5c947c72a14d6479d867: '&eYou left the casual duel queue.'
-  68c0e10ddce7a4fb2888: '&eYou left the ffa arena.'
-  8948c12290ab19f451d1: '&eYou are already in the casual duel queue.'
   49d1588157a3820ba2d1: '&eYou already requested a draw.'
-  fca5672382ef208a39c7: '&eYou were moved out of duel arena &f'
-  266b10c31669b6adaee0: '&eYou were moved out of ffa arena &f'
   68ed2f79c5c8cc5a9be5: '&eYour inventory is being viewed by staff.'
   e5d7397a095c659e8b4e: '&eYour rank'
-  0a69c5e557cda0adf280: '&eYour outgoing duel request was cancelled.'
-  38c532ce760657aefd42: '&eYour pending duel request was cleared.'
-  5446a2d053df6156912c: '&eYour ffa session is already ending.'
-  380b5feb6ff6d02e007d: '&eYour ffa state was restored after reconnecting.'
   ae7790295ed86c2c7952: '&eBind mode is active. left-click the target chest to finish
     binding, or use &f/crate bind cancel&e.'
   c6aced9795f4f5b900f9: '&eBalance check'
@@ -4281,13 +4152,8 @@ BUILTIN:
   f4dd55ddc61fae56b73c: '&eClick to teleport'
   1733b444329e8fb47eab: '&eClick to teleport to this spawner'
   385e0787e373b2a2c6b5: '&eClick to view delivery options'
-  ee45dce2804618abe997: '&eClaimed some duel loot from &f'
   a99e3c8269eda955e0b9: '&eCombat ended. wait while the arena resets.'
-  5b399ea640670c482fb2: '&eDisabled duel arena &f'
-  eefb48db58ea7517e052: '&eDisabled ffa arena &f'
   2d7cec706a85516d7662: '&eDraw request sent to &f'
-  1cce90e5b72849033660: '&eDenied duel request from &f'
-  30f501630ad3758c8c77: '&eDuel arenas:'
   7f6f75c7d977e2da7f0d: '&eExact item matching'
   6530102ef752c0ce94ed: '&eMatching items found'
   180c1852704659f8948d: '&eMoney reward'
@@ -4304,8 +4170,6 @@ BUILTIN:
   8ad8da9fc489590c49cf: '&eTeleported to frozen player &f'
   b2b6182618e4685d1a2a: '&eWarning'
   c57cfe06a14842f4bdce: '&e. Gunakan &f/'
-  b4d0f52731d03aa17faa: '&eFfa arena settings &7('
-  260dd9bbd94edb4a19c6: '&eFfa arenas:'
   a7f0cc7f731458387738: '&f'
   52abc957f603e8b3b316: '&f#'
   a1bd318b0b7b43f8b238: '&f%prefix%%player%&7: &f%message%'
@@ -4350,7 +4214,6 @@ BUILTIN:
   e71c3bb628196260d981: '&fMoney, kills, and more.'
   ad0ac654718ac677173c: '&fOr you need fresh land.'
   cfcc33b55850f5547968: '&fOr trading with players.'
-  c72bffadf964afc7ad50: '&fOpen server links and check'
   d7d475a6c06d3ce32a21: '&fPrevious page'
   63666e5de458a96286c4: '&fPlay with friends, share a base,'
   59b68f16bb2de26d57a4: '&fPage'
@@ -4365,7 +4228,6 @@ BUILTIN:
   94f371a03446398eb96b: '&fUntil you are geared.'
   3dfd19d70e92d90cdd4a: '&fUse &b/sethome <name> &fto save'
   83168e11263ec1066d6f: '&fUse &b/tpa <player> &for'
-  860de4268604cfffa720: '&fUse rtp when spawn feels crowded'
   d7e549a7f9fc2b01d1e5: '&l'
   f33ae22aa6c9add1be07: '&r'
   f45e0052108b575928a1: 

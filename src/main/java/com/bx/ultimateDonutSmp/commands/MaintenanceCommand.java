@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.commands;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.MaintenanceManager;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -33,7 +34,7 @@ public class MaintenanceCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        var mm = plugin.getMaintenanceManager();
+        MaintenanceManager mm = plugin.getMaintenanceManager();
         if (mm == null) {
             sender.sendMessage(ColorUtils.toComponent("&cMaintenance manager is not available."));
             return true;
@@ -71,7 +72,7 @@ public class MaintenanceCommand implements CommandExecutor, TabCompleter {
                             String lobby = args[1];
                             mm.setLobbyServer(lobby);
                             sender.sendMessage(ColorUtils.toComponent("&aLobby server set to &b" + lobby + "&a."));
-                        break;        }        default: sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <on|off|status|setlobby [server]>"))            break;
+                        break;        }        default: sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <on|off|status|setlobby [server]>"));            break;
         }
         return true;
     }

@@ -58,7 +58,25 @@ public class ReportCommand implements TabExecutor {
             return true;
         }
 
-        plugin.getNetworkStaffAlertManager().sendReport(reporter, reported, joinArgs(args, 1));
+        String message = joinArgs(args, 1);
+
+        String formatted = plugin.getConfigManager().getMessageOrDefault(
+                "REPORT.ALERT",
+                "&c[Report] &f{reporter}&c reported &f{reported}&c: &7{message}"
+        ).replace("{reporter}", reporter.getName())
+                .replace("{reported}", reported.getName())
+                .replace("{message}", message);
+
+        for (Player staff : plugin.getServer().getOnlinePlayers()) {
+            if (staff.hasPermission("ultimatedonutsmp.staff.mode")) {
+                staff.sendMessage(ColorUtils.toComponent(formatted));
+            }
+        }
+
+        reporter.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
+                "REPORT.SENT",
+                "&aYour report has been submitted to staff."
+        )));
         return true;
     }
 

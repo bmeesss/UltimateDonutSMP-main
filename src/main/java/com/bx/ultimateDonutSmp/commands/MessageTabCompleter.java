@@ -29,8 +29,8 @@ public class MessageTabCompleter implements TabCompleter {
         for (String name : plugin.getHideManager().onlineNames(sender)) {
             Player player = plugin.getHideManager().findOnlinePlayer(sender, name);
             if (player != null
-                    && sender instanceof Player senderPlayer
-                    && player.getUniqueId().equals(senderPlayer.getUniqueId())) {
+                    && sender instanceof Player
+                    && player.getUniqueId().equals(((Player) sender).getUniqueId())) {
                 continue;
             }
             completions.add(name);

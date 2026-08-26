@@ -2,7 +2,6 @@
 AMETHYST-TOOLS:
   # Configuration section for Excluded Worlds.
   EXCLUDED-WORLDS:
-  - duels
   # Configuration section for Particles.
   PARTICLES:
     # Determines whether Enabled is enabled or disabled. Available options: true, false

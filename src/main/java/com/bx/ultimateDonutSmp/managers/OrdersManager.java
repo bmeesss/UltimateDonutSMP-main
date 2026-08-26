@@ -479,8 +479,6 @@ public final class EditOrderResult {
     private final Map<UUID, OrderUiState> uiStates = new ConcurrentHashMap<>();
     private final Map<Long, Object> localOrderLocks = new ConcurrentHashMap<>();
     private final String instanceId = UUID.randomUUID().toString();
-    private volatile boolean networkSubscribed;
-    private volatile String networkChannel = "";
     private volatile boolean schemaReady;
 
     public OrdersManager(UltimateDonutSmp plugin) {
@@ -492,9 +490,6 @@ public final class EditOrderResult {
     public void reload() {
         rebuildCatalog();
         validateConfiguration();
-        if (plugin.getRedisManager() != null) {
-            initializeNetworkSync();
-        }
     }
 
     public void prepareForServerWipe() {
@@ -508,11 +503,6 @@ public final class EditOrderResult {
 
     public void shutdown() {
         saveUiStates();
-        if (networkSubscribed && plugin.getRedisManager() != null && !networkChannel.isBlank()) {
-            plugin.getRedisManager().unsubscribe(networkChannel);
-        }
-        networkSubscribed = false;
-        networkChannel = "";
     }
 
     public DeliveryMode getDeliveryMode() {
@@ -591,28 +581,6 @@ public final class EditOrderResult {
         }
         return "on conflict(player_uuid) do update set main_sort=excluded.main_sort, "
                 + "main_filter=excluded.main_filter, item_sort=excluded.item_sort, updated_at=excluded.updated_at";
-    }
-
-    public void initializeNetworkSync() {
-        if (plugin.getRedisManager() == null) {
-            return;
-        }
-        String configuredChannel = config().getString("NETWORK.REDIS_CHANNEL", "ultimatedonutsmp:orders");
-        if (configuredChannel == null || configuredChannel.isBlank()) {
-            configuredChannel = "ultimatedonutsmp:orders";
-        }
-        if (networkSubscribed && configuredChannel.equals(networkChannel)) {
-            return;
-        }
-        if (networkSubscribed && !networkChannel.isBlank()) {
-            plugin.getRedisManager().unsubscribe(networkChannel);
-        }
-        networkChannel = configuredChannel;
-        networkSubscribed = config().getBoolean("NETWORK.ENABLED", true)
-                && plugin.getRedisManager().isEnabled();
-        if (networkSubscribed) {
-            plugin.getRedisManager().subscribe(networkChannel, this::handleNetworkEvent);
-        }
     }
 
     public boolean isEnabled() {
@@ -4051,64 +4019,13 @@ public final class EditOrderResult {
     }
 
     private NetworkOrderLock acquireNetworkOrderLock(long orderId) {
-        RedisManager redis = plugin.getRedisManager();
-        if (!config().getBoolean("NETWORK.ENABLED", true)
-                || redis == null
-                || !redis.isEnabled()
-                || !redis.isConnected()) {
-            return new NetworkOrderLock("", "", true);
-        }
-        String key = config().getString("NETWORK.LOCK_PREFIX", "ultimatedonutsmp:orders:lock:")
-                + orderId;
-        String token = instanceId + ":" + UUID.randomUUID();
-        boolean acquired = redis.setIfAbsent(
-                key,
-                token,
-                Math.max(3L, config().getLong("NETWORK.LOCK_TTL_SECONDS", 15L))
-        );
-        return new NetworkOrderLock(key, token, acquired);
+        return new NetworkOrderLock("", "", true);
     }
 
     private void releaseNetworkOrderLock(NetworkOrderLock lock) {
-        if (lock == null || lock.key().isBlank() || lock.token().isBlank()) {
-            return;
-        }
-        RedisManager redis = plugin.getRedisManager();
-        if (redis != null) {
-            redis.compareAndDelete(lock.key(), lock.token());
-        }
     }
 
     private void publishOrderEvent(String type, long orderId) {
-        if (!networkSubscribed || plugin.getRedisManager() == null || networkChannel.isBlank()) {
-            return;
-        }
-        plugin.getRedisManager().publish(
-                networkChannel,
-                instanceId + "|" + (type == null ? "UPDATE" : type) + "|" + orderId
-        );
-    }
-
-    private void handleNetworkEvent(String payload) {
-        if (payload == null || payload.isBlank() || payload.startsWith(instanceId + "|")) {
-            return;
-        }
-        plugin.getSpigotScheduler().forEachOnlinePlayer(player -> {
-            if (!player.isOnline()
-                    || player.getOpenInventory().getTopInventory().getHolder() == null
-                    || !player.getOpenInventory().getTopInventory().getHolder()
-                    .getClass().getSimpleName().startsWith("Orders")) {
-                return;
-            }
-            OrderUiState state = getUiState(player.getUniqueId());
-            new OrdersBrowseMenu(
-                    plugin,
-                    state.page() + 1,
-                    state.sort(),
-                    state.filter(),
-                    state.search()
-            ).open(player);
-        });
     }
 
     private enum SearchCategory {
@@ -4483,62 +4400,5 @@ public final class PendingOrderEdit {
         }
     }
 
-    public int countActiveBotOrders(java.util.Collection<String> botNames) {
-        if (botNames == null || botNames.isEmpty()) {
-            return 0;
-        }
-        StringBuilder builder = new StringBuilder();
-        builder.append("select count(*) from orders where status = 'ACTIVE' and expires_at > ? and owner_name in (");
-        for (int i = 0; i < botNames.size(); i++) {
-            builder.append("?");
-            if (i < botNames.size() - 1) {
-                builder.append(",");
-            }
-        }
-        builder.append(")");
-        try (PreparedStatement ps = connection().prepareStatement(builder.toString())) {
-            ps.setLong(1, System.currentTimeMillis());
-            int index = 2;
-            for (String name : botNames) {
-                ps.setString(index++, name);
-            }
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        } catch (SQLException e) {
-            plugin.getLogger().log(java.util.logging.Level.WARNING, "Failed to count active bot orders", e);
-        }
-        return 0;
-    }
-
-    public synchronized long createBotOrderDirect(
-            UUID botUuid,
-            String botName,
-            ItemStack item,
-            String categoryKey,
-            int quantity,
-            double priceEach,
-            int durationHours
-    ) {
-        long now = System.currentTimeMillis();
-        long expiresAt = now + durationHours * 60L * 60L * 1000L;
-        double totalBudget = quantity * priceEach;
-        long orderId = insertOrder(
-                botUuid,
-                botName,
-                item,
-                categoryKey,
-                quantity,
-                priceEach,
-                totalBudget,
-                now,
-                expiresAt
-        );
-        if (orderId > 0) {
-            publishOrderEvent("CREATE", orderId);
-        }
-        return orderId;
     }
 }

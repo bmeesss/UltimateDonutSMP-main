@@ -36,7 +36,7 @@ public class SpawnerBlockListener implements Listener {
             return;
         }
 
-        var result = plugin.getSpawnerManager().placeSpawner(event.getPlayer(), event.getBlockPlaced(), item);
+        SpawnerManager.ActionResult result = plugin.getSpawnerManager().placeSpawner(event.getPlayer(), event.getBlockPlaced(), item);
         if (!result.success()) {
             event.setCancelled(true);
             event.getPlayer().sendMessage(ColorUtils.toComponent(result.message()));
@@ -115,7 +115,7 @@ public class SpawnerBlockListener implements Listener {
             return;
         }
 
-        var result = plugin.getSpawnerManager().breakSpawner(player, block);
+        SpawnerManager.ActionResult result = plugin.getSpawnerManager().breakSpawner(player, block);
         if (!result.success()) {
             event.setCancelled(true);
             player.sendMessage(ColorUtils.toComponent(result.message()));
@@ -141,119 +141,7 @@ public class SpawnerBlockListener implements Listener {
         }
         org.bukkit.inventory.meta.ItemMeta meta = tool.getItemMeta();
         if (meta instanceof org.bukkit.inventory.meta.Damageable) {
-            org.bukkit.inventory.meta.Damageable damageable = (org.bukkit.inventory.meta.Damageable) !plugin.getSpawnerManager().isEnabled()) {
-            return;
-        }
-        ItemStack item = event.getItemInHand();
-        if (!plugin.getSpawnerManager().isSpawnerItem(item)) {
-            return;
-        }
-
-        var result = plugin.getSpawnerManager().placeSpawner(event.getPlayer(), event.getBlockPlaced(), item);
-        if (!result.success()) {
-            event.setCancelled(true);
-            event.getPlayer().sendMessage(ColorUtils.toComponent(result.message()));
-            return;
-        }
-
-        Player player = event.getPlayer();
-        org.bukkit.inventory.EquipmentSlot handSlot = event.getHand();
-        final int finalRemaining;
-        if (player.getGameMode() != org.bukkit.GameMode.CREATIVE) {
-            int totalPlaced = result.consumedAmount() > 0 ? result.consumedAmount() : (player.isSneaking() ? item.getAmount() : 1);
-            int currentAmount = item.getAmount();
-            finalRemaining = Math.max(0, currentAmount - totalPlaced);
-
-            if (finalRemaining <= 0) {
-                item.setAmount(1);
-                if (handSlot == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
-                    player.getInventory().setItemInOffHand(null);
-                } else {
-                    player.getInventory().setItemInMainHand(null);
-                }
-            } else {
-                item.setAmount(finalRemaining + 1);
-            }
-        } else {
-            finalRemaining = -1;
-        }
-
-        plugin.getSpigotScheduler().runEntity(player, () -> {
-            if (player.getGameMode() != org.bukkit.GameMode.CREATIVE && finalRemaining >= 0) {
-                if (handSlot == org.bukkit.inventory.EquipmentSlot.OFF_HAND) {
-                    if (finalRemaining <= 0) {
-                        player.getInventory().setItemInOffHand(null);
-                    } else {
-                        ItemStack off = player.getInventory().getItemInOffHand();
-                        if (off != null && plugin.getSpawnerManager().isSpawnerItem(off)) {
-                            off.setAmount(finalRemaining);
-                            player.getInventory().setItemInOffHand(off);
-                        }
-                    }
-                } else {
-                    if (finalRemaining <= 0) {
-                        player.getInventory().setItemInMainHand(null);
-                    } else {
-                        ItemStack main = player.getInventory().getItemInMainHand();
-                        if (main != null && plugin.getSpawnerManager().isSpawnerItem(main)) {
-                            main.setAmount(finalRemaining);
-                            player.getInventory().setItemInMainHand(main);
-                        }
-                    }
-                }
-            }
-            player.updateInventory();
-        });
-
-        player.sendMessage(ColorUtils.toComponent(result.message()));
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onBlockBreak(BlockBreakEvent event) {
-        if (!plugin.getSpawnerManager().isEnabled()) {
-            return;
-        }
-        Block block = event.getBlock();
-        if (plugin.getSpawnStashManager() != null && plugin.getSpawnStashManager().isActiveBlock(block)) {
-            return;
-        }
-        Player player = event.getPlayer();
-        if (plugin.getSpawnerManager().getSpawner(block) == null) {
-            if (block.getType() == Material.SPAWNER
-                    && plugin.getSpawnerManager().isRequireSilkTouch()
-                    && !plugin.getSpawnerManager().hasSilkTouchAccess(player)) {
-                event.setCancelled(true);
-                player.sendMessage(ColorUtils.toComponent(SpawnerManager.SILK_TOUCH_REQUIRED_MESSAGE));
-            }
-            return;
-        }
-
-        var result = plugin.getSpawnerManager().breakSpawner(player, block);
-        if (!result.success()) {
-            event.setCancelled(true);
-            player.sendMessage(ColorUtils.toComponent(result.message()));
-            return;
-        }
-
-        if (!result.fullyDestroyed()) {
-            event.setCancelled(true);
-            if (player.getGameMode() != org.bukkit.GameMode.CREATIVE) {
-                damageHeldTool(player);
-            }
-        } else {
-            event.setDropItems(false);
-            event.setExpToDrop(0);
-        }
-        player.sendMessage(ColorUtils.toComponent(result.message()));
-    }
-
-    private void damageHeldTool(Player player) {
-        ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool == null || tool.getType().isAir()) {
-            return;
-        }
-        org.bukkit.inventory.meta.ItemMeta meta = tool.getItemMeta();
-        if (meta;
+            org.bukkit.inventory.meta.Damageable damageable = (org.bukkit.inventory.meta.Damageable) meta;
             int unbreakingLevel = tool.getEnchantmentLevel(org.bukkit.enchantments.Enchantment.UNBREAKING);
             if (unbreakingLevel > 0) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextInt(unbreakingLevel + 1) != 0) {

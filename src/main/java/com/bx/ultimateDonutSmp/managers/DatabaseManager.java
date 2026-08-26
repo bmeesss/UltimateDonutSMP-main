@@ -648,7 +648,6 @@ public final class PlayerWipeResult {
               "  amethyst_break_messages_enabled INTEGER DEFAULT 1," +
               "  private_messages_enabled INTEGER DEFAULT 1," +
               "  keyall_notifications_enabled INTEGER DEFAULT 1," +
-              "  duel_requests_enabled INTEGER DEFAULT 1," +
               "  public_chat_enabled INTEGER DEFAULT 1," +
               "  server_broadcasts_enabled INTEGER DEFAULT 1," +
               "  auction_notifications_enabled INTEGER DEFAULT 1," +
@@ -658,7 +657,6 @@ public final class PlayerWipeResult {
               "  rtp_coordinates_enabled INTEGER DEFAULT 1," +
               "  order_notifications_enabled INTEGER DEFAULT 1," +
               "  team_chat_visible INTEGER DEFAULT 1," +
-              "  duel_music_enabled INTEGER DEFAULT 1," +
               "  quiet_spawn_enabled INTEGER DEFAULT 0," +
               "  night_vision_enabled INTEGER DEFAULT 0," +
               "  keyall_remaining_seconds INTEGER DEFAULT -1," +
@@ -967,7 +965,6 @@ public final class PlayerWipeResult {
             ")"
         );
         execute(
-            "CREATE TABLE IF NOT EXISTS duel_pending_returns (" +
             "  uuid VARCHAR(36) NOT NULL PRIMARY KEY," +
             "  world_name VARCHAR(128) NOT NULL," +
             "  x DOUBLE NOT NULL," +
@@ -1047,7 +1044,6 @@ public final class PlayerWipeResult {
         ensureColumnExists("players", "amethyst_break_messages_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "private_messages_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "keyall_notifications_enabled", "INTEGER DEFAULT 1");
-        ensureColumnExists("players", "duel_requests_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "public_chat_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "server_broadcasts_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "auction_notifications_enabled", "INTEGER DEFAULT 1");
@@ -1057,7 +1053,6 @@ public final class PlayerWipeResult {
         ensureColumnExists("players", "rtp_coordinates_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "order_notifications_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "team_chat_visible", "INTEGER DEFAULT 1");
-        ensureColumnExists("players", "duel_music_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "quiet_spawn_enabled", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "night_vision_enabled", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "keyall_remaining_seconds", "INTEGER DEFAULT -1");
@@ -1377,7 +1372,6 @@ public final class PlayerWipeResult {
         data.setAmethystBreakMessagesEnabled(rs.getInt("amethyst_break_messages_enabled") != 0);
         data.setPrivateMessagesChoice(com.bx.ultimateDonutSmp.models.ThreeChoice.fromInt(rs.getInt("private_messages_enabled")));
         data.setKeyAllNotificationsEnabled(rs.getInt("keyall_notifications_enabled") != 0);
-        data.setDuelRequestsEnabled(rs.getInt("duel_requests_enabled") != 0);
         data.setPublicChatEnabled(rs.getInt("public_chat_enabled") != 0);
         data.setServerBroadcastsEnabled(rs.getInt("server_broadcasts_enabled") != 0);
         data.setAuctionNotificationsEnabled(rs.getInt("auction_notifications_enabled") != 0);
@@ -1387,7 +1381,6 @@ public final class PlayerWipeResult {
         data.setRtpCoordinatesEnabled(rs.getInt("rtp_coordinates_enabled") != 0);
         data.setOrderNotificationsEnabled(rs.getInt("order_notifications_enabled") != 0);
         data.setTeamChatVisible(rs.getInt("team_chat_visible") != 0);
-        data.setDuelMusicEnabled(rs.getInt("duel_music_enabled") != 0);
         data.setQuietSpawnEnabled(rs.getInt("quiet_spawn_enabled") != 0);
         data.setNightVisionEnabled(rs.getInt("night_vision_enabled") != 0);
         data.setKeyAllRemainingSeconds(rs.getLong("keyall_remaining_seconds"));
@@ -1928,11 +1921,9 @@ public final class PlayerWipeResult {
                  chainmail_on_respawn_enabled, lunar_teammates_enabled, tpa_requests_enabled, auto_tpahere_enabled,
                  tpahere_requests_enabled, team_invites_enabled, mob_spawn_enabled, pay_confirm_menu_enabled,
                  totem_particles_enabled, fast_crystals_enabled, amethyst_break_messages_enabled,
-                 private_messages_enabled, keyall_notifications_enabled, duel_requests_enabled,
                  public_chat_enabled, server_broadcasts_enabled, auction_notifications_enabled,
                  explosion_particles_enabled, hide_all_players_enabled, notification_sounds_enabled,
                  rtp_coordinates_enabled, order_notifications_enabled, team_chat_visible,
-                    duel_music_enabled, quiet_spawn_enabled, night_vision_enabled, keyall_remaining_seconds,
                     shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until, destroy_pearl_on_death, randomized_coords, death_messages_choice,
                     advancement_messages_choice, join_leave_messages_choice, teleport_alerts_enabled,
                     follow_alerts_enabled, explosion_sounds_enabled, display_donutplus_enabled)
@@ -2001,7 +1992,6 @@ public final class PlayerWipeResult {
             ps.setInt(36, data.isAmethystBreakMessagesEnabled() ? 1 : 0);
             ps.setInt(37, data.getPrivateMessagesChoice().ordinal());
             ps.setInt(38, data.isKeyAllNotificationsEnabled() ? 1 : 0);
-            ps.setInt(39, data.isDuelRequestsEnabled() ? 1 : 0);
             ps.setInt(40, data.isPublicChatEnabled() ? 1 : 0);
             ps.setInt(41, data.isServerBroadcastsEnabled() ? 1 : 0);
             ps.setInt(42, data.isAuctionNotificationsEnabled() ? 1 : 0);
@@ -2011,7 +2001,6 @@ public final class PlayerWipeResult {
             ps.setInt(46, data.isRtpCoordinatesEnabled() ? 1 : 0);
             ps.setInt(47, data.isOrderNotificationsEnabled() ? 1 : 0);
             ps.setInt(48, data.isTeamChatVisible() ? 1 : 0);
-            ps.setInt(49, data.isDuelMusicEnabled() ? 1 : 0);
             ps.setInt(50, data.isQuietSpawnEnabled() ? 1 : 0);
             ps.setInt(51, data.isNightVisionEnabled() ? 1 : 0);
             ps.setLong(52, data.getKeyAllRemainingSeconds());
@@ -3073,7 +3062,6 @@ public final class PlayerWipeResult {
               "  amethyst_break_messages_enabled INTEGER DEFAULT 1," +
               "  private_messages_enabled INTEGER DEFAULT 1," +
               "  keyall_notifications_enabled INTEGER DEFAULT 1," +
-              "  duel_requests_enabled INTEGER DEFAULT 1," +
               "  public_chat_enabled INTEGER DEFAULT 1," +
               "  server_broadcasts_enabled INTEGER DEFAULT 1," +
               "  auction_notifications_enabled INTEGER DEFAULT 1," +
@@ -3083,7 +3071,6 @@ public final class PlayerWipeResult {
               "  rtp_coordinates_enabled INTEGER DEFAULT 1," +
               "  order_notifications_enabled INTEGER DEFAULT 1," +
               "  team_chat_visible INTEGER DEFAULT 1," +
-              "  duel_music_enabled INTEGER DEFAULT 1," +
               "  quiet_spawn_enabled INTEGER DEFAULT 0," +
               "  night_vision_enabled INTEGER DEFAULT 0," +
               "  keyall_remaining_seconds INTEGER DEFAULT -1," +
@@ -3392,7 +3379,6 @@ public final class PlayerWipeResult {
             ")"
         );
         execute(
-            "CREATE TABLE IF NOT EXISTS duel_pending_returns (" +
             "  uuid VARCHAR(36) NOT NULL PRIMARY KEY," +
             "  world_name VARCHAR(128) NOT NULL," +
             "  x DOUBLE NOT NULL," +
@@ -3472,7 +3458,6 @@ public final class PlayerWipeResult {
         ensureColumnExists("players", "amethyst_break_messages_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "private_messages_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "keyall_notifications_enabled", "INTEGER DEFAULT 1");
-        ensureColumnExists("players", "duel_requests_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "public_chat_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "server_broadcasts_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "auction_notifications_enabled", "INTEGER DEFAULT 1");
@@ -3482,7 +3467,6 @@ public final class PlayerWipeResult {
         ensureColumnExists("players", "rtp_coordinates_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "order_notifications_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "team_chat_visible", "INTEGER DEFAULT 1");
-        ensureColumnExists("players", "duel_music_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "quiet_spawn_enabled", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "night_vision_enabled", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "keyall_remaining_seconds", "INTEGER DEFAULT -1");
@@ -3802,7 +3786,6 @@ public final class PlayerWipeResult {
         data.setAmethystBreakMessagesEnabled(rs.getInt("amethyst_break_messages_enabled") != 0);
         data.setPrivateMessagesChoice(com.bx.ultimateDonutSmp.models.ThreeChoice.fromInt(rs.getInt("private_messages_enabled")));
         data.setKeyAllNotificationsEnabled(rs.getInt("keyall_notifications_enabled") != 0);
-        data.setDuelRequestsEnabled(rs.getInt("duel_requests_enabled") != 0);
         data.setPublicChatEnabled(rs.getInt("public_chat_enabled") != 0);
         data.setServerBroadcastsEnabled(rs.getInt("server_broadcasts_enabled") != 0);
         data.setAuctionNotificationsEnabled(rs.getInt("auction_notifications_enabled") != 0);
@@ -3812,7 +3795,6 @@ public final class PlayerWipeResult {
         data.setRtpCoordinatesEnabled(rs.getInt("rtp_coordinates_enabled") != 0);
         data.setOrderNotificationsEnabled(rs.getInt("order_notifications_enabled") != 0);
         data.setTeamChatVisible(rs.getInt("team_chat_visible") != 0);
-        data.setDuelMusicEnabled(rs.getInt("duel_music_enabled") != 0);
         data.setQuietSpawnEnabled(rs.getInt("quiet_spawn_enabled") != 0);
         data.setNightVisionEnabled(rs.getInt("night_vision_enabled") != 0);
         data.setKeyAllRemainingSeconds(rs.getLong("keyall_remaining_seconds"));
@@ -4353,11 +4335,9 @@ public final class PlayerWipeResult {
                  chainmail_on_respawn_enabled, lunar_teammates_enabled, tpa_requests_enabled, auto_tpahere_enabled,
                  tpahere_requests_enabled, team_invites_enabled, mob_spawn_enabled, pay_confirm_menu_enabled,
                  totem_particles_enabled, fast_crystals_enabled, amethyst_break_messages_enabled,
-                 private_messages_enabled, keyall_notifications_enabled, duel_requests_enabled,
                  public_chat_enabled, server_broadcasts_enabled, auction_notifications_enabled,
                  explosion_particles_enabled, hide_all_players_enabled, notification_sounds_enabled,
                  rtp_coordinates_enabled, order_notifications_enabled, team_chat_visible,
-                    duel_music_enabled, quiet_spawn_enabled, night_vision_enabled, keyall_remaining_seconds,
                     shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until, destroy_pearl_on_death, randomized_coords, death_messages_choice,
                     advancement_messages_choice, join_leave_messages_choice, teleport_alerts_enabled,
                     follow_alerts_enabled, explosion_sounds_enabled, display_donutplus_enabled)
@@ -4426,7 +4406,6 @@ public final class PlayerWipeResult {
             ps.setInt(36, data.isAmethystBreakMessagesEnabled() ? 1 : 0);
             ps.setInt(37, data.getPrivateMessagesChoice().ordinal());
             ps.setInt(38, data.isKeyAllNotificationsEnabled() ? 1 : 0);
-            ps.setInt(39, data.isDuelRequestsEnabled() ? 1 : 0);
             ps.setInt(40, data.isPublicChatEnabled() ? 1 : 0);
             ps.setInt(41, data.isServerBroadcastsEnabled() ? 1 : 0);
             ps.setInt(42, data.isAuctionNotificationsEnabled() ? 1 : 0);
@@ -4436,7 +4415,6 @@ public final class PlayerWipeResult {
             ps.setInt(46, data.isRtpCoordinatesEnabled() ? 1 : 0);
             ps.setInt(47, data.isOrderNotificationsEnabled() ? 1 : 0);
             ps.setInt(48, data.isTeamChatVisible() ? 1 : 0);
-            ps.setInt(49, data.isDuelMusicEnabled() ? 1 : 0);
             ps.setInt(50, data.isQuietSpawnEnabled() ? 1 : 0);
             ps.setInt(51, data.isNightVisionEnabled() ? 1 : 0);
             ps.setLong(52, data.getKeyAllRemainingSeconds());
@@ -9691,9 +9669,6 @@ public final class CuboidData {
         counts.put("orders", countTableIfExists("orders")
                 + countTableIfExists("order_deliveries")
                 + countTableIfExists("order_claims"));
-        counts.put("duels", countTableIfExists("duel_stats")
-                + countTableIfExists("duel_matches")
-                + countTableIfExists("duel_claims"));
         counts.put("spawners", countWorldRows("spawners", resetWorlds));
         counts.put("crate_blocks", countWorldRows("crate_blocks", resetWorlds));
         return new ServerWipePreview(Map.copyOf(counts));
@@ -9815,9 +9790,6 @@ public final class CuboidData {
             deleteWholeTable("order_deliveries", "order_deliveries", affected);
             deleteWholeTable("orders", "orders", affected);
 
-            deleteWholeTable("duel_claims", "duel_claims", affected);
-            deleteWholeTable("duel_matches", "duel_matches", affected);
-            deleteWholeTable("duel_stats", "duel_stats", affected);
 
             if (!normalizedWorlds.isEmpty()) {
                 if (serverWipeTableExists("spawner_loot") && serverWipeTableExists("spawners")) {
@@ -9905,9 +9877,6 @@ public final class CuboidData {
         tables.put("order_deliveries", java.util.Collections.singletonList("deliverer_uuid"));
         tables.put("order_claims", java.util.Collections.singletonList("owner_uuid"));
         tables.put("order_ui_preferences", java.util.Collections.singletonList("player_uuid"));
-        tables.put("duel_stats", java.util.Collections.singletonList("player_uuid"));
-        tables.put("duel_matches", new java.util.ArrayList<>(java.util.Arrays.asList("player_one_uuid",  "player_two_uuid")));
-        tables.put("duel_claims", java.util.Collections.singletonList("player_uuid"));
         return Collections.unmodifiableMap(tables);
     }
 
@@ -9935,9 +9904,6 @@ public final class CuboidData {
         groups.put("order_deliveries", "orders");
         groups.put("order_claims", "orders");
         groups.put("order_ui_preferences", "orders");
-        groups.put("duel_stats", "duels");
-        groups.put("duel_matches", "duels");
-        groups.put("duel_claims", "duels");
         return Collections.unmodifiableMap(groups);
     }
 
@@ -10249,9 +10215,6 @@ public final class CuboidData {
         counts.put("orders", countTableIfExists("orders")
                 + countTableIfExists("order_deliveries")
                 + countTableIfExists("order_claims"));
-        counts.put("duels", countTableIfExists("duel_stats")
-                + countTableIfExists("duel_matches")
-                + countTableIfExists("duel_claims"));
         counts.put("spawners", countWorldRows("spawners", resetWorlds));
         counts.put("crate_blocks", countWorldRows("crate_blocks", resetWorlds));
         return new ServerWipePreview(Map.copyOf(counts));
@@ -10373,9 +10336,6 @@ public final class CuboidData {
             deleteWholeTable("order_deliveries", "order_deliveries", affected);
             deleteWholeTable("orders", "orders", affected);
 
-            deleteWholeTable("duel_claims", "duel_claims", affected);
-            deleteWholeTable("duel_matches", "duel_matches", affected);
-            deleteWholeTable("duel_stats", "duel_stats", affected);
 
             if (!normalizedWorlds.isEmpty()) {
                 if (serverWipeTableExists("spawner_loot") && serverWipeTableExists("spawners")) {
@@ -10463,9 +10423,6 @@ public final class CuboidData {
         tables.put("order_deliveries", java.util.Collections.singletonList("deliverer_uuid"));
         tables.put("order_claims", java.util.Collections.singletonList("owner_uuid"));
         tables.put("order_ui_preferences", java.util.Collections.singletonList("player_uuid"));
-        tables.put("duel_stats", java.util.Collections.singletonList("player_uuid"));
-        tables.put("duel_matches", new java.util.ArrayList<>(java.util.Arrays.asList("player_one_uuid",  "player_two_uuid")));
-        tables.put("duel_claims", java.util.Collections.singletonList("player_uuid"));
         return Collections.unmodifiableMap(tables);
     }
 
@@ -10493,9 +10450,6 @@ public final class CuboidData {
         groups.put("order_deliveries", "orders");
         groups.put("order_claims", "orders");
         groups.put("order_ui_preferences", "orders");
-        groups.put("duel_stats", "duels");
-        groups.put("duel_matches", "duels");
-        groups.put("duel_claims", "duels");
         return Collections.unmodifiableMap(groups);
     }
 
@@ -11322,17 +11276,14 @@ public final class CuboidData {
         }
     }
 
-    public void savePendingDuelReturn(UUID uuid, Location location) {
         if (uuid == null || location == null || location.getWorld() == null) {
             return;
         }
         try {
-            try (PreparedStatement del = connection.prepareStatement("DELETE FROM duel_pending_returns WHERE uuid = ?")) {
                 del.setString(1, uuid.toString());
                 del.executeUpdate();
             }
             try (PreparedStatement ins = connection.prepareStatement(
-                    "INSERT INTO duel_pending_returns (uuid, world_name, x, y, z, yaw, pitch, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
                 ins.setString(1, uuid.toString());
                 ins.setString(2, location.getWorld().getName());
                 ins.setDouble(3, location.getX());
@@ -11344,15 +11295,12 @@ public final class CuboidData {
                 ins.executeUpdate();
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to save pending duel return for " + uuid, e);
         }
     }
 
-    public Location getPendingDuelReturn(UUID uuid) {
         if (uuid == null) {
             return null;
         }
-        String sql = "SELECT world_name, x, y, z, yaw, pitch FROM duel_pending_returns WHERE uuid = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, uuid.toString());
             try (ResultSet rs = stmt.executeQuery()) {
@@ -11370,27 +11318,21 @@ public final class CuboidData {
                 }
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load pending duel return for " + uuid, e);
         }
         return null;
     }
 
-    public void deletePendingDuelReturn(UUID uuid) {
         if (uuid == null) {
             return;
         }
-        String sql = "DELETE FROM duel_pending_returns WHERE uuid = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, uuid.toString());
             stmt.executeUpdate();
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to delete pending duel return for " + uuid, e);
         }
     }
 
-    public Map<UUID, Location> getAllPendingDuelReturns() {
         Map<UUID, Location> result = new HashMap<>();
-        String sql = "SELECT uuid, world_name, x, y, z, yaw, pitch FROM duel_pending_returns";
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
@@ -11410,7 +11352,6 @@ public final class CuboidData {
                 } catch (IllegalArgumentException ignored) {}
             }
         } catch (SQLException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to load all pending duel returns", e);
         }
         return result;
     }

@@ -18,7 +18,6 @@ public final class PlayerSettingUtils {
 
     public enum SoundChannel {
         NOTIFICATION,
-        DUEL,
         GAMEPLAY
     }
 
@@ -56,7 +55,7 @@ public final class PlayerSettingUtils {
         if (data == null || channel == null || channel == SoundChannel.GAMEPLAY) {
             return true;
         }
-        return switch (channel) {        case NOTIFICATION: data.isNotificationSoundsEnabled(); break;        case DUEL: data.isDuelMusicEnabled(); break;        case GAMEPLAY: true; break;
+        return switch (channel) {        case NOTIFICATION: data.isNotificationSoundsEnabled(); break;        case GAMEPLAY: true; break;
         };
     }
 

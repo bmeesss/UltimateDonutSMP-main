@@ -116,16 +116,6 @@ ORDERS:
   SUCCESS: minecraft:entity.experience_orb.pickup|1.0|1.2
   # The text or value for Fail. Available options: Any valid string text
   FAIL: minecraft:entity.villager.no|1.0|1.0
-# Configuration section for Duels.
-DUELS:
-  # The text or value for Click. Available options: Any valid string text
-  CLICK: minecraft:ui.button.click|1.0|1.0
-  # The text or value for Request Sent. Available options: Any valid string text
-  REQUEST-SENT: minecraft:entity.experience_orb.pickup|1.0|1.2
-  # The text or value for Request Received. Available options: Any valid string text
-  REQUEST-RECEIVED: minecraft:block.note_block.pling|1.0|1.0
-  # The text or value for Queue Join. Available options: Any valid string text
-  QUEUE-JOIN: minecraft:block.note_block.hat|1.0|1.0
   # Configuration section for Start Countdown.
   START-COUNTDOWN:
     # Configuration section for Per Second.
