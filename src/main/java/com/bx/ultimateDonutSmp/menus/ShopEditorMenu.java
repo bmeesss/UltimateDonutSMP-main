@@ -49,7 +49,8 @@ public class ShopEditorMenu extends BaseMenu {
                 continue;
             }
             set(reserved, ItemUtils.createItem(
-                    Material.GRAY_STAINED_GLASS_PANE,
+                    Material.STAINED_GLASS_PANE,
+                    (short) 7,
                     "&7Menu button slot",
                     java.util.Collections.singletonList("&7The shop uses this slot for its own buttons.")
             ));

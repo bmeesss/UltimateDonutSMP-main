@@ -24,7 +24,7 @@ public class MediaMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
 
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         mediaButtonSlot = configuredSlot(plugin, inventory.getSize());

@@ -36,8 +36,9 @@ Source files: **421 src/main + 69 src/test**.
 | Spigot 1.12.2 API — Batch 27 (Simple Materials, 10 files: `CLOCK`, `SPAWNER`, `GRASS_BLOCK`, `WRITABLE_BOOK`, `EXPERIENCE_BOTTLE`, `ENDER_EYE`, `RED_DYE`) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 28 (stained-glass panes, 10 files) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 29 (dyes → `INK_SACK` + data, 5 files) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API — Batch 30 (stained-glass panes part 2, 10 files) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–30; later batches not started) |
+| Spigot 1.12.2 API — Batch 30 (stained-glass panes part 2, 10 files) | ✅ **COMPLETE / MERGED** (PR #26, master `68ab746`) |
+| Spigot 1.12.2 API — Batch 31 (direct pane ItemStack sites, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–31; Batch 32 NOT STARTED) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -621,7 +622,7 @@ about language/API level):
 
 ---
 
-## Category C — Spigot 1.12.2 API migration: IN PROGRESS (Batches 26–30)
+## Category C — Spigot 1.12.2 API migration: IN PROGRESS (Batches 26–31)
 
 **Category C has officially started.** Batch 26 is the first intentional Spigot/Bukkit 1.12.2 API
 migration. Scope was **modern Material constants + `Material.isAir()` only** in 10 isolated files.
@@ -840,9 +841,51 @@ ItemStack-creation sites (34 `fill(Material)` + 5 `createItem`/`createGlassPane`
 `ItemUtils.parseMaterial()` was **not** modified; the modern pane strings in code defaults and
 resources YAML remain byte-identical for a dedicated config-compatibility batch.
 
-**Category C status:** **IN PROGRESS** — Batches 26–30 are complete; the remaining config-driven
-pane/dye/head/1.13+ items and the rest of Category C (BlockData, PDC, NamespacedKey, ProtocolLib, NMS,
-Adventure, Particle, Sound, EntityType) remain for later batches.
+**Category C status:** **IN PROGRESS** — Batches 26–31 are complete; the remaining direct pane sites,
+the config-driven pane/dye/head/1.13+ items and the rest of Category C (BlockData, PDC, NamespacedKey,
+ProtocolLib, NMS, Adventure, Particle, Sound, EntityType) remain for later batches.
+
+### Batch 31 — Direct pane ItemStack sites part 1 (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `68ab7469a2ce90a326e2c4587a6f7d7bedb5909a` (PR #26 merge). Fresh inventory
+found **103** target pane references: **39** direct ItemStack-creation sites (34 `fill(Material)`,
+4 `createItem`, 1 `createGlassPane`), **64** config parsing/default sites, **0** comparisons.
+Scope: exactly **10** direct ItemStack/fill sites migrated across **10** files — the maximum batch size.
+Only direct creations were touched; every config string/parsing/default site was left byte-identical.
+
+| Legacy Material | 1.12.2 replacement | Legacy data | Sites |
+|---|---|---:|---:|
+| `GRAY_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 7` | 4 |
+| `BLACK_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 15` | 5 |
+| `RED_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 14` | 1 |
+| `LIME_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 5` | 0 (no direct LIME sites exist) |
+
+Files changed: `menus/BountyMenu.java`, `menus/BountyConfirmMenu.java`, `menus/HideMenu.java`,
+`menus/MediaMenu.java`, `menus/RulesMenu.java`, `menus/DisguiseSkinMenu.java`, `menus/HideListMenu.java`,
+`menus/ShopEditorMenu.java`, `menus/CrateGachaMenu.java` (indicator item — the only direct RED site),
+`managers/InvseeManager.java` (`createGlassPane(GRAY_…)` → existing `createGlassPane()` ≡ SGP+7).
+
+All sites reuse the existing Batch-26/28 data-aware helpers (`BaseMenu.fill(Material, short)`,
+`ItemUtils.createItem(Material, short, …)`, `ItemUtils.createGlassPane()`); `ItemUtils.java` /
+`BaseMenu.java` / `ItemUtils.parseMaterial()` were **not** modified. Amount, name, lore, slot and meta
+preserved at every site. No comparisons existed or were touched.
+
+**Material counts:** 103 → **93** target pane references (−10, exactly the selected sites): GRAY 39→35,
+BLACK 22→17, RED 20→19, LIME 22→22. `Material.isAir()` remains exactly **103**. Batch 26–30 mappings
+intact and only grown additively (SGP+7 36, SGP+15 18, SGP+14 3, SGP+5 2, SGP+8 1, `STAINED_CLAY` 2,
+`WATCH`/`MOB_SPAWNER`/`BOOK_AND_QUILL`/`EYE_OF_ENDER`/`EXP_BOTTLE`/`GRASS`/`INK_SACK` untouched).
+
+**Remaining 93 target pane refs, classified:** **29** direct ItemStack-creation sites (all
+`fill(Material)` — e.g. `ConfirmKillMenu`, `SellGui`, `SpawnerMainMenu`, `ShopMenu`, `TeamMenu`,
+`PlayerAuctionGui`, `StatsMenu`) for later batches; **64** config parsing/default sites
+(`parseMaterial` defaults, `AuctionHouseMenuSupport.control()` / `OrdersMenuSupport.button()`
+fallbacks, Team/Stats `material()` helpers, `CrateManager` defaults) deliberately deferred; **0**
+comparisons. **Batch 32 NOT STARTED.**
+
+**Validation:** tree-sitter 0.26.0 runtime + tree-sitter-java 0.23.5 grammar, explicit full-buffer
+parse of all **421** src/main files — **0** ERROR/MISSING, **0** token-level delimiter imbalances,
+**0** duplicate declarations (full signatures) in changed files, **0** javac-invalid markers,
+`git diff --check` clean, 0 forbidden-zone hits in the diff, 0 test/resource files touched.
 
 **Build not verified — Maven/JDK unavailable.**
 
@@ -908,10 +951,14 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
 7. ~~Spigot 1.12.2 stained-glass panes (Batch 28)~~ — **done (Batch 28).**
 8. ~~Spigot 1.12.2 dyes → `INK_SACK` + data (Batch 29)~~ — **done (Batch 29).**
 9. ~~Spigot 1.12.2 stained-glass panes part 2 (Batch 30, 10 files / 23 refs)~~ — **done (Batch 30).**
-10. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 31 in
-    this checkpoint.** The 39 remaining direct pane ItemStack-creation sites (34 `fill`, 5 create*), the
-    config-driven pane compatibility layer, and the remaining modern dye/head/1.13+ items plus 103
-    `isAir()` sites are later batches. BlockData / PDC / NMS / ProtocolLib stay deferred.
+10. ~~Spigot 1.12.2 direct pane ItemStack sites part 1 (Batch 31, 10 files / 10 sites)~~ — **done (Batch 31,
+    this checkpoint).** 93 target pane refs remain: **29** direct ItemStack-creation sites (all
+    `fill(Material)`) for later batches, **64** config parsing/default sites deliberately deferred to a
+    dedicated config-compatibility batch, **0** comparisons.
+11. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 32 NOT STARTED.**
+    The 29 remaining direct pane sites, the config-driven pane compatibility layer, and the remaining
+    modern dye/head/1.13+ items plus 103 `isAir()` sites are later batches. BlockData / PDC / NMS /
+    ProtocolLib stay deferred.
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.
 > Java 8 compatibility is statically complete; real javac/Maven verification remains.
