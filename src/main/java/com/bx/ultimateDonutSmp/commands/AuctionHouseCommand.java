@@ -54,224 +54,44 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         switch (subcommand) {
             case "": {
                 if (requirePermission(player, "use")) {
-                                openBrowse(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openBrowse(player);
+                }
                 break;
             }
             case "sell": {
                 if (requirePermission(player, "sell")) {
-                                handleSell(player, args);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleSell(player, args);
+                }
                 break;
             }
             case "my": {
                 if (requirePermission(player, "my")) {
-                                openPlayerItems(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openPlayerItems(player);
+                }
                 break;
             }
             case "claims": {
                 if (!requirePermission(player, "claims")) {
-                                return true;
-                            }
-                            if (!manager.isClaimsEnabled()) {
-                                manager.processAutoClaims(player);
-                                send(player, "AUCTION_HOUSE.CLAIMS_AUTOMATIC", "&eClaims are collected automatically.");
-                            } else {
-                                openPlayerItems(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    return true;
+                }
+                if (!manager.isClaimsEnabled()) {
+                    manager.processAutoClaims(player);
+                    send(player, "AUCTION_HOUSE.CLAIMS_AUTOMATIC", "&eClaims are collected automatically.");
+                } else {
+                    openPlayerItems(player);
+                }
                 break;
             }
             case "cancel": {
                 if (requirePermission(player, "cancel")) {
-                                handleCancel(player, args);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleCancel(player, args);
+                }
                 break;
             }
             case "limit": {
                 if (requirePermission(player, "limit")) {
-                                handleLimit(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleLimit(player);
+                }
                 break;
             }
             case "fastbuy":
@@ -282,38 +102,8 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
                 break;
             default: {
                 if (requirePermission(player, "use")) {
-                                openBrowse(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openBrowse(player);
+                }
                 break;
             }
         }
@@ -440,8 +230,8 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         plugin.getAuctionHouseManager().cancelListing(player, listingId)
                 .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                     if (!result.success()) {
-String;
-switch (result.reason()) {
+                        String key = null;
+                        switch (result.reason()) {
                             case DISABLED:
                                 key = "AUCTION_HOUSE.DISABLED";
                                 break;

@@ -217,8 +217,8 @@ public final class SellGui extends BaseMenu {
                 return;
             }
 
-String;
-switch (result.reason()) {
+            String key = null;
+            switch (result.reason()) {
                 case DISABLED:
                     key = "AUCTION_HOUSE.DISABLED";
                     break;
