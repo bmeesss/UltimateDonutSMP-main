@@ -134,14 +134,14 @@ public class PlayerLogsMenu extends BaseMenu {
                 material = Material.TRIPWIRE_HOOK;
                 break;
             case "spawners":
-                material = Material.SPAWNER;
+                material = Material.MOB_SPAWNER;
                 break;
             case "deaths":
                 material = Material.SKELETON_SKULL;
                 break;
             case "messages":
             case "msg":
-                material = Material.WRITABLE_BOOK;
+                material = Material.BOOK_AND_QUILL;
                 break;
             case "chat":
                 material = Material.BOOK;

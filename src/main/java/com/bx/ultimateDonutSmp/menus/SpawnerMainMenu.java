@@ -146,7 +146,7 @@ public class SpawnerMainMenu extends BaseMenu {
             int xpSlot = config.getInt("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.SLOT", 15);
             String xpMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.MATERIAL", "EXPERIENCE_BOTTLE");
             Material xpMat = Material.matchMaterial(xpMatName);
-            if (xpMat == null) xpMat = Material.EXPERIENCE_BOTTLE;
+            if (xpMat == null) xpMat = Material.EXP_BOTTLE;
 
             String xpTitle = config.getString("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.TITLE", "&aCollect XP");
             double storedXp = instance.getStoredXp();

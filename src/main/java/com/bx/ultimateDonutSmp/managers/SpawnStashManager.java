@@ -300,7 +300,7 @@ public class SpawnStashManager {
     }
 
     public boolean isActiveSpawner(Block block) {
-        return block != null && block.getType() == Material.SPAWNER && isActiveBlock(block);
+        return block != null && block.getType() == Material.MOB_SPAWNER && isActiveBlock(block);
     }
 
     public boolean triggerBlockAlert(Player player, Block block, String reason) {

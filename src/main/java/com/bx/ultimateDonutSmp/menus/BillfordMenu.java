@@ -188,7 +188,7 @@ public class BillfordMenu extends BaseMenu {
         timerPlaceholders.put("{trade_id}", String.valueOf(manager.getCurrentTradeId()));
         timerPlaceholders.put("{trade_count}", String.valueOf(manager.getTradeCount()));
         set(clockSlot, ItemUtils.createItem(
-                Material.CLOCK,
+                Material.WATCH,
                 replacePlaceholders(getConfigString("GUI.COUNTDOWN_NAME", "&e{trade_name}"), timerPlaceholders),
                 replaceLore(
                         getConfigStringList(

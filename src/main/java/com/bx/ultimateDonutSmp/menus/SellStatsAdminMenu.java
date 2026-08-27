@@ -154,7 +154,7 @@ public class SellStatsAdminMenu extends BaseMenu {
 
         // Tab 4: Recent Logs (Clock)
         set(TAB_LOGS_SLOT, ItemUtils.createItem(
-                mode == Mode.RECENT_LOGS ? Material.CLOCK : Material.COMPASS,
+                mode == Mode.RECENT_LOGS ? Material.WATCH : Material.COMPASS,
                 (mode == Mode.RECENT_LOGS ? "&a&l" : "&e") + "Recent Sales Log",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7View live global sales transaction log.", 
@@ -165,7 +165,7 @@ public class SellStatsAdminMenu extends BaseMenu {
 
         // Export Button (Book & Quill)
         set(EXPORT_SLOT, ItemUtils.createItem(
-                Material.WRITABLE_BOOK,
+                Material.BOOK_AND_QUILL,
                 "&b&lExport Sell Report",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Generate a complete sales report file", 
