@@ -33,7 +33,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         if (instance == null) {
             inventory = Bukkit.createInventory(this, 27, ColorUtils.toComponent("&8Spawner Missing"));
             clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
             set(13, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
             return;
         }
@@ -44,7 +44,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         inventory = Bukkit.createInventory(this, menuSize, ColorUtils.toComponent(titleStr));
 
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         String mobLabel = instance.getMobTypeKey().replace('_', ' ').toUpperCase();
         long totalItems = instance.getTotalStoredItems();

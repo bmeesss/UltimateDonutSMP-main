@@ -31,7 +31,7 @@ public class OrdersCollectMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         List<OrderCollectionClaim> claims = getClaims(player);
         int itemsPerPage = plugin.getOrdersManager().getCollectItemsPerPage();
@@ -54,7 +54,7 @@ public class OrdersCollectMenu extends BaseMenu {
         set(lastRow, ItemUtils.createItem(Material.COMPASS, "&bBack to board", java.util.Collections.singletonList("&7Return to active orders")));
         set(lastRow + 1, page > 1
                 ? ItemUtils.createItem(Material.ARROW, "&aPrevious page", java.util.Collections.singletonList("&7Go to page &f" + (page - 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
         set(lastRow + 2, ItemUtils.createItem(Material.BOOK_AND_QUILL, "&bMy orders", java.util.Collections.singletonList("&7View your orders")));
         set(lastRow + 3, ItemUtils.createItem(Material.WATCH, "&eRefresh", java.util.Collections.singletonList("&7Reload your collect queue")));
         set(lastRow + 4, OrdersMenuSupport.button(
@@ -68,7 +68,7 @@ public class OrdersCollectMenu extends BaseMenu {
         ));
         set(lastRow + 7, hasNextPage(claims.size(), itemsPerPage)
                 ? ItemUtils.createItem(Material.ARROW, "&aNext page", java.util.Collections.singletonList("&7Go to page &f" + (page + 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
         set(lastRow + 8, OrdersMenuSupport.button(
                 plugin, "GUI.COLLECT.BUTTONS.DROP_PAGE", "ORDERS.GUI.COLLECT.DROP_PAGE",
                 Material.DROPPER, "&eDrop page", java.util.Collections.singletonList("&fDrop item claims safely at your feet")

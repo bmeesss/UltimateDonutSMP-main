@@ -33,7 +33,7 @@ public class OrdersInventoryItemMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         int lastRow = inventory.getSize() - 9;
         set(11, ItemUtils.createItem(
@@ -54,7 +54,7 @@ public class OrdersInventoryItemMenu extends BaseMenu {
                 ))
         ));
         set(lastRow, ItemUtils.createItem(Material.COMPASS, "&bBack to orders", java.util.Collections.singletonList("&7Return to the order board")));
-        set(lastRow + 8, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+        set(lastRow + 8, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
