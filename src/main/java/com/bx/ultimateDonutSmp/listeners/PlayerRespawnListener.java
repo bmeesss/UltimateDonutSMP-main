@@ -180,11 +180,13 @@ public class PlayerRespawnListener implements Listener {
                 int amount = 1;
                 String name = null;
 
-                if (obj instanceof ConfigurationSection section) {
+                if (obj instanceof ConfigurationSection) {
+                    ConfigurationSection section = (ConfigurationSection) obj;
                     mat = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
                     amount = section.getInt("AMOUNT", 1);
                     name = section.getString("NAME");
-                } else if (obj instanceof java.util.Map<?, ?> map) {
+                } else if (obj instanceof java.util.Map<?, ?>) {
+                    java.util.Map<?, ?> map = (java.util.Map<?, ?>) obj;
                     Object matObj = map.get("MATERIAL");
                     if (matObj != null) {
                         mat = ItemUtils.parseMaterial(matObj.toString());

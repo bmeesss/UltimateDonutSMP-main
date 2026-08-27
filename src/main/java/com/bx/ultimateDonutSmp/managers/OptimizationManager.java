@@ -301,11 +301,17 @@ public class OptimizationManager {
 
     private double readTps() {
         Object result = invokeNoArgs("getTPS");
-        if (result instanceof double[] values && values.length > 0) {
-            return values[0];
+        if (result instanceof double[]) {
+            double[] values = (double[]) result;
+            if (values.length > 0) {
+                return values[0];
+            }
         }
-        if (result instanceof float[] values && values.length > 0) {
-            return values[0];
+        if (result instanceof float[]) {
+            float[] values = (float[]) result;
+            if (values.length > 0) {
+                return values[0];
+            }
         }
         if (result instanceof Number) {
             Number number = (Number) result;
@@ -322,18 +328,21 @@ public class OptimizationManager {
         }
 
         Object tickTimes = invokeNoArgs("getTickTimes");
-        if (tickTimes instanceof long[] values && values.length > 0) {
-            long total = 0L;
-            int samples = 0;
-            for (long value : values) {
-                if (value <= 0L) {
-                    continue;
+        if (tickTimes instanceof long[]) {
+            long[] values = (long[]) tickTimes;
+            if (values.length > 0) {
+                long total = 0L;
+                int samples = 0;
+                for (long value : values) {
+                    if (value <= 0L) {
+                        continue;
+                    }
+                    total += value;
+                    samples++;
                 }
-                total += value;
-                samples++;
-            }
-            if (samples > 0) {
-                return (total / (double) samples) / 1_000_000.0D;
+                if (samples > 0) {
+                    return (total / (double) samples) / 1_000_000.0D;
+                }
             }
         }
 

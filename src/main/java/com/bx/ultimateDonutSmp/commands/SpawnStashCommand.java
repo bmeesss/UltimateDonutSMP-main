@@ -51,10 +51,11 @@ public class SpawnStashCommand implements CommandExecutor, TabCompleter {
             send(sender, noPermission());
             return true;
         }
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, plugin.getSpawnStashManager().publicMessage("PLAYER-ONLY", "&conly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
         if (typeKey == null || typeKey.trim().isEmpty()) {
             plugin.getSpawnStashManager().sendUsage(sender, label);
             return true;
@@ -135,10 +136,11 @@ public class SpawnStashCommand implements CommandExecutor, TabCompleter {
             }
             result = plugin.getSpawnStashManager().removeAll();
         } else if (target.equals("nearest")) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 send(sender, plugin.getSpawnStashManager().publicMessage("PLAYER-ONLY", "&conly players can use this command."));
                 return true;
             }
+            Player player = (Player) sender;
             result = plugin.getSpawnStashManager().removeNearest(player);
         } else {
             try {

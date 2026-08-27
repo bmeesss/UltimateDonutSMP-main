@@ -76,9 +76,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) {
+        if (!(event.getPlayer() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getPlayer();
 
         if (isPlayerInventoryView(event.getInventory())) {
             return;
@@ -103,9 +104,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
@@ -190,9 +192,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (isAmethystItem(event.getOldCursor())) {
             return;

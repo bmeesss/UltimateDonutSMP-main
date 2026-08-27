@@ -425,10 +425,11 @@ public class SpawnStashManager {
 
         List<SpawnStashBlockDefinition> blocks = new ArrayList<>();
         for (Object rawBlock : rawBlocks) {
-            if (!(rawBlock instanceof Map<?, ?> map)) {
+            if (!(rawBlock instanceof Map<?, ?>)) {
                 plugin.getLogger().warning("Ignoring invalid SpawnStash block in type " + typeKey + ".");
                 continue;
             }
+            Map<?, ?> map = (Map<?, ?>) rawBlock;
 
             SpawnStashOffset offset = parseOffsetValue(value(map, "OFFSET"), SpawnStashOffset.ZERO);
             String materialName = stringValue(value(map, "MATERIAL"));
@@ -475,15 +476,17 @@ public class SpawnStashManager {
     }
 
     private List<SpawnStashItemDefinition> parseItems(Object rawItems) {
-        if (!(rawItems instanceof List<?> list) || list.isEmpty()) {
+        if (!(rawItems instanceof List<?>) || ((List<?>) rawItems).isEmpty()) {
             return java.util.Collections.emptyList();
         }
+        List<?> list = (List<?>) rawItems;
 
         List<SpawnStashItemDefinition> items = new ArrayList<>();
         for (Object rawItem : list) {
-            if (!(rawItem instanceof Map<?, ?> map)) {
+            if (!(rawItem instanceof Map<?, ?>)) {
                 continue;
             }
+            Map<?, ?> map = (Map<?, ?>) rawItem;
             Material material = parseMaterial(stringValue(value(map, "MATERIAL")));
             if (material == null || !material.isItem()) {
                 continue;

@@ -249,14 +249,20 @@ public static final class ContainerStats {
     }
 
     private ContainerValidation validateContainers(ItemStack item, int depth) {
-        if (isMissing(item) || !(item.getItemMeta() instanceof BlockStateMeta blockStateMeta)) {
+        if (isMissing(item)) {
             return ContainerValidation.allowed(0);
         }
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof BlockStateMeta)) {
+            return ContainerValidation.allowed(0);
+        }
+        BlockStateMeta blockStateMeta = (BlockStateMeta) itemMeta;
 
         BlockState blockState = blockStateMeta.getBlockState();
-        if (!(blockState instanceof Container container)) {
+        if (!(blockState instanceof Container)) {
             return ContainerValidation.allowed(0);
         }
+        Container container = (Container) blockState;
 
         int maxDepth = maxContainerDepth();
         if (depth > maxDepth) {
@@ -275,8 +281,10 @@ public static final class ContainerStats {
                 return ContainerValidation.blocked("container has too many stored items (" + nestedItems + "/" + maxNestedItems + ")");
             }
 
-            if (content.getItemMeta() instanceof BlockStateMeta nestedMeta
-                    && nestedMeta.getBlockState() instanceof Container) {
+            ItemMeta contentItemMeta = content.getItemMeta();
+            if (contentItemMeta instanceof BlockStateMeta
+                    && ((BlockStateMeta) contentItemMeta).getBlockState() instanceof Container) {
+                BlockStateMeta nestedMeta = (BlockStateMeta) contentItemMeta;
                 Container nestedContainer = (Container) nestedMeta.getBlockState();
                 if (blockNestedContainers()) {
                     boolean isShulker = org.bukkit.Tag.SHULKER_BOXES.isTagged(content.getType());

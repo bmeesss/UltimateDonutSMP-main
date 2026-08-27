@@ -59,41 +59,11 @@ public class FriendsCommand implements CommandExecutor {
         switch (sub) {
             case "reload": {
                 if (PermissionUtils.has(player, ADMIN_PERMISSION)) {
-                                plugin.getConfigManager().reload();
-                                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.RELOAD_SUCCESS"), player));
-                            } else {
-                                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.NO_PERMISSION"), player));
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    plugin.getConfigManager().reload();
+                    player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.RELOAD_SUCCESS"), player));
+                } else {
+                    player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.NO_PERMISSION"), player));
+                }
                 break;
             }
             case "list":
@@ -111,151 +81,31 @@ public class FriendsCommand implements CommandExecutor {
             case "add":
             case "follow": {
                 if (args.length < 2) {
-                                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_FOLLOW"), player));
-                                return true;
-                            }
-                            handleFollow(player, args[1]);
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_FOLLOW"), player));
+                    return true;
+                }
+                handleFollow(player, args[1]);
                 break;
             }
             case "remove":
             case "unfollow": {
                 if (args.length < 2) {
-                                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_REMOVE"), player));
-                                return true;
-                            }
-                            handleUnfollow(player, args[1]);
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_REMOVE"), player));
+                    return true;
+                }
+                handleUnfollow(player, args[1]);
                 break;
             }
             case "search": {
                 if (args.length < 2) {
-                                player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_SEARCH"), player));
-                                return true;
-                            }
-                            new FriendsMenu(plugin, 0, args[1], FriendsMenu.FilterType.ALL).open(player);
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.USAGE_SEARCH"), player));
+                    return true;
+                }
+                new FriendsMenu(plugin, 0, args[1], FriendsMenu.FilterType.ALL).open(player);
                 break;
             }
             default: {
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("FRIENDS.UNKNOWN_SUBCOMMAND"), player));
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
                 break;
             }
         }

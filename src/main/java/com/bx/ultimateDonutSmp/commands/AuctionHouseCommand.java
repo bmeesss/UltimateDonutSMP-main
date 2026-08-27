@@ -32,13 +32,14 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getLanguageManager().message(
                     "AUCTION_HOUSE.PLAYERS_ONLY",
                     "Only players can use this command."
             ));
             return true;
         }
+        Player player = (Player) sender;
 
         AuctionHouseManager manager = plugin.getAuctionHouseManager();
         String subcommand = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
@@ -409,9 +410,10 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player player) || args.length != 1) {
+        if (!(sender instanceof Player) || args.length != 1) {
             return java.util.Collections.emptyList();
         }
+        Player player = (Player) sender;
         List<String> values = new ArrayList<>();
         if (canUse(player, "sell")) {
             values.add("sell");

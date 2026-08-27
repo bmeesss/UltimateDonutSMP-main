@@ -292,8 +292,11 @@ public class CrateVisualManager {
         if (trackedIds != null && trackedIds.size() == requiredLines) {
             for (UUID entityId : trackedIds) {
                 Entity entity = Bukkit.getEntity(entityId);
-                if (entity instanceof TextDisplay td && entity.isValid() && td.getScoreboardTags().contains(HOLOGRAM_TAG)) {
-                    displays.add(td);
+                if (entity instanceof TextDisplay && entity.isValid()) {
+                    TextDisplay td = (TextDisplay) entity;
+                    if (td.getScoreboardTags().contains(HOLOGRAM_TAG)) {
+                        displays.add(td);
+                    }
                 }
             }
         }
@@ -438,8 +441,8 @@ public class CrateVisualManager {
         UUID existingId = playerDisplays.get(key);
         if (existingId != null) {
             Entity entity = Bukkit.getEntity(existingId);
-            if (entity instanceof TextDisplay textDisplay && entity.isValid()) {
-                display = textDisplay;
+            if (entity instanceof TextDisplay && entity.isValid()) {
+                display = (TextDisplay) entity;
                 shouldShowToOwner = !playerDisplayTexts.containsKey(key);
             } else {
                 playerDisplays.remove(key);
@@ -827,9 +830,10 @@ public class CrateVisualManager {
 
     private void animateLid(Block block) {
         BlockState state = block.getState();
-        if (!(state instanceof Lidded lidded)) {
+        if (!(state instanceof Lidded)) {
             return;
         }
+        Lidded lidded = (Lidded) state;
 
         try {
             lidded.open();
@@ -1113,8 +1117,11 @@ public class CrateVisualManager {
         ItemDisplay display = null;
         if (entityId != null) {
             Entity entity = Bukkit.getEntity(entityId);
-            if (entity instanceof ItemDisplay id && entity.isValid() && id.getScoreboardTags().contains(PREVIEW_TAG)) {
-                display = id;
+            if (entity instanceof ItemDisplay && entity.isValid()) {
+                ItemDisplay id = (ItemDisplay) entity;
+                if (id.getScoreboardTags().contains(PREVIEW_TAG)) {
+                    display = id;
+                }
             }
         }
 
@@ -1200,9 +1207,10 @@ public class CrateVisualManager {
             }
 
             Entity entity = Bukkit.getEntity(entityId);
-            if (!(entity instanceof ItemDisplay display) || !entity.isValid()) {
+            if (!(entity instanceof ItemDisplay) || !entity.isValid()) {
                 continue;
             }
+            ItemDisplay display = (ItemDisplay) entity;
 
             plugin.getSpigotScheduler().runEntity(display, () -> {
                 if (!display.isValid()) {

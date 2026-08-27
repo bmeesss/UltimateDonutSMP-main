@@ -94,7 +94,7 @@ public class ClearLagManager {
                             if (!entity.isValid()) return;
 
                             if (checkNamed && entity.getCustomName() != null) return;
-                            if (checkTamed && entity instanceof Tameable tameable && tameable.isTamed()) return;
+                            if (checkTamed && entity instanceof Tameable && ((Tameable) entity).isTamed()) return;
                             if (checkVillagers && (entity instanceof AbstractVillager || entity instanceof NPC)) return;
 
                             boolean typeExcluded = false;
@@ -161,7 +161,7 @@ public class ClearLagManager {
                 if (checkNamed && entity.getCustomName() != null) continue;
 
                 // Check tamed exclusion
-                if (checkTamed && entity instanceof Tameable tameable && tameable.isTamed()) continue;
+                if (checkTamed && entity instanceof Tameable && ((Tameable) entity).isTamed()) continue;
 
                 // Check villagers/NPCs exclusion
                 if (checkVillagers && (entity instanceof AbstractVillager || entity instanceof NPC)) continue;
