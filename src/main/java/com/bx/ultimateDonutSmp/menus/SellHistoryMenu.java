@@ -177,7 +177,7 @@ public class SellHistoryMenu extends BaseMenu {
             if (word.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));

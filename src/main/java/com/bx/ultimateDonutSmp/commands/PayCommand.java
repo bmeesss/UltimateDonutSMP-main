@@ -21,7 +21,8 @@ public class PayCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         if (args.length < 2) { player.sendMessage(ColorUtils.toComponent("&cUsage: /pay <player> <amount>")); return true; }
 
         if (args[0].equalsIgnoreCase(player.getName())) {

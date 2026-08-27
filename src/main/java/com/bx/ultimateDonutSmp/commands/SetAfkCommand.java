@@ -23,10 +23,11 @@ public class SetAfkCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Only players can save AFK locations.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION) && !PermissionUtils.has(player, SETUP_PERMISSION)) {
             player.sendMessage(ColorUtils.toComponent("&cYou do not have permission to set AFK."));

@@ -151,7 +151,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         }
 
         if (slot == confirmSlot) {
-            var sellResult = plugin.getSpawnerManager().sellAllLoot(player, instance);
+            SpawnerManager.SellLootResult sellResult = plugin.getSpawnerManager().sellAllLoot(player, instance);
             player.sendMessage(ColorUtils.toComponent(sellResult.message()));
             new SpawnerStorageMenu(plugin, spawnerId, returnPage).open(player);
             return;

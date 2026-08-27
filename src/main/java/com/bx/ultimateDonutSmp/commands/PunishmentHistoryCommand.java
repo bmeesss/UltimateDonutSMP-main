@@ -21,13 +21,14 @@ public class PunishmentHistoryCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getConfigManager().getMessageOrDefault(
                     "PUNISHMENTS.PLAYER-ONLY",
                     "&cOnly players can use this command."
             ));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!plugin.getPunishmentManager().canView(player)) {
             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(

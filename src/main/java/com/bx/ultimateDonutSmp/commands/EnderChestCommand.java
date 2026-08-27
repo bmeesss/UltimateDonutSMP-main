@@ -37,10 +37,11 @@ public class EnderChestCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (!plugin.getEnderChestManager().isEnabled()) {
             player.sendMessage(ColorUtils.toComponent(

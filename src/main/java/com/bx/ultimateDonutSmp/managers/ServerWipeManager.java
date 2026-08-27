@@ -543,7 +543,7 @@ public final class MovedPath {
         }
 
         if (!Bukkit.getWorlds().isEmpty()) {
-            String primary = Bukkit.getWorlds().getFirst().getName();
+            String primary = Bukkit.getWorlds().get(0).getName();
             addWorldName(protectedWorlds, primary);
             addWorldName(protectedWorlds, primary + "_nether");
             addWorldName(protectedWorlds, primary + "_the_end");

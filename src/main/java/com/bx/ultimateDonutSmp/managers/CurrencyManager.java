@@ -375,7 +375,11 @@ public class CurrencyManager {
             return "#,##0";
         }
 
-        return "#,##0." + "#".repeat(decimalPlaces);
+        StringBuilder fraction = new StringBuilder(decimalPlaces);
+        for (int i = 0; i < decimalPlaces; i++) {
+            fraction.append('#');
+        }
+        return "#,##0." + fraction;
     }
 
 public final class CurrencyDefinition {

@@ -30,10 +30,11 @@ public class WarpCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sendMessage(sender, message("WARP.PLAYER-ONLY", "&cOnly players can use this warp command."));
             return true;
         }
+        Player player = (Player) sender;
 
         String requestedName = args[0];
         Location warp = plugin.getWarpManager().getWarp(requestedName);

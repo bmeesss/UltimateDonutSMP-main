@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.amethyst.AmethystToolType;
+import com.bx.ultimateDonutSmp.amethyst.AmethystToolsManager;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -34,7 +35,7 @@ public class AmethystToolCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        var mgr = plugin.getAmethystToolsManager();
+        AmethystToolsManager mgr = plugin.getAmethystToolsManager();
 
         if (args.length < 1) {
             sender.sendMessage(ColorUtils.toComponent(mgr.getMessage("GIVE-USAGE")));

@@ -243,7 +243,7 @@ public final class PlayerDistanceState {
     }
 
     public void restoreAllRtpChunkThrottles() {
-        for (UUID uuid : rtpDistanceStates.keySet().toArray(UUID[]::new)) {
+        for (UUID uuid : rtpDistanceStates.keySet().toArray(new UUID[0])) {
             restoreRtpChunkThrottle(uuid);
         }
     }
@@ -503,7 +503,7 @@ public final class PlayerDistanceState {
         try {
             Method method = player.getClass().getMethod(methodName);
             Object value = method.invoke(player);
-            return value instanceof Number number ? number.intValue() : null;
+            return value instanceof Number ? ((Number) value).intValue() : null;
         } catch (ReflectiveOperationException | RuntimeException ignored) {
             return null;
         }
