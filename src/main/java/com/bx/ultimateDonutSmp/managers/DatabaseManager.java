@@ -2486,7 +2486,8 @@ public final class CrateBlockData {
             Location l = home.getLocation();
             String worldName = null;
             if (l != null) {
-                if (l instanceof LazyLocation lazy) {
+                if (l instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) l;
                     worldName = lazy.getWorldName();
                 } else if (l.getWorld() != null) {
                     worldName = l.getWorld().getName();
@@ -2594,7 +2595,8 @@ public final class CrateBlockData {
             Location h = team.getHome();
             String worldName = null;
             if (h != null) {
-                if (h instanceof LazyLocation lazy) {
+                if (h instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) h;
                     worldName = lazy.getWorldName();
                 } else if (h.getWorld() != null) {
                     worldName = h.getWorld().getName();
@@ -2737,7 +2739,8 @@ public final class CrateBlockData {
             ps.setString(1, name.toLowerCase());
             String worldName = null;
             if (loc != null) {
-                if (loc instanceof LazyLocation lazy) {
+                if (loc instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) loc;
                     worldName = lazy.getWorldName();
                 } else if (loc.getWorld() != null) {
                     worldName = loc.getWorld().getName();
@@ -4842,7 +4845,8 @@ public final class CuboidData {
             int parameterIndex = index + 1;
             if (value == null) {
                 ps.setObject(parameterIndex, null);
-            } else if (value instanceof Boolean booleanValue) {
+            } else if (value instanceof String) {
+                String stringValue = (String) value;
                 ps.setString(parameterIndex, stringValue);
             } else if (value instanceof Integer) {
             Integer integerValue = (Integer) value;
@@ -5409,7 +5413,8 @@ public final class CuboidData {
         if (value instanceof Number) {
             return value.toString();
         }
-        if (value instanceof Boolean booleanValue) {
+        if (value instanceof Boolean) {
+            Boolean booleanValue = (Boolean) value;
             return booleanValue ? "1" : "0";
         }
         if (value instanceof byte[]) {
@@ -5539,7 +5544,8 @@ public final class CuboidData {
                 try (PreparedStatement ps = connection.prepareStatement(sql)) {
                     for (int index = 0; index < presentColumns.size(); index++) {
                         Object value = document.get(presentColumns.get(index));
-                        if (value instanceof Boolean booleanValue) {
+                        if (value instanceof Boolean) {
+                            Boolean booleanValue = (Boolean) value;
                             ps.setInt(index + 1, booleanValue ? 1 : 0);
                         } else {
                             ps.setObject(index + 1, value);

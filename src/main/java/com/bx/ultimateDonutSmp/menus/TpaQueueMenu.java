@@ -162,20 +162,22 @@ public class TpaQueueMenu extends BaseMenu {
 
     private void buildButton(String key, boolean active, Map<String, String> placeholders) {
         String path = MENU_PATH + ".BUTTONS." + key;
-        int slot = menus().getInt(path + ".SLOT", switch (key) {
+        int defaultSlot;
+        switch (key) {
             case "PREVIOUS":
-                45;
+                defaultSlot = 45;
                 break;
             case "RANDOM":
-                49;
+                defaultSlot = 49;
                 break;
             case "NEXT":
-                53;
+                defaultSlot = 53;
                 break;
             default:
-                -1;
+                defaultSlot = -1;
                 break;
-        });
+        }
+        int slot = menus().getInt(path + ".SLOT", defaultSlot);
         if (slot < 0 || slot >= inventory.getSize()) {
             return;
         }

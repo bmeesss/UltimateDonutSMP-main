@@ -127,9 +127,9 @@ public enum AuctionCategory {
                     || type == Material.COMPASS
                     || type == Material.RECOVERY_COMPASS
                     || type == Material.CLOCK;
-            default:
-                return null;
         }
+        // AuctionCategory is handled exhaustively above; treat any future category as non-matching.
+        return false;
     }
 
     public static AuctionCategory from(String raw) {

@@ -148,8 +148,36 @@ public final class CachedLeaderboard {
     }
 
     public String formatValue(LeaderboardType type, PlayerData data, boolean compact, boolean includeCurrencySymbol) {
-        return switch (type) {        case MONEY: formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoney(), compact, includeCurrencySymbol); break;        case SHARDS: formatCurrencyValue(CurrencyManager.CurrencyType.SHARDS, data.getShards(), compact, includeCurrencySymbol); break;        case KILLS: NumberUtils.format(data.getKills()); break;        case DEATHS: NumberUtils.format(data.getDeaths()); break;        case PLAYTIME: NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds()); break;        case BLOCKS_PLACED: NumberUtils.format(data.getBlocksPlaced()); break;        case BLOCKS_BROKEN: NumberUtils.format(data.getBlocksBroken()); break;        case MOBS_KILLED: NumberUtils.format(data.getMobsKilled()); break;        case KILL_STREAK: NumberUtils.format(data.getKillStreak()); break;        case HIGHEST_KILL_STREAK: NumberUtils.format(data.getHighestKillStreak()); break;        case MONEY_SPENT: formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoneySpent(), compact, includeCurrencySymbol); break;        case MONEY_MADE: formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoneyMade(), compact, includeCurrencySymbol); break;        case BOUNTIES: formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, bountyAmount(data), compact, includeCurrencySymbol); break;
-        };
+        switch (type) {
+            case MONEY:
+                return formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoney(), compact, includeCurrencySymbol);
+            case SHARDS:
+                return formatCurrencyValue(CurrencyManager.CurrencyType.SHARDS, data.getShards(), compact, includeCurrencySymbol);
+            case KILLS:
+                return NumberUtils.format(data.getKills());
+            case DEATHS:
+                return NumberUtils.format(data.getDeaths());
+            case PLAYTIME:
+                return NumberUtils.formatTimeLong(data.getTotalPlaytimeSeconds());
+            case BLOCKS_PLACED:
+                return NumberUtils.format(data.getBlocksPlaced());
+            case BLOCKS_BROKEN:
+                return NumberUtils.format(data.getBlocksBroken());
+            case MOBS_KILLED:
+                return NumberUtils.format(data.getMobsKilled());
+            case KILL_STREAK:
+                return NumberUtils.format(data.getKillStreak());
+            case HIGHEST_KILL_STREAK:
+                return NumberUtils.format(data.getHighestKillStreak());
+            case MONEY_SPENT:
+                return formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoneySpent(), compact, includeCurrencySymbol);
+            case MONEY_MADE:
+                return formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, data.getMoneyMade(), compact, includeCurrencySymbol);
+            case BOUNTIES:
+                return formatCurrencyValue(CurrencyManager.CurrencyType.MONEY, bountyAmount(data), compact, includeCurrencySymbol);
+        }
+        // LeaderboardType is handled exhaustively above; format zero for any future type.
+        return NumberUtils.format(0D);
     }
 
     public List<LeaderboardEntry> getEntries(LeaderboardType type, int offset, int limit) {
@@ -274,8 +302,36 @@ public final class CachedLeaderboard {
     }
 
     private double numericValue(LeaderboardType type, PlayerData data) {
-        return switch (type) {        case MONEY: data.getMoney(); break;        case SHARDS: data.getShards(); break;        case KILLS: data.getKills(); break;        case DEATHS: data.getDeaths(); break;        case PLAYTIME: data.getTotalPlaytimeSeconds(); break;        case BLOCKS_PLACED: data.getBlocksPlaced(); break;        case BLOCKS_BROKEN: data.getBlocksBroken(); break;        case MOBS_KILLED: data.getMobsKilled(); break;        case KILL_STREAK: data.getKillStreak(); break;        case HIGHEST_KILL_STREAK: data.getHighestKillStreak(); break;        case MONEY_SPENT: data.getMoneySpent(); break;        case MONEY_MADE: data.getMoneyMade(); break;        case BOUNTIES: bountyAmount(data); break;
-        };
+        switch (type) {
+            case MONEY:
+                return data.getMoney();
+            case SHARDS:
+                return data.getShards();
+            case KILLS:
+                return data.getKills();
+            case DEATHS:
+                return data.getDeaths();
+            case PLAYTIME:
+                return data.getTotalPlaytimeSeconds();
+            case BLOCKS_PLACED:
+                return data.getBlocksPlaced();
+            case BLOCKS_BROKEN:
+                return data.getBlocksBroken();
+            case MOBS_KILLED:
+                return data.getMobsKilled();
+            case KILL_STREAK:
+                return data.getKillStreak();
+            case HIGHEST_KILL_STREAK:
+                return data.getHighestKillStreak();
+            case MONEY_SPENT:
+                return data.getMoneySpent();
+            case MONEY_MADE:
+                return data.getMoneyMade();
+            case BOUNTIES:
+                return bountyAmount(data);
+        }
+        // LeaderboardType is handled exhaustively above; treat any future type as zero.
+        return 0D;
     }
 
     private double bountyAmount(PlayerData data) {
