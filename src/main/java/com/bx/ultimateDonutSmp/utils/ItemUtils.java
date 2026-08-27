@@ -81,8 +81,8 @@ public class ItemUtils {
         }
 
         String key = mobTypeKey == null ? "" : mobTypeKey.trim().toUpperCase(java.util.Locale.US);
-Material;
-switch (key) {
+        Material vanillaHead;
+        switch (key) {
             case "SKELETON":
                 vanillaHead = Material.SKELETON_SKULL;
                 break;
@@ -116,8 +116,8 @@ switch (key) {
             return createHeadFromSkinUrl(skinUrl, displayName, lore);
         }
 
-String;
-switch (key) {
+        String mhfName;
+        switch (key) {
             case "COW":
                 mhfName = "MHF_Cow";
                 break;
@@ -163,9 +163,10 @@ switch (key) {
     public static ItemStack createHeadFromSkinUrl(String skinUrlOrBase64, String displayName, List<String> lore) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta rawMeta = item.getItemMeta();
-        if (!(rawMeta instanceof SkullMeta meta)) {
+        if (!(rawMeta instanceof SkullMeta)) {
             return createItem(Material.PLAYER_HEAD, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) rawMeta;
 
         applyTextureToSkullMeta(meta, skinUrlOrBase64);
 
@@ -307,9 +308,10 @@ switch (key) {
     ) {
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta rawMeta = item.getItemMeta();
-        if (!(rawMeta instanceof SkullMeta meta)) {
+        if (!(rawMeta instanceof SkullMeta)) {
             return createItem(Material.PLAYER_HEAD, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) rawMeta;
 
         if (textureValue != null && !textureValue.trim().isEmpty()) {
             applyTextureToSkullMeta(meta, textureValue);

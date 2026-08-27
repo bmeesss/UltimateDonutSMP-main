@@ -156,7 +156,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         }
         Set<UUID> obfuscatedProfiles = new HashSet<>();
         try {
-            var collections = event.getPacket().getSpecificModifier(Collection.class);
+            StructureModifier<Collection> collections = event.getPacket().getSpecificModifier(Collection.class);
             for (int index = 0; index < collections.size(); index++) {
                 Collection<?> source = collections.readSafely(index);
                 if (source == null || source.isEmpty()
@@ -573,8 +573,8 @@ final class HideProtocolLibBridge implements HidePacketBridge {
             return null;
         }
         Entity entity = Bukkit.getEntity(displayUuid);
-        if (entity instanceof TextDisplay display && display.isValid()) {
-            return display;
+        if (entity instanceof TextDisplay && ((TextDisplay) entity).isValid()) {
+            return (TextDisplay) entity;
         }
         nametagDisplays.remove(targetUuid, displayUuid);
         return null;

@@ -13,6 +13,7 @@ import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
 import com.bx.ultimateDonutSmp.utils.SignInputUtil;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -200,7 +201,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                 open(player, current.withSearch(""), true);
                 return;
             }
-            var signConfig = plugin.getConfigManager().getAuctionHouse()
+            ConfigurationSection signConfig = plugin.getConfigManager().getAuctionHouse()
                     .getConfigurationSection("GUI.BROWSE.SEARCH_SIGN");
             manager.startNavigating(player.getUniqueId());
             SignInputUtil.openFromConfig(plugin, player, signConfig, text -> {
@@ -234,8 +235,8 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                         )));
                         SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                     } else {
-String;
-switch (result.reason()) {
+                        String key = null;
+                        switch (result.reason()) {
                             case DISABLED:
                                 key = "AUCTION_HOUSE.DISABLED";
                                 break;

@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.models.Team;
 import com.bx.ultimateDonutSmp.models.ThreeChoice;
 import com.bx.ultimateDonutSmp.models.TwoChoice;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
@@ -359,7 +360,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
             }
             default: {
                 return;
-                break;
             }
         }
 
@@ -394,9 +394,11 @@ public final class PlayerSettingsMenu extends BaseMenu {
     }
 
     private ItemStack toNightVisionPotion(ItemStack item) {
-        if (!(item.getItemMeta() instanceof org.bukkit.inventory.meta.PotionMeta meta)) {
+        org.bukkit.inventory.meta.ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof org.bukkit.inventory.meta.PotionMeta)) {
             return item;
         }
+        org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) itemMeta;
         meta.setBasePotionType(org.bukkit.potion.PotionType.NIGHT_VISION);
         item.setItemMeta(meta);
         return item;
@@ -662,7 +664,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
     }
 
     private void toggleTeamChat(Player player) {
-        var team = plugin.getTeamManager().getTeam(player);
+        Team team = plugin.getTeamManager().getTeam(player);
         if (team == null) {
             player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("TEAM.NO-TEAM")));
             return;

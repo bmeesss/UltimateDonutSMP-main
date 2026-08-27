@@ -16,6 +16,7 @@ import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.SpigotScheduler;
 import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
@@ -382,7 +383,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
     // ── Startup Banner ─────────────────────────────────────────────────────────
 
     private void printStartupBanner() {
-        var console = getServer().getConsoleSender();
+        ConsoleCommandSender console = getServer().getConsoleSender();
         String v = getDescription().getVersion();
 
         console.sendMessage("");
@@ -768,7 +769,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
             if (!isTabCompletionFeatureEnabled(tabCommand.getName())) {
                 return java.util.Collections.emptyList();
             }
-            var completions = tabCompleter.onTabComplete(sender, tabCommand, alias, args);
+            java.util.List<String> completions = tabCompleter.onTabComplete(sender, tabCommand, alias, args);
             return completions == null ? java.util.Collections.emptyList() : completions;
         });
     }

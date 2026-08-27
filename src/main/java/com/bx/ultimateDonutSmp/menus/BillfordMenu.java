@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.menus;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.BillfordManager;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
@@ -373,7 +374,7 @@ public class BillfordMenu extends BaseMenu {
                 if (data == null) {
                     data = plugin.getPlayerDataManager().loadOrCreate(player);
                 }
-                var depositResult = plugin.getEconomyManager().deposit(player, liveTrade.moneyBonus(), EconomyReason.BILLFORD_REWARD);
+                EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, liveTrade.moneyBonus(), EconomyReason.BILLFORD_REWARD);
                 if (!depositResult.success()) {
                     plugin.getLogger().warning("Billford money deposit failed for " + player.getName());
                 }
