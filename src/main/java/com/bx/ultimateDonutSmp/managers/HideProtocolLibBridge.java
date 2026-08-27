@@ -20,11 +20,9 @@ import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedRemoteChatSessionData;
 import com.comphenix.protocol.wrappers.WrappedTeamParameters;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
-import org.bukkit.entity.Display;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -369,17 +367,15 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         try {
             removeNametagTeam(viewer, profileId);
             HideState state = hideManager.getState(profileId);
-            TextDisplay display = nametagDisplay(profileId);
+            ArmorStand display = nametagDisplay(profileId);
             if (!shouldObfuscateFor(viewer, state)) {
                 if (display != null) {
-                    viewer.hideEntity(plugin, display);
+                    send(viewer, createEntityDestroy(display.getEntityId()));
                 }
                 return;
             }
-            if (display != null && !profileId.equals(viewer.getUniqueId())) {
-                viewer.showEntity(plugin, display);
-            } else if (display != null) {
-                viewer.hideEntity(plugin, display);
+            if (display != null && profileId.equals(viewer.getUniqueId())) {
+                send(viewer, createEntityDestroy(display.getEntityId()));
             }
             send(viewer, createObfuscatedNametagTeam(state));
         } catch (RuntimeException | LinkageError error) {
@@ -437,36 +433,33 @@ final class HideProtocolLibBridge implements HidePacketBridge {
             return;
         }
 
-        TextDisplay display = nametagDisplay(target.getUniqueId());
+        ArmorStand display = nametagDisplay(target.getUniqueId());
         if (display != null && !display.getWorld().equals(target.getWorld())) {
             removeNametagDisplay(target.getUniqueId());
             display = null;
         }
         if (display == null) {
-            display = target.getWorld().spawn(target.getLocation(), TextDisplay.class, textDisplay -> {
-                textDisplay.setBillboard(Display.Billboard.CENTER);
-                textDisplay.setDefaultBackground(false);
-                textDisplay.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
-                textDisplay.setSeeThrough(true);
-                textDisplay.setShadowed(true);
-                textDisplay.setViewRange(64.0F);
-                textDisplay.setLineWidth(200);
-                textDisplay.setPersistent(false);
-                textDisplay.setInvulnerable(true);
-                textDisplay.setGravity(false);
-                textDisplay.setVisibleByDefault(true);
-            });
+            display = target.getWorld().spawn(target.getLocation(), ArmorStand.class);
+            display.setVisible(false);
+            display.setCustomNameVisible(true);
+            display.setGravity(false);
+            display.setMarker(true);
+            display.setSmall(true);
+            display.setBasePlate(false);
+            display.setArms(false);
+            display.setCanPickupItems(false);
+            display.setInvulnerable(true);
+            display.setRemoveWhenFarAway(false);
             nametagDisplays.put(target.getUniqueId(), display.getUniqueId());
         }
 
-        display.setText(ColorUtils.colorize(hideManager.publicName(state)));
+        display.setCustomName(ColorUtils.colorize(hideManager.publicName(state)));
         nametagDisplayIds.add(display.getEntityId());
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             if (viewer.getUniqueId().equals(target.getUniqueId())
                     || hideManager.canSeeRealIdentity(viewer)) {
-                viewer.hideEntity(plugin, display);
+                send(viewer, createEntityDestroy(display.getEntityId()));
             } else {
-                viewer.showEntity(plugin, display);
                 sendNametagRide(viewer, target, display);
             }
         }
@@ -478,7 +471,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
      * packet: mounting it for real would make Spigot refuse to teleport that player at all, which
      * strands anyone disguised the moment they try to move.
      */
-    private void sendNametagRide(Player viewer, Player target, TextDisplay display) {
+    private void sendNametagRide(Player viewer, Player target, ArmorStand display) {
         if (viewer == null || isTemporaryPlayer(viewer) || !viewer.isOnline()
                 || !viewer.getWorld().equals(target.getWorld())) {
             return;
@@ -494,7 +487,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
     }
 
     /** Anything genuinely riding the player is listed too, otherwise the client drops it. */
-    private int[] ridingEntityIds(Player target, TextDisplay display) {
+    private int[] ridingEntityIds(Player target, ArmorStand display) {
         List<Entity> riders = target.getPassengers();
         int[] ids = new int[riders.size() + 1];
         for (int index = 0; index < riders.size(); index++) {
@@ -541,7 +534,7 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         }
         for (UUID targetUuid : new java.util.HashSet<>(nametagDisplays.keySet())) {
             Player target = Bukkit.getPlayer(targetUuid);
-            TextDisplay display = nametagDisplay(targetUuid);
+            ArmorStand display = nametagDisplay(targetUuid);
             if (target == null || !target.isOnline() || display == null) {
                 continue;
             }
@@ -567,17 +560,27 @@ final class HideProtocolLibBridge implements HidePacketBridge {
         }
     }
 
-    private TextDisplay nametagDisplay(UUID targetUuid) {
+    private ArmorStand nametagDisplay(UUID targetUuid) {
         UUID displayUuid = nametagDisplays.get(targetUuid);
         if (displayUuid == null) {
             return null;
         }
         Entity entity = Bukkit.getEntity(displayUuid);
-        if (entity instanceof TextDisplay && ((TextDisplay) entity).isValid()) {
-            return (TextDisplay) entity;
+        if (entity instanceof ArmorStand && ((ArmorStand) entity).isValid()) {
+            return (ArmorStand) entity;
         }
         nametagDisplays.remove(targetUuid, displayUuid);
         return null;
+    }
+
+    private PacketContainer createEntityDestroy(int entityId) {
+        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+        if (packet.getIntegerArrays().size() > 0) {
+            packet.getIntegerArrays().write(0, new int[]{entityId});
+        } else if (packet.getIntegers().size() > 0) {
+            packet.getIntegers().write(0, entityId);
+        }
+        return packet;
     }
 
     private void removeNametagDisplay(UUID targetUuid) {

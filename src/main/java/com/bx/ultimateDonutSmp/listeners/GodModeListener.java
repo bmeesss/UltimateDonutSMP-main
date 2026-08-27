@@ -63,12 +63,7 @@ public class GodModeListener implements Listener {
     }
 
     private void playDamageFeedback(Player player, EntityDamageEvent event) {
-        player.playHurtAnimation(resolveHurtYaw(player, event));
-
-        Sound hurtSound = player.getHurtSound();
-        if (hurtSound != null) {
-            player.getWorld().playSound(player.getLocation(), hurtSound, SoundCategory.PLAYERS, 1F, 1F);
-        }
+        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_PLAYER_HURT, 1F, 1F);
     }
 
     private void applyKnockback(Player player, EntityDamageEvent event) {
@@ -129,7 +124,7 @@ public class GodModeListener implements Listener {
             Projectile projectile = (Projectile) damager;
             if (projectile.getShooter() instanceof LivingEntity) {
                 LivingEntity shooter = (LivingEntity) projectile.getShooter();
-                return getEnchantmentLevel(shooter, Enchantment.PUNCH);
+                return getEnchantmentLevel(shooter, Enchantment.ARROW_KNOCKBACK);
             }
         }
 

@@ -5,16 +5,12 @@ import com.google.gson.JsonParser;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.profile.PlayerProfile;
-import org.bukkit.profile.PlayerTextures;
 
 import java.net.URI;
 import java.net.URL;
@@ -25,6 +21,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class ItemUtils {
+
+    private static final Material SKULL_ITEM_MATERIAL = resolveMaterial("SKULL_ITEM", Material.SKULL_ITEM);
+    private static final Material SKELETON_HEAD_MATERIAL = resolveMaterial("SKULL_ITEM", Material.SKULL_ITEM);
+    private static final Material ZOMBIE_HEAD_MATERIAL = resolveMaterial("ZOMBIE_HEAD", Material.SKULL_ITEM);
+    private static final Material CREEPER_HEAD_MATERIAL = resolveMaterial("CREEPER_HEAD", Material.SKULL_ITEM);
+    private static final Material WITHER_HEAD_MATERIAL = resolveMaterial("WITHER_SKULL_ITEM", Material.SKULL_ITEM);
+    private static final Material DRAGON_HEAD_MATERIAL = resolveMaterial("DRAGON_HEAD", Material.SKULL_ITEM);
 
     public static ItemStack createItem(Material material, String displayName, List<String> lore) {
         ItemStack item = new ItemStack(material);
@@ -111,23 +114,23 @@ public class ItemUtils {
         Material vanillaHead;
         switch (key) {
             case "SKELETON":
-                vanillaHead = Material.SKELETON_SKULL;
+                vanillaHead = SKELETON_HEAD_MATERIAL;
                 break;
             case "ZOMBIE":
-                vanillaHead = Material.ZOMBIE_HEAD;
+                vanillaHead = ZOMBIE_HEAD_MATERIAL;
                 break;
             case "CREEPER":
-                vanillaHead = Material.CREEPER_HEAD;
+                vanillaHead = CREEPER_HEAD_MATERIAL;
                 break;
             case "PIGLIN":
             case "ZOMBIFIED_PIGLIN":
-                vanillaHead = Material.PIGLIN_HEAD;
+                vanillaHead = SKULL_ITEM_MATERIAL;
                 break;
             case "WITHER_SKELETON":
-                vanillaHead = Material.WITHER_SKELETON_SKULL;
+                vanillaHead = WITHER_HEAD_MATERIAL;
                 break;
             case "DRAGON":
-                vanillaHead = Material.DRAGON_HEAD;
+                vanillaHead = DRAGON_HEAD_MATERIAL;
                 break;
             default:
                 vanillaHead = null;
@@ -188,10 +191,10 @@ public class ItemUtils {
     }
 
     public static ItemStack createHeadFromSkinUrl(String skinUrlOrBase64, String displayName, List<String> lore) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = new ItemStack(SKULL_ITEM_MATERIAL);
         ItemMeta rawMeta = item.getItemMeta();
         if (!(rawMeta instanceof SkullMeta)) {
-            return createItem(Material.PLAYER_HEAD, displayName, lore);
+            return createItem(SKULL_ITEM_MATERIAL, displayName, lore);
         }
         SkullMeta meta = (SkullMeta) rawMeta;
 
@@ -232,7 +235,7 @@ public class ItemUtils {
                     jsonStr = jsonStr.replace("http://textures.minecraft.net/", "https://textures.minecraft.net/");
                     base64 = Base64.getEncoder().encodeToString(jsonStr.getBytes(StandardCharsets.UTF_8));
                 }
-                JsonObject root = JsonParser.parseString(jsonStr).getAsJsonObject();
+                JsonObject root = new JsonParser().parse(jsonStr).getAsJsonObject();
                 JsonObject textures = root.getAsJsonObject("textures");
                 JsonObject skin = textures == null ? null : textures.getAsJsonObject("SKIN");
                 if (skin != null && skin.has("url")) {
@@ -280,33 +283,6 @@ public class ItemUtils {
             return true;
         } catch (Throwable ignored1) {}
 
-        // 2. Try Modern Paper PlayerProfile API
-        try {
-            PlayerProfile profile = Bukkit.createPlayerProfile(profileId, "MobHead");
-            if (rawUrl != null) {
-                try {
-                    PlayerTextures textures = profile.getTextures();
-                    textures.setSkin(java.net.URI.create(rawUrl).toURL());
-                    profile.setTextures(textures);
-                } catch (Throwable ignored) {}
-            }
-
-            try {
-                Class<?> profilePropClass = Class.forName("com.destroystokyo.paper.profile.ProfileProperty");
-                Object prop = profilePropClass.getConstructor(String.class, String.class).newInstance("textures", base64);
-                profile.getClass().getMethod("setProperty", profilePropClass).invoke(profile, prop);
-            } catch (Throwable ignored) {}
-
-            try {
-                java.lang.reflect.Method setPlayerProfileMethod = meta.getClass().getMethod("setPlayerProfile", PlayerProfile.class);
-                setPlayerProfileMethod.invoke(meta, profile);
-                return true;
-            } catch (Throwable ignored) {
-                meta.setOwnerProfile(profile);
-                return true;
-            }
-        } catch (Throwable ignored2) {}
-
         return false;
     }
 
@@ -333,17 +309,17 @@ public class ItemUtils {
             String displayName,
             List<String> lore
     ) {
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = new ItemStack(SKULL_ITEM_MATERIAL);
         ItemMeta rawMeta = item.getItemMeta();
         if (!(rawMeta instanceof SkullMeta)) {
-            return createItem(Material.PLAYER_HEAD, displayName, lore);
+            return createItem(SKULL_ITEM_MATERIAL, displayName, lore);
         }
         SkullMeta meta = (SkullMeta) rawMeta;
 
         if (textureValue != null && !textureValue.trim().isEmpty()) {
             applyTextureToSkullMeta(meta, textureValue);
         } else if (player != null) {
-            meta.setOwningPlayer(player);
+            applyOwnerToSkullMeta(meta, player);
         }
         if (displayName != null && !displayName.isEmpty()) {
             meta.setDisplayName(ColorUtils.colorize(displayName));
@@ -359,32 +335,6 @@ public class ItemUtils {
         return item;
     }
 
-    private static boolean applyTextureProfile(SkullMeta meta, OfflinePlayer fallback, String textureValue) {
-        TextureProfileData data = decodeTextureProfile(textureValue);
-        if (data == null) {
-            return false;
-        }
-
-        try {
-            UUID profileId = data.profileId() != null
-                    ? data.profileId()
-                    : UUID.nameUUIDFromBytes(("uds-head:" + textureValue).getBytes(StandardCharsets.UTF_8));
-            String profileName = data.profileName();
-            if (profileName == null || profileName.trim().isEmpty() || profileName.length() > 16) {
-                profileName = fallback == null ? null : fallback.getName();
-            }
-
-            PlayerProfile profile = Bukkit.createPlayerProfile(profileId, profileName);
-            PlayerTextures textures = profile.getTextures();
-            textures.setSkin(data.skinUrl());
-            profile.setTextures(textures);
-            meta.setOwnerProfile(profile);
-            return true;
-        } catch (RuntimeException | LinkageError ignored) {
-            return false;
-        }
-    }
-
     private static TextureProfileData decodeTextureProfile(String textureValue) {
         if (textureValue == null || textureValue.trim().isEmpty()) {
             return null;
@@ -397,7 +347,7 @@ public class ItemUtils {
             } catch (IllegalArgumentException ignored) {
                 decoded = Base64.getUrlDecoder().decode(textureValue);
             }
-            JsonObject root = JsonParser.parseString(new String(decoded, StandardCharsets.UTF_8))
+            JsonObject root = new JsonParser().parse(new String(decoded, StandardCharsets.UTF_8))
                     .getAsJsonObject();
             JsonObject textures = root.getAsJsonObject("textures");
             JsonObject skin = textures == null ? null : textures.getAsJsonObject("SKIN");
@@ -433,7 +383,7 @@ public class ItemUtils {
         }
     }
 
-public final class TextureProfileData {
+ public static final class TextureProfileData {
     private final UUID profileId;
     private final String profileName;
     private final URL skinUrl;
@@ -521,7 +471,7 @@ public final class TextureProfileData {
                 } catch (NumberFormatException e) {
                     continue;
                 }
-                Enchantment ench = Registry.ENCHANTMENT.get(NamespacedKey.minecraft(name));
+                Enchantment ench = resolveEnchantment(name);
                 if (ench != null) {
                     storageMeta.addStoredEnchant(ench, level, true);
                 }
@@ -541,7 +491,7 @@ public final class TextureProfileData {
             } catch (NumberFormatException e) {
                 continue;
             }
-            Enchantment ench = Registry.ENCHANTMENT.get(NamespacedKey.minecraft(name));
+            Enchantment ench = resolveEnchantment(name);
             if (ench != null) {
                 item.addUnsafeEnchantment(ench, level);
             }
@@ -550,19 +500,17 @@ public final class TextureProfileData {
     }
 
     public static ItemStack setGlint(ItemStack item, Boolean glint) {
-        if (item == null || item.getType().isAir() || glint == null) return item;
+        if (item == null || item.getType() == Material.AIR || glint == null) return item;
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
 
         try {
-            meta.setEnchantmentGlintOverride(glint);
-            item.setItemMeta(meta);
-            return item;
+            throw new UnsupportedOperationException();
         } catch (NoSuchMethodError | Exception ignored) {
         }
 
         if (glint) {
-            meta.addEnchant(Enchantment.UNBREAKING, 1, true);
+            meta.addEnchant(Enchantment.DURABILITY, 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             item.setItemMeta(meta);
         }
@@ -589,5 +537,73 @@ public final class TextureProfileData {
 
     public static void fillInventory(org.bukkit.inventory.Inventory inventory) {
         fillInventory(inventory, Material.STAINED_GLASS_PANE, (short) 7);
+    }
+
+    private static Enchantment resolveEnchantment(String name) {
+        if (name == null || name.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalized = name.trim().toUpperCase(java.util.Locale.US).replace(' ', '_').replace('-', '_');
+        Enchantment enchantment = Enchantment.getByName(normalized);
+        if (enchantment != null) {
+            return enchantment;
+        }
+
+        if ("SHARPNESS".equals(normalized)) return Enchantment.getByName("DAMAGE_ALL");
+        if ("SMITE".equals(normalized)) return Enchantment.getByName("DAMAGE_UNDEAD");
+        if ("BANE_OF_ARTHROPODS".equals(normalized)) return Enchantment.getByName("DAMAGE_ARTHROPODS");
+        if ("EFFICIENCY".equals(normalized)) return Enchantment.getByName("DIG_SPEED");
+        if ("DURABILITY".equals(normalized)) return Enchantment.getByName("DURABILITY");
+        if ("FORTUNE".equals(normalized)) return Enchantment.getByName("LOOT_BONUS_BLOCKS");
+        if ("LOOTING".equals(normalized)) return Enchantment.getByName("LOOT_BONUS_MOBS");
+        if ("PROTECTION".equals(normalized)) return Enchantment.getByName("PROTECTION_ENVIRONMENTAL");
+        if ("BLAST_PROTECTION".equals(normalized)) return Enchantment.getByName("PROTECTION_EXPLOSIONS");
+        if ("FIRE_PROTECTION".equals(normalized)) return Enchantment.getByName("PROTECTION_FIRE");
+        if ("PROJECTILE_PROTECTION".equals(normalized)) return Enchantment.getByName("PROTECTION_PROJECTILE");
+        if ("FEATHER_FALLING".equals(normalized)) return Enchantment.getByName("PROTECTION_FALL");
+        if ("RESPIRATION".equals(normalized)) return Enchantment.getByName("OXYGEN");
+        if ("AQUA_AFFINITY".equals(normalized)) return Enchantment.getByName("WATER_WORKER");
+        if ("THORNS".equals(normalized)) return Enchantment.getByName("THORNS");
+        if ("DEPTH_STRIDER".equals(normalized)) return Enchantment.getByName("DEPTH_STRIDER");
+        if ("FROST_WALKER".equals(normalized)) return Enchantment.getByName("FROST_WALKER");
+        if ("BINDING_CURSE".equals(normalized) || "CURSE_OF_BINDING".equals(normalized)) return Enchantment.getByName("BINDING_CURSE");
+        if ("VANISHING_CURSE".equals(normalized) || "CURSE_OF_VANISHING".equals(normalized)) return Enchantment.getByName("VANISHING_CURSE");
+        if ("POWER".equals(normalized)) return Enchantment.getByName("ARROW_DAMAGE");
+        if ("ARROW_KNOCKBACK".equals(normalized)) return Enchantment.getByName("ARROW_KNOCKBACK");
+        if ("FLAME".equals(normalized)) return Enchantment.getByName("ARROW_FIRE");
+        if ("INFINITY".equals(normalized)) return Enchantment.getByName("ARROW_INFINITE");
+        if ("LUCK_OF_THE_SEA".equals(normalized)) return Enchantment.getByName("LUCK");
+        if ("LURE".equals(normalized)) return Enchantment.getByName("LURE");
+        if ("MENDING".equals(normalized)) return Enchantment.getByName("MENDING");
+        if ("SWEEPING".equals(normalized) || "SWEEPING_EDGE".equals(normalized)) return Enchantment.getByName("SWEEPING_EDGE");
+        return null;
+    }
+
+    private static boolean applyOwnerToSkullMeta(SkullMeta meta, OfflinePlayer player) {
+        if (meta == null || player == null) {
+            return false;
+        }
+        try {
+            java.lang.reflect.Method setOwningPlayer = meta.getClass().getMethod("setOwningPlayer", OfflinePlayer.class);
+            setOwningPlayer.invoke(meta, player);
+            return true;
+        } catch (Throwable ignored) {
+            String ownerName = player.getName();
+            if (ownerName == null || ownerName.trim().isEmpty()) {
+                return false;
+            }
+            try {
+                meta.setOwner(ownerName);
+                return true;
+            } catch (Throwable ignored2) {
+                return false;
+            }
+        }
+    }
+
+    private static Material resolveMaterial(String modernName, Material fallback) {
+        Material resolved = Material.matchMaterial(modernName);
+        return resolved != null ? resolved : fallback;
     }
 }

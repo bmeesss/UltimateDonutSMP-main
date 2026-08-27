@@ -65,7 +65,7 @@ public class OrdersNewMenu extends BaseMenu {
         ItemStack amountDisplay = ItemUtils.createItem(
                 Material.PAPER,
                 "&bOrder quantity",
-                java.util.Collections.singletonList(
+                 java.util.Arrays.asList(
                         "&7Current quantity: &e" + (amount <= 0 ? "Not set" : amount),
                         "",
                         "&eClick to set quantity"
@@ -79,9 +79,9 @@ public class OrdersNewMenu extends BaseMenu {
         // Slot 14: Price
         double priceEach = session.getPriceEach();
         ItemStack priceDisplay = ItemUtils.createItem(
-                Material.SUNFLOWER,
+                Material.GOLD_INGOT,
                 "&bPrice each",
-                java.util.Collections.singletonList(
+                 java.util.Arrays.asList(
                         "&7Current price: &e" + (priceEach <= 0D ? "Not set" : plugin.getCurrencyManager().formatMoney(priceEach)),
                         "",
                         "&eClick to s..."
@@ -92,7 +92,7 @@ public class OrdersNewMenu extends BaseMenu {
         priceLore.add("&7Current price: &e" + (priceEach <= 0D ? "Not set" : plugin.getCurrencyManager().formatMoney(priceEach)));
         priceLore.add("");
         priceLore.add("&eClick to set price");
-        priceDisplay = ItemUtils.createItem(Material.SUNFLOWER, "&bPrice each", priceLore);
+        priceDisplay = ItemUtils.createItem(Material.GOLD_INGOT, "&bPrice each", priceLore);
         set(14, priceDisplay);
 
         // Slot 16: Confirm

@@ -13,7 +13,7 @@ import java.util.Map;
  *
  * <p>Snapshot 1.13 flattened the "one Material plus a durability value" families into one enum
  * constant per colour, so {@code Material.STAINED_GLASS_PANE} + data became
- * {@code BLACK_STAINED_GLASS_PANE} and friends. 1.12.2 only knows the shared Material plus the
+ * {@code STAINED_GLASS_PANE} and friends. 1.12.2 only knows the shared Material plus the
  * legacy data value, which means the modern names cannot be resolved by {@code Material.valueOf}
  * or {@code Material.matchMaterial} and silently degrade: {@link ItemUtils#parseMaterial(String)}
  * answers {@code Material.STONE}, while the config-driven menu helpers answer their own fallback.
@@ -48,7 +48,7 @@ public final class LegacyMaterialSupport {
     /** The Material every stained glass pane colour shares on 1.12.2. */
     private static final Material PANE_MATERIAL = Material.STAINED_GLASS_PANE;
 
-    /** Suffix that 1.13+ prepends a colour name to, e.g. {@code BLACK_STAINED_GLASS_PANE}. */
+    /** Suffix that 1.13+ prepends a colour name to, e.g. {@code STAINED_GLASS_PANE}. */
     private static final String PANE_SUFFIX = "_STAINED_GLASS_PANE";
 
     /** 1.13+ colour name -&gt; 1.12.2 stained glass pane data value. */
@@ -118,7 +118,7 @@ public final class LegacyMaterialSupport {
 
         /**
          * The name this icon is represented by in a configuration file. For a pane that is the
-         * flattened 1.13+ colour name (for example {@code BLACK_STAINED_GLASS_PANE}), which keeps
+         * flattened 1.13+ colour name (for example {@code STAINED_GLASS_PANE}), which keeps
          * generated defaults and stored override strings byte-identical to the modern build.
          */
         public String configuredName() {
@@ -150,7 +150,7 @@ public final class LegacyMaterialSupport {
 
     /**
      * Builds the icon for a pane colour, accepting either the bare 1.13+ colour name
-     * ({@code BLACK}) or the full material name ({@code BLACK_STAINED_GLASS_PANE}).
+     * ({@code BLACK}) or the full material name ({@code STAINED_GLASS_PANE}).
      *
      * @return the icon, or {@code null} when the name is not a known pane colour
      */

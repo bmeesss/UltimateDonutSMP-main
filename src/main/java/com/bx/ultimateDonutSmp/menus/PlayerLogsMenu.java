@@ -137,7 +137,7 @@ public class PlayerLogsMenu extends BaseMenu {
                 material = Material.MOB_SPAWNER;
                 break;
             case "deaths":
-                material = Material.SKELETON_SKULL;
+                material = Material.SKULL_ITEM;
                 break;
             case "messages":
             case "msg":

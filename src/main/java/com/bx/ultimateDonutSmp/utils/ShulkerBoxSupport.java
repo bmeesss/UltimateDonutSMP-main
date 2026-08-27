@@ -16,7 +16,7 @@ public final class ShulkerBoxSupport {
 
     public static boolean isShulkerBox(Material material) {
         if (material == null) return false;
-        return material.name().contains("SHULKER_BOX");
+        return material.name().contains("ENDER_CHEST");
     }
 
     public static boolean isShulkerBox(ItemStack item) {

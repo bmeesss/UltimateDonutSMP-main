@@ -143,7 +143,7 @@ public class SellStatsAdminMenu extends BaseMenu {
 
         // Tab 3: Top Sellers (Player Head)
         set(TAB_SELLERS_SLOT, ItemUtils.createItem(
-                Material.PLAYER_HEAD,
+                Material.SKULL_ITEM,
                 (mode == Mode.TOP_SELLERS ? "&a&l" : "&e") + "Top Sellers (Players)",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7View top players making money from /sell.", 
@@ -247,7 +247,7 @@ public class SellStatsAdminMenu extends BaseMenu {
     }
 
     private ItemStack createTopSellerStack(DatabaseManager.TopSellerEntry entry, int rank, double grandTotalRevenue) {
-        ItemStack head = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack head = new ItemStack(Material.SKULL_ITEM);
         SkullMeta meta = (SkullMeta) head.getItemMeta();
         if (meta != null) {
             if (entry.playerName() != null && !entry.playerName().equals("Unknown")) {
@@ -354,7 +354,7 @@ public class SellStatsAdminMenu extends BaseMenu {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 String dateStr = sdf.format(new Date());
 
-                try (PrintWriter writer = new PrintWriter(new FileWriter(reportFile, StandardCharsets.UTF_8))) {
+                 try (PrintWriter writer = new PrintWriter(new java.io.OutputStreamWriter(new java.io.FileOutputStream(reportFile), StandardCharsets.UTF_8))) {
                     writer.println("=================================================");
                     writer.println("   ULTIMATEDONUTSMP - ADMIN SELL STATISTICS REPORT");
                     writer.println("   Generated At: " + dateStr);

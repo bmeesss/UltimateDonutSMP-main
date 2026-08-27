@@ -138,7 +138,7 @@ public class SpawnerCommand implements CommandExecutor {
         }
         Player player = (Player) sender;
 
-        Block target = player.getTargetBlockExact(6);
+        Block target = player.getTargetBlock((java.util.Set<org.bukkit.Material>) null, 6);
         SpawnerInstance instance = target == null ? null : plugin.getSpawnerManager().getSpawner(target);
         if (instance == null) {
             player.sendMessage(ColorUtils.toComponent("&cLook at a managed spawner to inspect it."));
@@ -166,7 +166,7 @@ public class SpawnerCommand implements CommandExecutor {
         }
         Player player = (Player) sender;
 
-        Block target = player.getTargetBlockExact(6);
+        Block target = player.getTargetBlock((java.util.Set<org.bukkit.Material>) null, 6);
         SpawnerInstance instance = target == null ? null : plugin.getSpawnerManager().getSpawner(target);
         if (instance == null) {
             player.sendMessage(ColorUtils.toComponent("&cLook at a managed spawner to remove it."));

@@ -142,7 +142,7 @@ final class OrdersMenuSupport {
     ) {
         if (claim.refundClaim()) {
             return ItemUtils.createItem(
-                    Material.SUNFLOWER,
+                    Material.GOLD_INGOT,
                     text(plugin, "ORDERS.GUI.CLAIM.REFUND_NAME", "&aEscrow refund"),
                     list(
                             plugin,
@@ -183,7 +183,7 @@ final class OrdersMenuSupport {
             List<String> extraLore,
             boolean preserveOriginalLore
     ) {
-        if (source == null || source.getType().isAir()) {
+        if (source == null || source.getType() == Material.AIR) {
             return ItemUtils.createItem(Material.BARRIER, "&cMissing item", java.util.Collections.singletonList("&7Stored item data is unavailable."));
         }
 

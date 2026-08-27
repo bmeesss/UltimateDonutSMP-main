@@ -114,7 +114,7 @@ public class TeamCommand implements CommandExecutor {
             return;
         }
         if (!team.isLeader(player.getUniqueId())) {
-            send(player, plugin.getConfigManager().getMessage("TEAM.NOT-LEADER"));
+            send(player, plugin.getConfigManager().getMessage("TEAM.NOT-LEASHER"));
             return;
         }
 

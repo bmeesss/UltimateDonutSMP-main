@@ -161,7 +161,7 @@ public class ChatLogsMenu extends BaseMenu {
         }
 
         StringBuilder line = new StringBuilder();
-        for (String word : message.trim().split("\s+")) {
+        for (String word : message.trim().split("\\s+")) {
             while (word.length() > LORE_LINE_LENGTH) {
                 if (line.length() > 0) {
                     lines.add(line.toString());

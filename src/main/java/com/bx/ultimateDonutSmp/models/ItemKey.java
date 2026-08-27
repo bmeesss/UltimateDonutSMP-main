@@ -1,7 +1,6 @@
 package com.bx.ultimateDonutSmp.models;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,7 +41,7 @@ public final class ItemKey {
     }
 
     public static ItemKey fromStack(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return of(Material.AIR);
         }
         Material mat = item.getType();
@@ -64,14 +63,7 @@ public final class ItemKey {
             PotionType pType = null;
             if (meta instanceof PotionMeta) {
                 PotionMeta potionMeta = (PotionMeta) meta;
-                try {
-                    pType = potionMeta.getBasePotionType();
-                } catch (NoSuchMethodError | Exception e) {
-                    try {
-                        pType = potionMeta.getBasePotionData().getType();
-                    } catch (Exception ignored) {
-                    }
-                }
+                pType = potionMeta.getBasePotionData().getType();
             }
             return new ItemKey(mat, pType, null);
         }
@@ -119,14 +111,7 @@ public final class ItemKey {
             }
             PotionMeta potionMeta = (PotionMeta) meta;
             PotionType itemPType = null;
-            try {
-                itemPType = potionMeta.getBasePotionType();
-            } catch (NoSuchMethodError | Exception e) {
-                try {
-                    itemPType = potionMeta.getBasePotionData().getType();
-                } catch (Exception ignored) {
-                }
-            }
+            itemPType = potionMeta.getBasePotionData().getType();
             return Objects.equals(potionType, itemPType);
         }
 
@@ -187,13 +172,7 @@ public final class ItemKey {
             }
         } else if (isPotionLike(material) && potionType != null) {
             PotionMeta pm = (PotionMeta) meta;
-            try {
-                pm.setBasePotionType(potionType);
-            } catch (NoSuchMethodError | Exception e) {
-                try {
-                    pm.setBasePotionData(new org.bukkit.potion.PotionData(potionType));
-                } catch (Exception ignored) {}
-            }
+            pm.setBasePotionData(new org.bukkit.potion.PotionData(potionType));
         } else {
             for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
                 Enchantment ench = findByKey(entry.getKey());
@@ -267,7 +246,7 @@ public final class ItemKey {
         List<String> lines = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
             Enchantment ench = findByKey(entry.getKey());
-            String name = ench != null ? title(ench.getKey().getKey().replace('_', ' ')) : title(entry.getKey().replace('_', ' '));
+            String name = ench != null ? title(ench.getName().replace('_', ' ')) : title(entry.getKey().replace('_', ' '));
             lines.add(highlightPrefix + name + " " + roman(entry.getValue()));
         }
         return lines;
@@ -326,19 +305,19 @@ public final class ItemKey {
 
     private static String keyOf(Enchantment ench) {
         if (ench == null) return "";
-        return ench.getKey().getKey().toLowerCase(Locale.ENGLISH);
+        return ench.getName().toLowerCase(Locale.ENGLISH);
     }
 
     private static Enchantment findByKey(String key) {
         if (key == null) return null;
         String cleanKey = key.toLowerCase(Locale.ENGLISH).replace("minecraft:", "");
         try {
-            NamespacedKey nsk = NamespacedKey.minecraft(cleanKey);
-            Enchantment ench = Enchantment.getByKey(nsk);
-            if (ench != null) return ench;
+            for (Enchantment ench : Enchantment.values()) {
+                if (ench.getName().equalsIgnoreCase(cleanKey)) return ench;
+            }
         } catch (Exception ignored) {}
         for (Enchantment ench : Enchantment.values()) {
-            if (ench.getName().equalsIgnoreCase(cleanKey) || ench.getKey().getKey().equalsIgnoreCase(cleanKey)) {
+            if (ench.getName().equalsIgnoreCase(cleanKey)) {
                 return ench;
             }
         }

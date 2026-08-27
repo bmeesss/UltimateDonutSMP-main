@@ -10,6 +10,7 @@ import com.bx.ultimateDonutSmp.menus.OrdersNewMenu;
 import com.bx.ultimateDonutSmp.menus.RTPMenu;
 import com.bx.ultimateDonutSmp.menus.SellMenu;
 import org.bukkit.entity.Player;
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
@@ -160,7 +161,7 @@ public class InventoryClickListener implements Listener {
         boolean validTopClick = event.getClickedInventory() != null
                 && event.getClickedInventory().equals(topInventory)
                 && event.getCurrentItem() != null
-                && !event.getCurrentItem().getType().isAir();
+                && event.getCurrentItem().getType() != Material.AIR;
 
         event.setCancelled(true);
         event.setResult(Event.Result.DENY);
@@ -188,7 +189,7 @@ public class InventoryClickListener implements Listener {
         boolean validTopClick = event.getClickedInventory() != null
                 && event.getClickedInventory().equals(topInventory)
                 && event.getCurrentItem() != null
-                && !event.getCurrentItem().getType().isAir();
+                && event.getCurrentItem().getType() != Material.AIR;
 
         event.setCancelled(true);
         event.setResult(Event.Result.DENY);

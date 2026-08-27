@@ -90,7 +90,7 @@ public class SellProgressMenu extends BaseMenu {
             if (index < info.completedLevels()) {
                 String title = menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.TITLE", "&aCompleted");
                 Material material = ItemUtils.parseMaterial(
-                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE")
+                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "STAINED_GLASS_PANE")
                 );
                 List<String> lore = applyProgressPlaceholders(
                         menus.getStringList("PROGRESS-MENU.COMPLETED-BUTTON.LORE"),

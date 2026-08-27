@@ -48,7 +48,7 @@ public class BillfordMenu extends BaseMenu {
         clockSlot = config.getInt("GUI.COUNTDOWN_SLOT", 13);
         infoSlot = config.getInt("GUI.INFO_SLOT", 22);
         confirmSlot = config.getInt("GUI.CONFIRM_SLOT", 26);
-        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "GRAY_STAINED_GLASS_PANE"));
+        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "STAINED_GLASS_PANE"));
         closeOnSuccess = config.getBoolean("SETTINGS.CLOSE_MENU_ON_SUCCESS", true);
         reopenOnTradeChange = config.getBoolean("SETTINGS.REOPEN_ON_TRADE_CHANGE", true);
         allowedClickTypes = resolveAllowedClickTypes(config.getStringList("SETTINGS.ALLOWED_CLICK_TYPES"));
@@ -434,7 +434,7 @@ public class BillfordMenu extends BaseMenu {
         int maxStack = reward.getMaxStackSize();
 
         for (ItemStack item : player.getInventory().getStorageContents()) {
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 remaining -= maxStack;
             } else if (item.isSimilar(reward)) {
                 remaining -= Math.max(0, maxStack - item.getAmount());
@@ -487,7 +487,7 @@ public class BillfordMenu extends BaseMenu {
             return;
         }
 
-        String particleName = config.getString("FEEDBACK.SUCCESS_PARTICLE.TYPE", "TOTEM_OF_UNDYING");
+        String particleName = config.getString("FEEDBACK.SUCCESS_PARTICLE.TYPE", "FIREWORKS_SPARK");
         int count = Math.max(1, config.getInt("FEEDBACK.SUCCESS_PARTICLE.COUNT", 24));
 
         try {

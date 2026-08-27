@@ -2,7 +2,6 @@ package com.bx.ultimateDonutSmp.managers;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.ConfigurationSection;
@@ -185,23 +184,54 @@ public class EnchantmentsManager {
     }
 
     private static Enchantment findByKey(String key) {
-        if (key == null) return null;
-        String cleanKey = key.toLowerCase(Locale.ENGLISH).replace("minecraft:", "");
-        try {
-            NamespacedKey nsk = NamespacedKey.minecraft(cleanKey);
-            Enchantment ench = Enchantment.getByKey(nsk);
-            if (ench != null) return ench;
-        } catch (Exception ignored) {}
-        for (Enchantment ench : Enchantment.values()) {
-            if (ench.getName().equalsIgnoreCase(cleanKey) || ench.getKey().getKey().equalsIgnoreCase(cleanKey)) {
-                return ench;
-            }
+        if (key == null) {
+            return null;
         }
-        return null;
+        String cleanKey = key.toUpperCase(Locale.ENGLISH)
+                .replace("MINECRAFT:", "")
+                .replace('-', '_')
+                .trim();
+        Enchantment direct = Enchantment.getByName(cleanKey);
+        if (direct != null) {
+            return direct;
+        }
+        String alias = toLegacyEnchantmentName(cleanKey);
+        return alias == null ? null : Enchantment.getByName(alias);
     }
 
     private static String keyOf(Enchantment ench) {
-        if (ench == null) return "";
-        return ench.getKey().getKey().toLowerCase(Locale.ENGLISH);
+        if (ench == null) {
+            return "";
+        }
+        return ench.getName().toLowerCase(Locale.ENGLISH);
+    }
+
+    private static String toLegacyEnchantmentName(String normalized) {
+        if (normalized == null || normalized.isEmpty()) {
+            return null;
+        }
+        if ("SHARPNESS".equals(normalized)) return "DAMAGE_ALL";
+        if ("SMITE".equals(normalized)) return "DAMAGE_UNDEAD";
+        if ("BANE_OF_ARTHROPODS".equals(normalized)) return "DAMAGE_ARTHROPODS";
+        if ("EFFICIENCY".equals(normalized)) return "DIG_SPEED";
+        if ("DURABILITY".equals(normalized)) return "DURABILITY";
+        if ("FORTUNE".equals(normalized)) return "LOOT_BONUS_BLOCKS";
+        if ("LOOTING".equals(normalized)) return "LOOT_BONUS_MOBS";
+        if ("PROTECTION".equals(normalized)) return "PROTECTION_ENVIRONMENTAL";
+        if ("BLAST_PROTECTION".equals(normalized)) return "PROTECTION_EXPLOSIONS";
+        if ("FIRE_PROTECTION".equals(normalized)) return "PROTECTION_FIRE";
+        if ("PROJECTILE_PROTECTION".equals(normalized)) return "PROTECTION_PROJECTILE";
+        if ("FEATHER_FALLING".equals(normalized)) return "PROTECTION_FALL";
+        if ("RESPIRATION".equals(normalized)) return "OXYGEN";
+        if ("AQUA_AFFINITY".equals(normalized)) return "WATER_WORKER";
+        if ("POWER".equals(normalized)) return "ARROW_DAMAGE";
+        if ("ARROW_KNOCKBACK".equals(normalized)) return "ARROW_KNOCKBACK";
+        if ("FLAME".equals(normalized)) return "ARROW_FIRE";
+        if ("INFINITY".equals(normalized)) return "ARROW_INFINITE";
+        if ("LUCK_OF_THE_SEA".equals(normalized)) return "LUCK";
+        if ("SWEEPING".equals(normalized) || "SWEEPING_EDGE".equals(normalized)) return "SWEEPING_EDGE";
+        if ("CURSE_OF_BINDING".equals(normalized)) return "BINDING_CURSE";
+        if ("CURSE_OF_VANISHING".equals(normalized)) return "VANISHING_CURSE";
+        return normalized;
     }
 }

@@ -117,11 +117,6 @@ public class ExplosionDamageListener implements Listener {
     }
 
     private boolean isRespawnAnchorDamage(EntityDamageByBlockEvent event) {
-        Block damager = event.getDamager();
-        if (damager != null && damager.getType() == Material.RESPAWN_ANCHOR) {
-            return true;
-        }
-        BlockState state = event.getDamagerBlockState();
-        return state != null && state.getType() == Material.RESPAWN_ANCHOR;
+        return false;
     }
 }

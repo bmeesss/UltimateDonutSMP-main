@@ -33,7 +33,7 @@ public class StatsWipeMenu extends BaseMenu {
         targetSlots.clear();
 
         Material placeholderMaterial = ItemUtils.parseMaterial(
-                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "BLACK_STAINED_GLASS_PANE")
+                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")
         );
         if (menus().getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
             fill(placeholderMaterial);
@@ -112,7 +112,7 @@ public class StatsWipeMenu extends BaseMenu {
         }
 
         set(menus().getInt(path + ".SLOT", 22), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "CLOCK")),
+                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "WATCH")),
                 menus().getString(path + ".DISPLAY-NAME", "&bRefresh"),
                 menus().getStringList(path + ".LORE")
         ));

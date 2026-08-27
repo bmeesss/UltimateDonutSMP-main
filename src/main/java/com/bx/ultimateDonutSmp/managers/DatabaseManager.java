@@ -2130,7 +2130,7 @@ public final class PlayerWipeResult {
                     }
 
                     ItemStack item = deserializeItemStack(rs.getString("item_data"));
-                    if (item == null || item.getType().isAir()) {
+                    if (item == null || item.getType() == Material.AIR) {
                         continue;
                     }
 
@@ -2411,7 +2411,7 @@ public final class CrateBlockData {
                     "INSERT INTO ender_chest_items (player_uuid, slot, item_data) VALUES (?,?,?)")) {
                 for (int slot = 0; slot < contents.length; slot++) {
                     ItemStack item = contents[slot];
-                    if (item == null || item.getType().isAir()) {
+                    if (item == null || item.getType() == Material.AIR) {
                         continue;
                     }
 
@@ -2901,6 +2901,12 @@ public final class PlayerLogRecord {
     private final long timestamp;
 
     public PlayerLogRecord(UUID uuid, String name, String category, String type, String details, long timestamp) {
+        this.uuid = uuid;
+        this.name = name;
+        this.category = category;
+        this.type = type;
+        this.details = details;
+        this.timestamp = timestamp;
     }
 
     public UUID uuid() { return uuid; }
@@ -2909,11 +2915,6 @@ public final class PlayerLogRecord {
     public String type() { return type; }
     public String details() { return details; }
     public long timestamp() { return timestamp; }
-
-
-        public
-
-
     @Override public String toString() {
         return "PlayerLogRecord[uuid=+uuid, name=+name, category=+category, type=+type, details=+details, timestamp=+timestamp]";
     }
@@ -3099,6 +3100,11 @@ public final class SellHistoryRecord {
     private final long timestamp;
 
     public SellHistoryRecord(UUID uuid, String itemName, int amount, double price, long timestamp) {
+        this.uuid = uuid;
+        this.itemName = itemName;
+        this.amount = amount;
+        this.price = price;
+        this.timestamp = timestamp;
     }
 
     public UUID uuid() { return uuid; }
@@ -3106,11 +3112,6 @@ public final class SellHistoryRecord {
     public int amount() { return amount; }
     public double price() { return price; }
     public long timestamp() { return timestamp; }
-
-
-        public
-
-
     @Override public String toString() {
         return "SellHistoryRecord[uuid=+uuid, itemName=+itemName, amount=+amount, price=+price, timestamp=+timestamp]";
     }
@@ -4383,7 +4384,7 @@ public final class CuboidData {
                 );
                 String disabledKeysRaw = rs.getString("disabled_loot_keys");
                 if (disabledKeysRaw != null && !disabledKeysRaw.trim().isEmpty()) {
-                    instance.setDisabledLootKeys(java.util.Collections.singletonList(disabledKeysRaw.split(",")));
+                    instance.setDisabledLootKeys(java.util.Arrays.asList(disabledKeysRaw.split(",")));
                 }
                 spawners.add(instance);
             }
@@ -4707,7 +4708,7 @@ public final class CuboidData {
                                     String section,
                                     int slot,
                                     ItemStack item) throws SQLException {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return;
         }
 

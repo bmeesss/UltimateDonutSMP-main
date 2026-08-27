@@ -98,14 +98,14 @@ public class StatsMenu extends BaseMenu {
     }
 
     private ItemStack createItem(Material material, String displayName, List<String> lore) {
-        if (material != Material.PLAYER_HEAD) {
+        if (material != Material.SKULL_ITEM) {
             return ItemUtils.createItem(material, displayName, lore);
         }
 
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = new ItemStack(Material.SKULL_ITEM);
         ItemMeta itemMeta = item.getItemMeta();
         if (!(itemMeta instanceof SkullMeta)) {
-            return ItemUtils.createItem(Material.PLAYER_HEAD, displayName, lore);
+            return ItemUtils.createItem(Material.SKULL_ITEM, displayName, lore);
         }
         SkullMeta meta = (SkullMeta) itemMeta;
 

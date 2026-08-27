@@ -9,7 +9,6 @@ import com.sun.net.httpserver.HttpServer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -222,7 +221,10 @@ public class SellStatsExporter {
             Player player = (Player) sender;
             TextComponent linkMsg = new TextComponent(ColorUtils.toComponent("&a&l[Sell Stats Web] &fOpen live Shop Analytics site: &e&n" + localWebUrl));
             linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, localWebUrl));
-            linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ColorUtils.toComponent("&7Click to open &e" + localWebUrl + "\n&7File: plugins/UltimateDonutSMP/sell-stats.html"))));
+            linkMsg.setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    TextComponent.fromLegacyText(ColorUtils.colorize("&7Click to open &e" + localWebUrl + "\n&7File: plugins/UltimateDonutSMP/sell-stats.html"))
+            ));
             player.spigot().sendMessage(linkMsg);
         } else if (sender != null) {
             sender.sendMessage(ColorUtils.toComponent("&a&l[Sell Stats Web] &fLive web site: &e" + localWebUrl + " &7(or open plugins/UltimateDonutSMP/sell-stats.html)"));
@@ -708,28 +710,7 @@ public class SellStatsExporter {
     private String resolvePlayerSkinHeadUrl(java.util.UUID uuid, String playerName) {
         String textureHash = null;
 
-        // 2. Try online player profile if online
-        if (textureHash == null && uuid != null) {
-            Player onlinePlayer = plugin.getServer().getPlayer(uuid);
-            if (onlinePlayer != null) {
-                try {
-                    Object profile = onlinePlayer.getClass().getMethod("getPlayerProfile").invoke(onlinePlayer);
-                    if (profile != null) {
-                        java.util.Collection<?> properties = (java.util.Collection<?>) profile.getClass().getMethod("getProperties").invoke(profile);
-                        for (Object prop : properties) {
-                            String name = (String) prop.getClass().getMethod("getName").invoke(prop);
-                            if ("textures".equals(name)) {
-                                String val = (String) prop.getClass().getMethod("getValue").invoke(prop);
-                                textureHash = parseTextureHashFromBase64(val);
-                                break;
-                            }
-                        }
-                    }
-                } catch (Throwable ignored) {}
-            }
-        }
-
-        // 3. If texture hash resolved, mc-heads renders exact texture head directly
+        // If texture hash resolved, mc-heads renders exact texture head directly
         if (textureHash != null && !textureHash.trim().isEmpty()) {
             return "https://mc-heads.net/avatar/" + textureHash + "/24";
         }

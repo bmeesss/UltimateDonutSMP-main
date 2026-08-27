@@ -90,7 +90,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                 }
             } else {
                 ItemStack current = topInventory.getItem(slot);
-                if (current != null && !current.getType().isAir()) {
+                if (current != null && current.getType() != Material.AIR) {
                     topInventory.setItem(slot, null);
                 }
             }
@@ -151,7 +151,7 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public static ItemStack stripStorageMeta(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return item;
         }
         ItemStack copy = item.clone();
@@ -325,7 +325,7 @@ public class SpawnerStorageMenu extends BaseMenu {
         if (clickedInventory != null && !clickedInventory.equals(topInventory)) {
             if (clickType.isShiftClick()) {
                 ItemStack current = event.getCurrentItem();
-                if (current != null && !current.getType().isAir()) {
+                if (current != null && current.getType() != Material.AIR) {
                     event.setCancelled(true);
                     Material mat = current.getType();
                     int remainingToAdd = current.getAmount();
@@ -350,7 +350,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                     // Step B: Fill first available empty slots if remainder > 0
                     for (int s = 0; s < lastRow && remainingToAdd > 0; s++) {
                         ItemStack inSlot = topInventory.getItem(s);
-                        if (inSlot == null || inSlot.getType().isAir()) {
+                        if (inSlot == null || inSlot.getType() == Material.AIR) {
                             int add = Math.min(maxStack, remainingToAdd);
                             int slotIndex = pageOffset + s;
 
@@ -417,7 +417,7 @@ public class SpawnerStorageMenu extends BaseMenu {
 
             // Shift + Right Click (or Middle Click) -> Toggle Filter Status
             if (clickType == ClickType.SHIFT_RIGHT || clickType == ClickType.MIDDLE) {
-                if (slotItem != null && !slotItem.getType().isAir()) {
+                if (slotItem != null && slotItem.getType() != Material.AIR) {
                     boolean currentState = instance.isLootDisabled(slotItem.getType().name());
                     instance.setLootDisabled(slotItem.getType().name(), !currentState);
                     instance.setUpdatedAt(System.currentTimeMillis());
@@ -436,10 +436,10 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
 
             // Case A: Holding Item on Cursor
-            if (cursorItem != null && !cursorItem.getType().isAir()) {
+            if (cursorItem != null && cursorItem.getType() != Material.AIR) {
                 if (clickType.isRightClick()) {
                     // Right Click -> Place 1 item from cursor into slot (1-by-1 split or merge 1)
-                    if (slotItem == null || slotItem.getType().isAir()) {
+                    if (slotItem == null || slotItem.getType() == Material.AIR) {
                         topInventory.setItem(rawSlot, applyStorageMeta(plugin, instance, cursorItem.getType(), 1));
                         instance.setSlotLoot(slotIndex, cursorItem.getType(), 1);
                         instance.setUpdatedAt(System.currentTimeMillis());
@@ -465,7 +465,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                 }
 
                 // Left Click -> Place entire cursor stack into slot (or merge cursor stack into slot)
-                if (slotItem == null || slotItem.getType().isAir()) {
+                if (slotItem == null || slotItem.getType() == Material.AIR) {
                     topInventory.setItem(rawSlot, applyStorageMeta(plugin, instance, cursorItem.getType(), cursorItem.getAmount()));
                     instance.setSlotLoot(slotIndex, cursorItem.getType(), cursorItem.getAmount());
                     instance.setUpdatedAt(System.currentTimeMillis());
@@ -491,7 +491,7 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
 
             // Case B: Cursor is Empty
-            if (slotItem != null && !slotItem.getType().isAir()) {
+            if (slotItem != null && slotItem.getType() != Material.AIR) {
                 if (clickType.isShiftClick()) {
                     // Shift + Left Click -> Collect stack to player inventory
                     ItemStack cleanStack = stripStorageMeta(slotItem);

@@ -11,7 +11,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -1256,11 +1255,12 @@ public final class TablistComponentUpdater {
     private Object replaceRecordDisplayName(Object entry, Object displayName)
             throws ReflectiveOperationException {
         Class<?> entryClass = entry.getClass();
-        if (!entryClass.isRecord()) {
+        Boolean isRecord = invokeBooleanMethod(entryClass, "isRecord");
+        if (!Boolean.TRUE.equals(isRecord)) {
             return null;
         }
 
-        RecordComponent[] components = entryClass.getRecordComponents();
+        Object[] components = invokeRecordComponents(entryClass);
         if (components == null || components.length == 0) {
             return null;
         }
@@ -1280,7 +1280,10 @@ public final class TablistComponentUpdater {
         Class<?>[] parameterTypes = constructor.getParameterTypes();
         boolean replaced = false;
         for (int index = 0; index < components.length; index++) {
-            Method accessor = components[index].getAccessor();
+            Method accessor = invokeRecordAccessor(components[index]);
+            if (accessor == null) {
+                return null;
+            }
             accessor.setAccessible(true);
             Object value = accessor.invoke(entry);
             if (!replaced && parameterTypes[index].isAssignableFrom(displayName.getClass())) {
@@ -1296,6 +1299,39 @@ public final class TablistComponentUpdater {
 
         constructor.setAccessible(true);
         return constructor.newInstance(args);
+    }
+
+    private static Boolean invokeBooleanMethod(Object target, String methodName) {
+        try {
+            Method method = target.getClass().getMethod(methodName);
+            method.setAccessible(true);
+            Object result = method.invoke(target);
+            return result instanceof Boolean ? (Boolean) result : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static Object[] invokeRecordComponents(Class<?> entryClass) {
+        try {
+            Method method = Class.class.getMethod("getRecordComponents");
+            method.setAccessible(true);
+            Object value = method.invoke(entryClass);
+            return value instanceof Object[] ? (Object[]) value : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static Method invokeRecordAccessor(Object component) {
+        try {
+            Method method = component.getClass().getMethod("getAccessor");
+            method.setAccessible(true);
+            Object accessor = method.invoke(component);
+            return accessor instanceof Method ? (Method) accessor : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     private boolean setDisplayNameField(Object entry, Object displayName) {

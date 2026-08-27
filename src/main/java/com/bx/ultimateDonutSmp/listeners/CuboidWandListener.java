@@ -21,13 +21,14 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CuboidWandListener implements Listener {
 
     private static final String WAND_NAME = "&6cuboid wand";
-
-    private static final String WAND_KEY = "cuboid_wand";
+    private static final String WAND_MARKER_LINE = "\u00A70UDS_CUBOID_WAND";
 
     private final UltimateDonutSmp plugin;
 
@@ -90,7 +91,7 @@ public class CuboidWandListener implements Listener {
     }
 
     public static boolean isCuboidWand(ItemStack item) {
-        if (item == null || item.getType() != Material.GOLDEN_SHOVEL) {
+        if (item == null || item.getType() != Material.GOLD_SPADE) {
             return false;
         }
 
@@ -117,7 +118,7 @@ public class CuboidWandListener implements Listener {
     }
 
     public static void markAsCuboidWand(UltimateDonutSmp plugin, ItemStack item) {
-        if (plugin == null || item == null) {
+        if (item == null) {
             return;
         }
 
@@ -126,14 +127,27 @@ public class CuboidWandListener implements Listener {
             return;
         }
 
-        meta.getPersistentDataContainer().set(plugin.getKey(WAND_KEY), PersistentDataType.BYTE, (byte) 1);
+        List<String> lore = meta.hasLore() && meta.getLore() != null
+                ? new ArrayList<>(meta.getLore())
+                : new ArrayList<>();
+        if (!lore.contains(WAND_MARKER_LINE)) {
+            lore.add(WAND_MARKER_LINE);
+        }
+        meta.setLore(lore);
         item.setItemMeta(meta);
     }
 
     private static boolean hasWandMarker(ItemMeta meta) {
-        UltimateDonutSmp instance = UltimateDonutSmp.getInstance();
-        return instance != null
-                && meta.getPersistentDataContainer().has(instance.getKey(WAND_KEY), PersistentDataType.BYTE);
+        if (!meta.hasLore() || meta.getLore() == null) {
+            return false;
+        }
+        for (String line : meta.getLore()) {
+            if (line != null && (line.equals(WAND_MARKER_LINE)
+                    || ColorUtils.strip(line).equalsIgnoreCase("UDS_CUBOID_WAND"))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleSelectionCompleted(Player player) {

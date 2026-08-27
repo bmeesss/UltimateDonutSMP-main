@@ -64,7 +64,7 @@ public final class Snapshot {
     }
 }
 
-public final class CreateResult {
+public static final class CreateResult {
     private final boolean created;
     private final boolean limitReached;
     private final AuctionListing listing;

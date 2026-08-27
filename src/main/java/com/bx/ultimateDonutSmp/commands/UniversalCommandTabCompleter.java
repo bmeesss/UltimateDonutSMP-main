@@ -1,4 +1,5 @@
 package com.bx.ultimateDonutSmp.commands;
+import org.bukkit.Material;
 
 import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
@@ -274,7 +275,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
         List<WorthManager.WorthBrowserEntry> entries = plugin.getWorthManager().getBrowserEntries();
         List<String> prettifiedNames = entries.stream()
                 .map(WorthManager.WorthBrowserEntry::material)
-                .filter(mat -> mat != null && !mat.isAir())
+                .filter(mat -> mat != null && mat != Material.AIR)
                 .map(mat -> plugin.getWorthManager().prettifyMaterial(mat))
                 .distinct()
                 .collect(java.util.stream.Collectors.toList());

@@ -50,7 +50,7 @@ public class MobSpawnListener implements Listener {
 
         if (!MobSpawnPolicy.isPreventableSpawnReason(event.getSpawnReason(), trialSpawnersBlocked)) return;
 
-        if (event.getEntityType() == EntityType.PHANTOM) {
+        if ("PHANTOM".equals(event.getEntityType().name())) {
             if (shouldCancelPhantomSpawn(entity.getLocation())) {
                 event.setCancelled(true);
             }

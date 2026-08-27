@@ -46,7 +46,7 @@ public class HideMenu extends BaseMenu {
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Generate a stable random identity.",  "",  "&eClick to activate."))
         ));
         set(13, ItemUtils.createItem(
-                Material.PLAYER_HEAD,
+                Material.SKULL_ITEM,
                 "&dDisguise",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Choose a configured name and skin.",  "",  "&eClick to select."))
         ));
@@ -59,7 +59,7 @@ public class HideMenu extends BaseMenu {
         set(15, removeHideItem);
         if (PermissionUtils.has(player, HideManager.ADMIN_PERMISSION)) {
             set(22, ItemUtils.createItem(
-                    Material.SPYGLASS,
+                    Material.COMPASS,
                     "&cHidden players",
                     new java.util.ArrayList<>(java.util.Arrays.asList("&7Inspect and manage active hide states.",  "",  "&eClick to open."))
             ));

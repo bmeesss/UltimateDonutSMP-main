@@ -131,7 +131,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
         ));
         set(controlSlot("SEARCH", 50), control(
                 "SEARCH",
-                Material.OAK_SIGN,
+                Material.SIGN,
                 "&fSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &e{search}",  "&8Left-click to search",  "&8Right-click to clear")),
                 "{search}", effective.search().trim().isEmpty()

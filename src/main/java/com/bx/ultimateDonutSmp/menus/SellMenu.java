@@ -63,7 +63,7 @@ public class SellMenu extends BaseMenu {
     private void buildConfirmSellGUI(Player player) {
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         
-        Material material = ItemUtils.parseMaterial(menus.getString("SELL-MENU.CONFIRM-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE"));
+        Material material = ItemUtils.parseMaterial(menus.getString("SELL-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE"));
         String title = menus.getString("SELL-MENU.CONFIRM-BUTTON.TITLE", "&a&lConfirm sell");
         List<String> lore = menus.getStringList("SELL-MENU.CONFIRM-BUTTON.LORE");
         if (lore.isEmpty()) {
@@ -158,7 +158,7 @@ public class SellMenu extends BaseMenu {
 
         for (int slot = 0; slot < sellableEnd; slot++) {
             ItemStack item = inventory.getItem(slot);
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 continue;
             }
 

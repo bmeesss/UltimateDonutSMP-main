@@ -82,7 +82,7 @@ public class CuboidCommand implements CommandExecutor {
         plugin.getCuboidManager().clearSelection(player.getUniqueId());
 
         ItemStack wand = ItemUtils.createItem(
-                Material.GOLDEN_SHOVEL,
+                Material.GOLD_SPADE,
                 CuboidWandListener.getWandName(),
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Step 1: left click a block to set &aposition 1", 

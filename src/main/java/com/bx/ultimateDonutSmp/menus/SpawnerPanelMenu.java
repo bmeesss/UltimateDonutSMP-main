@@ -76,7 +76,7 @@ public class SpawnerPanelMenu extends BaseMenu {
         set(lastRow + 7, safePage < totalPages
                 ? ItemUtils.createItem(Material.ARROW, "&aNext Page", java.util.Collections.singletonList("&7Go to page &f" + (safePage + 1)))
                 : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
-        set(lastRow + 8, ItemUtils.createItem(Material.OAK_DOOR, "&cBack", java.util.Collections.singletonList("&7Return to world list.")));
+        set(lastRow + 8, ItemUtils.createItem(Material.WOODEN_DOOR, "&cBack", java.util.Collections.singletonList("&7Return to world list.")));
     }
 
     @Override

@@ -186,7 +186,7 @@ public class RulesMenu extends BaseMenu {
         return builder.length() == 0 ? "Rules" : builder.toString();
     }
 
-public final class RulesButton {
+    public static final class RulesButton {
     private final String key;
     private final int slot;
     private final Material material;

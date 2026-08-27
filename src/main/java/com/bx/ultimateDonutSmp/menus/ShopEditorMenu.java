@@ -107,7 +107,7 @@ public class ShopEditorMenu extends BaseMenu {
             }
 
             ItemStack current = inventory.getItem(rawSlot);
-            if (current == null || current.getType().isAir()) {
+            if (current == null || current.getType() == Material.AIR) {
                 player.sendMessage(ColorUtils.toComponent("&cSelect an item from your inventory first."));
                 return;
             }
@@ -122,7 +122,7 @@ public class ShopEditorMenu extends BaseMenu {
         }
 
         event.setCancelled(true);
-        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
             return;
         }
 

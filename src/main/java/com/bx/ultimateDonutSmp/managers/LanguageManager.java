@@ -399,7 +399,6 @@ public class LanguageManager {
         );
 
         YamlConfiguration current = new YamlConfiguration();
-        current.options().parseComments(true);
         try (java.io.Reader reader = new java.io.InputStreamReader(new java.io.FileInputStream(target), StandardCharsets.UTF_8)) {
             current.load(reader);
         } catch (IOException | InvalidConfigurationException e) {
@@ -569,7 +568,6 @@ public class LanguageManager {
     private YamlConfiguration loadBundledLanguage(String locale) {
         String resourcePath = "languages/" + locale + ".yml";
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
         try (InputStream input = plugin.getResource(resourcePath)) {
             if (input == null) {
                 plugin.getLogger().warning("Missing bundled language resource: " + resourcePath);

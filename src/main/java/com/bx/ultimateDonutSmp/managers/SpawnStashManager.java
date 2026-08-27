@@ -231,7 +231,8 @@ public class SpawnStashManager {
                     definition.alertRadius(),
                     blockLocations,
                     blockKeys,
-                    snapshots
+                    snapshots,
+                    new java.util.HashMap<String, Long>()
             );
 
             activeStashes.put(id, instance);
@@ -734,8 +735,7 @@ public class SpawnStashManager {
     }
 
     private void placeBlock(Block block, SpawnStashBlockDefinition definition, BlockFace facing, Player creator) {
-        BlockData data = createBlockData(definition, facing);
-        block.setBlockData(data, false);
+        block.setType(definition.material(), false);
 
         BlockState state = block.getState();
         if (definition.spawnerTypeKey() != null && state instanceof CreatureSpawner) {
@@ -777,28 +777,6 @@ public class SpawnStashManager {
             }
             container.update(true, false);
         }
-    }
-
-    private BlockData createBlockData(SpawnStashBlockDefinition definition, BlockFace facing) {
-        BlockData data;
-        if (definition.blockData() != null && !definition.blockData().trim().isEmpty()) {
-            data = Bukkit.createBlockData(definition.blockData());
-        } else {
-            data = Objects.requireNonNull(definition.material(), "material").createBlockData();
-        }
-
-        if (data instanceof Directional) {
-            Directional directional = (Directional) data;
-            BlockFace blockFacing = facing.getOppositeFace();
-            if (directional.getFaces().contains(blockFacing)) {
-                directional.setFacing(blockFacing);
-            }
-        }
-        if (data instanceof Rotatable) {
-            Rotatable rotatable = (Rotatable) data;
-            rotatable.setRotation(facing);
-        }
-        return data;
     }
 
     private ItemStack createItem(SpawnStashItemDefinition definition) {

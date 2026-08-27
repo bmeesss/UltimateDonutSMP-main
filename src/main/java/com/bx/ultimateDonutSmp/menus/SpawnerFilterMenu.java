@@ -113,9 +113,9 @@ public class SpawnerFilterMenu extends BaseMenu {
 
         // 2. Enable All Button
         int enableAllSlot = config.getInt("SPAWNER-MENUS.FILTER-MENU.ENABLE-ALL-BUTTON.SLOT", lastRow + 7);
-        String enableAllMatName = config.getString("SPAWNER-MENUS.FILTER-MENU.ENABLE-ALL-BUTTON.MATERIAL", "LIME_DYE");
+        String enableAllMatName = config.getString("SPAWNER-MENUS.FILTER-MENU.ENABLE-ALL-BUTTON.MATERIAL", "INK_SACK");
         Material enableAllMat = Material.matchMaterial(enableAllMatName);
-        if (enableAllMat == null) enableAllMat = Material.LIME_DYE;
+        if (enableAllMat == null) enableAllMat = Material.INK_SACK;
         String enableAllTitle = config.getString("SPAWNER-MENUS.FILTER-MENU.ENABLE-ALL-BUTTON.TITLE", "&aENABLE ALL");
         List<String> enableAllLore = config.getStringList("SPAWNER-MENUS.FILTER-MENU.ENABLE-ALL-BUTTON.LORE");
         if (enableAllLore.isEmpty()) enableAllLore = java.util.Collections.singletonList("&7Enable storing all drops.");
@@ -123,9 +123,9 @@ public class SpawnerFilterMenu extends BaseMenu {
 
         // 3. Disable All Button
         int disableAllSlot = config.getInt("SPAWNER-MENUS.FILTER-MENU.DISABLE-ALL-BUTTON.SLOT", lastRow + 8);
-        String disableAllMatName = config.getString("SPAWNER-MENUS.FILTER-MENU.DISABLE-ALL-BUTTON.MATERIAL", "RED_DYE");
+        String disableAllMatName = config.getString("SPAWNER-MENUS.FILTER-MENU.DISABLE-ALL-BUTTON.MATERIAL", "INK_SACK");
         Material disableAllMat = Material.matchMaterial(disableAllMatName);
-        if (disableAllMat == null) disableAllMat = Material.RED_DYE;
+        if (disableAllMat == null) disableAllMat = Material.INK_SACK;
         String disableAllTitle = config.getString("SPAWNER-MENUS.FILTER-MENU.DISABLE-ALL-BUTTON.TITLE", "&cDISABLE ALL");
         List<String> disableAllLore = config.getStringList("SPAWNER-MENUS.FILTER-MENU.DISABLE-ALL-BUTTON.LORE");
         if (disableAllLore.isEmpty()) disableAllLore = java.util.Collections.singletonList("&7Disable storing all drops.");

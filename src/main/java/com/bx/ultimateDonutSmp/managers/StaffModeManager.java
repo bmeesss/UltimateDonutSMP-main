@@ -18,7 +18,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -29,8 +28,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -48,6 +45,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class StaffModeManager {
+
+    private static final String STAFF_TOOL_META_MARKER = "\u00A70UDS_STAFF_TOOL";
+    private static final String STAFF_TOOL_META_PREFIX = "\u00A70UDS_STAFF:";
 
     private static final StaffToolType[] TOOL_ORDER = new StaffToolType[]{
             StaffToolType.VANISH,
@@ -463,7 +463,7 @@ public class StaffModeManager {
     }
 
     public StaffToolType resolveTool(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return null;
         }
 
@@ -472,8 +472,7 @@ public class StaffModeManager {
             return null;
         }
 
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        String raw = data.get(toolKey(), PersistentDataType.STRING);
+        String raw = getLoreMeta(meta, toolKey());
         return StaffToolType.fromPersistentId(raw);
     }
 
@@ -652,7 +651,7 @@ public class StaffModeManager {
     }
 
     public ItemStack createRefreshItem(String menuKey) {
-        return ItemUtils.createItem(Material.CLOCK, "&erefresh", java.util.Collections.singletonList("&7Click to refresh this view."));
+        return ItemUtils.createItem(Material.WATCH, "&erefresh", java.util.Collections.singletonList("&7Click to refresh this view."));
     }
 
     public ItemStack createMenuEmptyItem(String menuKey) {
@@ -1190,7 +1189,7 @@ public class StaffModeManager {
         if (toolType == StaffToolType.VANISH) {
             String statePath = isVanished(player.getUniqueId()) ? "ENABLED" : "DISABLED";
             path = path + "." + statePath;
-            material = parseMaterial(getConfig().getString(path + ".MATERIAL", "GRAY_DYE"), Material.GRAY_DYE);
+            material = parseMaterial(getConfig().getString(path + ".MATERIAL", "INK_SACK"), Material.INK_SACK);
             displayName = getConfig().getString(path + ".NAME", "&7Unvanished");
             lore = getConfig().getStringList(path + ".LORE");
         } else {
@@ -1199,7 +1198,7 @@ public class StaffModeManager {
             lore = getConfig().getStringList(path + ".LORE");
         }
 
-        ItemStack item = material == Material.PLAYER_HEAD
+        ItemStack item = material == Material.SKULL_ITEM
                 ? ItemUtils.createPlayerHead(player, displayName, lore)
                 : ItemUtils.createItem(material, displayName, lore);
         tagToolItem(item, toolType);
@@ -1217,7 +1216,7 @@ public class StaffModeManager {
         }
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.getPersistentDataContainer().set(toolKey(), PersistentDataType.STRING, toolType.name());
+        setLoreMeta(meta, toolKey(), toolType.name());
         item.setItemMeta(meta);
     }
 
@@ -1253,7 +1252,7 @@ public class StaffModeManager {
     }
 
     public StaffCustomItem resolveCustomItem(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return null;
         }
 
@@ -1262,7 +1261,7 @@ public class StaffModeManager {
             return null;
         }
 
-        String id = meta.getPersistentDataContainer().get(customItemKey(), PersistentDataType.STRING);
+        String id = getLoreMeta(meta, customItemKey());
         return id == null ? null : customItems.get(id.trim().toUpperCase(Locale.ROOT));
     }
 
@@ -1334,7 +1333,7 @@ public class StaffModeManager {
     }
 
     private ItemStack buildCustomItem(Player player, StaffCustomItem customItem) {
-        ItemStack item = customItem.material() == Material.PLAYER_HEAD
+        ItemStack item = customItem.material() == Material.SKULL_ITEM
                 ? ItemUtils.createPlayerHead(player, customItem.name(), customItem.lore())
                 : ItemUtils.createItem(customItem.material(), customItem.name(), customItem.lore());
 
@@ -1342,7 +1341,7 @@ public class StaffModeManager {
 
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.getPersistentDataContainer().set(customItemKey(), PersistentDataType.STRING, customItem.id());
+            setLoreMeta(meta, customItemKey(), customItem.id());
             item.setItemMeta(meta);
         }
         return item;
@@ -1432,12 +1431,41 @@ public class StaffModeManager {
         }
     }
 
-    private NamespacedKey toolKey() {
-        return plugin.getKey("staff_tool_type");
+    private String toolKey() {
+        return "staff_tool_type";
     }
 
-    private NamespacedKey customItemKey() {
-        return plugin.getKey("staff_custom_item");
+    private String customItemKey() {
+        return "staff_custom_item";
+    }
+
+    private String getLoreMeta(ItemMeta meta, String key) {
+        if (meta == null || key == null || !meta.hasLore() || meta.getLore() == null) {
+            return null;
+        }
+        String prefix = STAFF_TOOL_META_PREFIX + key + "=";
+        for (String line : meta.getLore()) {
+            if (line != null && line.startsWith(prefix)) {
+                return line.substring(prefix.length());
+            }
+        }
+        return null;
+    }
+
+    private void setLoreMeta(ItemMeta meta, String key, String value) {
+        if (meta == null || key == null || value == null) {
+            return;
+        }
+        List<String> lore = meta.hasLore() && meta.getLore() != null
+                ? new ArrayList<>(meta.getLore())
+                : new ArrayList<>();
+        String prefix = STAFF_TOOL_META_PREFIX + key + "=";
+        lore.removeIf(line -> line != null && line.startsWith(prefix));
+        if (!lore.contains(STAFF_TOOL_META_MARKER)) {
+            lore.add(STAFF_TOOL_META_MARKER);
+        }
+        lore.add(prefix + value);
+        meta.setLore(lore);
     }
 
     private String resolveSourceServer() {

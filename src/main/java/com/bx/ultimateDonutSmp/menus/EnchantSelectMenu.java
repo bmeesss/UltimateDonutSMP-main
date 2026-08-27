@@ -31,7 +31,7 @@ public class EnchantSelectMenu extends BaseMenu {
         this.maxPage = plugin.getEnchantmentsManager().maxPage(this.options);
 
         // Load existing enchants from draft session if present
-        com.bx.ultimateDonutSmp.managers.PendingOrderCreationSnapshot draft = plugin.getOrdersManager().getPendingCreation(player.getUniqueId());
+        com.bx.ultimateDonutSmp.managers.OrdersManager.PendingOrderCreationSnapshot draft = plugin.getOrdersManager().getPendingCreation(player.getUniqueId());
         if (draft != null && draft.requestedItem() != null) {
             ItemStack draftItem = draft.requestedItem();
             if (draftItem.getType() == Material.ENCHANTED_BOOK) {
@@ -205,7 +205,7 @@ public class EnchantSelectMenu extends BaseMenu {
             SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
         } else {
             // Conflicts
-            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.8f);
+            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_HARP, 1.0f, 0.8f);
             player.sendMessage(ColorUtils.toComponent(plugin.getEnchantmentsManager().getMessageCannot()));
         }
         build(player);
@@ -227,7 +227,7 @@ public class EnchantSelectMenu extends BaseMenu {
     }
 
     private String formatEnchantName(Enchantment ench) {
-        String key = ench.getKey().getKey().replace('_', ' ');
+        String key = ench.getName().replace('_', ' ');
         return Arrays.stream(key.split(" "))
                 .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));

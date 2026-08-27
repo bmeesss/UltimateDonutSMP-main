@@ -76,7 +76,7 @@ public class OrdersSelectItemMenu extends BaseMenu {
         set(lastRow + 3, ItemUtils.createItem(Material.HOPPER,
                 "&eSort: &f" + state.itemSort().name().replace('_', '-'),
                 java.util.Collections.singletonList("&7Click to toggle a-z / z-a")));
-        set(lastRow + 4, ItemUtils.createItem(Material.SPYGLASS, "&bSearch",
+        set(lastRow + 4, ItemUtils.createItem(Material.COMPASS, "&bSearch",
                 java.util.Collections.singletonList("&7Search item names and categories")));
         set(lastRow + 5, ItemUtils.createItem(Material.BOOK,
                 "&ePage " + page + "&7/&e" + totalPages(entries.size(), itemsPerPage),

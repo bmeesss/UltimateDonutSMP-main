@@ -90,7 +90,7 @@ public class PayConfirmMenu extends BaseMenu {
     }
 
     private ItemStack createTargetItem(List<String> lore) {
-        ItemStack item = ItemUtils.createItem(Material.PLAYER_HEAD, "&a" + targetName, lore);
+        ItemStack item = ItemUtils.createItem(Material.SKULL_ITEM, "&a" + targetName, lore);
         ItemMeta itemMeta = item.getItemMeta();
         if (!(itemMeta instanceof SkullMeta)) {
             return item;

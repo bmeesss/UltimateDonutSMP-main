@@ -105,13 +105,13 @@ public class TeamInfoMenu extends BaseMenu {
                 : menus().getString(MENU_PATH + ".PLAYER-BUTTON.OFFLINE-SYMBOL", "&4■"))
                 + "&7 " + (online ? "online" : "offline"));
         if (team.isLeader(memberUuid)) {
-            lore.add(menus().getString(MENU_PATH + ".PLAYER-BUTTON.LEADER-LORE", "&6Leader"));
+            lore.add(menus().getString(MENU_PATH + ".PLAYER-BUTTON.LEASHER-LORE", "&6Leader"));
         }
 
         String title = "&f" + displayName(viewer, memberUuid);
         // A disguised member gets a blank head, otherwise the menu hands out the skin behind the alias.
         return disguised
-                ? ItemUtils.createItem(Material.PLAYER_HEAD, title, lore)
+                ? ItemUtils.createItem(Material.SKULL_ITEM, title, lore)
                 : ItemUtils.createPlayerHead(member, title, lore);
     }
 

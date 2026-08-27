@@ -136,7 +136,7 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         }
 
         ItemStack hand = player.getInventory().getItemInMainHand();
-        if (hand == null || hand.getType().isAir()) {
+        if (hand == null || hand.getType() == Material.AIR) {
             send(player, "AUCTION_HOUSE.NO_ITEM_IN_HAND", "&cHold the item you want to list.");
             return;
         }

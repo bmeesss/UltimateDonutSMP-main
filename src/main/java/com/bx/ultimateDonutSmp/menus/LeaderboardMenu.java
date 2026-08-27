@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class LeaderboardMenu extends BaseMenu {
 
-    private static final String MENU_PATH = "LEADERBOARDS-MENU";
+    private static final String MENU_PATH = "LEASHERBOARDS-MENU";
 
     private final Map<Integer, LeaderboardManager.LeaderboardType> clickableTypes = new HashMap<>();
 

@@ -62,7 +62,7 @@ public class TpaConfirmMenu extends BaseMenu {
     }
 
     private ItemStack createRequesterItem(List<String> lore) {
-        ItemStack item = ItemUtils.createItem(Material.PLAYER_HEAD, "&a" + requesterName, lore);
+        ItemStack item = ItemUtils.createItem(Material.SKULL_ITEM, "&a" + requesterName, lore);
         if (!(item.getItemMeta() instanceof SkullMeta)) {
             return item;
         }

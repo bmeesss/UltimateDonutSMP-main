@@ -60,7 +60,7 @@ final class AuctionHouseMenuSupport {
         LanguageManager language = plugin.getLanguageManager();
         if (claim.moneyClaim()) {
             return ItemUtils.createItem(
-                    Material.SUNFLOWER,
+                    Material.GOLD_INGOT,
                     language.menu(
                             "AUCTION_HOUSE.ENTRY.MONEY_CLAIM_NAME",
                             "{money_color}{money_name} claim",
@@ -99,7 +99,7 @@ final class AuctionHouseMenuSupport {
             String fallbackDisplayName,
         List<String> extraLore
     ) {
-        if (source == null || source.getType().isAir()) {
+        if (source == null || source.getType() == Material.AIR) {
             return ItemUtils.createItem(
                     Material.BARRIER,
                     plugin.getLanguageManager().menu("AUCTION_HOUSE.ENTRY.MISSING_NAME", "&cMissing item"),

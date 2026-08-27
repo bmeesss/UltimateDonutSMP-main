@@ -32,6 +32,7 @@ public class PlayerData {
     private boolean bountyAlertsEnabled;
     private boolean tpaConfirmMenuEnabled;
     private boolean chainmailOnRespawnEnabled;
+    private boolean lunarTeammatesEnabled;
     private ThreeChoice tpaRequestsChoice;
     private boolean autoTpaHereEnabled;
     private ThreeChoice tpaHereRequestsChoice;
@@ -100,6 +101,7 @@ public class PlayerData {
         this.bountyAlertsEnabled = true;
         this.tpaConfirmMenuEnabled = true;
         this.chainmailOnRespawnEnabled = true;
+        this.lunarTeammatesEnabled = true;
         this.tpaRequestsChoice = ThreeChoice.ANYONE;
         this.autoTpaHereEnabled = false;
         this.tpaHereRequestsChoice = ThreeChoice.ANYONE;
@@ -498,6 +500,15 @@ public class PlayerData {
 
     public void setChainmailOnRespawnEnabled(boolean chainmailOnRespawnEnabled) {
         this.chainmailOnRespawnEnabled = chainmailOnRespawnEnabled;
+        dirty = true;
+    }
+
+    public boolean isLunarTeammatesEnabled() {
+        return lunarTeammatesEnabled;
+    }
+
+    public void setLunarTeammatesEnabled(boolean lunarTeammatesEnabled) {
+        this.lunarTeammatesEnabled = lunarTeammatesEnabled;
         dirty = true;
     }
 

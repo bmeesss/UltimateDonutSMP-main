@@ -271,7 +271,7 @@ public final class LuckPermsTablistRefreshBridge {
         }
 
         try {
-            player.updateCommands();
+            player.updateInventory();
         } catch (RuntimeException | LinkageError ignored) {
         }
 

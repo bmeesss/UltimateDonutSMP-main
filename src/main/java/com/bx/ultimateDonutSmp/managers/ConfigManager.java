@@ -502,6 +502,10 @@ public class ConfigManager {
         return lines;
     }
 
+    private static List<String> linesOf(TextFileContent content) {
+        return content == null ? new ArrayList<String>() : content.lines();
+    }
+
     private TextFileContent readTextFile(File file) throws IOException {
         String content = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         String lineSeparator = detectLineSeparator(content);
@@ -1812,7 +1816,6 @@ public class ConfigManager {
 
     private YamlConfiguration loadYamlLines(List<String> lines) throws InvalidConfigurationException {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
         configuration.loadFromString(String.join("\n", lines) + "\n");
         return configuration;
     }
@@ -1909,7 +1912,6 @@ public class ConfigManager {
 
             try (Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
                 YamlConfiguration configuration = new YamlConfiguration();
-                configuration.options().parseComments(true);
                 configuration.load(reader);
                 return configuration;
             }
@@ -1918,7 +1920,6 @@ public class ConfigManager {
 
     private YamlConfiguration loadYamlFile(File file) throws IOException, InvalidConfigurationException {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
         try (Reader reader = new InputStreamReader(new java.io.FileInputStream(file), StandardCharsets.UTF_8)) {
             configuration.load(reader);
         }
@@ -1979,7 +1980,6 @@ public class ConfigManager {
     private FileConfiguration load(String name, FileConfiguration previousConfiguration) {
         File file = new File(plugin.getDataFolder(), name);
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
 
         try {
             try (Reader reader = new InputStreamReader(new java.io.FileInputStream(file), StandardCharsets.UTF_8)) {

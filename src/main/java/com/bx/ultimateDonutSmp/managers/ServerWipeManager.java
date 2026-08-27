@@ -44,7 +44,7 @@ public class ServerWipeManager {
         SHUTDOWN_PENDING
     }
 
-public final class OperationResult {
+public static final class OperationResult {
     private final boolean success;
     private final String message;
     private final String token;

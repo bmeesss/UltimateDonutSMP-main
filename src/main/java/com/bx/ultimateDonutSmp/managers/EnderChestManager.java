@@ -14,7 +14,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.Lidded;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -516,7 +515,7 @@ public class EnderChestManager {
         ItemStack[] sanitized = new ItemStack[contents.length];
         for (int slot = 0; slot < contents.length; slot++) {
             ItemStack item = contents[slot];
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 sanitized[slot] = null;
                 continue;
             }
@@ -541,7 +540,7 @@ public class EnderChestManager {
         ItemStack[] sanitized = new ItemStack[contents.length];
         for (int slot = 0; slot < contents.length; slot++) {
             ItemStack item = contents[slot];
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 sanitized[slot] = null;
                 continue;
             }
@@ -697,7 +696,7 @@ public class EnderChestManager {
         int limit = Math.min(copy.length, source.length);
         for (int slot = 0; slot < limit; slot++) {
             ItemStack item = source[slot];
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 continue;
             }
             ItemStack sanitized = plugin.getWorthManager().stripWorthDisplay(item);
@@ -808,14 +807,7 @@ public class EnderChestManager {
             }
 
             BlockState state = blockLocation.getBlock().getState();
-            if (state instanceof Lidded) {
-                Lidded lidded = (Lidded) state;
-                if (open) {
-                    lidded.open();
-                } else {
-                    lidded.close();
-                }
-            }
+            state.update(true, false);
 
             if (shouldPlayManualSounds()) {
                 SoundUtils.play(
@@ -982,7 +974,7 @@ public class EnderChestManager {
         List<ItemStack> overflow = new ArrayList<>();
         for (int slot = keptSize; slot < storedContents.length; slot++) {
             ItemStack item = storedContents[slot];
-            if (item != null && !item.getType().isAir()) {
+            if (item != null && item.getType() != Material.AIR) {
                 overflow.add(item);
             }
         }
@@ -1026,7 +1018,7 @@ public class EnderChestManager {
         return plugin.getConfigManager().getEnderChest();
     }
 
-public final class EnderChestBlockKey {
+public static final class EnderChestBlockKey {
     private final UUID worldUuid;
     private final int x;
     private final int y;

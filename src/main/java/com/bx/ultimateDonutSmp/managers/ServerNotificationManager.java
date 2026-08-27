@@ -191,7 +191,7 @@ public class ServerNotificationManager {
     }
 
     private String fallbackItemName(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == org.bukkit.Material.AIR) {
             return "Unknown Item";
         }
         return plugin.getWorthManager().prettifyMaterial(item.getType());

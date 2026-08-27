@@ -12,6 +12,7 @@ import com.bx.ultimateDonutSmp.menus.CratesMenu;
 import com.bx.ultimateDonutSmp.menus.KeysMenu;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -560,7 +561,7 @@ switch (mode) {
                     result = plugin.getCrateManager().removeReward(crate.id(), slot);
                     break;
                 default:
-                    break;
+                    result = plugin.getCrateManager().removeReward(crate.id(), slot);
             }
         }
 
@@ -762,8 +763,8 @@ switch (mode) {
     }
 
     private Block getTargetBlock(Player player) {
-        Block block = player.getTargetBlockExact(TARGET_BLOCK_DISTANCE);
-        if (block == null || block.getType().isAir()) {
+        Block block = player.getTargetBlock((java.util.Set<Material>) null, TARGET_BLOCK_DISTANCE);
+        if (block == null || block.getType() == Material.AIR) {
             return null;
         }
         return block;

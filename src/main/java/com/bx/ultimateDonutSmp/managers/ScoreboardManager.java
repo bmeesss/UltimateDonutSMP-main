@@ -8,7 +8,6 @@ import com.bx.ultimateDonutSmp.utils.ScoreboardNumberHider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -313,7 +312,8 @@ public class ScoreboardManager {
         clearCacheSpigot(player.getUniqueId());
 
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = board.registerNewObjective("sidebar", Criteria.DUMMY, getTitle(player, settings));
+        Objective obj = board.registerNewObjective("sidebar", "dummy");
+        obj.setDisplayName(getTitle(player, settings));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         playerBoards.put(player.getUniqueId(), board);
@@ -787,7 +787,6 @@ public class ScoreboardManager {
                 return 4;
             case '!':
             case '.':
-            case ': case ':
             case ':':
             case ';':
             case '|':

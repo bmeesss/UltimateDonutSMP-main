@@ -900,7 +900,7 @@ public class InvseeManager {
     }
 
     private ItemStack cloneItem(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return null;
         }
         return item.clone();

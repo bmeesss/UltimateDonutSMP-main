@@ -158,7 +158,7 @@ public class PunishmentCommand implements CommandExecutor {
 
         String reason = joinReason(args, reasonStart);
         Actor actor = resolveActor(sender);
-        PunishmentRecord record = plugin.getPunishmentManager().createRecord(new PunishmentManager.PunishmentCreateRequest(
+        PunishmentRecord record = plugin.getPunishmentManager().createRecord(plugin.getPunishmentManager().createRequest(
                 target.uuid(),
                 target.name(),
                 type,
@@ -223,7 +223,7 @@ public class PunishmentCommand implements CommandExecutor {
                 targetUuid,
                 targetName,
                 type,
-                new PunishmentManager.PunishmentRemovalRequest(
+                plugin.getPunishmentManager().removalRequest(
                         actor.uuid(),
                         actor.name(),
                         System.currentTimeMillis(),

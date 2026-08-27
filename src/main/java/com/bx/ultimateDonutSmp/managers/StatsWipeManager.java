@@ -35,7 +35,7 @@ public class StatsWipeManager {
         WipeTarget(String configKey, String displayName, String... aliases) {
             this.configKey = configKey;
             this.displayName = displayName;
-            this.aliases = java.util.Collections.singleton(aliases);
+            this.aliases = new java.util.HashSet<String>(java.util.Arrays.asList(aliases));
         }
 
         public String getConfigKey() {
@@ -67,7 +67,7 @@ public class StatsWipeManager {
         }
     }
 
-public final class WipeResult {
+public static final class WipeResult {
     private final boolean success;
     private final boolean busy;
     private final Map<WipeTarget, Integer> affectedCounts;

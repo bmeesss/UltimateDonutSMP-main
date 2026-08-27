@@ -31,6 +31,7 @@ import com.bx.ultimateDonutSmp.models.OrderUiState;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -85,7 +86,7 @@ public class OrdersManager {
     ));
     private static final List<ServerCatalogCategory> SERVER_CATALOG_CATEGORIES = new java.util.ArrayList<>(java.util.Arrays.asList(
             new ServerCatalogCategory("ALL", Material.COMPASS), 
-            new ServerCatalogCategory("BLOCKS", Material.GRASS_BLOCK), 
+            new ServerCatalogCategory("BLOCKS", resolveMaterial("GRASS_BLOCK", "GRASS")), 
             new ServerCatalogCategory("ITEMS", Material.CHEST), 
             new ServerCatalogCategory("FOOD", Material.APPLE), 
             new ServerCatalogCategory("TOOLS", Material.DIAMOND_PICKAXE), 
@@ -929,7 +930,7 @@ public class OrdersManager {
     }
 
     public String resolveCategoryForMaterial(Material material) {
-        if (!isModernMaterial(material) || material.isAir()) {
+        if (!isModernMaterial(material) || isAir(material)) {
             return "ALL";
         }
 
@@ -1576,7 +1577,7 @@ public class OrdersManager {
     public List<Material> searchOrderMaterials(String rawQuery) {
         List<Material> catalogMatches = searchCatalogEntries(rawQuery).stream()
                 .map(OrderCatalogEntry::material)
-                .filter(material -> material != null && !material.isAir())
+                .filter(material -> material != null && !isAir(material))
                 .distinct()
                 .collect(java.util.stream.Collectors.toList());
         if (!catalogMatches.isEmpty()) {
@@ -1919,7 +1920,13 @@ public class OrdersManager {
             if (!isOrderable(material) || !matchesServerCatalogCategory(material, normalizedCategory)) {
                 continue;
             }
-            entries.add(new OrderCatalogEntry(normalizedCategory, material));
+            ItemStack preview = new ItemStack(material);
+            entries.add(new OrderCatalogEntry(
+                    normalizedCategory,
+                    preview,
+                    describeMaterial(material),
+                    material.name() + " " + describeMaterial(material) + " " + normalizedCategory
+            ));
         }
         entries.sort(Comparator.comparing(entry -> entry.material().name()));
         return new java.util.ArrayList<>(entries);
@@ -1950,7 +1957,7 @@ public class OrdersManager {
     }
 
     private boolean matchesServerCatalogCategory(Material material, String categoryKey) {
-        if (!isModernMaterial(material) || material.isAir() || !material.isItem()) {
+        if (!isModernMaterial(material) || isAir(material) || !material.isItem()) {
             return false;
         }
 
@@ -1994,7 +2001,7 @@ public class OrdersManager {
                 || name.endsWith("_CHESTPLATE")
                 || name.endsWith("_LEGGINGS")
                 || name.endsWith("_BOOTS")
-                || material == Material.TURTLE_HELMET
+                || material.name().equals("TURTLE_HELMET")
                 || material == Material.ELYTRA;
     }
 
@@ -2011,10 +2018,10 @@ public class OrdersManager {
                 || material == Material.SHEARS
                 || material == Material.FLINT_AND_STEEL
                 || material == Material.FISHING_ROD
-                || material == Material.BRUSH
+                || material.name().equals("BRUSH")
                 || material == Material.COMPASS
-                || material == Material.CLOCK
-                || material == Material.LEAD
+                || material == resolveMaterial("WATCH", "WATCH")
+                || material == resolveMaterial("LEASH", "LEASH")
                 || material == Material.NAME_TAG;
     }
 
@@ -2029,9 +2036,9 @@ public class OrdersManager {
                 || name.contains("BOW")
                 || name.contains("ARROW")
                 || name.contains("SHIELD")
-                || material == Material.TRIDENT
-                || material == Material.MACE
-                || material == Material.TOTEM_OF_UNDYING;
+                || material.name().equals("TRIDENT")
+                || material.name().equals("MACE")
+                || material == resolveMaterial("FIREWORKS_SPARK", null);
     }
 
     private boolean isRedstoneMaterial(Material material) {
@@ -2054,10 +2061,10 @@ public class OrdersManager {
                 || name.contains("LEVER")
                 || name.contains("TRIPWIRE")
                 || name.contains("SCULK_SENSOR")
-                || material == Material.TARGET
+                || material.name().equals("TARGET")
                 || material == Material.NOTE_BLOCK
                 || material == Material.TNT
-                || material == Material.CRAFTER;
+                || material.name().equals("CRAFTER");
     }
 
     private boolean isWoodFamilyMaterial(Material material) {
@@ -2067,6 +2074,19 @@ public class OrdersManager {
                 || name.contains("PLANKS")
                 || name.contains("STEM")
                 || name.contains("HYPHAE");
+    }
+
+    private static Material resolveMaterial(String modernName, String legacyName) {
+        Material modern = modernName == null ? null : Material.matchMaterial(modernName);
+        if (modern != null) {
+            return modern;
+        }
+        Material legacy = legacyName == null ? null : Material.matchMaterial(legacyName);
+        return legacy == null ? Material.STONE : legacy;
+    }
+
+    private static boolean isAir(Material material) {
+        return material == null || material == Material.AIR;
     }
 
     private String normalizeSearchText(String rawText) {
@@ -2944,7 +2964,10 @@ public class OrdersManager {
         }
 
         if (catalogByCategory.isEmpty()) {
-            catalogByCategory.put("BLOCKS", java.util.Collections.singletonList(new OrderCatalogEntry("BLOCKS", Material.STONE)));
+            ItemStack fallbackItem = new ItemStack(Material.STONE);
+            catalogByCategory.put("BLOCKS", java.util.Collections.singletonList(
+                    new OrderCatalogEntry("BLOCKS", fallbackItem, describeMaterial(Material.STONE), "STONE BLOCKS")
+            ));
             categoryOrder.add("BLOCKS");
         }
     }
@@ -2997,13 +3020,15 @@ public class OrdersManager {
             for (Enchantment enchantment : Enchantment.values()) {
                 int maxLevel = Math.max(1, enchantment.getMaxLevel());
                 for (int level = 1; level <= maxLevel; level++) {
-                    ItemStack book = ItemKey.book(new java.util.LinkedHashMap(){{ put(enchantment,  level); }}).buildIcon();
+                    java.util.Map<Enchantment, Integer> bookEnchants = new java.util.LinkedHashMap<>();
+                    bookEnchants.put(enchantment, level);
+                    ItemStack book = ItemKey.book(bookEnchants).buildIcon();
                     String display = ItemKey.fromStack(book).displayName();
                     entries.add(new OrderCatalogEntry(
                             categoryKey,
                             book,
                             display,
-                            "enchanted book " + enchantment.getKey().getKey() + " " + level + " " + display
+                            "enchanted book " + enchantment.getName().toLowerCase(Locale.US) + " " + level + " " + display
                     ));
                 }
             }
@@ -3078,7 +3103,7 @@ public class OrdersManager {
     }
 
     private boolean isOrderable(Material material) {
-        if (!isModernMaterial(material) || material.isAir() || !material.isItem()) {
+        if (!isModernMaterial(material) || isAir(material) || !material.isItem()) {
             return false;
         }
 
@@ -3121,7 +3146,8 @@ public class OrdersManager {
         }
 
         try {
-            Material material = Material.valueOf(matPart);
+            LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(matPart);
+            Material material = resolved == null ? Material.valueOf(matPart) : resolved.material();
             return isModernMaterial(material) ? material : null;
         } catch (IllegalArgumentException exception) {
             return null;
@@ -3130,8 +3156,7 @@ public class OrdersManager {
 
     private boolean isModernMaterial(Material material) {
         return material != null
-                && !material.name().startsWith("LEGACY_")
-                && !material.isLegacy();
+                && !material.name().startsWith("LEGACY_");
     }
 
     private boolean isMissingItem(ItemStack item) {
@@ -3140,7 +3165,7 @@ public class OrdersManager {
         }
 
         Material material = item.getType();
-        return !isModernMaterial(material) || material.isAir();
+        return !isModernMaterial(material) || isAir(material);
     }
 
     private int countActiveOrders(UUID ownerUuid) {
@@ -4049,7 +4074,7 @@ public class OrdersManager {
     ) {
         if (capacity <= 0
                 || containerItem == null
-                || !containerItem.getType().name().endsWith("SHULKER_BOX")) {
+                || !containerItem.getType().name().endsWith("ENDER_CHEST")) {
             return null;
         }
 
@@ -4108,7 +4133,7 @@ public class OrdersManager {
             return java.util.Collections.emptyList();
         }
         return items.stream()
-                .filter(item -> item != null && !item.getType().isAir())
+                .filter(item -> item != null && !isAir(item.getType()))
                 .map(ItemStack::clone)
                 .collect(java.util.stream.Collectors.toList());
     }

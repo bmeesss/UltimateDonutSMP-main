@@ -399,7 +399,7 @@ public class ShopMenu extends BaseMenu {
             return;
         }
         set(getBackSlot(), ItemUtils.createItem(
-                ItemUtils.parseMaterial(backButton.getString("MATERIAL", "RED_STAINED_GLASS_PANE")),
+                ItemUtils.parseMaterial(backButton.getString("MATERIAL", "STAINED_GLASS_PANE")),
                 backButton.getString("DISPLAY-NAME", "&cBack"),
                 backButton.getStringList("LORE")
         ));

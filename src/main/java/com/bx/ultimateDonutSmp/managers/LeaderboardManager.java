@@ -76,16 +76,14 @@ public final class CachedLeaderboard {
     private final boolean stale;
 
     public CachedLeaderboard(long cachedAtMillis, List<PlayerData> players, boolean stale) {
+        this.cachedAtMillis = cachedAtMillis;
+        this.players = players;
+        this.stale = stale;
     }
 
     public long cachedAtMillis() { return cachedAtMillis; }
     public List<PlayerData> players() { return players; }
     public boolean stale() { return stale; }
-
-
-        private
-
-
         private boolean needsRefresh(long now) {
             return stale || now - cachedAtMillis >= CACHE_TTL_MS;
         }
@@ -134,12 +132,12 @@ public final class CachedLeaderboard {
     }
 
     public List<LeaderboardType> getTypes() {
-        return java.util.Collections.singletonList(LeaderboardType.values());
+        return java.util.Arrays.asList(LeaderboardType.values());
     }
 
     public String getDisplayName(LeaderboardType type) {
         String configured = plugin.getConfigManager().getMenus()
-                .getString("LEADERBOARDS-MENU.TYPE-NAMES." + type.getConfigKey(), prettify(type));
+                .getString("LEASHERBOARDS-MENU.TYPE-NAMES." + type.getConfigKey(), prettify(type));
         return plugin.getCurrencyManager().applyStaticPlaceholders(configured);
     }
 
@@ -283,7 +281,7 @@ public final class CachedLeaderboard {
                 players.sort(comparator(type));
 
                 List<PlayerData> snapshot = new java.util.ArrayList<>(players);
-                leaderboardCache.put(type, new CachedLeaderboard(System.currentTimeMillis(), snapshot));
+                leaderboardCache.put(type, new CachedLeaderboard(System.currentTimeMillis(), snapshot, false));
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to update leaderboard cache for " + type.name() + ": " + e.getMessage());
             } finally {

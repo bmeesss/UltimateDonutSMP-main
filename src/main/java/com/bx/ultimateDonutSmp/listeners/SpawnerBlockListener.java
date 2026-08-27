@@ -136,13 +136,13 @@ public class SpawnerBlockListener implements Listener {
 
     private void damageHeldTool(Player player) {
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool == null || tool.getType().isAir()) {
+        if (tool == null || tool.getType() == Material.AIR) {
             return;
         }
         org.bukkit.inventory.meta.ItemMeta meta = tool.getItemMeta();
         if (meta instanceof org.bukkit.inventory.meta.Damageable) {
             org.bukkit.inventory.meta.Damageable damageable = (org.bukkit.inventory.meta.Damageable) meta;
-            int unbreakingLevel = tool.getEnchantmentLevel(org.bukkit.enchantments.Enchantment.UNBREAKING);
+            int unbreakingLevel = tool.getEnchantmentLevel(org.bukkit.enchantments.Enchantment.DURABILITY);
             if (unbreakingLevel > 0) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextInt(unbreakingLevel + 1) != 0) {
                     return;

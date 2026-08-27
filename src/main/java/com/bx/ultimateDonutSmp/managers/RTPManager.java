@@ -2164,8 +2164,8 @@ public final class RTPQueueEntry {
     }
 
     private Location resolveNetherSafeLocation(World world, int x, int z) {
-        int minGroundY = world.getMinHeight();
-        int logicalTopY = Math.min(world.getLogicalHeight(), world.getMaxHeight()) - 1;
+        int minGroundY = 0;
+        int logicalTopY = world.getMaxHeight() - 1;
         int maxGroundY = Math.min(
                 world.getMaxHeight() - 1 - PLAYER_CLEARANCE_BLOCKS,
                 logicalTopY - NETHER_ROOF_PADDING_BLOCKS
@@ -2668,7 +2668,7 @@ public final class RTPQueueEntry {
 
     private boolean isSafe(World world, int x, int z) {
         int y = world.getHighestBlockYAt(x, z);
-        if (y <= world.getMinHeight()) {
+        if (y <= 0) {
             return false;
         }
 
@@ -2680,7 +2680,7 @@ public final class RTPQueueEntry {
     }
 
     private boolean isSafeStandLocation(World world, int x, int groundY, int z) {
-        if (groundY < world.getMinHeight() || groundY + PLAYER_CLEARANCE_BLOCKS >= world.getMaxHeight()) {
+        if (groundY < 0 || groundY + PLAYER_CLEARANCE_BLOCKS >= world.getMaxHeight()) {
             return false;
         }
 
@@ -2701,7 +2701,7 @@ public final class RTPQueueEntry {
     }
 
     private boolean isSafeBodySpace(Block block) {
-        return block.isPassable() && !isHazardous(block.getType());
+        return block.getType() == Material.AIR && !isHazardous(block.getType());
     }
 
     private boolean isHazardous(Material material) {

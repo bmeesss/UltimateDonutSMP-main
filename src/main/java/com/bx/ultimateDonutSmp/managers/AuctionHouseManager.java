@@ -8,6 +8,7 @@ import com.bx.ultimateDonutSmp.models.AuctionClaim;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.AuctionPage;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerAuctionSession;
 import com.bx.ultimateDonutSmp.models.PlayerPreference;
 import com.bx.ultimateDonutSmp.storage.AuctionHouseRepository;
@@ -114,6 +115,15 @@ public final class CreateListingResult {
     private final CrashProtectionManager.ValidationResult safetyResult;
 
     public CreateListingResult(boolean success, CreateFailureReason reason, AuctionListing listing, double listingFee, CrashProtectionManager.ValidationResult safetyResult) {
+        this.success = success;
+        this.reason = reason;
+        this.listing = listing;
+        this.listingFee = listingFee;
+        this.safetyResult = safetyResult;
+    }
+
+    public CreateListingResult(boolean success, CreateFailureReason reason, AuctionListing listing, double listingFee) {
+        this(success, reason, listing, listingFee, null);
     }
 
     public boolean success() { return success; }
@@ -146,6 +156,14 @@ public final class PurchaseListingResult {
     private final boolean deliveryPending;
 
     public PurchaseListingResult(boolean success, PurchaseFailureReason reason, AuctionListing listing, boolean deliveryPending) {
+        this.success = success;
+        this.reason = reason;
+        this.listing = listing;
+        this.deliveryPending = deliveryPending;
+    }
+
+    public PurchaseListingResult(boolean success, PurchaseFailureReason reason, AuctionListing listing) {
+        this(success, reason, listing, false);
     }
 
     public boolean success() { return success; }
@@ -546,7 +564,7 @@ public final class ClaimResult {
             int durationHours
     ) {
         ItemStack hand = seller.getInventory().getItemInMainHand();
-        if (hand == null || hand.getType().isAir()) {
+        if (hand == null || isAir(hand.getType())) {
             return CompletableFuture.completedFuture(
                     new CreateListingResult(false, CreateFailureReason.NO_ITEM, null, 0D)
             );
@@ -694,7 +712,7 @@ public final class ClaimResult {
         CompletableFuture<PurchaseListingResult> result = new CompletableFuture<>();
         repository.markSold(listingId, buyer.getUniqueId(), System.currentTimeMillis())
                 .whenComplete((sold, throwable) -> plugin.getSpigotScheduler().runEntity(buyer, () -> {
-                    if (throwable != null || sold == null || sold.isEmpty()) {
+                    if (throwable != null || sold == null || !sold.isPresent()) {
                         plugin.getEconomyManager().deposit(buyer, listing.price(), EconomyReason.AUCTION_REFUND);
                         endAction(buyer.getUniqueId());
                         refreshCache();
@@ -784,7 +802,7 @@ public final class ClaimResult {
                     if (throwable != null) {
                         return new CancelListingResult(false, CancelFailureReason.DATABASE_ERROR, listing);
                     }
-                    if (cancelled.isEmpty()) {
+                    if (!cancelled.isPresent()) {
                         return new CancelListingResult(false, CancelFailureReason.NOT_ACTIVE, listing);
                     }
                     if (!isClaimsEnabled()) {
@@ -908,7 +926,7 @@ public final class ClaimResult {
     }
 
     public String describeItem(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return "Unknown Item";
         }
         if (item.hasItemMeta() && item.getItemMeta() != null && item.getItemMeta().hasDisplayName()) {
@@ -971,7 +989,7 @@ public final class ClaimResult {
 
         CompletableFuture<ClaimResult> result = new CompletableFuture<>();
         repository.acquireClaim(claimId, player.getUniqueId()).whenComplete((lease, throwable) -> {
-            if (throwable != null || lease == null || lease.isEmpty()) {
+            if (throwable != null || lease == null || !lease.isPresent()) {
                 result.complete(new ClaimResult(
                         false,
                         throwable == null ? ClaimFailureReason.ALREADY_CLAIMED : ClaimFailureReason.DATABASE_ERROR,
@@ -1088,7 +1106,7 @@ public final class ClaimResult {
         if (!hasPermission(seller, "sell")) {
             return new CreateListingResult(false, CreateFailureReason.NO_PERMISSION, null, 0D);
         }
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return new CreateListingResult(false, CreateFailureReason.NO_ITEM, null, 0D);
         }
         if (!isPriceAllowed(price, getMinPrice(), getMaxPrice())) {
@@ -1124,7 +1142,7 @@ public final class ClaimResult {
     }
 
     private boolean isListable(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return false;
         }
         Set<Material> blocked = EnumSet.noneOf(Material.class);
@@ -1156,7 +1174,7 @@ public final class ClaimResult {
     }
 
     private boolean canFitItem(Player player, ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return true;
         }
         int remaining = item.getAmount();
@@ -1164,7 +1182,7 @@ public final class ClaimResult {
         ItemStack comparison = item.clone();
         comparison.setAmount(1);
         for (ItemStack current : player.getInventory().getStorageContents()) {
-            if (current == null || current.getType().isAir()) {
+            if (current == null || isAir(current.getType())) {
                 remaining -= maxStack;
             } else if (current.isSimilar(comparison) && current.getAmount() < current.getMaxStackSize()) {
                 remaining -= current.getMaxStackSize() - current.getAmount();
@@ -1177,7 +1195,7 @@ public final class ClaimResult {
     }
 
     private void restoreEscrow(Player player, ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return;
         }
         if (!player.isOnline()) {
@@ -1336,6 +1354,10 @@ public final class ClaimResult {
 
     private Throwable unwrap(Throwable throwable) {
         return throwable.getCause() == null ? throwable : throwable.getCause();
+    }
+
+    private static boolean isAir(Material material) {
+        return material == null || material == Material.AIR;
     }
 
     public static boolean isPriceAllowed(double price, double minimum, double maximum) {

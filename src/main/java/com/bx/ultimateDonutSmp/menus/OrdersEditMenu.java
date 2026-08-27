@@ -75,7 +75,7 @@ public class OrdersEditMenu extends BaseMenu {
                 ))
         ));
         set(16, ItemUtils.createItem(
-                Material.CLOCK,
+                Material.WATCH,
                 "&eProgress",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Delivered: &e" + order.deliveredQuantity() + "&7/&e" + order.requestedQuantity(), 
@@ -96,7 +96,7 @@ public class OrdersEditMenu extends BaseMenu {
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Use the configured item selection mode.",  "",  "&eClick to edit"))
                 ));
                 set(20, ItemUtils.createItem(
-                        Material.WRITABLE_BOOK,
+                        Material.BOOK_AND_QUILL,
                         "&eChange quantity",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &e" + order.requestedQuantity(),  "",  "&eClick to edit"))
                 ));

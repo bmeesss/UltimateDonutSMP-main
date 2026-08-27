@@ -72,7 +72,7 @@ public class OrdersInventoryItemMenu extends BaseMenu {
         }
 
         ItemStack clicked = event.getCurrentItem();
-        if (clicked == null || clicked.getType().isAir()) {
+        if (clicked == null || clicked.getType() == Material.AIR) {
             return;
         }
 

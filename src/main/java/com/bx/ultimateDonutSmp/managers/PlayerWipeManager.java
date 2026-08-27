@@ -70,7 +70,7 @@ public final class Target {
     }
 }
 
-public final class WipeResult {
+public static final class WipeResult {
     private final boolean success;
     private final boolean busy;
     private final DatabaseManager.PlayerWipeResult counts;

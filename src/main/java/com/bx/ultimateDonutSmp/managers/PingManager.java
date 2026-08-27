@@ -127,12 +127,7 @@ public final class PingManager implements Listener {
         }
         UUID uuid = player.getUniqueId();
 
-        // Check Bukkit getPing()
-        int bukkitPing = player.getPing();
-        if (bukkitPing > 0) {
-            pingCache.put(uuid, bukkitPing);
-            return bukkitPing;
-        }
+        // Spigot 1.12 has no Player#getPing; use the native-server fallback below.
 
         // 3. Check measured/cached ping
         Integer cached = pingCache.get(uuid);

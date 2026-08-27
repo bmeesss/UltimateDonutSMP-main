@@ -318,7 +318,7 @@ public class StaffModeListener implements Listener {
             return true;
         }
 
-        if (event.getClick() == ClickType.SWAP_OFFHAND) {
+            if (event.getClick() == ClickType.NUMBER_KEY && event.getHotbarButton() == 40) {
             return manager.isStaffTool(player.getInventory().getItemInOffHand());
         }
 

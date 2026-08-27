@@ -72,10 +72,8 @@ public class FindPlayerCommand implements CommandExecutor {
                 return new LocationMessage("FINDPLAYER.NETHER", DEFAULT_NETHER);
             case THE_END:
                 return new LocationMessage("FINDPLAYER.THE_END", DEFAULT_THE_END);
-            case CUSTOM:
-                return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
             default:
-                return null;
+                return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
         }
     }
 
@@ -91,10 +89,8 @@ public class FindPlayerCommand implements CommandExecutor {
                 return "nether";
             case THE_END:
                 return "the end";
-            case CUSTOM:
-                return formatIdentifier(world.getName());
             default:
-                return null;
+                return formatIdentifier(world.getName());
         }
     }
 
@@ -108,7 +104,7 @@ public class FindPlayerCommand implements CommandExecutor {
             return "unknown";
         }
 
-        return formatIdentifier(biome.getKey().getKey());
+        return formatIdentifier(biome.name());
     }
 
     private String formatIdentifier(String value) {

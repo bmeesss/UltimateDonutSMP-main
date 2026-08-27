@@ -106,7 +106,7 @@ public class HomeMenu extends BaseMenu {
         teleportPlaceholders.put("world", team != null && team.hasHome() ? friendlyWorldName(team.getHome()) : "overworld");
 
         set(TEAM_TELEPORT_SLOT, ItemUtils.createItem(
-                material("HOME-MENU.TEAM_HOME.TELEPORT.MATERIALS." + teleportState, Material.WHITE_BANNER),
+                material("HOME-MENU.TEAM_HOME.TELEPORT.MATERIALS." + teleportState, Material.WOOL),
                 text("HOME-MENU.TEAM_HOME.TELEPORT.DISPLAY_NAME." + teleportState, "&fTeam home", teleportPlaceholders),
                 lore("HOME-MENU.TEAM_HOME.TELEPORT.LORE." + teleportState,
                         defaultTeamTeleportLore(team, teleportState), teleportPlaceholders)
@@ -137,7 +137,7 @@ public class HomeMenu extends BaseMenu {
         }
 
         set(TEAM_ACTION_SLOT, ItemUtils.createItem(
-                material("HOME-MENU.TEAM_HOME.SAVE.MATERIALS." + actionState, Material.GRAY_DYE),
+                material("HOME-MENU.TEAM_HOME.SAVE.MATERIALS." + actionState, Material.INK_SACK),
                 text("HOME-MENU.TEAM_HOME.SAVE.DISPLAY_NAME." + actionState, "&7Manage team home", teleportPlaceholders),
                 actionLore
         ));
@@ -184,7 +184,7 @@ public class HomeMenu extends BaseMenu {
         Map<String, String> placeholders = homePlaceholders(home.getName(), globalIndex, home.getLocation());
 
         set(teleportSlot, ItemUtils.createItem(
-                material("HOME-MENU.TELEPORT-USED-MATERIAL", Material.LIGHT_BLUE_BED),
+                material("HOME-MENU.TELEPORT-USED-MATERIAL", Material.WOOL),
                 text("HOME-MENU.TELEPORT." + key + ".DISPLAY-NAME.USED", "&b{name}", placeholders),
                 lore("HOME-MENU.TELEPORT." + key + ".LORE.USED",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7World: &f{world}",  "&aLeft-click to teleport")),
@@ -196,7 +196,7 @@ public class HomeMenu extends BaseMenu {
         });
 
         set(actionSlot, ItemUtils.createItem(
-                material("HOME-MENU.CREATE-USED-MATERIAL", Material.BLUE_DYE),
+                material("HOME-MENU.CREATE-USED-MATERIAL", Material.INK_SACK),
                 text("HOME-MENU.CREATE." + key + ".DISPLAY-NAME.USED", "&b{name}", placeholders),
                 lore("HOME-MENU.CREATE." + key + ".LORE.USED",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&eLeft-click to rename this home",  "&cRight-click to delete")),
@@ -216,13 +216,13 @@ public class HomeMenu extends BaseMenu {
         Map<String, String> placeholders = emptyHomePlaceholders(globalIndex);
 
         set(teleportSlot, ItemUtils.createItem(
-                material("HOME-MENU.TELEPORT-NO-USED-MATERIAL", Material.LIGHT_GRAY_BED),
+                material("HOME-MENU.TELEPORT-NO-USED-MATERIAL", Material.WOOL),
                 text("HOME-MENU.TELEPORT." + key + ".DISPLAY-NAME.NO-USED", "&7{slot}", placeholders),
                 lore("HOME-MENU.TELEPORT." + key + ".LORE.NO-USED",
                         java.util.Collections.singletonList("&7Click to create a home."), placeholders)
         ));
         set(actionSlot, ItemUtils.createItem(
-                material("HOME-MENU.CREATE-NO-USED-MATERIAL", Material.GRAY_DYE),
+                material("HOME-MENU.CREATE-NO-USED-MATERIAL", Material.INK_SACK),
                 text("HOME-MENU.CREATE." + key + ".DISPLAY-NAME.NO-USED", "&7{slot}", placeholders),
                 lore("HOME-MENU.CREATE." + key + ".LORE.NO-USED",
                         java.util.Collections.singletonList("&7Click to name and create a home."), placeholders)
@@ -244,13 +244,13 @@ public class HomeMenu extends BaseMenu {
         Map<String, String> placeholders = emptyHomePlaceholders(globalIndex);
 
         set(teleportSlot, ItemUtils.createItem(
-                material("HOME-MENU.TELEPORT-NO-PERMISSION-MATERIAL", Material.RED_BED),
+                material("HOME-MENU.TELEPORT-NO-PERMISSION-MATERIAL", Material.WOOL),
                 text("HOME-MENU.TELEPORT." + key + ".DISPLAY-NAME.NO-PERMISSION", "&cLocked", placeholders),
                 lore("HOME-MENU.TELEPORT." + key + ".LORE.NO-PERMISSION",
                         java.util.Collections.singletonList("&7You need a higher rank for this home."), placeholders)
         ));
         set(actionSlot, ItemUtils.createItem(
-                material("HOME-MENU.CREATE-NO-PERMISSION-MATERIAL", Material.RED_DYE),
+                material("HOME-MENU.CREATE-NO-PERMISSION-MATERIAL", Material.INK_SACK),
                 text("HOME-MENU.CREATE." + key + ".DISPLAY-NAME.NO-PERMISSION", "&cLocked", placeholders),
                 lore("HOME-MENU.CREATE." + key + ".LORE.NO-PERMISSION",
                         java.util.Collections.singletonList("&7You need a higher rank for this home."), placeholders)
@@ -402,7 +402,7 @@ public class HomeMenu extends BaseMenu {
     }
 
     private void fillWithFiller() {
-        ItemStack filler = blank(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        ItemStack filler = blank(Material.STAINED_GLASS_PANE);
         for (int i = 0; i < inventory.getSize(); i++) {
             set(i, filler);
         }

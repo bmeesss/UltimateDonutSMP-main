@@ -161,7 +161,7 @@ public class CrateEditorMenu extends BaseMenu {
                 return;
             }
 
-            if (inventory.getItem(rawSlot) == null || inventory.getItem(rawSlot).getType().isAir()) {
+            if (inventory.getItem(rawSlot) == null || inventory.getItem(rawSlot).getType() == Material.AIR) {
                 player.sendMessage(ColorUtils.toComponent("&cSelect an item from your inventory first."));
                 return;
             }
@@ -175,7 +175,7 @@ public class CrateEditorMenu extends BaseMenu {
             return;
         }
 
-        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
             event.setCancelled(true);
             return;
         }

@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class LeaderboardTypeMenu extends BaseMenu {
 
-    private static final String MENU_PATH = "LEADERBOARDS-MENU.TYPE-MENU";
+    private static final String MENU_PATH = "LEASHERBOARDS-MENU.TYPE-MENU";
     private static final int[] ENTRY_SLOTS = {
             10, 11, 12, 13, 14, 15, 16,
             19, 20, 21, 22, 23, 24, 25,
@@ -137,14 +137,14 @@ public class LeaderboardTypeMenu extends BaseMenu {
         placeholders.put("value", value);
         placeholders.put("position", String.valueOf(entry.position()));
 
-        Material material = ItemUtils.parseMaterial(valueOrDefault(buttonSection, "MATERIAL", "PLAYER_HEAD"));
+        Material material = ItemUtils.parseMaterial(valueOrDefault(buttonSection, "MATERIAL", "SKULL_ITEM"));
         ItemStack item = ItemUtils.createItem(
                 material,
                 applyPlaceholders(valueOrDefault(buttonSection, "DISPLAY-NAME", "&b{player}"), placeholders),
                 applyPlaceholders(getLore(buttonSection, "LORE"), placeholders)
         );
 
-        if (material == Material.PLAYER_HEAD && item.getItemMeta() instanceof SkullMeta) {
+        if (material == Material.SKULL_ITEM && item.getItemMeta() instanceof SkullMeta) {
             SkullMeta meta = (SkullMeta) item.getItemMeta();
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(entry.playerData().getUuid());
             meta.setOwningPlayer(offlinePlayer);
@@ -158,7 +158,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
                 .getPlayerEntry(player.getUniqueId(), type);
         if (entry == null) {
             return ItemUtils.createItem(
-                    Material.PLAYER_HEAD,
+                    Material.SKULL_ITEM,
                     "&eYour rank",
                     java.util.Collections.singletonList("&7No data available for this category.")
             );
@@ -166,7 +166,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
 
         PlayerData data = entry.playerData();
         ItemStack item = ItemUtils.createItem(
-                Material.PLAYER_HEAD,
+                Material.SKULL_ITEM,
                 "&eYour rank",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Player: &f" + data.getUsername(),
@@ -184,7 +184,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
     }
 
     private Material currentTypeMaterial() {
-        ConfigurationSection buttons = plugin.getConfigManager().getMenus().getConfigurationSection("LEADERBOARDS-MENU.BUTTONS");
+        ConfigurationSection buttons = plugin.getConfigManager().getMenus().getConfigurationSection("LEASHERBOARDS-MENU.BUTTONS");
         if (buttons == null) {
             return Material.NETHER_STAR;
         }

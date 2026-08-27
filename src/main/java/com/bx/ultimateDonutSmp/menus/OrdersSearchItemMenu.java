@@ -73,7 +73,7 @@ public class OrdersSearchItemMenu extends BaseMenu {
         set(lastRow + 1, page > 1
                 ? ItemUtils.createItem(Material.ARROW, "&aPrevious page", java.util.Collections.singletonList("&7Page " + (page - 1)))
                 : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
-        set(lastRow + 2, ItemUtils.createItem(Material.SPYGLASS, "&bNew search",
+        set(lastRow + 2, ItemUtils.createItem(Material.COMPASS, "&bNew search",
                 java.util.Collections.singletonList("&7Search another item or category")));
         set(lastRow + 3, ItemUtils.createItem(Material.HOPPER,
                 "&eSort: &f" + state.itemSort().name().replace('_', '-'),

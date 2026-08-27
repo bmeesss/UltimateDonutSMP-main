@@ -57,9 +57,9 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
 
         // 1. Cancel Button
         int cancelSlot = config.getInt("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.SLOT", 15);
-        String cancelMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.MATERIAL", "RED_STAINED_GLASS_PANE");
+        String cancelMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material cancelMat = Material.matchMaterial(cancelMatName);
-        if (cancelMat == null) cancelMat = Material.RED_STAINED_GLASS_PANE;
+        if (cancelMat == null) cancelMat = Material.STAINED_GLASS_PANE;
         String cancelTitle = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.TITLE", "&cCancel");
         cancelTitle = replacePlaceholders(cancelTitle, formattedPrice, formattedMultiplier, formattedItemCount, mobLabel);
 
@@ -100,9 +100,9 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
 
         // 3. Confirm Button
         int confirmSlot = config.getInt("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.SLOT", 11);
-        String confirmMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE");
+        String confirmMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material confirmMat = Material.matchMaterial(confirmMatName);
-        if (confirmMat == null) confirmMat = Material.LIME_STAINED_GLASS_PANE;
+        if (confirmMat == null) confirmMat = Material.STAINED_GLASS_PANE;
         String confirmTitle = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.TITLE", "&aConfirm Sell");
         confirmTitle = replacePlaceholders(confirmTitle, formattedPrice, formattedMultiplier, formattedItemCount, mobLabel);
 

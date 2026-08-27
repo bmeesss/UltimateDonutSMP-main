@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 public class ShardManager {
 
-public final class KillRewardRange {
+public static final class KillRewardRange {
     private final long min;
     private final long max;
 
@@ -261,7 +261,7 @@ public final class ShardCuboidConfig {
         }
     }
 
-public final class ShardCuboidHudState {
+ public static final class ShardCuboidHudState {
     private final String cuboidName;
     private final String status;
     private final String display;

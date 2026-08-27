@@ -70,7 +70,7 @@ public class WorthCommand implements CommandExecutor {
             Player player = (Player) sender;
 
             ItemStack item = player.getInventory().getItemInMainHand();
-            if (item.getType().isAir()) {
+            if (item.getType() == Material.AIR) {
                 sendMessage(player, "&cHold an item to check its worth.");
                 return true;
             }
@@ -102,7 +102,7 @@ public class WorthCommand implements CommandExecutor {
         String itemInput = String.join(" ", Arrays.copyOfRange(args, itemIndex, args.length));
         Material material = plugin.getWorthManager().findMaterial(itemInput);
 
-        if (material == null || material.isAir()) {
+        if (material == null || material == Material.AIR) {
             String msg = plugin.getConfigManager().getMessages().getString(
                     "WORTH.UNKNOWN-ITEM",
                     "&cUnknown item: {item}"

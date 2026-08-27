@@ -172,20 +172,20 @@ public class EnderChestListener implements Listener {
 
         if (clickedTop) {
             candidate = event.getCursor();
-            if ((candidate == null || candidate.getType().isAir()) && event.getClick() == ClickType.NUMBER_KEY) {
+            if ((candidate == null || candidate.getType() == Material.AIR) && event.getClick() == ClickType.NUMBER_KEY) {
                 int hotbarButton = event.getHotbarButton();
                 if (hotbarButton >= 0) {
                     candidate = player.getInventory().getItem(hotbarButton);
                 }
             }
-            if ((candidate == null || candidate.getType().isAir()) && event.getClick() == ClickType.SWAP_OFFHAND) {
+            if ((candidate == null || candidate.getType() == Material.AIR) && event.getClick() == ClickType.NUMBER_KEY && event.getHotbarButton() == 40) {
                 candidate = player.getInventory().getItemInOffHand();
             }
         } else if (event.isShiftClick()) {
             candidate = event.getCurrentItem();
         }
 
-        if (candidate == null || candidate.getType().isAir()) {
+        if (candidate == null || candidate.getType() == Material.AIR) {
             return false;
         }
 
@@ -216,7 +216,7 @@ public class EnderChestListener implements Listener {
         }
 
         ItemStack candidate = event.getOldCursor();
-        if (candidate == null || candidate.getType().isAir()) {
+        if (candidate == null || candidate.getType() == Material.AIR) {
             return false;
         }
 

@@ -36,9 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +88,20 @@ public class TablistManager {
         if (cached != null && cached.equals(key)) {
             return;
         }
-        player.setPlayerListHeaderFooter(parseTabText(headerText, player), parseTabText(footerText, player));
+        // Keep this compatible with the 1.12 API without linking newer overloads.
+        try {
+            player.getClass().getMethod("setPlayerListHeaderFooter", String.class, String.class)
+                    .invoke(player, parseTabText(headerText, player), parseTabText(footerText, player));
+        } catch (ReflectiveOperationException ignored) {
+            try {
+                player.getClass().getMethod("setPlayerListHeader", String.class)
+                        .invoke(player, parseTabText(headerText, player));
+                player.getClass().getMethod("setPlayerListFooter", String.class)
+                        .invoke(player, parseTabText(footerText, player));
+            } catch (ReflectiveOperationException ignoredToo) {
+                return;
+            }
+        }
         lastHeaderFooterCache.put(player.getUniqueId(), key);
     }
 
@@ -299,8 +310,7 @@ public class TablistManager {
             return namedSessionTexture;
         }
 
-        SkinTexture updatedProfileTexture = resolveUpdatedBukkitProfileTexture(playerId, playerName);
-        return updatedProfileTexture != null && updatedProfileTexture.isValid() ? updatedProfileTexture : null;
+        return null;
     }
 
     SkinTexture resolveLiveGameProfileSkinTexture(Player player) {
@@ -314,8 +324,8 @@ public class TablistManager {
 
     SkinTexture resolveSkinTextureForFakePlayer(UUID playerId, String playerName) {
         SkinTexture texture = !Bukkit.isPrimaryThread()
-                ? resolveGameProfileSkinTexture(playerId, playerName)
-                : resolveLiveGameProfileSkinTexture(playerId, playerName);
+                ? resolveOriginalGameProfileSkinTexture(playerId, playerName)
+                : resolveLiveGameProfileSkinTexture(Bukkit.getPlayer(playerId));
         if (texture != null && texture.isValid()) {
             return texture;
         }
@@ -1185,8 +1195,9 @@ public class TablistManager {
         }
 
 
+        SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheAndApplySkinTexture(player, profileTexture, force, false);
+            cacheAndApplySkinTexture(player, profileTexture, force);
             pendingSkinHeadTextureRefreshes.remove(playerId);
             return;
         }
@@ -1210,7 +1221,7 @@ public class TablistManager {
             }
 
             if (skinTexture != null && skinTexture.isValid()) {
-                boolean changed = cacheAndApplySkinTexture(online, skinTexture, force, true);
+                boolean changed = cacheAndApplySkinTexture(online, skinTexture, force);
                 if (changed) {
                     updateTablistName(online);
                 }
@@ -1377,7 +1388,7 @@ public class TablistManager {
             }
 
             try (Reader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
-                JsonElement parsed = JsonParser.parseReader(reader);
+                JsonElement parsed = new JsonParser().parse(reader);
                 if (!parsed.isJsonObject()) {
                     return null;
                 }
@@ -1415,7 +1426,7 @@ public class TablistManager {
 
     private SkinTexture extractMojangSessionTexture(JsonObject root) throws ReflectiveOperationException {
         JsonArray properties = root.getAsJsonArray("properties");
-        if (properties == null || properties.isEmpty()) {
+        if (properties == null || properties.size() == 0) {
             return null;
         }
 
@@ -1439,41 +1450,8 @@ public class TablistManager {
         return null;
     }
 
-    private SkinTexture resolveUpdatedBukkitProfileTexture(UUID playerId, String playerName) {
-        if (playerId == null && (playerName == null || playerName.trim().isEmpty())) {
-            return null;
-        }
-
-        try {
-            Object profile = playerName != null && !playerName.trim().isEmpty()
-                    ? Bukkit.createPlayerProfile(playerName)
-                    : Bukkit.createPlayerProfile(playerId);
-            Object updateResult = invokeNoArg(profile, "update");
-            if (updateResult instanceof CompletableFuture<?>) {
-                CompletableFuture<?> future = (CompletableFuture<?>) updateResult;
-                Object updatedProfile = future.get(4L, TimeUnit.SECONDS);
-                SkinTexture texture = resolveProfileTexture(updatedProfile);
-                if (texture != null && texture.isValid()) {
-                    return texture;
-                }
-            }
-            return resolveProfileTexture(profile);
-        } catch (ReflectiveOperationException
-                 | java.util.concurrent.ExecutionException
-                 | java.util.concurrent.TimeoutException
-                 | InterruptedException
-                 | RuntimeException
-                 | LinkageError ignored) {
-            if (ignored instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            return null;
-        }
-    }
-
     private List<Object> resolveGameProfiles(Player player) throws ReflectiveOperationException {
         List<Object> profiles = new ArrayList<>();
-        addProfileCandidate(profiles, invokeNoArg(player, "getPlayerProfile"));
         addProfileCandidate(profiles, invokeNoArg(player, "getProfile", "getGameProfile"));
 
         Object handle = invokeNoArg(player, "getHandle");
@@ -1518,7 +1496,7 @@ public class TablistManager {
             return false;
         }
 
-        boolean changed = applyPaperPlayerProfileTexture(player, skinTexture);
+        boolean changed = false;
         try {
             for (Object profile : resolveGameProfiles(player)) {
                 changed |= applySkinTexture(profile, skinTexture);
@@ -1527,28 +1505,6 @@ public class TablistManager {
             return changed;
         }
         return changed;
-    }
-
-    private boolean applyPaperPlayerProfileTexture(Player player, SkinTexture skinTexture) {
-        try {
-            Object profile = invokeNoArg(player, "getPlayerProfile");
-            if (profile == null) {
-                return false;
-            }
-
-            SkinTexture current = resolveProfileTexture(profile);
-            if (skinTexture.equals(current)) {
-                return false;
-            }
-
-            Object property = createPaperProfileProperty(profile.getClass().getClassLoader(), skinTexture);
-            boolean removed = invokeCompatibleIfPresent(profile, "removeProperty", "textures");
-            boolean set = invokeCompatibleIfPresent(profile, "setProperty", property);
-            boolean applied = invokeCompatibleIfPresent(player, "setPlayerProfile", profile);
-            return removed || set || applied;
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
-            return false;
-        }
     }
 
     private boolean applySkinTexture(Object profile, SkinTexture skinTexture) throws ReflectiveOperationException {
@@ -1566,48 +1522,6 @@ public class TablistManager {
         boolean removed = invokeCompatibleIfPresent(propertyMap, "removeAll", "textures");
         boolean added = invokeCompatibleIfPresent(propertyMap, "put", "textures", property);
         return added || removed;
-    }
-
-    private Object createPaperProfileProperty(ClassLoader preferredLoader, SkinTexture skinTexture)
-            throws ReflectiveOperationException {
-        List<ClassLoader> loaders = new ArrayList<>();
-        if (preferredLoader != null) {
-            loaders.add(preferredLoader);
-        }
-        loaders.add(Bukkit.class.getClassLoader());
-        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-        if (contextLoader != null && !loaders.contains(contextLoader)) {
-            loaders.add(contextLoader);
-        }
-
-        ClassNotFoundException missing = null;
-        for (ClassLoader loader : loaders) {
-            try {
-                Class<?> propertyClass = Class.forName("com.destroystokyo.paper.profile.ProfileProperty", false, loader);
-                for (Constructor<?> constructor : propertyClass.getDeclaredConstructors()) {
-                    Class<?>[] parameters = constructor.getParameterTypes();
-                    if (parameters.length == 3
-                            && parameters[0] == String.class
-                            && parameters[1] == String.class
-                            && parameters[2] == String.class) {
-                        constructor.setAccessible(true);
-                        return constructor.newInstance("textures", skinTexture.value(), skinTexture.signature());
-                    }
-                    if (parameters.length == 2
-                            && parameters[0] == String.class
-                            && parameters[1] == String.class) {
-                        constructor.setAccessible(true);
-                        return constructor.newInstance("textures", skinTexture.value());
-                    }
-                }
-            } catch (ClassNotFoundException exception) {
-                missing = exception;
-            }
-        }
-
-        throw missing == null
-                ? new ClassNotFoundException("com.destroystokyo.paper.profile.ProfileProperty")
-                : missing;
     }
 
     private Object createProfileProperty(ClassLoader preferredLoader, SkinTexture skinTexture)

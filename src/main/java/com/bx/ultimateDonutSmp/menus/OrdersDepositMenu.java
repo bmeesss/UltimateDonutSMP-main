@@ -10,6 +10,7 @@ import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.entity.Player;
+import org.bukkit.Material;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -157,7 +158,7 @@ public class OrdersDepositMenu extends BaseMenu {
                 continue;
             }
             ItemStack item = inventory.getItem(slot);
-            if (item != null && !item.getType().isAir()) {
+            if (item != null && item.getType() != Material.AIR) {
                 items.add(item.clone());
                 inventory.setItem(slot, null);
             }

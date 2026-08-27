@@ -45,9 +45,9 @@ public class SpawnerMainMenu extends BaseMenu {
         inventory = Bukkit.createInventory(this, plugin.getSpawnerManager().getMainMenuSize(), ColorUtils.toComponent(titleStr));
 
         clear();
-        String fillerMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.FILLER-MATERIAL", "GRAY_STAINED_GLASS_PANE");
+        String fillerMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.FILLER-MATERIAL", "STAINED_GLASS_PANE");
         Material fillerMat = Material.matchMaterial(fillerMatName);
-        if (fillerMat == null) fillerMat = Material.GRAY_STAINED_GLASS_PANE;
+        if (fillerMat == null) fillerMat = Material.STAINED_GLASS_PANE;
         fill(fillerMat);
 
         // 1. Spawner Storage Button

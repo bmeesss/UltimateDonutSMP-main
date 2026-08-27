@@ -140,7 +140,7 @@ public class SafetyCommand implements CommandExecutor {
                 player.sendMessage(ColorUtils.toComponent("&cAn error occurred: bookmeta is null."));
                 return;
             }
-            player.openBook(book);
+            player.getInventory().setItemInHand(book);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to open safety book for " + player.getName(), e);
             player.sendMessage(ColorUtils.toComponent("&cAn error occurred while opening the safety book."));

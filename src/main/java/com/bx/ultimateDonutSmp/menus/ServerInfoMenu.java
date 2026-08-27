@@ -316,7 +316,7 @@ public class ServerInfoMenu extends BaseMenu {
             case "RULES":
                 action = ButtonAction.command("rules");
                 break;
-            case "LEADERBOARDS":
+            case "LEASHERBOARDS":
                 action = ButtonAction.command("leaderboards");
                 break;
             case "SHARDS":
@@ -488,7 +488,7 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 12,
-                                Material.RED_BED,
+                                Material.BED,
                                 "&#00A4FCHomes",
                                 Arrays.asList(
                                         "&fUse &b/sethome <name> &fto save",
@@ -540,7 +540,7 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 16,
-                                Material.OAK_SAPLING,
+                                Material.SAPLING,
                                 "&#00A4FCRTP guide",
                                 Arrays.asList(
                                         "&fUse RTP when spawn feels crowded",
@@ -603,7 +603,7 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 13,
-                                Material.CLOCK,
+                                Material.WATCH,
                                 "&#00A4FCLeaderboards",
                                 Arrays.asList(
                                         "&fCheck who is leading in",
@@ -655,7 +655,7 @@ public class ServerInfoMenu extends BaseMenu {
         );
     }
 
-public final class PageDefinition {
+    public static final class PageDefinition {
     private final String key;
     private final String title;
     private final int size;
@@ -687,7 +687,7 @@ public final class PageDefinition {
     }
 }
 
-public final class ButtonDefinition {
+public static final class ButtonDefinition {
     private final int slot;
     private final Material material;
     private final short data;
@@ -729,7 +729,7 @@ public final class ButtonDefinition {
     }
 }
 
-public final class ButtonAction {
+public static final class ButtonAction {
     private final ActionType type;
     private final String command;
     private final List<String> messages;

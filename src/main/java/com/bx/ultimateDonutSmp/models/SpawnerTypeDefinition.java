@@ -16,12 +16,14 @@ public final class SpawnerTypeDefinition {
     private final List<DropDefinition> drops;
 
     public SpawnerTypeDefinition(String key, String displayName, EntityType entityType, Material iconMaterial, long baseItemsPerCycle, double xpPerCycle, String headTexture, List<DropDefinition> drops) {
-        displayName = displayName == null || displayName.trim().isEmpty() ? key : displayName;
-        iconMaterial = iconMaterial == null ? Material.SPAWNER : iconMaterial;
-        baseItemsPerCycle = Math.max(1L, baseItemsPerCycle);
-        xpPerCycle = Math.max(0.0, xpPerCycle);
-        headTexture = headTexture == null || headTexture.trim().isEmpty() ? null : headTexture.trim();
-        drops = new java.util.ArrayList<>(drops == null ? java.util.Collections.emptyList() : drops);
+        this.key = key;
+        this.displayName = displayName == null || displayName.trim().isEmpty() ? key : displayName;
+        this.entityType = entityType;
+        this.iconMaterial = iconMaterial == null ? Material.MOB_SPAWNER : iconMaterial;
+        this.baseItemsPerCycle = Math.max(1L, baseItemsPerCycle);
+        this.xpPerCycle = Math.max(0.0, xpPerCycle);
+        this.headTexture = headTexture == null || headTexture.trim().isEmpty() ? null : headTexture.trim();
+        this.drops = new java.util.ArrayList<DropDefinition>(drops == null ? java.util.Collections.<DropDefinition>emptyList() : drops);
     }
 
     public String key() { return key; }
@@ -32,12 +34,6 @@ public final class SpawnerTypeDefinition {
     public double xpPerCycle() { return xpPerCycle; }
     public String headTexture() { return headTexture; }
     public List<DropDefinition> drops() { return drops; }
-
-
-
-    public
-
-
     public SpawnerTypeDefinition(
             String key,
             String displayName,
@@ -49,10 +45,7 @@ public final class SpawnerTypeDefinition {
     ) {
         this(key, displayName, entityType, iconMaterial, baseItemsPerCycle, xpPerCycle, null, drops);
     }
-
-
-
-public final class DropDefinition {
+public static final class DropDefinition {
     private final String key;
     private final Material material;
     private final long min;

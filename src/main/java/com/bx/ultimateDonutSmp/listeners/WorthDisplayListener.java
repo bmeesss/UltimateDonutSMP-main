@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.menus.BaseMenu;
 import com.bx.ultimateDonutSmp.menus.SellMenu;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -127,8 +128,8 @@ public class WorthDisplayListener implements Listener {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
 
-        boolean isStacking = cursor != null && !cursor.getType().isAir()
-                && current != null && !current.getType().isAir()
+        boolean isStacking = cursor != null && cursor.getType() != Material.AIR
+                && current != null && current.getType() != Material.AIR
                 && plugin.getWorthManager().isSimilarIgnoringWorth(cursor, current);
 
         boolean strippedAny = false;
@@ -169,7 +170,7 @@ public class WorthDisplayListener implements Listener {
                     return;
                 }
             }
-        } else if (event.getClick().isShiftClick() && current != null && !current.getType().isAir()) {
+        } else if (event.getClick().isShiftClick() && current != null && current.getType() != Material.AIR) {
             if (plugin.getWorthManager().stripStorageWorthDisplayForNativePickup(player, current)) {
                 strippedAny = true;
             }
@@ -420,7 +421,7 @@ public class WorthDisplayListener implements Listener {
     }
 
     private boolean isShulkerInventory(Inventory inventory) {
-        return inventory != null && inventory.getType() == InventoryType.SHULKER_BOX;
+        return inventory != null && inventory.getType() == InventoryType.ENDER_CHEST;
     }
 
     private boolean isAmethystItem(ItemStack item) {

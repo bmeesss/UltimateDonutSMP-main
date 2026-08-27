@@ -95,7 +95,7 @@ public class ClearLagManager {
 
                             if (checkNamed && entity.getCustomName() != null) return;
                             if (checkTamed && entity instanceof Tameable && ((Tameable) entity).isTamed()) return;
-                            if (checkVillagers && (entity instanceof AbstractVillager || entity instanceof NPC)) return;
+                            if (checkVillagers && (entity instanceof Villager || entity instanceof NPC)) return;
 
                             boolean typeExcluded = false;
                             String typeName = entity.getType().name();
@@ -127,7 +127,7 @@ public class ClearLagManager {
                                 if (clearAnimals()) {
                                     remove = true;
                                 }
-                            } else if (entity instanceof Monster || entity instanceof Enemy || entity instanceof Slime || entity instanceof Flying) {
+                            } else if (entity instanceof Monster || entity instanceof Slime || entity instanceof Flying) {
                                 if (clearMonsters()) {
                                     remove = true;
                                 }
@@ -164,7 +164,7 @@ public class ClearLagManager {
                 if (checkTamed && entity instanceof Tameable && ((Tameable) entity).isTamed()) continue;
 
                 // Check villagers/NPCs exclusion
-                if (checkVillagers && (entity instanceof AbstractVillager || entity instanceof NPC)) continue;
+                if (checkVillagers && (entity instanceof Villager || entity instanceof NPC)) continue;
 
                 // Check excluded entity type
                 boolean typeExcluded = false;
@@ -197,7 +197,7 @@ public class ClearLagManager {
                     if (clearAnimals()) {
                         remove = true;
                     }
-                } else if (entity instanceof Monster || entity instanceof Enemy || entity instanceof Slime || entity instanceof Flying) {
+                } else if (entity instanceof Monster || entity instanceof Slime || entity instanceof Flying) {
                     if (clearMonsters()) {
                         remove = true;
                     }

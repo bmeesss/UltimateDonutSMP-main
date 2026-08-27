@@ -399,7 +399,6 @@ public final class PlayerSettingsMenu extends BaseMenu {
             return item;
         }
         org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) itemMeta;
-        meta.setBasePotionType(org.bukkit.potion.PotionType.NIGHT_VISION);
         item.setItemMeta(meta);
         return item;
     }
