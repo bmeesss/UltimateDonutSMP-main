@@ -19,10 +19,12 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batches 9–11 | ✅ **COMPLETE / MERGED** (PR #13, commit `5eb81a0`) |
 | Java 8 — Batch 12 | ✅ **COMPLETE** (master checkpoint `138898fb`) |
 | Java 8 — Batch 13 (javac-invalid corruption, 6 files) | ✅ **COMPLETE / MERGED** (master `ae4755b`) |
-| Java 8 — Batch 14 (10 files, 27 instanceof) | ✅ **COMPLETE** (this checkpoint) |
-| Java 8 — Batch 15 (10 files, 17 instanceof) | ✅ **COMPLETE** (this checkpoint) |
-| Batch 16 — javac-invalid corruption cleanup (FriendsCommand, TPACommand, SellCommand) | ✅ **COMPLETE** (this checkpoint) — **0 markers remain repo-wide** |
-| Java 8 — remaining batches | ⏳ **IN PROGRESS** (see inventory below) |
+| Java 8 — Batch 14 (10 files, 27 instanceof) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) |
+| Java 8 — Batch 15 (10 files, 17 instanceof) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) |
+| Batch 16 — javac-invalid corruption cleanup (FriendsCommand, TPACommand, SellCommand) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) — **0 markers remain repo-wide** |
+| Java 8 — Batch 17 (10 files, 10 instanceof) | ✅ **COMPLETE** (this checkpoint) |
+| Java 8 — Batch 18 (4 files, 5 instanceof) | ✅ **COMPLETE** (this checkpoint) — **non-deferred A+B backlog now 0** |
+| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** (see inventory below) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
@@ -254,6 +256,34 @@ The three deferred unreachable-`break;` files are repaired; a repo-wide comment/
 No blind removal: each switch was verified flat (no nested switch/loop), so exactly the first `break;`
 of each run is reachable; all 12 legitimate single `break;` statements preserved.
 
+### Batch 17 — 10 files, 10 instanceof patterns (this checkpoint)
+
+Baseline: master `476cd17` (PR #16 merge). A fresh type-aware verification pass first **eliminated three
+phantom categories** reported by the previous scanner: `Stream.toList()` "78" were all
+`Collectors.toList()` (already Java 8), `String.strip()` "46" were all the project's own static
+`ColorUtils.strip(...)`, and the one `String.lines()` is `SidebarSettings.lines()` (custom type). True
+pre-batch inventory: **68 scanner hits / 22 files**, only actionable non-deferred category = instanceof.
+
+Files: `FriendsCommand`, `TPACommand`, `MobSpawnListener`, `FastCrystalListener`, `PlayerDeathListener`,
+`BountyConfirmMenu`, `PayConfirmMenu` (both: `getItemMeta()` snapshotted into a single `ItemMeta` local),
+`SellMenu`, `OrdersInventoryItemMenu`, `ShopEditorMenu` (all three: `getWhoClicked()` guard + cast).
+instanceof 24 → 14.
+
+### Batch 18 — 4 files, 5 instanceof patterns (this checkpoint)
+
+The 9 other remaining sites are all inside deferred files (`DatabaseManager` ×6, `OrdersManager` ×2,
+`SellStatsExporter` ×1). Converted the 4 non-deferred files:
+
+| File | Fixes |
+|---|---|
+| `commands/PortalManagerCommand.java` | 1× negated guard → cast after guard |
+| `menus/CrateGachaMenu.java` | 1× `getHolder()` chain captured once into `InventoryHolder holder`; `menu != this` → `holder != this` (identical reference comparison, short-circuit preserved) |
+| `menus/ProfileViewerMenu.java` | 1× `SkullMeta` binding → explicit cast (existing single-evaluation `ItemMeta` local kept) |
+| `utils/PacketSidebarRenderer.java` | 2× generic-wildcard patterns (`Collection<?>`, `Enum<?>`) → cast at use site / inside `&&` right operand |
+
+instanceof 14 → 9. **All remaining Java 8 issues now live in deferred files/categories.**
+Conversion rules in Batches 17–18 match Batches 2–15. Category C untouched; no tests modified.
+
 ---
 
 ## Remaining Java 8 inventory (superseded — historical Batch 13 measurement, see current figures below)
@@ -316,17 +346,29 @@ tree-sitter-tolerated but javac-invalid — fix in a near-term batch):
 
 ---
 
-## Current Java 8 inventory (verified this checkpoint, corrected type-aware AST scanner)
+## Current Java 8 inventory (verified this checkpoint, corrected type-aware scanner, post-Batch-18)
 
-**39 A+B issues / 24 src/main files** (Category A: 33, Category B: 6).
+**53 raw scanner hits / 8 src/main files** — equivalently **39 semantic issues** (each text block counts
+2 delimiter hits: 13 blocks = 26 hits; and 1 hit is the known `SidebarSettings.lines()` false positive).
+**Every remaining issue is in a deferred file or deferred category. The non-deferred mechanical backlog is 0.**
 
-| Group | Issues |
-|---|---|
-| Deferred systems (`DatabaseManager` 6, `OrdersManager` 6, `ConfigManager` 3, `LeaderboardManager` 2, `SellStatsExporter` 2, repositories 2, `TpaQueueMenu` 1, `ShardManager` 1) | 23 |
-| Menus x7 (`BountyConfirmMenu`, `CrateGachaMenu`, `OrdersInventoryItemMenu`, `PayConfirmMenu`, `ProfileViewerMenu`, `SellMenu`, `ShopEditorMenu`) | 7 |
-| Listeners x3 (`FastCrystalListener`, `MobSpawnListener`, `PlayerDeathListener`) | 3 |
-| Commands (`FriendsCommand`, `TPACommand`, `PortalManagerCommand`) — now unblocked by Batch 16 | 3 |
-| Utils (`PacketSidebarRenderer` 2, `AdventureHeadComponentBridge` 1) | 3 |
+| Construct | Hits | Where (all deferred) |
+|---|---:|---|
+| text blocks | 26 (13 blocks) | `DatabaseManager` (5), `OrdersManager` (4), `AuctionHouseRepository` (3), `ShopPreferenceRepository` (1) |
+| instanceof patterns | 9 | `DatabaseManager` (6), `OrdersManager` (2), `SellStatsExporter` (1) |
+| `var` | 4 | `OrdersManager` |
+| `java.net.http.*` | 3 | `SellStatsExporter` |
+| `RandomGenerator` | 3 | `ShardManager` (bounded `nextLong` — needs Java 8 reimplementation) |
+| `String.repeat` | 2 | `ConfigManager` |
+| `InputStream.readAllBytes` / `Files.readAllBytes` | 2 | `ConfigManager` (the `Files.readAllBytes` site is Java 7 — verify before touching) |
+| `CompletableFuture.failedFuture` | 2 | `AuctionHouseRepository`, `ShopPreferenceRepository` |
+| `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` custom type |
+| virtual threads | 1 | `SellStatsExporter` |
+
+Verified **zero** genuine occurrences of: bare `Stream.toList()` (all 78 `.toList()` hits are
+`Collectors.toList()`), `String.strip()` (all 46 hits are project `ColorUtils.strip(...)`),
+`String.isBlank()`, `List/Set/Map.of/copyOf`, `List.getFirst()`, `Path.of()`, `StringBuilder.isEmpty()`,
+`Objects.requireNonNullElse`, `toArray(IntFunction)`.
 
 **javac-invalid corruption cleanup: COMPLETE — 0 markers remain repo-wide** (comment/string-aware scan of
 all 421 src/main files: `return break;`, duplicate-`break;` runs, orphaned type declarations).
@@ -372,12 +414,12 @@ AntiESP · SpawnStash · Shards · Amethyst Tools · FakePlayer · StaffMode · 
 Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus.
 
 ## Next steps
-1. ~~Repair the 6 pre-existing corruption artifacts~~ — **done in Batch 13.**
-   ~~Repair the remaining unreachable-`break;` corruption in `FriendsCommand`, `SellCommand`, `TPACommand`~~ — **done in Batch 16; 0 markers remain repo-wide.**
-2. Java 8 remaining mechanical work: 16 instanceof patterns in non-deferred menus/listeners/commands/utils;
-   then the deferred-system issues (23).
-3. Handle the deferred design-level Java 8 items (text blocks, `java.net.http`, switch-in-expression-position,
-   `ConfigManager.readAllBytes()`, `failedFuture`, `ShardManager` `RandomGenerator`).
-4. Only then begin the Spigot 1.12.2 API phase (Materials first).
+1. ~~Repair corruption artifacts~~ — **done (Batches 13 + 16); 0 markers remain repo-wide.**
+2. ~~Java 8 mechanical work in non-deferred files~~ — **done (Batches 14–18); non-deferred backlog is 0.**
+3. Handle the deferred design-level Java 8 items (text blocks in SQL schema strings, `java.net.http` +
+   virtual threads in `SellStatsExporter`, `ConfigManager` `readAllBytes`/`repeat`, `OrdersManager`
+   `var`/instanceof, `DatabaseManager` instanceof, `failedFuture` in repositories, `ShardManager`
+   `RandomGenerator` bounded-long reimplementation).
+4. Only then begin the Spigot 1.12.2 API phase (Materials first). **Category C: NOT STARTED.**
 
 > **Build not verified — Maven/JDK unavailable.** All structural validation is tree-sitter + static scans only.

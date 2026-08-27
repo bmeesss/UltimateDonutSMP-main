@@ -41,7 +41,8 @@ public class MobSpawnListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobSpawn(CreatureSpawnEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        if (!(event.getEntity() instanceof LivingEntity)) return;
+        LivingEntity entity = (LivingEntity) event.getEntity();
 
         if (MobSpawnPolicy.hasCustomName(entity)) return;
 

@@ -291,9 +291,10 @@ public class ProfileViewerMenu extends BaseMenu {
 
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta itemMeta = item.getItemMeta();
-        if (!(itemMeta instanceof SkullMeta meta)) {
+        if (!(itemMeta instanceof SkullMeta)) {
             return ItemUtils.createItem(Material.PLAYER_HEAD, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
         meta.setOwningPlayer(offlinePlayer);

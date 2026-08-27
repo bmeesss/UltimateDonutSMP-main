@@ -87,8 +87,8 @@ public class FastCrystalListener implements Listener {
             return player;
         }
 
-        if (damager instanceof Projectile projectile && projectile.getShooter() instanceof Player) {
-            Player player = (Player) projectile.getShooter();
+        if (damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player) {
+            Player player = (Player) ((Projectile) damager).getShooter();
             return player;
         }
         return null;
