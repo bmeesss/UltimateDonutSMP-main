@@ -21,7 +21,9 @@ public class PlayerSettingEffectsListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTotemUse(EntityResurrectEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
+        org.bukkit.entity.LivingEntity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
+        Player player = (Player) entity;
 
         if (NightVisionUtils.isEnabled(plugin, player)) {
             plugin.getSpigotScheduler().runEntityLater(

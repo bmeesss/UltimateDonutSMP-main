@@ -68,9 +68,11 @@ public class CrateEditorMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
 
         CrateManager.CrateDefinition crate = getCrate();
         if (crate == null) {
@@ -247,7 +249,7 @@ public class CrateEditorMenu extends BaseMenu {
             if (part.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));

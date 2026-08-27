@@ -138,9 +138,10 @@ public final class ToggleResult {
     }
 
     public boolean canBypassIgnore(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             return true;
         }
+        Player player = (Player) sender;
         return PermissionUtils.has(player, BYPASS_PERMISSION);
     }
 

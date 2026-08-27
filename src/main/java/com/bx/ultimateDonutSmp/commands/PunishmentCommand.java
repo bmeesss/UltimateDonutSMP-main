@@ -479,12 +479,12 @@ public class PunishmentCommand implements CommandExecutor {
 
         StringBuilder builder = new StringBuilder();
         for (int index = startIndex; index < args.length; index++) {
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(args[index]);
         }
-        return builder.isEmpty() ? "no reason specified" : builder.toString();
+        return builder.length() == 0 ? "no reason specified" : builder.toString();
     }
 
     private void send(CommandSender sender, String message) {

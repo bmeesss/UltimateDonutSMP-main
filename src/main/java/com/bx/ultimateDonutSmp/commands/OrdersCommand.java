@@ -22,10 +22,11 @@ public class OrdersCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         String subcommand = args.length == 0 ? "" : args[0].toLowerCase();
         if (subcommand.equals("reload")) {

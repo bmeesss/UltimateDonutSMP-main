@@ -63,10 +63,11 @@ public class WorthCommand implements CommandExecutor {
                 || subcommand.equals("held")
                 || subcommand.equals("item")
                 || subcommand.equals("check")) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage("Player only.");
                 return true;
             }
+            Player player = (Player) sender;
 
             ItemStack item = player.getInventory().getItemInMainHand();
             if (item.getType().isAir()) {
@@ -159,10 +160,11 @@ public class WorthCommand implements CommandExecutor {
     }
 
     private void openBrowser(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return;
         }
+        Player player = (Player) sender;
 
         new WorthMenu(plugin, 1).open(player);
     }

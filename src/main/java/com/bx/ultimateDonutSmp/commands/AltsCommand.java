@@ -26,9 +26,12 @@ public class AltsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-            player.sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
-            return true;
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!PermissionUtils.has(player, PERMISSION)) {
+                player.sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
+                return true;
+            }
         }
 
         if (args.length == 0) {

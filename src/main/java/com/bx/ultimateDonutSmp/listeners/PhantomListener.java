@@ -20,7 +20,9 @@ public class PhantomListener implements Listener {
     public void onPhantomTarget(EntityTargetEvent event) {
         if (!plugin.getFeatureManager().isEnabled(com.bx.ultimateDonutSmp.managers.FeatureManager.Feature.PHANTOM)) return;
         if (!(event.getEntity() instanceof Phantom)) return;
-        if (!(event.getTarget() instanceof Player player)) return;
+        org.bukkit.entity.Entity target = event.getTarget();
+        if (!(target instanceof Player)) return;
+        Player player = (Player) target;
 
         PlayerData data = plugin.getPlayerDataManager().get(player);
         if (data != null && !data.isPhantomEnabled()) {

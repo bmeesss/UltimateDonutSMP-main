@@ -8,6 +8,7 @@ import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.util.RayTraceResult;
@@ -16,6 +17,7 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +41,7 @@ public class AntiEspManager {
     }
 
     public void reload() {
-        var config = plugin.getConfigManager().getSpawners();
+        FileConfiguration config = plugin.getConfigManager().getSpawners();
         enabled = config.getBoolean("ANTI_ESP.ENABLED", true);
         revealRadius = Math.max(1, config.getInt("ANTI_ESP.REVEAL_RADIUS", 7));
         ownerRevealRadius = Math.max(revealRadius, config.getInt("ANTI_ESP.OWNER_SEE_RADIUS", revealRadius));
@@ -56,7 +58,7 @@ public class AntiEspManager {
             return;
         }
 
-        var allSpawners = plugin.getSpawnerManager().getSpawnersInWorld(player.getWorld().getName());
+        List<SpawnerInstance> allSpawners = plugin.getSpawnerManager().getSpawnersInWorld(player.getWorld().getName());
         if (allSpawners.isEmpty()) {
             clearPlayer(player.getUniqueId());
             return;

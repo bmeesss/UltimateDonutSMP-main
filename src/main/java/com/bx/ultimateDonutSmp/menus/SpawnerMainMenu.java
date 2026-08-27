@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.SpawnerManager;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
 import com.bx.ultimateDonutSmp.models.SpawnerLootEntry;
 import com.bx.ultimateDonutSmp.models.SpawnerTypeDefinition;
@@ -188,7 +189,7 @@ public class SpawnerMainMenu extends BaseMenu {
 
         if (slot == headSlot) {
             // Sell items & Collect XP in one click
-            var result = plugin.getSpawnerManager().sellAndCollectXp(player, instance);
+            SpawnerManager.ActionResult result = plugin.getSpawnerManager().sellAndCollectXp(player, instance);
             player.sendMessage(ColorUtils.toComponent(result.message()));
             new SpawnerMainMenu(plugin, spawnerId).open(player);
             return;
@@ -196,7 +197,7 @@ public class SpawnerMainMenu extends BaseMenu {
 
         if (xpButtonEnabled && slot == xpSlot) {
             // Collect XP
-            var result = plugin.getSpawnerManager().collectXp(player, instance);
+            SpawnerManager.ActionResult result = plugin.getSpawnerManager().collectXp(player, instance);
             player.sendMessage(ColorUtils.toComponent(result.message()));
             new SpawnerMainMenu(plugin, spawnerId).open(player);
             return;

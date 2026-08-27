@@ -23,10 +23,11 @@ public class RenameCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION)) {
             player.sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
