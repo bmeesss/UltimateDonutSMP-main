@@ -43,11 +43,11 @@ public class OrdersEditMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         OrdersManager manager = plugin.getOrdersManager();
         Order order = manager.getOrder(orderId);
-        set(18, ItemUtils.createItem(Material.RED_STAINED_GLASS_PANE, "&cBack", java.util.Collections.singletonList("&7Return to the previous menu")));
+        set(18, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 14, "&cBack", java.util.Collections.singletonList("&7Return to the previous menu")));
 
         if (order == null) {
             set(13, ItemUtils.createItem(
