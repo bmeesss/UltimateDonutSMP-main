@@ -50,6 +50,33 @@ public class ItemUtils {
     }
 
     /**
+     * 1.12.2 colored menu buttons use a shared Material plus a durability/data value
+     * (for example {@code STAINED_GLASS_PANE} + 14 for red).
+     */
+    public static ItemStack createItem(Material material, short data, String displayName, List<String> lore) {
+        ItemStack item = new ItemStack(material, 1, data);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        if (displayName != null && !displayName.isEmpty()) {
+            meta.setDisplayName(ColorUtils.colorize(displayName));
+        } else {
+            meta.setDisplayName("");
+        }
+
+        if (lore != null && !lore.isEmpty()) {
+            meta.setLore(ColorUtils.colorizeList(lore));
+        }
+
+        item.setItemMeta(meta);
+        return item;
+    }
+
+    public static ItemStack createItem(Material material, short data, String displayName) {
+        return createItem(material, data, displayName, null);
+    }
+
+    /**
      * Puts a menu name and lore on a copy of an existing item, leaving everything else about it
      * alone. Used where the icon has to stay the real item but still read as a menu entry.
      */
@@ -445,8 +472,19 @@ public final class TextureProfileData {
         return item;
     }
 
+    /** 1.12.2 colored placeholders use a shared Material plus a durability/data value. */
+    public static ItemStack createPlaceholder(Material material, short data) {
+        ItemStack item = new ItemStack(material, 1, data);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("");
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
     public static ItemStack createGlassPane() {
-        return createPlaceholder(Material.GRAY_STAINED_GLASS_PANE);
+        return createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7);
     }
 
     public static ItemStack createGlassPane(Material material) {
@@ -540,7 +578,16 @@ public final class TextureProfileData {
         }
     }
 
+    public static void fillInventory(org.bukkit.inventory.Inventory inventory, Material material, short data) {
+        ItemStack filler = createPlaceholder(material, data);
+        for (int i = 0; i < inventory.getSize(); i++) {
+            if (inventory.getItem(i) == null) {
+                inventory.setItem(i, filler);
+            }
+        }
+    }
+
     public static void fillInventory(org.bukkit.inventory.Inventory inventory) {
-        fillInventory(inventory, Material.GRAY_STAINED_GLASS_PANE);
+        fillInventory(inventory, Material.STAINED_GLASS_PANE, (short) 7);
     }
 }

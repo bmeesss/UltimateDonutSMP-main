@@ -53,12 +53,12 @@ public class PayConfirmMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
-        set(11, ItemUtils.createItem(Material.RED_STAINED_GLASS_PANE, "&cCancel",
+        set(11, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 14, "&cCancel",
                 java.util.Collections.singletonList("&7Click to cancel this payment.")));
 
-        set(15, ItemUtils.createItem(Material.LIME_STAINED_GLASS_PANE, "&aConfirm",
+        set(15, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 5, "&aConfirm",
                 java.util.Collections.singletonList("&7Click to confirm this payment.")));
 
         String amountText = paymentType == PaymentType.MONEY
