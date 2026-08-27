@@ -7,8 +7,8 @@ import com.bx.ultimateDonutSmp.models.DeliveryQuote;
 import com.bx.ultimateDonutSmp.models.Order;
 import com.bx.ultimateDonutSmp.models.OrderSort;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -62,7 +62,7 @@ public class OrdersDepositMenu extends BaseMenu {
                 plugin,
                 "GUI.DELIVERY_DEPOSIT.BUTTONS.CONFIRM",
                 "ORDERS.GUI.DEPOSIT.CONFIRM",
-                Material.LIME_STAINED_GLASS_PANE,
+                LegacyMaterialSupport.pane("LIME"),
                 "&aConfirm delivery",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&fPlace matching items in this menu.", 

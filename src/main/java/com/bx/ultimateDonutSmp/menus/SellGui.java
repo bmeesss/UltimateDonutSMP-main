@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.AuctionCategory;
 import com.bx.ultimateDonutSmp.models.PlayerPreference;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
@@ -81,7 +82,7 @@ public final class SellGui extends BaseMenu {
             set(durationStart + index, AuctionHouseMenuSupport.control(
                     plugin,
                     "GUI.SELL.DURATION",
-                    selected ? Material.LIME_STAINED_GLASS_PANE : Material.GRAY_STAINED_GLASS_PANE,
+                    selected ? LegacyMaterialSupport.pane("LIME") : LegacyMaterialSupport.pane("GRAY"),
                     (selected ? "&a" : "&f") + "{duration}",
                     java.util.Collections.singletonList("{state}"),
                     "{duration}", plugin.getAuctionHouseManager().formatDuration(hours),
@@ -109,8 +110,8 @@ public final class SellGui extends BaseMenu {
                     plugin,
                     "GUI.SELL.CATEGORY",
                     selected
-                            ? Material.LIME_STAINED_GLASS_PANE
-                            : plugin.getAuctionHouseManager().getCategoryIcon(category),
+                            ? LegacyMaterialSupport.pane("LIME")
+                            : LegacyMaterialSupport.of(plugin.getAuctionHouseManager().getCategoryIcon(category)),
                     (selected ? "&a" : "&f") + "{category}",
                     java.util.Collections.singletonList("{state}"),
                     "{category}", plugin.getAuctionHouseManager().getCategoryDisplayName(category),
@@ -132,7 +133,7 @@ public final class SellGui extends BaseMenu {
                 AuctionHouseMenuSupport.control(
                         plugin,
                         "GUI.SELL.CONFIRM",
-                        Material.LIME_STAINED_GLASS_PANE,
+                        LegacyMaterialSupport.pane("LIME"),
                         "&aConfirm listing",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Price: {price}",  "&7Duration: &f{duration}",  "&eClick to list")),
                         "{price}", plugin.getCurrencyManager().formatMoney(price),
@@ -142,7 +143,7 @@ public final class SellGui extends BaseMenu {
                 AuctionHouseMenuSupport.control(
                         plugin,
                         "GUI.SELL.CANCEL",
-                        Material.RED_STAINED_GLASS_PANE,
+                        LegacyMaterialSupport.pane("RED"),
                         "&cCancel",
                         java.util.Collections.singletonList("&7Return the item without listing")
                 ));
