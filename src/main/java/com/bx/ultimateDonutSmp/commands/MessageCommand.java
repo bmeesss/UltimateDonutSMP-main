@@ -30,9 +30,12 @@ public class MessageCommand implements CommandExecutor {
             return true;
         }
 
-        if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-            send(player, message("NO-PERMISSION", "&cYou do not have permission."));
-            return true;
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!PermissionUtils.has(player, PERMISSION)) {
+                send(player, message("NO-PERMISSION", "&cYou do not have permission."));
+                return true;
+            }
         }
 
         if (label.equalsIgnoreCase("reply") || label.equalsIgnoreCase("r")) {
@@ -56,10 +59,11 @@ public class MessageCommand implements CommandExecutor {
     }
 
     private boolean handleReply(CommandSender sender, String[] args, String label) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, message("PLAYER-ONLY-REPLY", "&cOnly players can use /" + label + "."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (args.length == 0) {
             send(player, message("REPLY-USAGE", "&cUsage: /reply <message>"));

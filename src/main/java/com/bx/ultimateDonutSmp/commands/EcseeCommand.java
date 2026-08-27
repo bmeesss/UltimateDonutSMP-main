@@ -20,13 +20,14 @@ public class EcseeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player viewer)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getEnderChestManager().getMessage(
                     "ECSEE-PLAYER-ONLY",
                     "Player only."
             ));
             return true;
         }
+        Player viewer = (Player) sender;
 
         if (!plugin.getEnderChestManager().isInspectionEnabled()) {
             viewer.sendMessage(ColorUtils.toComponent(

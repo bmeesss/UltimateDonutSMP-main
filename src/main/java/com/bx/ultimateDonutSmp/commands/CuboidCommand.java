@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.listeners.CuboidWandListener;
+import com.bx.ultimateDonutSmp.managers.CuboidManager;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CuboidCommand implements CommandExecutor {
@@ -45,10 +47,11 @@ public class CuboidCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         switch (sub) {
             case "wand":
@@ -91,7 +94,7 @@ public class CuboidCommand implements CommandExecutor {
 
         CuboidWandListener.markAsCuboidWand(plugin, wand);
 
-        var leftovers = player.getInventory().addItem(wand);
+        Map<Integer, ItemStack> leftovers = player.getInventory().addItem(wand);
         if (!leftovers.isEmpty()) {
             leftovers.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
         }
@@ -148,7 +151,7 @@ public class CuboidCommand implements CommandExecutor {
         }
 
         String cuboidName = args[1].toLowerCase();
-        var cuboid = plugin.getCuboidManager().getCuboid(cuboidName);
+        CuboidManager.Cuboid cuboid = plugin.getCuboidManager().getCuboid(cuboidName);
         if (cuboid == null) {
             player.sendMessage(ColorUtils.toComponent("&cCuboid not found: &f" + args[1]));
             return;

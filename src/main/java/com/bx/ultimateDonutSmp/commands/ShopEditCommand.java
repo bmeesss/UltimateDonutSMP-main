@@ -24,10 +24,11 @@ public class ShopEditCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.colorize("&cOnly players can use /" + label + "."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(sender, "ultimatedonutsmp.admin.shop")) {
             sender.sendMessage(ColorUtils.colorize("&cYou do not have permission to edit the shop."));

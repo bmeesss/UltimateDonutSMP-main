@@ -651,7 +651,11 @@ public class ScoreboardManager {
         int iconWidth = minecraftTextWidth(icon);
         int missingWidth = Math.max(0, columnWidth - iconWidth);
         int spaces = Math.max(1, Math.round(missingWidth / 4F));
-        return icon + " ".repeat(spaces);
+        StringBuilder padding = new StringBuilder(spaces);
+        for (int i = 0; i < spaces; i++) {
+            padding.append(' ');
+        }
+        return icon + padding;
     }
 
     private String alignSidebarIconColumn(String text, SidebarSettings settings) {
@@ -692,7 +696,11 @@ public class ScoreboardManager {
         int iconWidth = minecraftTextWidth(iconText);
         int missingWidth = Math.max(0, columnWidth - iconWidth);
         int spaces = Math.max(1, Math.round(missingWidth / 4F));
-        return text.substring(0, spacesStart) + " ".repeat(spaces) + text.substring(cursor);
+        StringBuilder padding = new StringBuilder(spaces);
+        for (int i = 0; i < spaces; i++) {
+            padding.append(' ');
+        }
+        return text.substring(0, spacesStart) + padding + text.substring(cursor);
     }
 
     private int firstVisibleIndex(String text, int start) {

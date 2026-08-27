@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -125,7 +126,7 @@ public class CrateRewardMenu extends BaseMenu {
     // player can claim (keys are a per-player balance, not an inventory item), and a
     // keyless claim click explains itself in place
     private void appendKeyHint(ItemStack display, Player player) {
-        var meta = display.getItemMeta();
+        ItemMeta meta = display.getItemMeta();
         if (meta == null) {
             return;
         }

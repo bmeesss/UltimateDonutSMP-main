@@ -31,10 +31,11 @@ public class IgnoreCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, message("PLAYER-ONLY", "&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION)) {
             send(player, message("NO-PERMISSION", "&cYou do not have permission."));

@@ -40,8 +40,11 @@ public class StaffModeCommand implements CommandExecutor {
         }
 
         if (args.length > 0) {
-            if (sender instanceof Player player && args[0].equalsIgnoreCase(player.getName())) {
-                return toggleSelf(player, manager);
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (args[0].equalsIgnoreCase(player.getName())) {
+                    return toggleSelf(player, manager);
+                }
             }
 
             if (!manager.canManageOthers(sender)) {
@@ -60,8 +63,11 @@ public class StaffModeCommand implements CommandExecutor {
                 return true;
             }
 
-            if (sender instanceof Player player && player.getUniqueId().equals(target.getUniqueId())) {
-                return toggleSelf(player, manager);
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (player.getUniqueId().equals(target.getUniqueId())) {
+                    return toggleSelf(player, manager);
+                }
             }
 
             StaffModeManager.StaffModeToggleResult result = manager.isInStaffMode(target.getUniqueId())
@@ -78,12 +84,13 @@ public class StaffModeCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent(
                     manager.getMessage("PLAYER-ONLY", "&cOnly players can use this command.")
             ));
             return true;
         }
+        Player player = (Player) sender;
 
         return toggleSelf(player, manager);
     }

@@ -718,7 +718,7 @@ public final class WorthCacheKey {
             if (token.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(token.charAt(0))).append(token.substring(1));

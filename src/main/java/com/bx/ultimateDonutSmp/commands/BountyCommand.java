@@ -23,10 +23,11 @@ public class BountyCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (args.length == 0 || args[0].equalsIgnoreCase("list")) {
             new BountyMenu(plugin).open(player);

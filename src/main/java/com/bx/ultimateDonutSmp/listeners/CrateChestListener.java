@@ -17,6 +17,7 @@ import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryHolder;
 
 import java.util.Iterator;
 
@@ -130,7 +131,7 @@ public class CrateChestListener implements Listener {
 
         // a burst of interact events can schedule several opens in one tick; once the
         // first one opened a crate menu, silently drop the rest
-        var holder = player.getOpenInventory().getTopInventory().getHolder();
+        InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder();
         if (holder instanceof CrateRewardMenu || holder instanceof CrateGachaMenu) {
             return;
         }
