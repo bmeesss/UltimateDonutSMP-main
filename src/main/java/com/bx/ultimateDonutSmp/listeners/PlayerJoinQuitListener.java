@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.models.HideState;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -328,7 +329,7 @@ public class PlayerJoinQuitListener implements Listener {
         if (plugin.getHideManager() == null) {
             return;
         }
-        var state = plugin.getHideManager().getState(player.getUniqueId());
+        HideState state = plugin.getHideManager().getState(player.getUniqueId());
         if (plugin.getHideManager().usesObfuscatedText(state)) {
             plugin.getHideManager().refreshNametag(player);
         }

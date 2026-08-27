@@ -14,6 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -99,7 +100,7 @@ public class SpawnerStorageMenu extends BaseMenu {
 
     public static ItemStack applyStorageMeta(UltimateDonutSmp plugin, SpawnerInstance instance, Material material, int amount) {
         ItemStack item = new ItemStack(material, Math.max(1, Math.min(amount, material.getMaxStackSize())));
-        var meta = item.getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             FileConfiguration config = plugin.getConfigManager().getMenus();
             boolean isFiltered = instance.isLootDisabled(material.name());
@@ -154,7 +155,7 @@ public class SpawnerStorageMenu extends BaseMenu {
             return item;
         }
         ItemStack copy = item.clone();
-        var meta = copy.getItemMeta();
+        ItemMeta meta = copy.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(null);
             meta.setLore(null);
@@ -296,9 +297,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
         this.lastInteractionTime = System.currentTimeMillis();
 
         SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);
@@ -543,9 +546,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public void handleInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
         this.lastInteractionTime = System.currentTimeMillis();
 
         SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);

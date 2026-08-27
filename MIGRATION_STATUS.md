@@ -15,7 +15,8 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batch 2 | ✅ **COMPLETE / MERGED** (PR #11) |
 | Java 8 — Batch 3 | ✅ **COMPLETE / MERGED** (PR #11) |
 | Java 8 — Batches 4–8 | ✅ **COMPLETE / MERGED** (PR #12, commit `1c288fb`) |
-| Java 8 — Batches 9–11 | ✅ **COMPLETE** (this checkpoint) |
+| Java 8 — Batches 9–11 | ✅ **COMPLETE / MERGED** (PR #13, commit `5eb81a0`) |
+| Java 8 — Batch 12 | ✅ **COMPLETE** (this checkpoint) |
 | Java 8 — remaining batches | ⏳ IN PROGRESS (see inventory below) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
@@ -25,11 +26,11 @@ Source files: **421 src/main + 69 src/test**.
 
 - **421/421** `src/main` files parse clean (tree-sitter-java: 0 ERROR nodes, 0 MISSING nodes)
 - **0** delimiter imbalance (brace / paren / bracket, comment- and string-aware)
-- **0** new duplicate methods, constructors, classes or fields introduced by Batches 9–11
+- **0** new duplicate methods, constructors, classes or fields introduced by Batch 12 (per-file HEAD-vs-worktree declaration-count delta scan)
 - `git diff --check` clean
 
 `src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
-modified in Batches 1–11.
+modified in Batches 1–12.
 
 ---
 
@@ -157,59 +158,90 @@ Category C APIs.
 
 Batches 9–11 together: **30 `src/main` files**, **45 Java 8 A+B issues removed** (169 → 124).
 
+### Batch 12 — 10 files, 21 Java 8 A+B issues + 7 corruption repairs (this checkpoint)
+
+`var` → exact types resolved from real declarations · instanceof pattern matching → classic
+`instanceof` + explicit cast (snapshot getters invoked exactly once; negated guards keep the
+binding declared after the guard; `&&` short-circuit order preserved) · plus repair of 7
+**pre-existing javac-invalid corruption artifacts** inside the selected files (orphaned
+`String;` / `Material;` declarations left from mangled switch-expression rewrites, one
+`return break;`, one unreachable `break;` after `return;`) — each repaired to the unambiguous
+Java 8 equivalent of the original construct.
+
+| File | Fixes |
+|---|---|
+| `UltimateDonutSmp.java` | 2× `var` → `ConsoleCommandSender` / `java.util.List<String>` |
+| `listeners/PlayerJoinQuitListener.java` | 1× `var` → `HideState` |
+| `managers/HideProtocolLibBridge.java` | 1× `var` → `StructureModifier<Collection>`, 1× instanceof (local operand) |
+| `menus/AuctionHouseBrowseMenu.java` | 1× `var` → `ConfigurationSection`, 1× orphaned `String;` repair |
+| `menus/BillfordMenu.java` | 1× `var` → `EconomyTransactionResult` |
+| `menus/PlayerAuctionGui.java` | 1× `var` → `AuctionBrowseRequest`, 3× instanceof, 2× orphaned `String;` repair |
+| `menus/PlayerSettingsMenu.java` | 1× `var` → `Team`, 1× instanceof (`getItemMeta()` snapshotted), 1× unreachable `break;` removed |
+| `menus/SpawnerStorageMenu.java` | 2× `var` → `ItemMeta`, 2× instanceof (`getWhoClicked()` snapshotted) |
+| `menus/StatsMenu.java` | 1× `var` → `Team`, 1× instanceof, 1× `return break;` repair |
+| `utils/ItemUtils.java` | 2× instanceof, 1× orphaned `Material;` + 1× orphaned `String;` repair |
+
+`ShardManager` RandomGenerator was evaluated and **kept deferred**: `RandomGenerator.nextLong(origin, bound)`
+is Java 17+; `java.util.Random` has no bounded `nextLong` in Java 8, so conversion is not behavior-trivial.
+Category C APIs untouched; no tests modified. Batches 1–12: **124 → 103** remaining Java 8 A+B occurrences.
+
 ---
 
-## Remaining Java 8 inventory (verified scanner result, this checkpoint)
+## Remaining Java 8 inventory (verified scanner result, this checkpoint — after Batch 12)
+
+**103 occurrences across 44 unique `src/main` files** (124 → 103; 54 → 44 files).
 
 ### Category A — Java language
 
-| Construct | src/main occ | src/main files | src/test occ | src/test files |
-|---|---:|---:|---:|---:|
-| instanceof pattern matching | 80 | 45 | 6 | 2 |
-| `var` declarations | 15 | 10 | 5 | 4 |
-| switch expressions | 3 | 2 | 0 | 0 |
-| text blocks | 13 | 4 | 18 | 5 |
-| arrow switch cases / records / sealed types | **0** | 0 | 0 | 0 |
-| **Category A total** | **111** | — | **29** | **11** |
+| Construct | src/main occ | src/main files |
+|---|---:|---:|
+| instanceof pattern matching | 70 | 39 |
+| `var` declarations (all in deferred `OrdersManager`) | 4 | 1 |
+| switch-in-expression-position (colon/break form, in deferred `LeaderboardManager` ×2 / `TpaQueueMenu` ×1) | 3 | 2 |
+| text blocks | 13 | 4 |
+| **Category A total** | **90** | — |
 
 ### Category B — JDK 9+ standard library
 
-| API | src/main occ | src/main files | src/test occ | src/test files |
-|---|---:|---:|---:|---:|
-| `StringBuilder.isEmpty()` (15) | 1 | 1 | 0 | 0 |
-| `String.repeat()` (11) | 2 | 1 | 12 | 2 |
-| `RandomGenerator` (17) | 3 | 1 | 0 | 0 |
-| `Collection.toArray(IntFunction)` (11) | **0** | 0 | 0 | 0 |
-| `java.net.http.*` (11) | 3 | 1 | 0 | 0 |
-| `CompletableFuture.failedFuture()` (9) | 2 | 2 | 0 | 0 |
-| `InputStream.readAllBytes()` (9) | 1 | 1 | 0 | 0 |
-| `Executors.newVirtualThreadPerTaskExecutor()` (21) | 1 | 1 | 0 | 0 |
-| `List.getFirst()` — SequencedCollection (21) | **0** | 0 | 1 | 1 |
-| `Path.of()` (11) | 0 | 0 | 19 | 12 |
-| `Files.readString/writeString` (11) | 0 | 0 | 4 | 3 |
-| `String.lines()` (11) | 0 | 0 | 1 | 1 |
-| **Category B total** | **13** | — | **37** | **16** |
+| API | src/main occ | src/main files |
+|---|---:|---:|
+| `StringBuilder.isEmpty()` (in deferred `SellStatsExporter`) | 1 | 1 |
+| `String.repeat()` (in deferred `ConfigManager`) | 2 | 1 |
+| `RandomGenerator` (in deferred `ShardManager`) | 3 | 1 |
+| `java.net.http.*` (in deferred `SellStatsExporter`) | 3 | 1 |
+| `CompletableFuture.failedFuture()` (in deferred repositories) | 2 | 2 |
+| `InputStream.readAllBytes()` (in deferred `ConfigManager`; 2 call sites) | 1 | 1 |
+| `Executors.newVirtualThreadPerTaskExecutor()` (in deferred `SellStatsExporter`) | 1 | 1 |
+| **Category B total** | **13** | — |
 
-Verified **zero** occurrences: `Stream.toList()` (remaining `.toList()` are `Collectors.toList()`),
-`String.isBlank()` (the only `isBlank` is a project method in `CuboidCommand`), `String.strip()`,
-`List/Set/Map.of` in src/main, `List/Set/Map.copyOf` (all `copyOf` are `Arrays.copyOf*` / `EnumSet.copyOf`),
-`Map.ofEntries/entry`, `Objects.requireNonNullElse`, `Optional` 9+ methods, `Predicate.not`,
-`Collectors.toUnmodifiable*`, `Stream.takeWhile/dropWhile/ofNullable`. All `.reversed()` calls checked
-are `Comparator.reversed()` (Java 8).
+Verified **zero** occurrences remain of: `Stream.toList()`, `String.isBlank()`, `String.strip()`,
+`List/Set/Map.of` in src/main, `List/Set/Map.copyOf`, `List.getFirst()`, `Path.of()`,
+`Objects.requireNonNullElse`, `toArray(IntFunction)`.
 
-**Combined A + B remaining: 124 occurrences across 54 unique `src/main` files** (plus test-file occurrences,
-deliberately deferred — tests are not on the shaded-jar compile path).
+### Pre-existing corruption artifacts still present (javac-invalid; discovered in Batch 12 — fix in a near-term batch)
+
+| File | Line | Artifact |
+|---|---|---|
+| `commands/AuctionHouseCommand.java` | 443 | orphaned `String;` (mangled `var key = switch(…){…}`) |
+| `menus/SellGui.java` | 220 | orphaned `String;` |
+| `commands/SocialCommand.java` | 36 | orphaned `String;` |
+| `managers/LuckPermsTablistRefreshBridge.java` | 428 | orphaned `Boolean;` |
+| `managers/KeyAllManager.java` | 186 | `return break;` + bare ternary statement |
+| `commands/CuboidCommand.java` | 213 | unreachable `break; break;` after `return;` |
+
+(`menus/FriendsMenu.java` continue/break interleaving was inspected and is valid Java — not an artifact.)
 
 ### Deferred within the Java 8 phase (need design, not mechanical edits)
 `DatabaseManager` / `OrdersManager` / `AuctionHouseRepository` / `ShopPreferenceRepository` text blocks ·
-`SellStatsExporter` `java.net.http` + virtual threads · `ConfigManager.readAllBytes()` ·
-`LeaderboardManager` + `TpaQueueMenu` switch expressions.
+`SellStatsExporter` `java.net.http` + virtual threads + `StringBuilder.isEmpty()` · `ConfigManager.readAllBytes()` ·
+`LeaderboardManager` + `TpaQueueMenu` switch-in-expression-position · `ShardManager` `RandomGenerator`
+(`nextLong(origin, bound)` needs a Java 8 bounded-long reimplementation — not trivial).
 
 ---
 
 ## Category C — Spigot 1.12.2 API migration: NOT STARTED
 
-Inventory only. **No Category C item has been modified in Batches 1–11.** `Material.isAir()` remains
+Inventory only. **No Category C item has been modified in Batches 1–12.** `Material.isAir()` remains
 **108 occ / 39 files**, matching the pre-Java-8 baseline for that item.
 
 | Item | src/main occ | src/main files |
@@ -243,9 +275,10 @@ AntiESP · SpawnStash · Shards · Amethyst Tools · FakePlayer · StaffMode · 
 Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus.
 
 ## Next steps
-1. Java 8 remaining mechanical work: instanceof (80), `var` (15), `StringBuilder.isEmpty()` in
-   `SellStatsExporter` (1), `String.repeat()` in `ConfigManager` (2), `RandomGenerator` in
-   `ShardManager` (3).
-2. Handle the deferred design-level Java 8 items (text blocks, `java.net.http`, switch expressions,
-   `ConfigManager.readAllBytes()`, `failedFuture`).
-3. Only then begin the Spigot 1.12.2 API phase (Materials first).
+1. Repair the 6 remaining pre-existing corruption artifacts (AuctionHouseCommand, SellGui, SocialCommand,
+   LuckPermsTablistRefreshBridge, KeyAllManager, CuboidCommand — see table above).
+2. Java 8 remaining mechanical work: instanceof (70), `var` (4, inside deferred `OrdersManager`),
+   `StringBuilder.isEmpty()` in `SellStatsExporter` (1), `String.repeat()` in `ConfigManager` (2).
+3. Handle the deferred design-level Java 8 items (text blocks, `java.net.http`, switch-in-expression-position,
+   `ConfigManager.readAllBytes()`, `failedFuture`, `ShardManager` `RandomGenerator`).
+4. Only then begin the Spigot 1.12.2 API phase (Materials first).

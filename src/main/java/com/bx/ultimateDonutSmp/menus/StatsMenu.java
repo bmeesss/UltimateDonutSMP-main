@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.models.Team;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
@@ -103,9 +104,10 @@ public class StatsMenu extends BaseMenu {
 
         ItemStack item = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta itemMeta = item.getItemMeta();
-        if (!(itemMeta instanceof SkullMeta meta)) {
+        if (!(itemMeta instanceof SkullMeta)) {
             return ItemUtils.createItem(Material.PLAYER_HEAD, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(targetUuid);
         meta.setOwningPlayer(offlinePlayer);
@@ -146,9 +148,8 @@ public class StatsMenu extends BaseMenu {
             case "MONEY_MADE":
                 return plugin.getCurrencyManager().formatMoneyCompact(data.getMoneyMade());
             case "TEAM": {
-                var team = plugin.getTeamManager().getTeam(data.getUuid());
-                team != null ? team.getName().toUpperCase() : "None";
-                return break;
+                Team team = plugin.getTeamManager().getTeam(data.getUuid());
+                return team != null ? team.getName().toUpperCase() : "None";
             }
             default:
                 return "0";

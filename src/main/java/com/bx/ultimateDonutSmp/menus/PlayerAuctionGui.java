@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.models.AuctionBrowseRequest;
 import com.bx.ultimateDonutSmp.models.AuctionClaim;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.AuctionPlayerEntries;
@@ -53,9 +54,12 @@ public final class PlayerAuctionGui extends BaseMenu {
         for (int index = from; index < to; index++) {
             int slot = index - from;
             Object entry = entries.get(index);
-            ItemStack display = entry instanceof AuctionListing listing
-                    ? listingDisplay(listing)
-                    : claimDisplay((AuctionClaim) entry);
+            ItemStack display;
+            if (entry instanceof AuctionListing) {
+                display = listingDisplay((AuctionListing) entry);
+            } else {
+                display = claimDisplay((AuctionClaim) entry);
+            }
             set(slot, display);
             entriesBySlot.put(slot, entry);
         }
@@ -101,7 +105,7 @@ public final class PlayerAuctionGui extends BaseMenu {
             return;
         }
         if (slot == BACK_SLOT) {
-            var request = plugin.getAuctionHouseManager().session(player.getUniqueId()).request();
+            AuctionBrowseRequest request = plugin.getAuctionHouseManager().session(player.getUniqueId()).request();
             navigate(player, () -> new AuctionHouseBrowseMenu(
                     plugin,
                     request.page(),
@@ -126,7 +130,8 @@ public final class PlayerAuctionGui extends BaseMenu {
         }
 
         Object entry = entriesBySlot.get(slot);
-        if (entry instanceof AuctionListing listing && listing.active()) {
+        if (entry instanceof AuctionListing && ((AuctionListing) entry).active()) {
+            AuctionListing listing = (AuctionListing) entry;
             plugin.getAuctionHouseManager().cancelListing(player, listing.id())
                     .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                         if (result.success()) {
@@ -137,8 +142,8 @@ public final class PlayerAuctionGui extends BaseMenu {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-String;
-switch (result.reason()) {
+                            String key = null;
+                            switch (result.reason()) {
                                 case DISABLED:
                                     key = "AUCTION_HOUSE.DISABLED";
                                     break;
@@ -167,7 +172,8 @@ switch (result.reason()) {
                     }));
             return;
         }
-        if (entry instanceof AuctionClaim claim && plugin.getAuctionHouseManager().isClaimsEnabled()) {
+        if (entry instanceof AuctionClaim && plugin.getAuctionHouseManager().isClaimsEnabled()) {
+            AuctionClaim claim = (AuctionClaim) entry;
             plugin.getAuctionHouseManager().claim(player, claim.id())
                     .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                         if (result.success()) {
@@ -182,8 +188,8 @@ switch (result.reason()) {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-String;
-switch (result.reason()) {
+                            String key = null;
+                            switch (result.reason()) {
                                 case DISABLED:
                                     key = "AUCTION_HOUSE.DISABLED";
                                     break;
