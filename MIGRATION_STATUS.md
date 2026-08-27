@@ -34,7 +34,8 @@ Source files: **421 src/main + 69 src/test**.
 | **Java 8 migration phase** | ✅ **STATICALLY COMPLETE** — 0 genuine Java 8 blockers per the validated scanner; **real javac/Maven verification remains** |
 | Spigot 1.12.2 API — Batch 26 (Materials + `Material.isAir()`, 10 files) | ✅ **COMPLETE / MERGED** (PR #22, master `f18b55d`) — Category C **STARTED** |
 | Spigot 1.12.2 API — Batch 27 (Simple Materials, 10 files: `CLOCK`, `SPAWNER`, `GRASS_BLOCK`, `WRITABLE_BOOK`, `EXPERIENCE_BOTTLE`, `ENDER_EYE`, `RED_DYE`) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–27; later batches not started) |
+| Spigot 1.12.2 API — Batch 28 (stained-glass panes, 10 files) | ✅ **COMPLETE** (this checkpoint) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–28; later batches not started) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -618,7 +619,7 @@ about language/API level):
 
 ---
 
-## Category C — Spigot 1.12.2 API migration: STARTED (Batch 26)
+## Category C — Spigot 1.12.2 API migration: IN PROGRESS (Batches 26–28)
 
 **Category C has officially started.** Batch 26 is the first intentional Spigot/Bukkit 1.12.2 API
 migration. Scope was **modern Material constants + `Material.isAir()` only** in 10 isolated files.
@@ -695,6 +696,49 @@ No skulls, no PLAYER_HEAD, no config strings, no tests, no isAir changes, no Blo
 **Deferred Category C components (NOT STARTED):**
 BlockData, PDC, NamespacedKey, ProtocolLib, NMS, Adventure, Particle, Sound, EntityType remain deferred and strictly untouched.
 
+### Batch 28 — Stained-glass panes (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `3beb20f90f8b17ad0f74e5051c10c2e5ecf195bb` (PR #23 merge).
+
+Scope: exactly 32 colored-pane references across 10 isolated source files. No skulls, no `PLAYER_HEAD`,
+no dyes, no terracotta, no `SUNFLOWER`, no `SPAWNER`, no `CLOCK`, no config strings, no tests, no use of
+`Material.isAir()` changes, and no BlockData/PDC/NamespacedKey/ProtocolLib/NMS/Adventure changes.
+
+| Legacy Material | 1.12.2 replacement | Legacy data |
+|---|---|---|
+| `GRAY_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 7` |
+| `BLACK_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 15` |
+| `RED_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 14` |
+| `LIME_STAINED_GLASS_PANE` | `STAINED_GLASS_PANE` | `(short) 5` |
+
+Files changed:
+`utils/ItemUtils.java`, `menus/EnchantSelectMenu.java`, `menus/ChatLogsMenu.java`,
+`menus/PlayerLogsMenu.java`, `menus/SpawnerPanelMenu.java`, `menus/FriendsMenu.java`,
+`menus/OrdersNewMenu.java`, `menus/WorthMenu.java`, `menus/SpawnerStorageMenu.java`,
+`menus/PayConfirmMenu.java`.
+
+`ItemUtils` added three data-aware overloads that reuse the Batch-26 `new ItemStack(material, 1, data)`
+pattern without changing any existing one-argument helper:
+`createItem(Material, short, String, List<String>)`, `createPlaceholder(Material, short)`, and
+`fillInventory(Inventory, Material, short)`. Existing no-data `createItem`, `createPlaceholder`,
+`fillInventory` and `BaseMenu.fill` callers are unchanged. `ItemUtils.parseMaterial` was **not** modified;
+the modern config strings `"GRAY_STAINED_GLASS_PANE"`, `"BLACK_STAINED_GLASS_PANE"`,
+`"RED_STAINED_GLASS_PANE"`, `"LIME_STAINED_GLASS_PANE"` remain byte-identical.
+
+**Material counts:** 158 → **126** target pane references (−32): GRAY 70→51, BLACK 35→29, RED 27→23,
+LIME 26→23. Modern Material references 308 → **276**, unique modern constants 71 → **71**,
+files with modern Materials 83 → **78**. `Material.isAir()` remains exactly **103**.
+
+**Config-string compatibility is explicitly deferred:** `ItemUtils.parseMaterial()` still resolves the
+modern pane strings to modern enum constants in this checkpoint; a dedicated config-mapping layer is left
+for a later batch.
+
+**Category C status:** **IN PROGRESS** — Batch 26, 27, and 28 are complete; the remaining pane/dye/head/
+1.13+ items and the rest of Category C (BlockData, PDC, NamespacedKey, ProtocolLib, NMS, Adventure,
+Particle, Sound, EntityType) remain for later batches.
+
+**Build not verified — Maven/JDK unavailable.**
+
 ---
 
 Inventory only for remaining items. Batches 1–25 did not migrate Category C. `Material.isAir()` is
@@ -707,8 +751,8 @@ regex-counted `Adventure/Kyori` bucket from 65 → 66 occurrences (file count un
 
 | Item | src/main occ | src/main files |
 |---|---:|---:|
-| Modern Materials (76 distinct constants not in the 1.12.2 enum) | 334 | 92 |
-| `Material.isAir()` | 108 | 39 |
+| Modern Materials (71 distinct constants not in the 1.12.2 enum) | 276 | 78 |
+| `Material.isAir()` | 103 | 35 |
 | PersistentDataContainer / PersistentDataType | 68 | 7 |
 | ProtocolLib 5.x API | 66 | 8 |
 | NMS via reflection strings | 64 | 5 |
@@ -722,8 +766,8 @@ regex-counted `Adventure/Kyori` bucket from 65 → 66 occurrences (file count un
 | `EquipmentSlot.OFF_HAND` · `Sound` · `EntityType` · `Attribute` | 2 · 2 · 2 · 1 | 1 · 2 · 2 · 1 |
 | **Category C total** | **853** (+16 in 5 test files) | **144** |
 
-Stained-glass panes alone account for 146 of the modern-Material occurrences and will be the largest single
-piece of the 1.12.2 API phase.
+Stained-glass panes alone account for 126 of the remaining modern-Material occurrences and will be the
+largest single piece of the 1.12.2 API phase.
 
 ---
 
@@ -753,8 +797,9 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
    next verification milestone, and it may surface the known non-blocking defects listed above plus remaining
    Category C (Spigot 1.12.2 API) resolution errors.
 6. ~~Spigot 1.12.2 simple Materials (Batch 27)~~ — **done (Batch 27).**
-7. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 28 in this
-   checkpoint.** Remaining modern pane/dye/head/1.13+ items and 103 `isAir()` sites are later batches.
+7. ~~Spigot 1.12.2 stained-glass panes (Batch 28)~~ — **done (Batch 28).**
+8. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 29 in
+   this checkpoint.** Remaining modern pane/dye/head/1.13+ items and 103 `isAir()` sites are later batches.
    BlockData / PDC / NMS / ProtocolLib stay deferred.
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.

@@ -195,7 +195,7 @@ public final class PlayerEntry {
 
         // 5. Build bottom row buttons (45 to 53)
         for (int s = 45; s <= 53; s++) {
-            set(s, new ItemStack(Material.BLACK_STAINED_GLASS_PANE));
+            set(s, new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 15));
         }
 
         // Previous Page (45)
