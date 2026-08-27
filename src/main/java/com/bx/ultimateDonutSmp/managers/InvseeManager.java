@@ -551,7 +551,7 @@ public class InvseeManager {
     private void initializeLayout(InvseeSession session) {
         Inventory inventory = session.getInventory();
         Set<Integer> reservedSlots = getReservedSlots();
-        ItemStack filler = ItemUtils.createGlassPane(Material.GRAY_STAINED_GLASS_PANE);
+        ItemStack filler = ItemUtils.createGlassPane();
         for (int slot = 0; slot < inventory.getSize(); slot++) {
             if (reservedSlots.contains(slot)) {
                 continue;
