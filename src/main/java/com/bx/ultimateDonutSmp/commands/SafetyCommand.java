@@ -83,10 +83,11 @@ public class SafetyCommand implements CommandExecutor {
         }
 
         // Must be player to view the book directly on screen
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         // Check view permission
         if (!PermissionUtils.has(player, "safety.use")) {
@@ -165,7 +166,7 @@ public class SafetyCommand implements CommandExecutor {
             ));
 
             // Notify sender if it is a different entity
-            if (!(sender instanceof Player senderPlayer) || !senderPlayer.getUniqueId().equals(target.getUniqueId())) {
+            if (!(sender instanceof Player) || !((Player) sender).getUniqueId().equals(target.getUniqueId())) {
                 sender.sendMessage(ColorUtils.toComponent(
                         plugin.getLanguageManager().text("MESSAGES.SAFETY.GIVE-SUCCESS-SENDER", "&aSuccessfully gave safety book to {player}.", "{player}", target.getName())
                 ));

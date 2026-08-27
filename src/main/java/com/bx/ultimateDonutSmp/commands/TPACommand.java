@@ -51,10 +51,8 @@ public class TPACommand implements CommandExecutor {
                 plugin.getTPAManager().cancelRequestsByRequester(player.getUniqueId());
                 send(player, plugin.getConfigManager().getMessage("TPA.CANCELLED-REQUESTS"));
                 break;
-                break;
             }
             default: {
-                break;
                 break;
             }
         }

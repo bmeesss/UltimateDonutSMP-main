@@ -628,8 +628,8 @@ public class PortalManager {
             plugin.getSpigotScheduler().runRegion(baseLocation, () -> {
                 for (int i = 0; i < entityIds.size(); i++) {
                     Entity entity = Bukkit.getEntity(entityIds.get(i));
-                    if (entity instanceof TextDisplay display && entity.isValid()) {
-                        display.setText(ColorUtils.toComponent(lines.get(i)));
+                    if (entity instanceof TextDisplay && entity.isValid()) {
+                        ((TextDisplay) entity).setText(ColorUtils.toComponent(lines.get(i)));
                     }
                 }
             });

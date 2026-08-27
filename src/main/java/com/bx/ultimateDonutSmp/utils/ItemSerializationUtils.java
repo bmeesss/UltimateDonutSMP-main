@@ -82,7 +82,7 @@ public final class ItemSerializationUtils {
         ClassLoader targetLoader = ItemSerializationUtils.class.getClassLoader();
         try (BukkitObjectInputStream input = new ClassLoaderObjectInputStream(new ByteArrayInputStream(bytes), targetLoader)) {
             Object value = input.readObject();
-            return value instanceof ItemStack item ? item : null;
+            return value instanceof ItemStack ? (ItemStack) value : null;
         }
     }
 
@@ -481,8 +481,8 @@ public final class ItemSerializationUtils {
                         try {
                             m.setAccessible(true);
                             Object res = m.invoke(null, registryAccess, compoundTag);
-                            if (res instanceof java.util.Optional<?> opt) {
-                                return opt.orElse(null);
+                            if (res instanceof java.util.Optional<?>) {
+                                return ((java.util.Optional<?>) res).orElse(null);
                             }
                             if (res != null && nmsItemStackClass.isAssignableFrom(res.getClass())) {
                                 return res;

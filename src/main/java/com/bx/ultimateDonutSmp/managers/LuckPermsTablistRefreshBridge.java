@@ -191,7 +191,7 @@ public final class LuckPermsTablistRefreshBridge {
             }
             Class<?> userClass = Class.forName("net.luckperms.api.model.user.User", false, classLoader);
             Object uniqueId = userClass.getMethod("getUniqueId").invoke(user);
-            return uniqueId instanceof UUID uuid ? uuid : null;
+            return uniqueId instanceof UUID ? (UUID) uniqueId : null;
         } catch (Throwable exception) {
             plugin.getLogger().log(Level.WARNING, "Failed to read LuckPerms recalculation event.", exception);
             return null;
@@ -210,7 +210,7 @@ public final class LuckPermsTablistRefreshBridge {
             Class<?> userClass = Class.forName("net.luckperms.api.model.user.User", false, classLoader);
             if (userClass.isInstance(target)) {
                 Object uniqueId = userClass.getMethod("getUniqueId").invoke(target);
-                return uniqueId instanceof UUID uuid ? uuid : null;
+                return uniqueId instanceof UUID ? (UUID) uniqueId : null;
             }
         } catch (Throwable exception) {
             plugin.getLogger().log(Level.WARNING, "Failed to read LuckPerms NodeMutateEvent target user.", exception);
@@ -337,7 +337,8 @@ public final class LuckPermsTablistRefreshBridge {
                 future = invokeCompatible(userManager, "loadUser", playerId);
             }
 
-            if (future instanceof CompletableFuture<?> completableFuture) {
+            if (future instanceof CompletableFuture<?>) {
+                CompletableFuture<?> completableFuture = (CompletableFuture<?>) future;
                 completableFuture.whenComplete((ignoredUser, ignoredError) -> plugin.getSpigotScheduler().runGlobalLater(
                         () -> refreshOnlinePlayerAfterReload(playerId, fullEntryRefresh),
                         1L

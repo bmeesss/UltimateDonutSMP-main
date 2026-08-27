@@ -258,14 +258,17 @@ final class NativeGameProfileFactory {
         if (source == null) {
             return null;
         }
-        if (source instanceof Optional<?> optional) {
+        if (source instanceof Optional<?>) {
+            Optional<?> optional = (Optional<?>) source;
             return optional.map(NativeGameProfileFactory::findTextureInContainer).orElse(null);
         }
-        if (source instanceof Map<?, ?> map) {
+        if (source instanceof Map<?, ?>) {
+            Map<?, ?> map = (Map<?, ?>) source;
             Object texture = findTextureInContainer(map.get("textures"));
             return texture != null ? texture : findTextureInContainer(map.values());
         }
-        if (source instanceof Iterable<?> iterable) {
+        if (source instanceof Iterable<?>) {
+            Iterable<?> iterable = (Iterable<?>) source;
             for (Object item : iterable) {
                 Object texture = findTextureInContainer(item);
                 if (texture != null) {

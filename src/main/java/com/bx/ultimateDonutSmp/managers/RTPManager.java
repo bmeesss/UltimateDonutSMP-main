@@ -347,7 +347,8 @@ public final class RTPQueueEntry {
         if (section != null) {
             Map<String, Object> values = section.getValues(true);
             for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue() instanceof Number number) {
+                if (entry.getValue() instanceof Number) {
+                    Number number = (Number) entry.getValue();
                     String permNode = entry.getKey();
                     if (player.hasPermission(permNode)) {
                         int val = number.intValue();
@@ -872,7 +873,8 @@ public final class RTPQueueEntry {
         if (section != null) {
             Map<String, Object> values = section.getValues(true);
             for (Map.Entry<String, Object> entry : values.entrySet()) {
-                if (entry.getValue() instanceof Number number) {
+                if (entry.getValue() instanceof Number) {
+                    Number number = (Number) entry.getValue();
                     String permNode = entry.getKey();
                     if (player.hasPermission(permNode)) {
                         int val = Math.max(0, number.intValue());

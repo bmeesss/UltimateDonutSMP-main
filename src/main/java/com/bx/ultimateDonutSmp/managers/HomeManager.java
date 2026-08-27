@@ -99,9 +99,10 @@ public class HomeManager {
                 : config.getConfigurationSection("SETTINGS.HOME-PERMISSIONS.PERMISSIONS");
         if (section != null) {
             for (Map.Entry<String, Object> entry : section.getValues(true).entrySet()) {
-                if (!(entry.getValue() instanceof Number number)) {
+                if (!(entry.getValue() instanceof Number)) {
                     continue;
                 }
+                Number number = (Number) entry.getValue();
                 if (!PermissionUtils.hasExact(player, entry.getKey())) {
                     continue;
                 }

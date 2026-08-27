@@ -18,7 +18,10 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batches 4–8 | ✅ **COMPLETE / MERGED** (PR #12, commit `1c288fb`) |
 | Java 8 — Batches 9–11 | ✅ **COMPLETE / MERGED** (PR #13, commit `5eb81a0`) |
 | Java 8 — Batch 12 | ✅ **COMPLETE** (master checkpoint `138898fb`) |
-| Java 8 — Batch 13 (javac-invalid corruption, 6 files) | ✅ **COMPLETE** (this checkpoint) |
+| Java 8 — Batch 13 (javac-invalid corruption, 6 files) | ✅ **COMPLETE / MERGED** (master `ae4755b`) |
+| Java 8 — Batch 14 (10 files, 27 instanceof) | ✅ **COMPLETE** (this checkpoint) |
+| Java 8 — Batch 15 (10 files, 17 instanceof) | ✅ **COMPLETE** (this checkpoint) |
+| Batch 16 — javac-invalid corruption cleanup (FriendsCommand, TPACommand, SellCommand) | ✅ **COMPLETE** (this checkpoint) — **0 markers remain repo-wide** |
 | Java 8 — remaining batches | ⏳ **IN PROGRESS** (see inventory below) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
@@ -38,7 +41,7 @@ was **discarded as the migration base**; master `138898fb` parses 421/421 clean.
 - Batch 13 removed the 6 javac-invalid corruption artifacts (tree-sitter-tolerated, javac-invalid) — see below
 
 `src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
-modified in Batches 1–13.
+modified in Batches 1–16.
 
 ---
 
@@ -213,7 +216,47 @@ Category C APIs untouched; no tests modified. Batches 1–12: **124 → 103** re
 
 ---
 
-## Remaining Java 8 inventory (freshly measured this checkpoint on the recovered master + Batch 13)
+### Batch 14 — 10 files, 27 instanceof patterns (this checkpoint)
+
+Fresh AST inventory on master `ae4755b` measured **83 A+B issues / 44 src/main files** (earlier scanner
+figures included false positives from plain colon-form switch statements, project `ColorUtils.strip(...)`
+and Java 7 `Files.readAllBytes` — all excluded by the corrected type-aware scanner). All non-deferred
+issues were instanceof patterns.
+
+Files: `CrateVisualManager` (5), `CrashProtectionManager` (3, `getItemMeta()` snapshots invoked exactly
+once), `OptimizationManager` (3, primitive-array patterns with fall-through preserved), `SpawnStashManager`
+(3), `WorthDisplayListener` (3), `AuctionHouseCommand` (2), `SafetyCommand` (2), `ExplosionDamageListener`
+(2), `ClearLagManager` (2), `PlayerRespawnListener` (2). **83 -> 56** remaining.
+
+### Batch 15 — 10 files, 17 instanceof patterns (this checkpoint)
+
+Files: `LuckPermsTablistRefreshBridge` (3), `NativeGameProfileFactory` (3), `RTPManager` (2),
+`SpawnStashCommand` (2), `ItemSerializationUtils` (2), `TeamCommand`, `TeleportCommand`,
+`WarpManagerCommand`, `HomeManager`, `PortalManager` (1 each). `FriendsCommand` and `TPACommand` were
+originally selected, found to contain the known unreachable-`break;` corruption, **reverted untouched**
+and re-routed to Batch 16; `HomeManager`/`PortalManager` substituted. **56 -> 39** remaining.
+
+Conversion rules in Batches 14–15 match Batches 2–11 (short-circuit order, scope, single evaluation of
+snapshot getters, null semantics all preserved). Category C untouched; no tests modified.
+
+### Batch 16 — javac-invalid corruption cleanup (COMPLETE, this checkpoint)
+
+The three deferred unreachable-`break;` files are repaired; a repo-wide comment/string-aware scan
+(`return break;`, duplicate-`break;` runs, orphaned `String;`/`Boolean;`-style declarations) now reports
+**0 markers in all 421 src/main files**.
+
+| File | Repair |
+|---|---|
+| `commands/FriendsCommand.java` | 5 runs of 31 consecutive `break;` (150 unreachable removed, 1 reachable kept per case) in `reload` / add+follow / remove+unfollow / `search` / `default`; indentation-mangled case bodies reconstructed — behavior unchanged |
+| `commands/TPACommand.java` | duplicate unreachable `break;` removed in `tpacancel` and `default` |
+| `commands/SellCommand.java` | same confirmed pattern found by the repo-wide scan: 3 runs of 31 `break;` (90 unreachable removed) in `sellprogress` / `sellhand` / `sellhistory`; mangled indentation reconstructed |
+
+No blind removal: each switch was verified flat (no nested switch/loop), so exactly the first `break;`
+of each run is reachable; all 12 legitimate single `break;` statements preserved.
+
+---
+
+## Remaining Java 8 inventory (superseded — historical Batch 13 measurement, see current figures below)
 
 Counts below are a **fresh re-measurement** on master `138898fb` (tree-sitter grammar + targeted regex).
 Batch 13 touched only corruption (no Java 9+ constructs), so the Java 8 inventory is unchanged by Batch 13.
@@ -273,9 +316,29 @@ tree-sitter-tolerated but javac-invalid — fix in a near-term batch):
 
 ---
 
+## Current Java 8 inventory (verified this checkpoint, corrected type-aware AST scanner)
+
+**39 A+B issues / 24 src/main files** (Category A: 33, Category B: 6).
+
+| Group | Issues |
+|---|---|
+| Deferred systems (`DatabaseManager` 6, `OrdersManager` 6, `ConfigManager` 3, `LeaderboardManager` 2, `SellStatsExporter` 2, repositories 2, `TpaQueueMenu` 1, `ShardManager` 1) | 23 |
+| Menus x7 (`BountyConfirmMenu`, `CrateGachaMenu`, `OrdersInventoryItemMenu`, `PayConfirmMenu`, `ProfileViewerMenu`, `SellMenu`, `ShopEditorMenu`) | 7 |
+| Listeners x3 (`FastCrystalListener`, `MobSpawnListener`, `PlayerDeathListener`) | 3 |
+| Commands (`FriendsCommand`, `TPACommand`, `PortalManagerCommand`) — now unblocked by Batch 16 | 3 |
+| Utils (`PacketSidebarRenderer` 2, `AdventureHeadComponentBridge` 1) | 3 |
+
+**javac-invalid corruption cleanup: COMPLETE — 0 markers remain repo-wide** (comment/string-aware scan of
+all 421 src/main files: `return break;`, duplicate-`break;` runs, orphaned type declarations).
+
+Structural: **421/421 src/main files parse clean** (tree-sitter-java, explicit large buffer, ERROR/MISSING
+treated as failures). Delimiter balance and full-signature duplicate scans clean on all changed files.
+
+---
+
 ## Category C — Spigot 1.12.2 API migration: NOT STARTED
 
-Inventory only. **No Category C item has been modified in Batches 1–12.** `Material.isAir()` remains
+Inventory only. **No Category C item has been modified in Batches 1–16.** `Material.isAir()` remains
 **108 occ / 39 files**, matching the pre-Java-8 baseline for that item.
 
 | Item | src/main occ | src/main files |
@@ -309,10 +372,10 @@ AntiESP · SpawnStash · Shards · Amethyst Tools · FakePlayer · StaffMode · 
 Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus.
 
 ## Next steps
-1. ~~Repair the 6 pre-existing corruption artifacts~~ — **done in Batch 13.** Repair the remaining
-   same-class unreachable-`break;` corruption in `FriendsCommand`, `SellCommand`, `TPACommand` (deferred).
-2. Java 8 remaining mechanical work: pattern instanceof (~64–70), `var` (4, inside deferred `OrdersManager`),
-   `String.repeat()` in `ConfigManager` (2).
+1. ~~Repair the 6 pre-existing corruption artifacts~~ — **done in Batch 13.**
+   ~~Repair the remaining unreachable-`break;` corruption in `FriendsCommand`, `SellCommand`, `TPACommand`~~ — **done in Batch 16; 0 markers remain repo-wide.**
+2. Java 8 remaining mechanical work: 16 instanceof patterns in non-deferred menus/listeners/commands/utils;
+   then the deferred-system issues (23).
 3. Handle the deferred design-level Java 8 items (text blocks, `java.net.http`, switch-in-expression-position,
    `ConfigManager.readAllBytes()`, `failedFuture`, `ShardManager` `RandomGenerator`).
 4. Only then begin the Spigot 1.12.2 API phase (Materials first).
