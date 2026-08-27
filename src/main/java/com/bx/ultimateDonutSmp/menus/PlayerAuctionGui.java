@@ -6,6 +6,7 @@ import com.bx.ultimateDonutSmp.models.AuctionClaim;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.AuctionPlayerEntries;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
@@ -69,7 +70,7 @@ public final class PlayerAuctionGui extends BaseMenu {
         set(previousSlot, page > 1
                 ? control("PREVIOUS", Material.ARROW, "&fPrevious page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(page - 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
         set(BACK_SLOT, control(
                 "BACK",
                 Material.CHEST,
@@ -94,7 +95,7 @@ public final class PlayerAuctionGui extends BaseMenu {
         set(nextSlot, page < totalPages
                 ? control("NEXT", Material.ARROW, "&fNext page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(page + 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
     }
 
     @Override
@@ -296,6 +297,27 @@ public final class PlayerAuctionGui extends BaseMenu {
                 plugin,
                 "GUI.PLAYER_ITEMS.CONTROLS." + key,
                 material,
+                name,
+                lore,
+                replacements
+        );
+    }
+
+    /**
+     * 1.12.2 variant of the wrapper above for icons whose colour is a legacy data value; the
+     * Material-based overload stays in place for every non-pane control.
+     */
+    private ItemStack control(
+            String key,
+            LegacyMaterialSupport.Icon icon,
+            String name,
+            List<String> lore,
+            String... replacements
+    ) {
+        return AuctionHouseMenuSupport.control(
+                plugin,
+                "GUI.PLAYER_ITEMS.CONTROLS." + key,
+                icon,
                 name,
                 lore,
                 replacements

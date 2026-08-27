@@ -5,6 +5,7 @@ import com.bx.ultimateDonutSmp.managers.OrdersManager;
 import com.bx.ultimateDonutSmp.models.Order;
 import com.bx.ultimateDonutSmp.models.OrderSort;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -45,11 +46,11 @@ public class OrdersDeleteConfirmMenu extends BaseMenu {
         }
         set(10, OrdersMenuSupport.button(
                 plugin, "GUI.DELETE.BUTTONS.BACK", "ORDERS.GUI.DELETE.BACK",
-                Material.RED_STAINED_GLASS_PANE, "&cBack", java.util.Collections.singletonList("&fReturn without cancelling")
+                LegacyMaterialSupport.pane("RED"), "&cBack", java.util.Collections.singletonList("&fReturn without cancelling")
         ));
         set(16, OrdersMenuSupport.button(
                 plugin, "GUI.DELETE.BUTTONS.CONFIRM", "ORDERS.GUI.DELETE.CONFIRM",
-                Material.LIME_STAINED_GLASS_PANE, "&aConfirm",
+                LegacyMaterialSupport.pane("LIME"), "&aConfirm",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&fCancel this order",  "&7Unused escrow becomes a collectable refund"))
         ));
     }

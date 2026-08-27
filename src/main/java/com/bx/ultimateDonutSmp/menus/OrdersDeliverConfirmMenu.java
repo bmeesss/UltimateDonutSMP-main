@@ -8,6 +8,7 @@ import com.bx.ultimateDonutSmp.models.Order;
 import com.bx.ultimateDonutSmp.models.OrderSort;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -89,7 +90,7 @@ public class OrdersDeliverConfirmMenu extends BaseMenu {
 
         set(11, OrdersMenuSupport.button(
                 plugin, "GUI.DELIVERY_CONFIRM.BUTTONS.CANCEL", "ORDERS.GUI.CONFIRM.CANCEL",
-                Material.RED_STAINED_GLASS_PANE, "&cCancel", java.util.Collections.singletonList("&fReturn without delivering")
+                LegacyMaterialSupport.pane("RED"), "&cCancel", java.util.Collections.singletonList("&fReturn without delivering")
         ));
         set(13, OrdersMenuSupport.decorateItem(
                 plugin,
@@ -114,7 +115,7 @@ public class OrdersDeliverConfirmMenu extends BaseMenu {
         ));
         set(15, OrdersMenuSupport.button(
                 plugin, "GUI.DELIVERY_CONFIRM.BUTTONS.CONFIRM", "ORDERS.GUI.CONFIRM.CONFIRM",
-                quantity > 0 ? Material.LIME_STAINED_GLASS_PANE : Material.BARRIER,
+                quantity > 0 ? LegacyMaterialSupport.pane("LIME") : LegacyMaterialSupport.of(Material.BARRIER),
                 quantity > 0 ? "&aConfirm" : "&cCannot deliver",
                 quantity > 0
                         ? new java.util.ArrayList<>(java.util.Arrays.asList("&fDeliver {amount} items",  "&7You receive {receive}"))

@@ -4,7 +4,7 @@ Target (from `pom.xml`): Java 8 (`maven.compiler.source/target = 1.8`), Spigot A
 ProtocolLib 5.3.0 (provided), Adventure MiniMessage 4.14.0 (shaded), Vault/LuckPerms/PlaceholderAPI (provided),
 SQLite/MySQL/HikariCP (bundled).
 
-Source files: **421 src/main + 69 src/test**.
+Source files: **422 src/main + 69 src/test** (422 since Batch 36A added `utils/LegacyMaterialSupport.java`).
 
 ## Phase overview
 
@@ -40,7 +40,11 @@ Source files: **421 src/main + 69 src/test**.
 | Spigot 1.12.2 API — Batch 31 (direct pane ItemStack sites, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 32 (direct pane fill sites part 2, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 33 (direct pane fill sites part 3, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–33; Batch 34 NOT STARTED) |
+| Spigot 1.12.2 API — Batch 34 (direct pane fill sites part 4, 9 files / 9 sites) | ✅ **COMPLETE / MERGED** (PR #30, master `6515b49`) |
+| Spigot 1.12.2 API — Batch 35 (config-driven pane helper investigation) | ✅ **COMPLETE — analysis only, 0 source edits** (proved the sites are config-coupled; corrected the inventory to 16 sites / 17 arguments) |
+| Spigot 1.12.2 API — Batch 36A (central legacy material compatibility layer) | ✅ **COMPLETE** (1 new file, `utils/LegacyMaterialSupport.java`, no call-site churn) |
+| Spigot 1.12.2 API — Batch 36B (config-driven pane helper migration) | ✅ **COMPLETE** (10 files; all 17 pane arguments migrated through the layer) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–36B; remaining pane work = the 47 config/default refs + the config write-back serialization batch) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -624,7 +628,7 @@ about language/API level):
 
 ---
 
-## Category C — Spigot 1.12.2 API migration: IN PROGRESS (Batches 26–31)
+## Category C — Spigot 1.12.2 API migration: IN PROGRESS (Batches 26–36B)
 
 **Category C has officially started.** Batch 26 is the first intentional Spigot/Bukkit 1.12.2 API
 migration. Scope was **modern Material constants + `Material.isAir()` only** in 10 isolated files.
@@ -1014,6 +1018,113 @@ sets byte-identical to baseline; pre-existing enum-constant `@Override` patterns
 
 **Build not verified — Maven/JDK unavailable.**
 
+### Batch 35 — config-driven pane helper investigation (COMPLETE, analysis only)
+
+Baseline `origin/master` `6515b492b7c0bc3b08295076ac28243e7d7e925b`. Read every helper, every caller and
+every config boundary; proved a blind fallback swap is unsafe (`control()`/`button()` take plain
+`Material`, build through the non-data-aware `createItem`, and feed `fallbackMaterial.name()` into the
+config read). Re-inventoried the family with a real AST: **16 call sites / 17 pane arguments**
+(`control()` 11 lines / 12 arguments, `button()` 5 / 5), not the 12 lines recorded by Batch 33/34.
+Both helpers are read-only (no `set()`), and no shipped `auction-house.yml` / `orders.yml` key defines
+`.MATERIAL` for these paths, so the fallback decides the stock render. Result: **0 source edits**; a
+data-aware overload alone would preserve defaults but silently drop admin overrides that use 1.13+ pane
+names, and a shared resolver needs ≥11 files. **Category C = IN PROGRESS.**
+
+### Batch 36A — central legacy material compatibility layer (COMPLETE, 1 new file)
+
+Added `utils/LegacyMaterialSupport.java` (261 lines) and nothing else: `public final class`, nested
+immutable `Icon { Material material(); short data(); String configuredName(); }` (equality on
+Material + data, `configuredName` is the serialization label), the frozen 16-colour pane table,
+`pane(String)`, `of(Material)`, `isPaneName(String)`, `resolvePane(String)`, `resolve(String)`,
+`resolve(String, Icon)` and `configName(ItemStack)`.
+
+* Additive by contract: anything unrecognised returns `null` so every boundary keeps its own fallback
+  (`Material.valueOf` → caller fallback, `ItemUtils.parseMaterial` → `STONE`, `CrateManager` → logged
+  fallback). `ItemUtils.parseMaterial()`, `BaseMenu`, `CrateManager` and all config strings untouched.
+* 1.12.2-safe by construction: the only executable `Material` reference is `STAINED_GLASS_PANE`
+  (AST-verified — no 1.13+ constant anywhere in code, none needed), calls are limited to pre-1.13
+  `matchMaterial` / `getDurability`, API level is Java 7 (`Short.valueOf`, `Collections.unmodifiableMap`,
+  `Locale.ROOT`, explicit generic args, no lambdas/streams).
+* Mapping = the 1.12.2 stained-glass-pane damage order (white 0, orange 1, magenta 2, light blue 3,
+  yellow 4, lime 5, pink 6, gray 7, light gray 8 = 1.12.2 `SILVER`, cyan 9, purple 10, blue 11,
+  brown 12, green 13, red 14, black 15), corroborated four independent ways: 95 already-migrated
+  `STAINED_GLASS_PANE + (short)` sites (gray 7 ×62, black 15 ×22, red 14 ×7, lime 5 ×3, light gray 8 ×1);
+  `STAINED_CLAY` sites (lime 5 on `&aConfirm`, red 14 on `&cCancel`); `INK_SACK` dye sites through the
+  1.12.2 `dye = 15 − ordinal` inversion (dye 1 → red 14, dye 8 → gray 7, dye 10 → lime 5); and the
+  16-entry colour lists in `filter.yml`, which map to exactly 0…15 ascending.
+* Rejected as unproven: depending on `DyeColor.ordinal()` / `getWoolData()` (`LIGHT_GRAY` is `SILVER` in
+  1.12.2 and the getters are deprecated), `NAME:DATA` config syntax, `minecraft:`/kebab normalization
+  (no shipped material value uses them), a `SILVER_*` alias, an `of(Material, short)` factory, and the
+  dye / terracotta / head / `*_GLASS` families (their own batches).
+* Build still unverified: no JDK/Maven in the sandbox (apt, Maven Central and Adoptium are unreachable;
+  PyPI only ships a JRE), so validation is tree-sitter + AST + a source-asserted semantic model.
+
+### Batch 36B — config-driven pane helper migration (COMPLETE, 10 files)
+
+Wired the layer into the two config-driven helper families and migrated all **17** pane arguments
+(16 call sites) through it. Helper changes are purely additive:
+
+* `AuctionHouseMenuSupport`: kept `control(…, Material, …)` with its resolution lines byte-identical
+  (`getString(path + ".MATERIAL", fallback.name())` → `valueOf` → catch → fallback) so all 25 non-pane
+  callers plus `ShulkerPreviewGui` keep the old behaviour; added `control(…, LegacyMaterialSupport.Icon, …)`
+  = `resolve(getString(path + ".MATERIAL", fallbackIcon.configuredName()), fallbackIcon)` →
+  `ItemUtils.createItem(material, data, name, lore)`. `.NAME` / `.LORE` handling was factored verbatim
+  into `controlName(FileConfiguration, …)` / `controlLore(FileConfiguration, …)` shared by both overloads,
+  reusing the already-resolved config (no second `getAuctionHouse()` call through the `localized(...)`
+  language hook).
+* `OrdersMenuSupport`: `material(…, Material)` and `button(…, Material, …)` byte-identical to master
+  (CAULDRON / HOPPER / ARROW / MAP / OAK_SIGN / CHEST / DROPPER / HOPPER callers untouched); added
+  `materialIcon(…, Icon)` + `button(…, Icon, …)` with the same read order.
+* Overloads differ in exactly one parameter position with unrelated types (`Material` vs
+  `LegacyMaterialSupport.Icon`), so no call site is ambiguous; both helper classes are package-private,
+  so there are no external or reflective callers, and `src/test` references neither.
+* Callers (8 files): 12 plain arguments → `LegacyMaterialSupport.pane("<COLOUR>")`; 4 ternaries became a
+  **single Icon-level ternary** (`cond ? pane(X) : of(material)`) preserving the condition, the branch
+  evaluation order and the one `getCategoryIcon(...)` / `Material.BARRIER` evaluation; the 4 `FILLER`
+  sites route through new private Icon overloads of the menus' `control(…)` wrappers, keeping the Material
+  wrappers for non-pane controls. `OrdersDepositMenu` lost the `org.bukkit.Material` import its last
+  reference made unnecessary.
+* Colour identity proved mechanically: per changed file the master `*_STAINED_GLASS_PANE` multiset equals
+  the new `pane("…")` multiset (BLACK ×4, LIME ×8, RED ×4, GRAY ×1 = 17), with 0 residual pane constants in
+  the 10 files and 0 changed config/display string literals (0 removed, only the 23 new colour/suffix
+  literals added).
+* Config semantics: missing key → same default string → same icon **with colour data**; valid 1.12.2 name
+  → itself + data 0; modern pane name → `STAINED_GLASS_PANE` + colour data (previously lost); invalid,
+  blank or `null` → caller fallback. `configuredName()` keeps the flattened 1.13+ name, so a future
+  generator writes the same bytes admins already have and `configName(ItemStack)` round-trips them.
+* Data 0 equivalence: the Icon path always uses the existing data-aware `createItem`, and
+  `new ItemStack(m, 1, (short) 0)` is the same item the old 3-arg factory produced, so the mixed
+  `pane(LIME) : of(icon)` ternaries keep non-pane branches byte-equivalent. No `ItemUtils` or `BaseMenu`
+  change, no new ItemStack factory.
+* After 36B: modern pane references in executable code total **51** = 28 `Material.` field accesses +
+  23 config-default strings. The 47 GRAY/BLACK/RED/LIME refs are **25 field accesses** (`CrateManager` 13
+  including its `set()` writer, `TeamDisbandConfirmMenu`/`TeamKickConfirmMenu`/`TeamEditMenu material()` 6,
+  post-parse `if (x == null) x = Material.…` re-fallbacks 5, `StaffListMenu getMenuPlaceholderMaterial` 1)
+  plus **22 config-default strings** (`BillfordMenu`, `ConfirmKillMenu`, `FeatureToggleMenu`,
+  `ProfileViewerHomesMenu`, `PurchaseShopMenu`, `SellAllConfirmMenu`, `SellMenu`, `SellProgressMenu`,
+  `ShopMenu`, `SpawnerMainMenu`, `SpawnerSellConfirmMenu`, `StatsWipe*`, `TpaQueueMenu`, `menus.yml`-driven
+  paths). The other 4 refs are the still-deferred `LIGHT_GRAY` 2 (`HomeActionMenu` fill, `HomeMenu` blank),
+  `LIGHT_BLUE` 1 (`FrozenPlayersMenu`) and `YELLOW` 1 (`SellProgressMenu`). Config-driven
+  **helper-default pane arguments: 0 remaining**.
+* Left for the serialization/config batch (deliberately **not** touched here): `CrateManager:116`
+  writes `Material.BLACK_STAINED_GLASS_PANE.name()` into `crates.yml`, and `CrateManager:1243/1250` plus
+  `ShopManager:1549` write `item.getType().name()` — a data-bearing pane would serialize as the bare
+  `STAINED_GLASS_PANE` and lose its colour on reload; `LegacyMaterialSupport.configName(ItemStack)` exists
+  exactly to close that round-trip.
+
+**Validation (36A + 36B):** tree-sitter 0.26.0 + tree-sitter-java 0.23.5, full-buffer parse of all
+**422** src/main files — 0 ERROR/MISSING, 0 delimiter imbalances, 0 duplicate full-signature
+declarations, 0 javac-invalid markers (`var`, text blocks, records, switch arrows, `List/Set/Map.of`,
+`isBlank`/`strip`, instanceof patterns, stream `.toList()` — all 86 `.toList()` occurrences are
+`Collectors.toList()`), 0 unresolved names against the layer's declared API, every `pane("…")` colour
+present in the table, `git diff --check` clean, no whitespace-only diff line. `Material.isAir()` = 103;
+SGP data histograms (7 ×62 / 15 ×22 / 14 ×7 / 5 ×3 / 8 ×1), `STAINED_CLAY` 5 and 14, `INK_SACK` 16,
+`WATCH` 5, `MOB_SPAWNER` 4, `BOOK_AND_QUILL` 4, `EYE_OF_ENDER` 1, `EXP_BOTTLE` 1, `GRASS` 1, skulls/heads,
+terracotta, `Material.SPAWNER` 6 / `Material.CLOCK` 4, BlockData 44, PDC 58, `NamespacedKey` 34,
+`Particle.` 19, `Sound.` 6, `EntityType` 31, ProtocolLib 55, Kyori 25, `Tag.` 9 and `parseMaterial(` 120
+are all byte-identical to master; `src/main/resources`, `src/test`, `pom.xml` and the docs other than this
+file untouched.
+
 ---
 
 Inventory only for remaining items. Batches 1–30 did not fully migrate Category C. `Material.isAir()` is
@@ -1100,12 +1211,34 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
     helper-default lines (the `AuctionHouseMenuSupport.control()` ×7 and `OrdersMenuSupport.button()` ×5
     fallback-`Material` arguments are config-driven, not directly migratable), **51** config/default
     sites deliberately deferred, **0** comparisons. `Material.isAir()` remains exactly **103**.
-14. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 35 NOT STARTED.**
-    Remaining for later batches: the 12 protected helper-default lines, the config-driven pane
-    compatibility layer (51 sites), the deferred `LIGHT_GRAY_STAINED_GLASS_PANE` (2 refs, incl. the
-    direct fill in `HomeActionMenu`) and `LIGHT_BLUE_STAINED_GLASS_PANE` (1 ref) mappings, and the
-    remaining modern dye/head/1.13+ items plus 103 `isAir()` sites. BlockData / PDC / NMS /
-    ProtocolLib stay deferred. **Category C = IN PROGRESS.**
+14. ~~Spigot 1.12.2 config-driven pane helper investigation (Batch 35)~~ — **done (analysis only, 0 source
+    edits).** Re-inventoried the protected helper-default family with a real AST: **16 call sites / 17 pane
+    arguments** (`control()` 11 / 12, `button()` 5 / 5), superseding the "12 lines" figure recorded by
+    Batches 33–34. Verdict: no safe ≤10-file migration without a shared resolver; deferred to a
+    compatibility-layer batch.
+15. ~~Central legacy material compatibility layer (Batch 36A)~~ — **done.** Added
+    `utils/LegacyMaterialSupport.java` (1 file, no caller churn): immutable `Icon` (Material + legacy data +
+    `configuredName`), the 16-colour `STAINED_GLASS_PANE` damage table (gray 7, black 15, red 14, lime 5,
+    light gray 8, …), `pane/of/resolve/resolvePane/isPaneName/configName`. Unknown values return `null` so
+    every existing boundary keeps its own fallback semantics; only 1.12.2 Material constants are referenced
+    in code; no new config syntax. Mapping validated against migrated repo sites, the `INK_SACK`
+    `15 − ordinal` inversion, `STAINED_CLAY` sites and `filter.yml`'s 16-colour order.
+16. ~~Config-driven pane helper migration (Batch 36B)~~ — **done (10 files, 17 arguments).**
+    `AuctionHouseMenuSupport.control()` and `OrdersMenuSupport.button()` gained additive `Icon` overloads
+    (old `Material` overloads byte-identical, 25 non-pane sites + both `material()` readers unaffected); the
+    4 ternary sites became single Icon-level ternaries; the 4 `FILLER` sites route through new Icon wrapper
+    overloads. Missing / valid-legacy / modern-pane / invalid / blank / null config cases and the per-file
+    colour multisets were proved; 0 config strings changed; target-pane references in src/main 64 → 47.
+17. Continue the Spigot 1.12.2 API phase. Next: the pane **config/default** sites (47 remaining:
+    25 `Material.` field accesses — `CrateManager` ×13 incl. its `set()` writer, `Team* material()` ×6,
+    re-fallback assignments ×5, `getMenuPlaceholderMaterial` ×1 — plus 22 config-default strings)
+    on the same resolver, the deferred `LIGHT_GRAY` (2) / `LIGHT_BLUE` (1) /
+    `YELLOW` (1) mappings, and the **config write-back serialization** fix (`CrateManager:116` writes
+    `Material.BLACK_STAINED_GLASS_PANE.name()`; `CrateManager:1243/1250` and `ShopManager:1549` write
+    `item.getType().name()`, which loses pane colour — `LegacyMaterialSupport.configName(ItemStack)` is the
+    intended remedy). Then the remaining modern dye/head/1.13+ items, 103 `isAir()` sites,
+    `org.bukkit.Tag`, and a real `mvn -q compile` (JDK/Maven still unavailable here).
+    BlockData / PDC / NMS / ProtocolLib / Adventure stay deferred. **Category C = IN PROGRESS.**
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.
 > Java 8 compatibility is statically complete; real javac/Maven verification remains.

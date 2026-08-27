@@ -8,6 +8,7 @@ import com.bx.ultimateDonutSmp.models.AuctionClaim;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -150,12 +151,63 @@ final class AuctionHouseMenuSupport {
             } catch (IllegalArgumentException ignored) {
             }
         }
-        String name = replace(config.getString(path + ".NAME", fallbackName), replacements);
+        return ItemUtils.createItem(
+                material,
+                controlName(config, path, fallbackName, replacements),
+                controlLore(config, path, fallbackLore, replacements)
+        );
+    }
+
+    /**
+     * 1.12.2 variant of {@link #control(UltimateDonutSmp, String, Material, String, List, String...)}
+     * for icons whose colour lives in a legacy data value ({@code STAINED_GLASS_PANE} plus
+     * durability) instead of a separate 1.13+ Material.
+     *
+     * <p>The configured value is resolved through {@link LegacyMaterialSupport}, so a
+     * {@code *_STAINED_GLASS_PANE} entry in {@code auction-house.yml} keeps working and the default
+     * written into {@code .MATERIAL} stays the flattened 1.13+ name. Missing, blank or unresolvable
+     * values keep falling back to the caller's icon, exactly as the Material-based overload does.</p>
+     */
+    static ItemStack control(
+            UltimateDonutSmp plugin,
+            String path,
+            LegacyMaterialSupport.Icon fallbackIcon,
+            String fallbackName,
+            List<String> fallbackLore,
+            String... replacements
+    ) {
+        FileConfiguration config = plugin.getConfigManager().getAuctionHouse();
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(
+                config.getString(path + ".MATERIAL", fallbackIcon.configuredName()),
+                fallbackIcon
+        );
+        return ItemUtils.createItem(
+                resolved.material(),
+                resolved.data(),
+                controlName(config, path, fallbackName, replacements),
+                controlLore(config, path, fallbackLore, replacements)
+        );
+    }
+
+    private static String controlName(
+            FileConfiguration config,
+            String path,
+            String fallbackName,
+            String... replacements
+    ) {
+        return replace(config.getString(path + ".NAME", fallbackName), replacements);
+    }
+
+    private static List<String> controlLore(
+            FileConfiguration config,
+            String path,
+            List<String> fallbackLore,
+            String... replacements
+    ) {
         List<String> configuredLore = config.getStringList(path + ".LORE");
-        List<String> lore = (configuredLore.isEmpty() ? fallbackLore : configuredLore).stream()
+        return (configuredLore.isEmpty() ? fallbackLore : configuredLore).stream()
                 .map(line -> replace(line, replacements))
                 .collect(java.util.stream.Collectors.toList());
-        return ItemUtils.createItem(material, name, lore);
     }
 
     static String configText(
