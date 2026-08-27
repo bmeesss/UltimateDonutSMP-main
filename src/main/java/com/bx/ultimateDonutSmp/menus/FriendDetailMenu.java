@@ -34,7 +34,7 @@ public class FriendDetailMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
 
         UUID playerUuid = player.getUniqueId();
         boolean isFollowing = plugin.getFriendsManager().isFollowing(playerUuid, targetUuid);
