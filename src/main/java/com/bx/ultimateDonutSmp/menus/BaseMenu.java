@@ -47,6 +47,24 @@ public abstract class BaseMenu implements InventoryHolder {
         ItemUtils.fillInventory(inventory, material);
     }
 
+    /**
+     * 1.12.2 colored fillers use a shared Material plus a durability/data value
+     * (for example {@code STAINED_GLASS_PANE} + 15 for black).
+     */
+    protected void fill(Material material, short data) {
+        ItemStack filler = new ItemStack(material, 1, data);
+        org.bukkit.inventory.meta.ItemMeta meta = filler.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("");
+            filler.setItemMeta(meta);
+        }
+        for (int i = 0; i < inventory.getSize(); i++) {
+            if (inventory.getItem(i) == null) {
+                inventory.setItem(i, filler);
+            }
+        }
+    }
+
     protected void set(int slot, ItemStack item) {
         if (slot >= 0 && slot < inventory.getSize()) {
             inventory.setItem(slot, item);
@@ -59,7 +77,10 @@ public abstract class BaseMenu implements InventoryHolder {
 
     protected boolean isPlaceholder(ItemStack item) {
         if (item == null) return true;
-        return item.getType() == Material.GRAY_STAINED_GLASS_PANE
-                || item.getType() == Material.BLACK_STAINED_GLASS_PANE;
+        if (item.getType() != Material.STAINED_GLASS_PANE) {
+            return false;
+        }
+        short data = item.getDurability();
+        return data == 7 || data == 15;
     }
 }
