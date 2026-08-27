@@ -129,13 +129,12 @@ public final class ShopPreferenceRepository {
 
     private void ensureTables() throws SQLException {
         try (Statement statement = connection().createStatement()) {
-            statement.execute(schemaAdapter.apply("""
-                    CREATE TABLE IF NOT EXISTS shop_favorites (
-                      player_uuid VARCHAR(191) NOT NULL,
-                      favorite_id VARCHAR(191) NOT NULL,
-                      PRIMARY KEY (player_uuid, favorite_id)
-                    )
-                    """));
+            statement.execute(schemaAdapter.apply(
+                    "CREATE TABLE IF NOT EXISTS shop_favorites (\n"
+                    + "  player_uuid VARCHAR(191) NOT NULL,\n"
+                    + "  favorite_id VARCHAR(191) NOT NULL,\n"
+                    + "  PRIMARY KEY (player_uuid, favorite_id)\n"
+                    + ")\n"));
         }
     }
 
