@@ -138,10 +138,10 @@ public class FastCrystalManager {
     }
 
     public boolean hasRequiredPlacementSpace(Block clickedBlock) {
-        if (shouldRequireAirAbove() && !clickedBlock.getRelative(0, 1, 0).getType().isAir()) {
+        if (shouldRequireAirAbove() && clickedBlock.getRelative(0, 1, 0).getType() != Material.AIR) {
             return false;
         }
-        if (shouldRequireAirTwoAbove() && !clickedBlock.getRelative(0, 2, 0).getType().isAir()) {
+        if (shouldRequireAirTwoAbove() && clickedBlock.getRelative(0, 2, 0).getType() != Material.AIR) {
             return false;
         }
         return true;

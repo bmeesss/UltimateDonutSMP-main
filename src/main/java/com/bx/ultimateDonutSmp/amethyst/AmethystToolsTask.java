@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp.amethyst;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.FeatureManager;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,7 +32,7 @@ public class AmethystToolsTask implements Runnable {
         ItemStack[] contents = player.getInventory().getContents();
         for (int slot = 0; slot < contents.length; slot++) {
             ItemStack item = contents[slot];
-            if (item == null || item.getType().isAir() || !item.hasItemMeta()) {
+            if (item == null || item.getType() == Material.AIR || !item.hasItemMeta()) {
                 continue;
             }
 

@@ -32,7 +32,8 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batch 24 (primitive-null return cleanup, 7 sites / 4 files) | ✅ **COMPLETE** (this checkpoint) — **`null`-from-primitive returns now 0 repo-wide** |
 | Java 8 — Batch 25 (final switch expressions ×3 + `RandomGenerator` bounded-long migration) | ✅ **COMPLETE** (this checkpoint) — **switch expressions 0, `RandomGenerator` 0, bounded `nextLong(origin,bound)` 0** |
 | **Java 8 migration phase** | ✅ **STATICALLY COMPLETE** — 0 genuine Java 8 blockers per the validated scanner; **real javac/Maven verification remains** |
-| Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
+| Spigot 1.12.2 API — Batch 26 (Materials + `Material.isAir()`, 10 files) | ✅ **COMPLETE** (this checkpoint) — Category C **STARTED** |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batch 26 only; later batches not started) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -616,10 +617,51 @@ about language/API level):
 
 ---
 
-## Category C — Spigot 1.12.2 API migration: NOT STARTED
+## Category C — Spigot 1.12.2 API migration: STARTED (Batch 26)
 
-Inventory only. **No Category C item has been migrated in Batches 1–19.** `Material.isAir()` remains
-**108 occ / 39 files**, matching the pre-Java-8 baseline for that item.
+**Category C has officially started.** Batch 26 is the first intentional Spigot/Bukkit 1.12.2 API
+migration. Scope was **modern Material constants + `Material.isAir()` only** in 10 isolated files.
+BlockData, PDC, NamespacedKey, NMS, ProtocolLib, Adventure, Particle, Sound, and EntityType were
+**not** edited.
+
+1.12.2 enum sourced from the Spigot-API 1.12.2 javadoc
+(`https://helpch.at/docs/1.12.2/org/bukkit/Material.html`). Local `spigot-api` JAR / Maven / JDK
+were unavailable.
+
+### Batch 26 — Materials + `isAir()` (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `c42c3106d1a8b685f104ba99e04249fb8e0a4d8c`.
+
+| File | Change |
+|---|---|
+| `listeners/AnvilModerationListener.java` | `ItemStack.getType().isAir()` → `== Material.AIR` (null guard unchanged) |
+| `commands/RenameCommand.java` | same, held item |
+| `amethyst/AmethystToolsTask.java` | same, inventory contents |
+| `managers/FastCrystalManager.java` | `Block.getType().isAir()` → `!= Material.AIR` for space-above checks; 1.12 worlds have only `AIR` (no `CAVE_AIR`/`VOID_AIR`) |
+| `menus/BaseMenu.java` | added `fill(Material, short)` using `new ItemStack(material, 1, data)`; existing `fill(Material)` still delegates to `ItemUtils.fillInventory`; `isPlaceholder` now `STAINED_GLASS_PANE` data 7 or 15 |
+| `menus/KeysMenu.java` | black pane fill → `STAINED_GLASS_PANE` data **15** (ItemStack filler) |
+| `menus/LeaderboardMenu.java` / `SellAllConfirmMenu.java` / `SpawnerWorldListMenu.java` | gray pane fill → `STAINED_GLASS_PANE` data **7** |
+| `menus/HomeDeleteConfirmMenu.java` | light-gray fill → pane data **8**; confirm `LIME_TERRACOTTA` → `STAINED_CLAY` data **5**; cancel `RED_TERRACOTTA` → `STAINED_CLAY` data **14** (`createItem` then `setDurability`) |
+
+`fill(Material)` callers that still pass modern pane enums are unchanged (not in this batch).
+`SellAllConfirmMenu` config **string** defaults (`"RED_STAINED_GLASS_PANE"`) still go through
+`ItemUtils.parseMaterial` and were left as config compatibility.
+
+**isAir:** 108 → **103** (5 call sites in 4 files; FastCrystal had 2). Receivers were
+`ItemStack.getType()` or `Block.getType()` (`Material`). Null checks preserved. No `isEmpty()` edits.
+
+**Modern Material refs (regex vs 1.12.2 enum):** 334 → **325** (−9). Unique modern constants
+76 → **73** (removed `BLACK/GRAY/LIGHT_GRAY_STAINED_GLASS_PANE` from these files; those names remain
+elsewhere; terracotta names removed from `HomeDeleteConfirmMenu` only).
+
+**Build not verified — Maven/JDK unavailable.** tree-sitter-java 0.23.5 / tree-sitter 0.26.0,
+explicit large buffer: **421/421** `src/main` parse clean, 0 ERROR/MISSING, 0 delimiter imbalance,
+0 javac-invalid markers, `git diff --check` clean.
+
+---
+
+Inventory only for remaining items. Batches 1–25 did not migrate Category C. `Material.isAir()` is
+now **103 occ / 35 files**.
 
 The single documented exception is **not** a migration: Batch 19's Java 8 `instanceof` conversion in
 `utils/AdventureHeadComponentBridge.java` adds one explicit `(Component)` cast, which raises the
@@ -671,9 +713,11 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
      bounded `nextLong`~~ — **done (Batch 25).**
 5. **Run a real build.** Java 8 compatibility is statically complete; **an actual Maven/JDK build has NOT yet
    been performed** in this environment (no `mvn`, no `javac`, no JVM). The first real `mvn -q compile` is the
-   next verification milestone, and it may surface the known non-blocking defects listed above plus any
-   Category C (Spigot 1.12.2 API) resolution errors, which are expected and are **not** Java 8 issues.
-6. Only then begin the Spigot 1.12.2 API phase (Materials first). **Category C: NOT STARTED.**
+   next verification milestone, and it may surface the known non-blocking defects listed above plus remaining
+   Category C (Spigot 1.12.2 API) resolution errors.
+6. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 27 in this
+   checkpoint.** Remaining modern pane/dye/head/1.13+ items and 103 `isAir()` sites are later batches.
+   BlockData / PDC / NMS / ProtocolLib stay deferred.
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.
 > Java 8 compatibility is statically complete; real javac/Maven verification remains.
