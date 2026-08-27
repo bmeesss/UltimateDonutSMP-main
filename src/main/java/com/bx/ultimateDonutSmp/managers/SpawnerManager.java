@@ -1669,9 +1669,9 @@ public final class SpawnerSellPreview {
                 return plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid());
             case OWNER_ONLY:
                 return false;
-            default:
-                return null;
         }
+        // AccessMode is handled exhaustively above; deny access for any future mode.
+        return false;
     }
 
     public boolean canBreak(Player player, SpawnerInstance instance) {
@@ -1695,9 +1695,9 @@ public final class SpawnerSellPreview {
                 return plugin.getTeamManager().areTeammates(player.getUniqueId(), instance.getOwnerUuid());
             case OWNER_ONLY:
                 return false;
-            default:
-                return null;
         }
+        // AccessMode is handled exhaustively above; deny breaking for any future mode.
+        return false;
     }
 
     public boolean canModify(Player player, SpawnerInstance instance) {

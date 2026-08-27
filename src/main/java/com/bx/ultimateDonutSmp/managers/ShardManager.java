@@ -21,11 +21,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.random.RandomGenerator;
 import java.util.stream.Collectors;
 
 public class ShardManager {
@@ -349,7 +349,7 @@ public final class ShardCuboidHudState {
         return min <= max ? new KillRewardRange(min, max) : new KillRewardRange(max, min);
     }
 
-    public static long rollKillReward(KillRewardRange range, RandomGenerator random) {
+    public static long rollKillReward(KillRewardRange range, Random random) {
         if (range == null) {
             return 0L;
         }
@@ -358,9 +358,9 @@ public final class ShardCuboidHudState {
         if (min == max) {
             return min;
         }
-        RandomGenerator source = random == null ? ThreadLocalRandom.current() : random;
+        Random source = random == null ? ThreadLocalRandom.current() : random;
         if (max < Long.MAX_VALUE) {
-            return source.nextLong(min, max + 1L);
+            return nextLong(source, min, max + 1L);
         }
         long value;
         do {
@@ -369,8 +369,39 @@ public final class ShardCuboidHudState {
         return value;
     }
 
+    /**
+     * Java 8 equivalent of the JDK's bounded {@code nextLong(origin, bound)}: returns a uniformly
+     * distributed long in {@code [origin, bound)} using the same rejection-sampling algorithm the
+     * JDK applies internally, so the value stream for a given source is unchanged and no modulo
+     * bias is introduced.
+     */
+    private static long nextLong(Random source, long origin, long bound) {
+        long r = source.nextLong();
+        if (origin >= bound) {
+            return r;
+        }
+        long n = bound - origin;
+        long m = n - 1L;
+        if ((n & m) == 0L) {
+            // Range is a power of two: masking is already uniform.
+            return (r & m) + origin;
+        }
+        if (n > 0L) {
+            // Reject over-represented candidates so every value in the range is equally likely.
+            for (long u = r >>> 1; u + m - (r = u % n) < 0L; u = source.nextLong() >>> 1) {
+                // retry
+            }
+            return r + origin;
+        }
+        // Range is wider than Long.MAX_VALUE: resample until the value falls inside it.
+        while (r < origin || r >= bound) {
+            r = source.nextLong();
+        }
+        return r;
+    }
+
     private static Long numericLong(Object value) {
-        return value instanceof Number number ? number.longValue() : null;
+        return value instanceof Number ? ((Number) value).longValue() : null;
     }
 
     public long getKillRewardCooldownMillis() {
