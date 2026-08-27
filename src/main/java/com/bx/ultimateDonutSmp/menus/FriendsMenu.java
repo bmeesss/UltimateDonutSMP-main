@@ -230,7 +230,7 @@ public final class PlayerEntry {
 
         // Refresh Button (50)
         set(50, ItemUtils.createItem(
-                Material.CLOCK,
+                Material.WATCH,
                 "&aFriends",
                 java.util.Collections.singletonList("&7Click to refresh")
         ));

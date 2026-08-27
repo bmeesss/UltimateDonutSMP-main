@@ -7,7 +7,7 @@ import java.util.Locale;
 
 public enum AuctionCategory {
     ALL("All", Material.COMPASS),
-    BLOCKS("Blocks", Material.GRASS_BLOCK),
+    BLOCKS("Blocks", Material.GRASS),
     TOOLS("Tools", Material.DIAMOND_PICKAXE),
     FOOD("Food", Material.GOLDEN_CARROT),
     COMBAT("Combat", Material.DIAMOND_SWORD),
@@ -95,7 +95,7 @@ public enum AuctionCategory {
                     || type == Material.TIPPED_ARROW;
             case BOOKS:
                 return type == Material.BOOK
-                    || type == Material.WRITABLE_BOOK
+                    || type == Material.BOOK_AND_QUILL
                     || type == Material.WRITTEN_BOOK
                     || type == Material.ENCHANTED_BOOK
                     || type == Material.KNOWLEDGE_BOOK;
@@ -126,7 +126,7 @@ public enum AuctionCategory {
                     || type == Material.NAME_TAG
                     || type == Material.COMPASS
                     || type == Material.RECOVERY_COMPASS
-                    || type == Material.CLOCK;
+                    || type == Material.WATCH;
         }
         // AuctionCategory is handled exhaustively above; treat any future category as non-matching.
         return false;

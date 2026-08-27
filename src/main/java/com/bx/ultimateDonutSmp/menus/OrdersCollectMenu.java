@@ -55,8 +55,8 @@ public class OrdersCollectMenu extends BaseMenu {
         set(lastRow + 1, page > 1
                 ? ItemUtils.createItem(Material.ARROW, "&aPrevious page", java.util.Collections.singletonList("&7Go to page &f" + (page - 1)))
                 : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
-        set(lastRow + 2, ItemUtils.createItem(Material.WRITABLE_BOOK, "&bMy orders", java.util.Collections.singletonList("&7View your orders")));
-        set(lastRow + 3, ItemUtils.createItem(Material.CLOCK, "&eRefresh", java.util.Collections.singletonList("&7Reload your collect queue")));
+        set(lastRow + 2, ItemUtils.createItem(Material.BOOK_AND_QUILL, "&bMy orders", java.util.Collections.singletonList("&7View your orders")));
+        set(lastRow + 3, ItemUtils.createItem(Material.WATCH, "&eRefresh", java.util.Collections.singletonList("&7Reload your collect queue")));
         set(lastRow + 4, OrdersMenuSupport.button(
                 plugin, "GUI.COLLECT.BUTTONS.COLLECT_PAGE", "ORDERS.GUI.COLLECT.COLLECT_PAGE",
                 Material.HOPPER, "&aCollect page", java.util.Collections.singletonList("&fCollect every claim shown on this page")

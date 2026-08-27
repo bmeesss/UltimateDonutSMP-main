@@ -41,7 +41,7 @@ public class HideMenu extends BaseMenu {
                         ))
         ));
         set(11, ItemUtils.createItem(
-                Material.ENDER_EYE,
+                Material.EYE_OF_ENDER,
                 "&bScramble",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Generate a stable random identity.",  "",  "&eClick to activate."))
         ));
@@ -50,11 +50,13 @@ public class HideMenu extends BaseMenu {
                 "&dDisguise",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Choose a configured name and skin.",  "",  "&eClick to select."))
         ));
-        set(15, ItemUtils.createItem(
-                Material.RED_DYE,
+        org.bukkit.inventory.ItemStack removeHideItem = ItemUtils.createItem(
+                Material.INK_SACK,
                 "&cRemove hide",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Restore your real identity.",  "",  "&eClick to remove."))
-        ));
+        );
+        removeHideItem.setDurability((short) 1);
+        set(15, removeHideItem);
         if (PermissionUtils.has(player, HideManager.ADMIN_PERMISSION)) {
             set(22, ItemUtils.createItem(
                     Material.SPYGLASS,

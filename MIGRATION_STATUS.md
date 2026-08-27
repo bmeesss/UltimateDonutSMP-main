@@ -32,8 +32,9 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batch 24 (primitive-null return cleanup, 7 sites / 4 files) | ✅ **COMPLETE** (this checkpoint) — **`null`-from-primitive returns now 0 repo-wide** |
 | Java 8 — Batch 25 (final switch expressions ×3 + `RandomGenerator` bounded-long migration) | ✅ **COMPLETE** (this checkpoint) — **switch expressions 0, `RandomGenerator` 0, bounded `nextLong(origin,bound)` 0** |
 | **Java 8 migration phase** | ✅ **STATICALLY COMPLETE** — 0 genuine Java 8 blockers per the validated scanner; **real javac/Maven verification remains** |
-| Spigot 1.12.2 API — Batch 26 (Materials + `Material.isAir()`, 10 files) | ✅ **COMPLETE** (this checkpoint) — Category C **STARTED** |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batch 26 only; later batches not started) |
+| Spigot 1.12.2 API — Batch 26 (Materials + `Material.isAir()`, 10 files) | ✅ **COMPLETE / MERGED** (PR #22, master `f18b55d`) — Category C **STARTED** |
+| Spigot 1.12.2 API — Batch 27 (Simple Materials, 10 files: `CLOCK`, `SPAWNER`, `GRASS_BLOCK`, `WRITABLE_BOOK`, `EXPERIENCE_BOTTLE`, `ENDER_EYE`, `RED_DYE`) | ✅ **COMPLETE** (this checkpoint) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–27; later batches not started) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -658,6 +659,42 @@ elsewhere; terracotta names removed from `HomeDeleteConfirmMenu` only).
 explicit large buffer: **421/421** `src/main` parse clean, 0 ERROR/MISSING, 0 delimiter imbalance,
 0 javac-invalid markers, `git diff --check` clean.
 
+### Batch 27 — Simple Materials (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `f18b55d93d054092eaf716b5937a0eb21cf427c5` (PR #22 merge).
+
+Scope: 17 intentional Material mappings across 10 isolated files.
+No skulls, no PLAYER_HEAD, no config strings, no tests, no isAir changes, no BlockData/PDC/NamespacedKey/ProtocolLib/NMS/Adventure changes.
+
+| File | Change |
+|---|---|
+| `listeners/SpawnerBlockListener.java` | 2× `block.getType() == Material.SPAWNER` → `Material.MOB_SPAWNER` |
+| `managers/SpawnStashManager.java` | `block.getType() == Material.SPAWNER` → `Material.MOB_SPAWNER` |
+| `menus/BillfordMenu.java` | countdown item `Material.CLOCK` → `Material.WATCH` |
+| `menus/FriendsMenu.java` | refresh button `Material.CLOCK` → `Material.WATCH` |
+| `menus/HideMenu.java` | scramble button `Material.ENDER_EYE` → `Material.EYE_OF_ENDER`; remove-hide `Material.RED_DYE` → `Material.INK_SACK` + `.setDurability((short) 1)` (Rose Red) |
+| `menus/OrdersCollectMenu.java` | my-orders `Material.WRITABLE_BOOK` → `Material.BOOK_AND_QUILL`; refresh `Material.CLOCK` → `Material.WATCH` |
+| `menus/PlayerLogsMenu.java` | spawners log `Material.SPAWNER` → `Material.MOB_SPAWNER`; messages log `Material.WRITABLE_BOOK` → `Material.BOOK_AND_QUILL` (`SKELETON_SKULL` untouched) |
+| `menus/SellStatsAdminMenu.java` | sales log `Material.CLOCK` → `Material.WATCH`; export report `Material.WRITABLE_BOOK` → `Material.BOOK_AND_QUILL` (`PLAYER_HEAD` untouched) |
+| `menus/SpawnerMainMenu.java` | fallback `Material.EXPERIENCE_BOTTLE` → `Material.EXP_BOTTLE` (config string `"EXPERIENCE_BOTTLE"` untouched) |
+| `models/AuctionCategory.java` | `BLOCKS` icon `Material.GRASS_BLOCK` → `Material.GRASS`; `BOOKS` match `Material.WRITABLE_BOOK` → `Material.BOOK_AND_QUILL`; `UTILITIES` match `Material.CLOCK` → `Material.WATCH` |
+
+**Material mappings summary:**
+- `CLOCK` → `WATCH` (5 sites)
+- `SPAWNER` → `MOB_SPAWNER` (4 sites)
+- `GRASS_BLOCK` → `GRASS` (1 site)
+- `WRITABLE_BOOK` → `BOOK_AND_QUILL` (4 sites)
+- `EXPERIENCE_BOTTLE` → `EXP_BOTTLE` (1 site) — 0 remaining repo-wide
+- `ENDER_EYE` → `EYE_OF_ENDER` (1 site) — 0 remaining repo-wide
+- `RED_DYE` → `INK_SACK` + durability 1 (1 site)
+
+**isAir:** Exactly **103** remaining across 35 files (0 changed in Batch 27).
+
+**Modern Material refs (regex vs 1.12.2 enum):** 325 → **308** (−17). Unique modern constants 73 → **71** (−2: `EXPERIENCE_BOTTLE` and `ENDER_EYE` eliminated). Files with modern Materials: 86 → **83** (−3: `BillfordMenu`, `SpawnerBlockListener`, `SpawnStashManager` now clean).
+
+**Deferred Category C components (NOT STARTED):**
+BlockData, PDC, NamespacedKey, ProtocolLib, NMS, Adventure, Particle, Sound, EntityType remain deferred and strictly untouched.
+
 ---
 
 Inventory only for remaining items. Batches 1–25 did not migrate Category C. `Material.isAir()` is
@@ -715,7 +752,8 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
    been performed** in this environment (no `mvn`, no `javac`, no JVM). The first real `mvn -q compile` is the
    next verification milestone, and it may surface the known non-blocking defects listed above plus remaining
    Category C (Spigot 1.12.2 API) resolution errors.
-6. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 27 in this
+6. ~~Spigot 1.12.2 simple Materials (Batch 27)~~ — **done (Batch 27).**
+7. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 28 in this
    checkpoint.** Remaining modern pane/dye/head/1.13+ items and 103 `isAir()` sites are later batches.
    BlockData / PDC / NMS / ProtocolLib stay deferred.
 

@@ -106,7 +106,7 @@ public class SpawnerBlockListener implements Listener {
         }
         Player player = event.getPlayer();
         if (plugin.getSpawnerManager().getSpawner(block) == null) {
-            if (block.getType() == Material.SPAWNER
+            if (block.getType() == Material.MOB_SPAWNER
                     && plugin.getSpawnerManager().isRequireSilkTouch()
                     && !plugin.getSpawnerManager().hasSilkTouchAccess(player)) {
                 event.setCancelled(true);
@@ -215,7 +215,7 @@ public class SpawnerBlockListener implements Listener {
             if (plugin.getSpawnStashManager() != null && plugin.getSpawnStashManager().isActiveBlock(block)) {
                 continue;
             }
-            if (block.getType() == Material.SPAWNER && plugin.getSpawnerManager().getSpawner(block) != null) {
+            if (block.getType() == Material.MOB_SPAWNER && plugin.getSpawnerManager().getSpawner(block) != null) {
                 iterator.remove();
             }
         }
