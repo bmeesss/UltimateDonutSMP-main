@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
 import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
@@ -113,7 +114,9 @@ public class CrateManager {
         cratesConfig.set(path + ".MENU.OPEN-TITLE", "&8" + prettifyId(normalized) + " crate");
         cratesConfig.set(path + ".MENU.CONFIRM-TITLE", "&8Confirm Reward");
         cratesConfig.set(path + ".MENU.SIZE", 27);
-        cratesConfig.set(path + ".MENU.FILLER", Material.BLACK_STAINED_GLASS_PANE.name());
+        // Flattened 1.13+ pane name via the compatibility layer; the modern
+        // Material.BLACK_STAINED_GLASS_PANE constant does not exist on 1.12.2.
+        cratesConfig.set(path + ".MENU.FILLER", LegacyMaterialSupport.pane("BLACK").configuredName());
         cratesConfig.set(path + ".MENU.BACK-SLOT", 26);
         cratesConfig.set(path + ".MENU.BACK-BUTTON.MATERIAL", Material.BARRIER.name());
         cratesConfig.set(path + ".MENU.BACK-BUTTON.DISPLAY-NAME", "&cBack");
@@ -1240,14 +1243,17 @@ public class CrateManager {
         ItemMeta meta = clonedItem.getItemMeta();
 
         cratesConfig.set(basePath + ".SLOT", slot);
-        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", clonedItem.getType().name());
+        // configName keeps a coloured pane's legacy data value in the written Material name,
+        // exactly as the flattened 1.13+ build wrote it; every other item still stores
+        // getType().name().
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", LegacyMaterialSupport.configName(clonedItem));
         cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
         cratesConfig.set(basePath + ".DISPLAY.LORE", serializeDisplayLore(meta));
         cratesConfig.set(basePath + ".DISPLAY.AMOUNT", Math.max(1, clonedItem.getAmount()));
         cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", serializeEnchantments(clonedItem));
 
         cratesConfig.set(basePath + ".GRANT.TYPE", "ITEM");
-        cratesConfig.set(basePath + ".GRANT.MATERIAL", clonedItem.getType().name());
+        cratesConfig.set(basePath + ".GRANT.MATERIAL", LegacyMaterialSupport.configName(clonedItem));
         cratesConfig.set(basePath + ".GRANT.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
         cratesConfig.set(basePath + ".GRANT.LORE", serializeGrantLore(meta));
         cratesConfig.set(basePath + ".GRANT.AMOUNT", Math.max(1, clonedItem.getAmount()));

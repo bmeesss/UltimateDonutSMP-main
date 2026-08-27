@@ -44,7 +44,8 @@ Source files: **422 src/main + 69 src/test** (422 since Batch 36A added `utils/L
 | Spigot 1.12.2 API — Batch 35 (config-driven pane helper investigation) | ✅ **COMPLETE — analysis only, 0 source edits** (proved the sites are config-coupled; corrected the inventory to 16 sites / 17 arguments) |
 | Spigot 1.12.2 API — Batch 36A (central legacy material compatibility layer) | ✅ **COMPLETE** (1 new file, `utils/LegacyMaterialSupport.java`, no call-site churn) |
 | Spigot 1.12.2 API — Batch 36B (config-driven pane helper migration) | ✅ **COMPLETE** (10 files; all 17 pane arguments migrated through the layer) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–36B; remaining pane work = the 47 config/default refs + the config write-back serialization batch) |
+| Spigot 1.12.2 API — Batch 37 (pane-safe Material serialization write-back) | ✅ **COMPLETE** (3 files, 4 write sites; config format unchanged — flattened pane aliases) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–37; write-back serialization done, remaining pane work = the 47 config/default refs + their read-path parsers) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -1124,6 +1125,58 @@ terracotta, `Material.SPAWNER` 6 / `Material.CLOCK` 4, BlockData 44, PDC 58, `Na
 `Particle.` 19, `Sound.` 6, `EntityType` 31, ProtocolLib 55, Kyori 25, `Tag.` 9 and `parseMaterial(` 120
 are all byte-identical to master; `src/main/resources`, `src/test`, `pom.xml` and the docs other than this
 file untouched.
+
+---
+
+### Batch 37 — pane-safe Material serialization write-back (COMPLETE, 3 files)
+
+Closed the round-trip 36B left open: the four config write sites that could drop a legacy pane colour.
+
+* **Format decision — no new syntax.** The config format already stores one Material name per key, and
+  the shipped resources prove the flattened 1.13+ pane aliases are that format's own spelling
+  (`crates.yml` `FILLER: BLACK_STAINED_GLASS_PANE`, `LIME/RED_STAINED_GLASS_PANE` buttons,
+  `shop.yml:672`, all 16 pane aliases in `worth.yml`, `menus.yml`). Colour therefore serializes as the
+  alias, and `LegacyMaterialSupport.resolve(String)` is the reader. `NAME:DATA` syntax was rejected —
+  no consumer needs it and `Material.valueOf`/`matchMaterial` parsers could not read it.
+* `LegacyMaterialSupport.configName(ItemStack)`: pane branch now guarded by `getDurability() != 0`, so
+  `STAINED_GLASS_PANE + 0` serializes as the bare `STAINED_GLASS_PANE` (both spellings resolve to the
+  identical data-0 icon; `getType().name()` output stays byte-identical), while any non-zero colour
+  serializes as its alias (`+ 15` → `BLACK_STAINED_GLASS_PANE`). Non-pane materials are untouched —
+  `HOPPER`, `WATCH`, `INK_SACK` and `STAINED_CLAY` keep `type.name()` for every data value.
+* `CrateManager:116` `Material.BLACK_STAINED_GLASS_PANE.name()` →
+  `LegacyMaterialSupport.pane("BLACK").configuredName()` (writes the identical `BLACK_STAINED_GLASS_PANE`
+  value with no modern enum constant); `CrateManager` reward `DISPLAY.MATERIAL` + `GRANT.MATERIAL` and
+  `ShopManager` `shop.yml` `.MATERIAL` now write `configName(item)`. The authoritative item round trip
+  stays `GRANT.ITEM-DATA` / `ITEM-DATA` (Bukkit-serialized); the Material column is the human-readable
+  fallback and now survives a pane colour.
+* **Classification (repo-wide sweep):** only these 4 sites are category A (ItemStack-derived or
+  pane-constant config writes). Category B left alone: `CHEST`/`TRIPWIRE_HOOK`/`BARRIER`/`PAPER`/
+  `SUNFLOWER`/`AMETHYST_SHARD` constant writes, `generateItemKey`, DB `requested_material_key`
+  (`ItemKey` is a type-level matching key; `matches()` ignores data by design), `SpawnManager`
+  template copy, `AmethystToolsManager` read default. Category C: all display/log/suffix-matcher
+  `getType().name()` usages and the read-path parsers. The worth-key derivations
+  (`ShopManager`/`WorthManager` `item.getType().name()`) are read-side matchers, flagged for a later
+  batch to route through `configName`.
+* **Round-trip proof** (harness extracts `PANE_DATA` from the real file and asserts the edited code
+  fragments): `configName` table verified for SGP +7/+15/+14/+5/+0 and `HOPPER`/`WATCH`/`INK_SACK`/
+  `STAINED_CLAY`; full cycle alias → `resolve` → Material+data → `ItemStack` → `configName` → alias
+  proven for GRAY, BLACK, RED, LIME; `HOPPER`, `WATCH`, `STONE` and bare `STAINED_GLASS_PANE`
+  round-trip unchanged; filler write ↔ `STAINED_GLASS_PANE + 15`; unknown/blank/null → `null` so every
+  caller keeps its fallback semantics.
+* **Validation:** tree-sitter 0.26.0 + tree-sitter-java 0.23.5, full-buffer parse of all **422**
+  src/main files — 0 parse throws, 0 ERROR/MISSING, 0 delimiter imbalance; duplicate-declaration and
+  javac-invalid marker scans byte-identical to pristine master `ee5872e` (the 9 baseline hits are
+  scanner false-positives: varargs overload collapse, enum-constant method bodies, `AtomicBoolean;`
+  import substring, `for(;;)`); unresolved-name scan on the 3 changed files identical to master;
+  `git diff --check` clean. Protections: `Material.isAir()` = 103, SGP fill data 7 ×61 / 15 ×22 /
+  8 ×1 / 14 ×3 / 5 ×2, `INK_SACK` 19, `WATCH` 7, `MOB_SPAWNER` 5, `BOOK_AND_QUILL` 5, `EYE_OF_ENDER` 2,
+  `EXP_BOTTLE` 2, `GRASS` 1 — all pre/post identical; `src/main/resources`, `src/test`, no dyes,
+  skulls, terracotta, `SPAWNER`/`CLOCK` or `LIGHT_GRAY`/`LIGHT_BLUE`/`YELLOW` changes.
+* **Follow-up inventory (not started):** the ~47 config/default refs plus their read-path parsers
+  (`CrateManager.parseMaterial` raw `valueOf`, the `Material.GRAY/LIME/RED/BLACK_STAINED_GLASS_PANE`
+  fallback constants — need the Icon migration with data-carrying `DisplayItem`/`*MenuSettings`);
+  worth-key derivation through `configName`; `ItemKey` pane-colour identity; `SUNFLOWER`/`AMETHYST_SHARD`
+  name mapping.
 
 ---
 
