@@ -234,16 +234,23 @@ public final class LegacyMaterialSupport {
     }
 
     /**
-     * The configuration name for an item. A coloured pane is written back as its flattened 1.13+
-     * colour name so {@link #resolve(String)} restores the same Material and data later; every
-     * other item keeps using the Material name exactly as {@code getType().name()} does today.
+     * The configuration name for an item. A pane whose colour lives in the legacy data value is
+     * written back as its flattened 1.13+ colour name so {@link #resolve(String)} restores the same
+     * Material and data later; every other item keeps using the Material name exactly as
+     * {@code getType().name()} does today.
+     *
+     * <p>A pane with data {@code 0} deliberately keeps the bare {@code STAINED_GLASS_PANE} name:
+     * {@code 0} is the shared default of the whole family, both spellings resolve to the identical
+     * {@code STAINED_GLASS_PANE} + 0 icon (see {@link Icon#equals(Object)}), and values written by
+     * {@code getType().name()} stay byte-identical. Only a colour that would actually be lost is
+     * upgraded to the flattened alias, so non-pane items are never rewritten.</p>
      */
     public static String configName(ItemStack item) {
         if (item == null || item.getType() == null) {
             return null;
         }
         Material type = item.getType();
-        if (type == PANE_MATERIAL) {
+        if (type == PANE_MATERIAL && item.getDurability() != 0) {
             String color = PANE_COLOR_BY_DATA.get(Short.valueOf(item.getDurability()));
             if (color != null) {
                 return color + PANE_SUFFIX;

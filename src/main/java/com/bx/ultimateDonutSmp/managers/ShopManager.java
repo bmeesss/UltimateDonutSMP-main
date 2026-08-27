@@ -14,6 +14,7 @@ import com.bx.ultimateDonutSmp.storage.ShopPreferenceRepository;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
@@ -1546,7 +1547,10 @@ public final class PricedItem {
         ItemMeta meta = storedItem.getItemMeta();
         String displayName = editorDisplayName(meta, storedItem.getType());
 
-        shopConfig.set(path + ".MATERIAL", storedItem.getType().name());
+        // configName preserves a coloured pane's legacy data value in the written Material name
+        // (the flattened 1.13+ spelling a modern build wrote); non-pane items still store
+        // getType().name(), and the authoritative round trip stays ITEM-DATA.
+        shopConfig.set(path + ".MATERIAL", LegacyMaterialSupport.configName(storedItem));
         shopConfig.set(path + ".DISPLAY-NAME", displayName);
         shopConfig.set(path + ".SLOT", slot);
         shopConfig.set(path + ".PRICE-PER-UNIT", resolvedPrice);
