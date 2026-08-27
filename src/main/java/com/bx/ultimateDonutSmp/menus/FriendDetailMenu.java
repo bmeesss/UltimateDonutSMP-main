@@ -71,13 +71,15 @@ public class FriendDetailMenu extends BaseMenu {
             );
         } else if (isFollower) {
             actionItem = ItemUtils.createItem(
-                    Material.LIME_DYE,
+                    Material.INK_SACK,
+                    (short) 10,
                     "&aFollow back",
                     java.util.Collections.singletonList("&7Click to follow back " + targetName)
             );
         } else {
             actionItem = ItemUtils.createItem(
-                    Material.GRAY_DYE,
+                    Material.INK_SACK,
+                    (short) 8,
                     "&aFollow player",
                     java.util.Collections.singletonList("&7Click to follow " + targetName)
             );
@@ -96,7 +98,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 13. Transactions
         set(13, ItemUtils.createItem(
-                transactions ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                transactions ? (short) 10 : (short) 8,
                 "&eTransactions",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (transactions ? "&aOn" : "&cOff"), 
@@ -106,7 +109,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 14. Messages
         set(14, ItemUtils.createItem(
-                messages ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                messages ? (short) 10 : (short) 8,
                 "&eMessages",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (messages ? "&aOn" : "&cOff"), 
@@ -116,7 +120,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 15. Payments
         set(15, ItemUtils.createItem(
-                payments ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                payments ? (short) 10 : (short) 8,
                 "&ePayments",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (payments ? "&aOn" : "&cOff"), 
@@ -126,7 +131,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 16. Activity
         set(16, ItemUtils.createItem(
-                activity ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                activity ? (short) 10 : (short) 8,
                 "&eActivity",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (activity ? "&aOn" : "&cOff"), 
@@ -136,7 +142,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 22. TPA Auto Accept
         set(22, ItemUtils.createItem(
-                tpaAuto ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                tpaAuto ? (short) 10 : (short) 8,
                 "&eTPA auto accept",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (tpaAuto ? "&aOn" : "&cOff"), 
@@ -146,7 +153,8 @@ public class FriendDetailMenu extends BaseMenu {
 
         // 23. Teleport Requests
         set(23, ItemUtils.createItem(
-                teleport ? Material.LIME_DYE : Material.GRAY_DYE,
+                Material.INK_SACK,
+                teleport ? (short) 10 : (short) 8,
                 "&eTeleport requests",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Currently: " + (teleport ? "&aOn" : "&cOff"), 

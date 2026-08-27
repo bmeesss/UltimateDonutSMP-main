@@ -74,7 +74,7 @@ public class ServerInfoMenu extends BaseMenu {
                 continue;
             }
 
-            set(button.slot(), ItemUtils.createItem(button.material(), button.displayName(), button.lore()));
+            set(button.slot(), ItemUtils.createItem(button.material(), button.data(), button.displayName(), button.lore()));
             slotActions.put(button.slot(), button.action());
             renderedButtons++;
         }
@@ -615,7 +615,8 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 14,
-                                Material.GRAY_DYE,
+                                Material.INK_SACK,
+                                (short) 8,
                                 "&#00A4FCSettings",
                                 Arrays.asList(
                                         "&fToggle personal options like",
@@ -639,7 +640,8 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 16,
-                                Material.PINK_DYE,
+                                Material.INK_SACK,
+                                (short) 9,
                                 "&#00A4FCSocial & media",
                                 Arrays.asList(
                                         "&fOpen server links and check",
@@ -688,13 +690,19 @@ public final class PageDefinition {
 public final class ButtonDefinition {
     private final int slot;
     private final Material material;
+    private final short data;
     private final String displayName;
     private final List<String> lore;
     private final ButtonAction action;
 
     public ButtonDefinition(int slot, Material material, String displayName, List<String> lore, ButtonAction action) {
+        this(slot, material, (short) 0, displayName, lore, action);
+    }
+
+    public ButtonDefinition(int slot, Material material, short data, String displayName, List<String> lore, ButtonAction action) {
         this.slot = slot;
         this.material = material;
+        this.data = data;
         this.displayName = displayName;
         this.lore = lore;
         this.action = action;
@@ -702,21 +710,22 @@ public final class ButtonDefinition {
 
     public int slot() { return slot; }
     public Material material() { return material; }
+    public short data() { return data; }
     public String displayName() { return displayName; }
     public List<String> lore() { return lore; }
     public ButtonAction action() { return action; }
 
     @Override public String toString() {
-        return "ButtonDefinition[slot=+slot, material=+material, displayName=+displayName, lore=+lore, action=+action]";
+        return "ButtonDefinition[slot=+slot, material=+material, data=+data, displayName=+displayName, lore=+lore, action=+action]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ButtonDefinition that = (ButtonDefinition) o;
-        return java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(material, that.material) && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(action, that.action);
+        return java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(material, that.material) && data == that.data && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(action, that.action);
     }
     @Override public int hashCode() {
-        return java.util.Objects.hash(slot, material, displayName, lore, action);
+        return java.util.Objects.hash(slot, material, data, displayName, lore, action);
     }
 }
 
