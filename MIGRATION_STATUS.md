@@ -26,7 +26,8 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batch 18 (4 files, 5 instanceof) | ✅ **COMPLETE / MERGED** (master `8f5c1f4`) — **non-deferred A+B backlog now 0** |
 | Java 8 — Batch 19 (5 deferred files: 2× `failedFuture`, 2× `String.repeat`, 1× `InputStream.readAllBytes`, 4× `var`, 3× instanceof) | ✅ **COMPLETE / MERGED** (PR #18, master `fd35a5e`) |
 | Java 8 — Batch 20 (text blocks: 4 files / 13 blocks → Java 8 concatenated literals) | ✅ **COMPLETE** (this checkpoint, against master `fd35a5e`) — 13/13 runtime contents byte-identical, **text blocks now 0** |
-| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** — `java.net.http` + virtual threads + `sb.isEmpty()` (`SellStatsExporter`), `RandomGenerator` bounded-long (`ShardManager`), instanceof (8 in `DatabaseManager` / `SellStatsExporter` / `ShardManager`), switch-in-expression-position (3 in `LeaderboardManager` ×2 / `TpaQueueMenu` ×1) |
+| Java 8 — Batch 21 (`SellStatsExporter` single-file complex migration) | ✅ **COMPLETE** (this checkpoint, against master `1373e84`) — unused `java.net.http` imports removed, virtual-thread executor → `newCachedThreadPool()`, `StringBuilder.isEmpty()` → `length()`, instanceof pattern → classic cast, `FileWriter(File, Charset)` → `OutputStreamWriter`+`FileOutputStream` |
+| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** — `RandomGenerator` bounded-long (`ShardManager`), instanceof (7 in `DatabaseManager` ×6 / `ShardManager` ×1), switch-in-expression-position (3 in `LeaderboardManager` ×2 / `TpaQueueMenu` ×1) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
@@ -366,6 +367,29 @@ intentionally removed — nothing restored (3 pre-existing `mongo` textual refer
 
 ---
 
+### Batch 21 — `SellStatsExporter` single-file Java 8 migration (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `1373e840df25b956e071fd338564723a504f3d80`. The Arena checkout sat on stale
+`b2e898b`; the migrated `SellStatsExporter` was backed up, the branch was reset to current master, and
+the file was restored on that clean tree. **Only this source file plus this status document** are in the
+checkpoint. Category C APIs and tests were not edited.
+
+`java.net.http` was **unused imports only** (no outbound client). Replacement architecture:
+
+| Issue | Replacement |
+|---|---|
+| unused `HttpClient` / `HttpRequest` / `HttpResponse` (+ unused `URI` / `Duration`) | imports removed |
+| `Executors.newVirtualThreadPerTaskExecutor()` as `HttpServer` executor | `Executors.newCachedThreadPool()` (unbounded-ish per-request workers; lifecycle still `setExecutor` + `stop(0)` + `shutdownNow()`) |
+| `StringBuilder.isEmpty()` in `prettify` | `sb.length() != 0` |
+| `instanceof Player player && player.isOnline()` | classic `instanceof` + explicit cast |
+| `FileWriter(File, Charset)` (Java 11) | `OutputStreamWriter(new FileOutputStream(htmlFile), StandardCharsets.UTF_8.name())` — create/truncate, UTF-8, try-with-resources unchanged |
+
+`SellStatsExporter` remaining listed Java 8 blockers: **0**. Spigot 1.12.2 API phase: **NOT STARTED**.
+
+**Build not verified — Maven/JDK unavailable.**
+
+---
+
 ## Remaining Java 8 inventory (superseded — historical Batch 13 measurement, see current figures below)
 
 Counts below are a **fresh re-measurement** on master `138898fb` (tree-sitter grammar + targeted regex).
@@ -428,33 +452,27 @@ instanceof patterns (8: `DatabaseManager` 6, `SellStatsExporter` 1, `ShardManage
 
 ---
 
-## Current Java 8 inventory (verified this checkpoint, post-Batch-20)
+## Current Java 8 inventory (verified this checkpoint, post-Batch-21)
 
-**18 raw scanner hits / 8 src/main files** — equivalently **18 semantic occurrences** (text blocks were
-26 of the previous 44 raw hits and are now **0**). Of those 18, **16 are genuine Java 8 blockers** — 1 is
-the known `SidebarSettings.lines()` false positive and 1 is `Files.readAllBytes`, a Java 7 API.
-Additionally **3 switch-in-expression-position sites** (Category A language form) remain deferred in
-`LeaderboardManager`/`TpaQueueMenu` (unchanged since the Batch-13 measurement).
-**Every remaining issue is in a deferred file or deferred category. The non-deferred mechanical backlog is 0.**
+`SellStatsExporter` listed blockers are **0**. Remaining work is still all deferred/complex files.
 
 | Construct | Hits | Where (all deferred) |
 |---|---:|---|
-| **text blocks** | **0** ✅ | **cleared by Batch 20** (was 26 raw hits / 13 blocks — 13/13 byte-identical conversions) |
-| instanceof patterns | 8 | `DatabaseManager` (6: lines 2489, 2597, 2740, 4845, 5412, 5542 post-Batch-20), `SellStatsExporter` (1: 225), `ShardManager` (1: 373) |
-| switch-in-expression-position (colon/break) | 3 | `LeaderboardManager` (2: 151, 277), `TpaQueueMenu` (1: 165) |
-| `java.net.http.*` | 3 | `SellStatsExporter` (imports, lines 22–24) |
+| **text blocks** | **0** ✅ | cleared by Batch 20 |
+| **java.net.http / virtual threads / StringBuilder.isEmpty / FileWriter(Charset)** | **0** ✅ | cleared by Batch 21 (`SellStatsExporter`) |
+| instanceof patterns | 7 | `DatabaseManager` (6), `ShardManager` (1) |
+| switch-in-expression-position (colon/break) | 3 | `LeaderboardManager` (2), `TpaQueueMenu` (1) |
 | `RandomGenerator` | 3 | `ShardManager` (bounded `nextLong` — needs Java 8 reimplementation) |
-| `StringBuilder.isEmpty()` (Java 15) | 1 | `SellStatsExporter:773` |
-| `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` custom type (`ScoreboardManager:552`) |
-| virtual threads | 1 | `SellStatsExporter:128` |
-| `Files.readAllBytes` | 1 | **not a blocker** — Java 7 API (`ConfigManager:506`) |
+| `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` (`ScoreboardManager`) |
+| `Files.readAllBytes` | 1 | **not a blocker** — Java 7 API (`ConfigManager`) |
 
-**Cleared by Batch 20:** text blocks 13 → 0 (26 → 0 raw delimiter hits) across `DatabaseManager` (5),
-`OrdersManager` (4), `AuctionHouseRepository` (3), `ShopPreferenceRepository` (1) — all 13 runtime
-strings proven byte-identical.
+**Cleared by Batch 21:** unused `java.net.http` imports, virtual-thread executor, `StringBuilder.isEmpty()`,
+instanceof pattern, Java 11 `FileWriter(File, Charset)` — all in `SellStatsExporter`.
+
+**Cleared by Batch 20:** text blocks 13 → 0.
 
 **Cleared by Batch 19:** `CompletableFuture.failedFuture` (2 → 0), `String.repeat` (2 → 0),
-`InputStream.readAllBytes` (1 → 0), `var` declarations (4 → 0), instanceof patterns (11 → 8).
+`InputStream.readAllBytes` (1 → 0), `var` declarations (4 → 0).
 
 Verified **zero** genuine occurrences of: bare `Stream.toList()` (all `.toList()` hits are
 `Collectors.toList()`), `String.strip()` (all hits are project `ColorUtils.strip(...)`),
@@ -516,12 +534,11 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
 3. ~~Small/medium deferred Java 8 APIs~~ — **done (Batch 19): `failedFuture`, `String.repeat`,
    `InputStream.readAllBytes`, `var`, 3 instanceof patterns.**
 4. Remaining deferred/complex Java 8 items, each needing design rather than mechanical edits:
-   - text blocks → string concatenation in the 4 SQL-schema files (`DatabaseManager`, `OrdersManager`,
-     `AuctionHouseRepository`, `ShopPreferenceRepository`) — 13 blocks
-   - `SellStatsExporter`: `java.net.http` → `HttpURLConnection`, virtual-thread executor → fixed pool,
-     `sb.isEmpty()` → `sb.length() == 0`, 1 instanceof pattern
+   - ~~text blocks~~ — **done (Batch 20).**
+   - ~~`SellStatsExporter`~~ — **done (Batch 21).**
    - `ShardManager`: `java.util.random.RandomGenerator` bounded `nextLong` reimplementation + 1 instanceof
    - `DatabaseManager`: 6 instanceof patterns
+   - switch-in-expression-position: `LeaderboardManager` ×2, `TpaQueueMenu` ×1
 5. Only then begin the Spigot 1.12.2 API phase (Materials first). **Category C: NOT STARTED.**
 
 > **Build not verified — Maven/JDK unavailable.** All structural validation is tree-sitter + static scans only.
