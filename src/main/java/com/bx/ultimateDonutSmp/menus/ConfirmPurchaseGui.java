@@ -55,7 +55,7 @@ public final class ConfirmPurchaseGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         set(AuctionHouseMenuSupport.slot(plugin, "GUI.CONFIRM_PURCHASE.ITEM", 11),
                 AuctionHouseMenuSupport.createListingDisplay(
                         plugin,

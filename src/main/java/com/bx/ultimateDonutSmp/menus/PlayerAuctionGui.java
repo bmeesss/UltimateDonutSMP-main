@@ -37,7 +37,7 @@ public final class PlayerAuctionGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         entriesBySlot.clear();
 
         List<Object> entries = AuctionPlayerEntries.combine(

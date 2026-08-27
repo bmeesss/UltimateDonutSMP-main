@@ -38,7 +38,7 @@ public class OrdersDeleteConfirmMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         Order order = plugin.getOrdersManager().getOrder(orderId);
         if (order != null) {
             set(13, OrdersMenuSupport.createOrderDisplay(plugin, plugin.getOrdersManager(), order, true));
