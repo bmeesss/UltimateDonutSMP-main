@@ -735,47 +735,44 @@ public final class PurchaseCommit {
 
     private void ensureTables() throws SQLException {
         try (Statement statement = connection().createStatement()) {
-            statement.execute(schemaAdapter.apply("""
-                    CREATE TABLE IF NOT EXISTS auction_listings (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      seller_uuid TEXT NOT NULL,
-                      seller_name TEXT NOT NULL,
-                      buyer_uuid TEXT,
-                      status TEXT NOT NULL,
-                      price REAL NOT NULL,
-                      tax REAL DEFAULT 0,
-                      item_data TEXT NOT NULL,
-                      created_at INTEGER NOT NULL,
-                      expires_at INTEGER NOT NULL,
-                      sold_at INTEGER DEFAULT 0,
-                      cancelled_at INTEGER DEFAULT 0,
-                      expired_at INTEGER DEFAULT 0,
-                      category TEXT DEFAULT 'ALL'
-                    )
-                    """));
-            statement.execute(schemaAdapter.apply("""
-                    CREATE TABLE IF NOT EXISTS player_auction_preferences (
-                      player_uuid TEXT PRIMARY KEY,
-                      fast_buy_enabled INTEGER DEFAULT 0,
-                      fast_sell_enabled INTEGER DEFAULT 0,
-                      last_duration_hours INTEGER DEFAULT 48,
-                      last_category TEXT DEFAULT 'ALL',
-                      last_price REAL DEFAULT 0
-                    )
-                    """));
-            statement.execute(schemaAdapter.apply("""
-                    CREATE TABLE IF NOT EXISTS auction_claims (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      claim_type TEXT NOT NULL,
-                      source_listing_id INTEGER DEFAULT 0,
-                      money_amount REAL DEFAULT 0,
-                      item_data TEXT,
-                      created_at INTEGER NOT NULL,
-                      claimed_at INTEGER DEFAULT 0,
-                      ready_at INTEGER DEFAULT 0
-                    )
-                    """));
+            statement.execute(schemaAdapter.apply(
+                    "CREATE TABLE IF NOT EXISTS auction_listings (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  seller_uuid TEXT NOT NULL,\n"
+                    + "  seller_name TEXT NOT NULL,\n"
+                    + "  buyer_uuid TEXT,\n"
+                    + "  status TEXT NOT NULL,\n"
+                    + "  price REAL NOT NULL,\n"
+                    + "  tax REAL DEFAULT 0,\n"
+                    + "  item_data TEXT NOT NULL,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  expires_at INTEGER NOT NULL,\n"
+                    + "  sold_at INTEGER DEFAULT 0,\n"
+                    + "  cancelled_at INTEGER DEFAULT 0,\n"
+                    + "  expired_at INTEGER DEFAULT 0,\n"
+                    + "  category TEXT DEFAULT 'ALL'\n"
+                    + ")\n"));
+            statement.execute(schemaAdapter.apply(
+                    "CREATE TABLE IF NOT EXISTS player_auction_preferences (\n"
+                    + "  player_uuid TEXT PRIMARY KEY,\n"
+                    + "  fast_buy_enabled INTEGER DEFAULT 0,\n"
+                    + "  fast_sell_enabled INTEGER DEFAULT 0,\n"
+                    + "  last_duration_hours INTEGER DEFAULT 48,\n"
+                    + "  last_category TEXT DEFAULT 'ALL',\n"
+                    + "  last_price REAL DEFAULT 0\n"
+                    + ")\n"));
+            statement.execute(schemaAdapter.apply(
+                    "CREATE TABLE IF NOT EXISTS auction_claims (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  owner_uuid TEXT NOT NULL,\n"
+                    + "  claim_type TEXT NOT NULL,\n"
+                    + "  source_listing_id INTEGER DEFAULT 0,\n"
+                    + "  money_amount REAL DEFAULT 0,\n"
+                    + "  item_data TEXT,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  claimed_at INTEGER DEFAULT 0,\n"
+                    + "  ready_at INTEGER DEFAULT 0\n"
+                    + ")\n"));
         }
 
         addColumnIfMissing("auction_listings", "category", "TEXT DEFAULT 'ALL'");

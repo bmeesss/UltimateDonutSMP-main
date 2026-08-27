@@ -3827,59 +3827,55 @@ public class OrdersManager {
     private void ensureTables() {
         schemaReady = false;
         try (Statement statement = connection().createStatement()) {
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS orders (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      owner_name TEXT NOT NULL,
-                      requested_item_data TEXT NOT NULL,
-                      requested_material_key TEXT NOT NULL,
-                      category_key TEXT NOT NULL,
-                      status TEXT NOT NULL,
-                      requested_quantity INTEGER NOT NULL,
-                      delivered_quantity INTEGER NOT NULL DEFAULT 0,
-                      collected_quantity INTEGER NOT NULL DEFAULT 0,
-                      price_each REAL NOT NULL,
-                      total_budget REAL NOT NULL,
-                      paid_amount REAL NOT NULL DEFAULT 0,
-                      escrow_remaining REAL NOT NULL,
-                      created_at INTEGER NOT NULL,
-                      expires_at INTEGER NOT NULL,
-                      closed_at INTEGER DEFAULT 0
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_deliveries (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      order_id INTEGER NOT NULL,
-                      deliverer_uuid TEXT NOT NULL,
-                      deliverer_name TEXT NOT NULL,
-                      quantity INTEGER NOT NULL,
-                      payout REAL NOT NULL,
-                      created_at INTEGER NOT NULL
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_claims (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      order_id INTEGER NOT NULL,
-                      claim_type TEXT NOT NULL,
-                      item_data TEXT,
-                      money_amount REAL DEFAULT 0,
-                      created_at INTEGER NOT NULL,
-                      claimed_at INTEGER DEFAULT 0
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_ui_preferences (
-                      player_uuid TEXT PRIMARY KEY,
-                      main_sort TEXT NOT NULL,
-                      main_filter TEXT NOT NULL,
-                      item_sort TEXT NOT NULL,
-                      updated_at INTEGER NOT NULL
-                    )
-                    """);
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS orders (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  owner_uuid TEXT NOT NULL,\n"
+                    + "  owner_name TEXT NOT NULL,\n"
+                    + "  requested_item_data TEXT NOT NULL,\n"
+                    + "  requested_material_key TEXT NOT NULL,\n"
+                    + "  category_key TEXT NOT NULL,\n"
+                    + "  status TEXT NOT NULL,\n"
+                    + "  requested_quantity INTEGER NOT NULL,\n"
+                    + "  delivered_quantity INTEGER NOT NULL DEFAULT 0,\n"
+                    + "  collected_quantity INTEGER NOT NULL DEFAULT 0,\n"
+                    + "  price_each REAL NOT NULL,\n"
+                    + "  total_budget REAL NOT NULL,\n"
+                    + "  paid_amount REAL NOT NULL DEFAULT 0,\n"
+                    + "  escrow_remaining REAL NOT NULL,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  expires_at INTEGER NOT NULL,\n"
+                    + "  closed_at INTEGER DEFAULT 0\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_deliveries (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  order_id INTEGER NOT NULL,\n"
+                    + "  deliverer_uuid TEXT NOT NULL,\n"
+                    + "  deliverer_name TEXT NOT NULL,\n"
+                    + "  quantity INTEGER NOT NULL,\n"
+                    + "  payout REAL NOT NULL,\n"
+                    + "  created_at INTEGER NOT NULL\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_claims (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  owner_uuid TEXT NOT NULL,\n"
+                    + "  order_id INTEGER NOT NULL,\n"
+                    + "  claim_type TEXT NOT NULL,\n"
+                    + "  item_data TEXT,\n"
+                    + "  money_amount REAL DEFAULT 0,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  claimed_at INTEGER DEFAULT 0\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_ui_preferences (\n"
+                    + "  player_uuid TEXT PRIMARY KEY,\n"
+                    + "  main_sort TEXT NOT NULL,\n"
+                    + "  main_filter TEXT NOT NULL,\n"
+                    + "  item_sort TEXT NOT NULL,\n"
+                    + "  updated_at INTEGER NOT NULL\n"
+                    + ")\n");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_orders_status_expires on orders(status, expires_at)");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_orders_owner_status on orders(owner_uuid, status)");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_order_claims_owner_claimed on order_claims(owner_uuid, claimed_at)");

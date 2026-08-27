@@ -24,8 +24,9 @@ Source files: **421 src/main + 69 src/test**.
 | Batch 16 — javac-invalid corruption cleanup (FriendsCommand, TPACommand, SellCommand) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) — **0 markers remain repo-wide** |
 | Java 8 — Batch 17 (10 files, 10 instanceof) | ✅ **COMPLETE / MERGED** (master `8f5c1f4`) |
 | Java 8 — Batch 18 (4 files, 5 instanceof) | ✅ **COMPLETE / MERGED** (master `8f5c1f4`) — **non-deferred A+B backlog now 0** |
-| Java 8 — Batch 19 (5 deferred files: 2× `failedFuture`, 2× `String.repeat`, 1× `InputStream.readAllBytes`, 4× `var`, 3× instanceof) | ✅ **COMPLETE** (this checkpoint, re-derived against master `8f5c1f4`) |
-| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** — text blocks (4 files), `java.net.http` + virtual threads + `sb.isEmpty()` (`SellStatsExporter`), `RandomGenerator` bounded-long (`ShardManager`), instanceof (8 in `DatabaseManager` / `SellStatsExporter` / `ShardManager`) |
+| Java 8 — Batch 19 (5 deferred files: 2× `failedFuture`, 2× `String.repeat`, 1× `InputStream.readAllBytes`, 4× `var`, 3× instanceof) | ✅ **COMPLETE / MERGED** (PR #18, master `fd35a5e`) |
+| Java 8 — Batch 20 (text blocks: 4 files / 13 blocks → Java 8 concatenated literals) | ✅ **COMPLETE** (this checkpoint, against master `fd35a5e`) — 13/13 runtime contents byte-identical, **text blocks now 0** |
+| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** — `java.net.http` + virtual threads + `sb.isEmpty()` (`SellStatsExporter`), `RandomGenerator` bounded-long (`ShardManager`), instanceof (8 in `DatabaseManager` / `SellStatsExporter` / `ShardManager`), switch-in-expression-position (3 in `LeaderboardManager` ×2 / `TpaQueueMenu` ×1) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
@@ -50,6 +51,14 @@ was **discarded as the migration base**; master `138898fb` parses 421/421 clean.
 (125,411 `src/main` lines, duplicated method declarations, tree-sitter ERRORs). The 5 pending edits were
 backed up outside the repository, the branch was reset to the verified `origin/master`
 `8f5c1f4ab44f5aa52e9780db43659410976ecab6`, and every fix was re-derived against that clean tree.
+
+**Batch 20 baseline/validation:** work was performed directly on the verified `origin/master`
+`fd35a5e7d68b520728fcbea0133d9481ac45dde7` (Batch 19 merge) — re-verified this checkpoint:
+**421/421** `src/main` tree-sitter parse clean (large-buffer), **0** ERROR/MISSING nodes in all 4
+changed files, **0** delimiter imbalance, **0** type-scoped duplicate declarations, **0** javac-invalid
+markers repo-wide, `git diff --check` clean, all 8 restricted diff hunks contained strictly inside the 13
+original text-block spans (no non-text-block source edits), Category C markers byte-identical vs `HEAD`,
+no test changes.
 
 `src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
 modified in Batches 1–19.
@@ -318,6 +327,45 @@ Bukkit/Spigot, NMS, ProtocolLib or removed-system change; `SellStatsExporter`, `
 
 ---
 
+### Batch 20 — text blocks: 4 files, 13 blocks → Java 8 concatenated literals (this checkpoint)
+
+Baseline: `origin/master` `fd35a5e7d68b520728fcbea0133d9481ac45dde7`. Scope was **text blocks only**;
+all other Java 8 deferred constructs (instanceof, `var`, `RandomGenerator`, networking, virtual threads,
+`StringBuilder.isEmpty`, Category C APIs, tests) were explicitly out of scope and are untouched.
+
+| # | File / original lines | Containing method | Purpose |
+|---|---|---|---|
+| 1 | `managers/DatabaseManager.java` 1914–1931 | `savePlayer(PlayerData)` | JDBC DML: `REPLACE INTO players … VALUES (66 × ?)` |
+| 2 | 〃 2023–2035 | `countPlayersWithTrackedStats()` | JDBC query: `SELECT COUNT(*) … WHERE …` |
+| 3 | 〃 2040–2052 | `resetPlayerStats()` | JDBC DML: `UPDATE players SET …` |
+| 4 | 〃 4986–5004 | `resetForServerWipe(…)` | JDBC DML: `UPDATE players SET …` (server wipe) |
+| 5 | 〃 5182–5201 | `resetForPlayerWipe(…)` | JDBC DML: `UPDATE players SET … WHERE uuid = ?` |
+| 6–9 | `managers/OrdersManager.java` 3830–3882 | `ensureTables()` | Schema: `orders`, `order_deliveries`, `order_claims`, `order_ui_preferences` |
+| 10–12 | `storage/AuctionHouseRepository.java` 738–778 | `ensureTables()` | Schema: `auction_listings`, `player_auction_preferences`, `auction_claims` |
+| 13 | `storage/ShopPreferenceRepository.java` 132–138 | `ensureTables()` | Schema: `shop_favorites` |
+
+**Method (proof of semantic equivalence).** Before any edit, each block's exact runtime content was
+recorded by an independent JLS §3.10.6 interpreter (content starts immediately after the opening
+delimiter's line terminator; LF normalization → faithful `String.stripIndent` port incl. the
+closing-delimiter-line outdent rule → `translateEscapes`). All 13 blocks were pure ASCII: no tabs,
+no backslashes, no trailing whitespace, no embedded `"`. Each block was regenerated programmatically as
+one `"...\n"` literal per content line (158 literals, 5,261 chars; `+` continuation lines at indent +8,
+assignment sites inline, argument sites wrapped to the next line in the established Batch-19 style).
+A **second, independent** verifier (JLS §3.10.5/3.10.7 string-literal escapes; `\s`/line-continuation
+rejected) re-parsed each concatenation at its site and byte-compared against the pre-edit recordings.
+
+**Result: text blocks 13 → 0 (26 → 0 raw delimiter hits); 13/13 runtime contents byte-for-byte identical**
+(SHA-256 match per block), every space, internal SQL indent, `?` placeholder, quote, capitalization and
+trailing newline preserved — no SQL statement content changed. All 8 diff hunks provably contained inside
+the original text-block spans (no non-text-block edits). No helper methods introduced. MongoDB remains
+intentionally removed — nothing restored (3 pre-existing `mongo` textual references: `DatabaseManager`,
+`AutoSaveTask`, `database.yml` — untouched). No Materials/Bukkit/NMS/ProtocolLib/Adventure changes
+(Category C marker counts identical vs `HEAD`), no test changes.
+
+**Build not verified — Maven/JDK unavailable.**
+
+---
+
 ## Remaining Java 8 inventory (superseded — historical Batch 13 measurement, see current figures below)
 
 Counts below are a **fresh re-measurement** on master `138898fb` (tree-sitter grammar + targeted regex).
@@ -371,31 +419,39 @@ tree-sitter-tolerated but javac-invalid — fix in a near-term batch):
 (`menus/FriendsMenu.java` continue/break interleaving was inspected and is valid Java — not an artifact.)
 
 ### Deferred within the Java 8 phase (need design, not mechanical edits)
-`DatabaseManager` / `OrdersManager` / `AuctionHouseRepository` / `ShopPreferenceRepository` text blocks ·
-`SellStatsExporter` `java.net.http` + virtual threads + `StringBuilder.isEmpty()` · `ConfigManager.readAllBytes()` ·
+`SellStatsExporter` `java.net.http` + virtual threads + `StringBuilder.isEmpty()` ·
 `LeaderboardManager` + `TpaQueueMenu` switch-in-expression-position · `ShardManager` `RandomGenerator`
-(`nextLong(origin, bound)` needs a Java 8 bounded-long reimplementation — not trivial).
+(`nextLong(origin, bound)` needs a Java 8 bounded-long reimplementation — not trivial) ·
+instanceof patterns (8: `DatabaseManager` 6, `SellStatsExporter` 1, `ShardManager` 1 — deferred-file batches).
+(text blocks cleared in Batch 20; `ConfigManager.readAllBytes()` cleared in Batch 19 — the remaining
+`Files.readAllBytes` at `ConfigManager:506` is a Java 7 API and not a blocker.)
 
 ---
 
-## Current Java 8 inventory (verified this checkpoint, corrected type-aware scanner, post-Batch-19)
+## Current Java 8 inventory (verified this checkpoint, post-Batch-20)
 
-**44 raw scanner hits / 8 src/main files** — 36 Java 8 API hits + 8 instanceof patterns, equivalently
-**31 semantic occurrences** (each text block counts 2 delimiter hits: 13 blocks = 26 hits). Of those 31,
-**29 are genuine Java 8 blockers** — 1 is the known `SidebarSettings.lines()` false positive and 1 is
-`Files.readAllBytes`, a Java 7 API.
+**18 raw scanner hits / 8 src/main files** — equivalently **18 semantic occurrences** (text blocks were
+26 of the previous 44 raw hits and are now **0**). Of those 18, **16 are genuine Java 8 blockers** — 1 is
+the known `SidebarSettings.lines()` false positive and 1 is `Files.readAllBytes`, a Java 7 API.
+Additionally **3 switch-in-expression-position sites** (Category A language form) remain deferred in
+`LeaderboardManager`/`TpaQueueMenu` (unchanged since the Batch-13 measurement).
 **Every remaining issue is in a deferred file or deferred category. The non-deferred mechanical backlog is 0.**
 
 | Construct | Hits | Where (all deferred) |
 |---|---:|---|
-| text blocks | 26 (13 blocks) | `DatabaseManager` (5), `OrdersManager` (4), `AuctionHouseRepository` (3), `ShopPreferenceRepository` (1) |
-| instanceof patterns | 8 | `DatabaseManager` (6: lines 2495, 2603, 2746, 4851, 5420, 5550), `SellStatsExporter` (1: 225), `ShardManager` (1: 373) |
+| **text blocks** | **0** ✅ | **cleared by Batch 20** (was 26 raw hits / 13 blocks — 13/13 byte-identical conversions) |
+| instanceof patterns | 8 | `DatabaseManager` (6: lines 2489, 2597, 2740, 4845, 5412, 5542 post-Batch-20), `SellStatsExporter` (1: 225), `ShardManager` (1: 373) |
+| switch-in-expression-position (colon/break) | 3 | `LeaderboardManager` (2: 151, 277), `TpaQueueMenu` (1: 165) |
 | `java.net.http.*` | 3 | `SellStatsExporter` (imports, lines 22–24) |
 | `RandomGenerator` | 3 | `ShardManager` (bounded `nextLong` — needs Java 8 reimplementation) |
 | `StringBuilder.isEmpty()` (Java 15) | 1 | `SellStatsExporter:773` |
 | `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` custom type (`ScoreboardManager:552`) |
 | virtual threads | 1 | `SellStatsExporter:128` |
 | `Files.readAllBytes` | 1 | **not a blocker** — Java 7 API (`ConfigManager:506`) |
+
+**Cleared by Batch 20:** text blocks 13 → 0 (26 → 0 raw delimiter hits) across `DatabaseManager` (5),
+`OrdersManager` (4), `AuctionHouseRepository` (3), `ShopPreferenceRepository` (1) — all 13 runtime
+strings proven byte-identical.
 
 **Cleared by Batch 19:** `CompletableFuture.failedFuture` (2 → 0), `String.repeat` (2 → 0),
 `InputStream.readAllBytes` (1 → 0), `var` declarations (4 → 0), instanceof patterns (11 → 8).
