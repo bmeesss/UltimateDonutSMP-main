@@ -11,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
@@ -102,9 +103,11 @@ public class BountyConfirmMenu extends BaseMenu {
                 "{amount}", plugin.getCurrencyManager().formatMoney(amount)
         );
 
-        if (!(item.getItemMeta() instanceof SkullMeta meta)) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof SkullMeta)) {
             return item;
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetUuid);
         meta.setOwningPlayer(target);

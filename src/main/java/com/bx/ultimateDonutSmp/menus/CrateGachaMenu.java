@@ -116,7 +116,8 @@ public class CrateGachaMenu extends BaseMenu {
                 return;
             }
 
-            if (!(player.getOpenInventory().getTopInventory().getHolder() instanceof CrateGachaMenu menu) || menu != this) {
+            org.bukkit.inventory.InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder();
+            if (!(holder instanceof CrateGachaMenu) || holder != this) {
                 if (allowClose || finished) {
                     cancelSpin();
                 }

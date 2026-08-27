@@ -73,9 +73,10 @@ public class ShopEditorMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         int rawSlot = event.getRawSlot();
         if (rawSlot >= 0 && rawSlot < inventory.getSize()) {

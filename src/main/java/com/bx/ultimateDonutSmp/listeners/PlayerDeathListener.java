@@ -254,9 +254,10 @@ public class PlayerDeathListener implements Listener {
     }
 
     private String resolveNonPlayerKillerName(EntityDamageEvent damageCause, Player victim) {
-        if (!(damageCause instanceof EntityDamageByEntityEvent entityDamage)) {
+        if (!(damageCause instanceof EntityDamageByEntityEvent)) {
             return null;
         }
+        EntityDamageByEntityEvent entityDamage = (EntityDamageByEntityEvent) damageCause;
 
         Entity damager = entityDamage.getDamager();
         if (damager instanceof Player) {

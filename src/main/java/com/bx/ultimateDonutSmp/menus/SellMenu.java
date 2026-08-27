@@ -99,9 +99,10 @@ public class SellMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (event.isShiftClick()) {
             plugin.getSpigotScheduler().runEntityLater(player, player::updateInventory, 1L);
