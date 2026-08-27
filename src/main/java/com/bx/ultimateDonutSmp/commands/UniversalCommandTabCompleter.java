@@ -188,9 +188,10 @@ public class UniversalCommandTabCompleter implements TabCompleter {
     }
 
     private List<String> completeTeam(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             return java.util.Collections.emptyList();
         }
+        Player player = (Player) sender;
         if (args.length == 1) {
             return partial(args[0], TEAM_SUBCOMMANDS);
         }
@@ -219,9 +220,10 @@ public class UniversalCommandTabCompleter implements TabCompleter {
     }
 
     private List<String> completeHome(CommandSender sender, String commandName, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             return java.util.Collections.emptyList();
         }
+        Player player = (Player) sender;
         if (args.length != 1) {
             return java.util.Collections.emptyList();
         }
@@ -511,7 +513,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
     }
 
     private List<String> onlinePlayerNames(CommandSender sender, boolean includeSelf) {
-        UUID senderUuid = sender instanceof Player player ? player.getUniqueId() : null;
+        UUID senderUuid = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
         List<String> names = new ArrayList<>();
         for (String name : plugin.getHideManager().onlineNames(sender)) {
             Player player = plugin.getHideManager().findOnlinePlayer(sender, name);
@@ -527,7 +529,7 @@ public class UniversalCommandTabCompleter implements TabCompleter {
     }
 
     private List<String> knownPlayerNames(CommandSender sender, boolean includeSelf) {
-        UUID senderUuid = sender instanceof Player player ? player.getUniqueId() : null;
+        UUID senderUuid = sender instanceof Player ? ((Player) sender).getUniqueId() : null;
         Set<String> names = new LinkedHashSet<>(onlinePlayerNames(sender, includeSelf));
         if (plugin.getPlayerDataManager() == null) {
             return new ArrayList<>(names);

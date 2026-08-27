@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.Arrays;
 
@@ -212,10 +213,12 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can open the crates menu."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         new CratesMenu(plugin).open(player);
         return true;
@@ -260,10 +263,12 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
     }
 
     private boolean handleOpen(CommandSender sender, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can open crates."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         if (args.length < 2) {
             sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " open <crate>"));
@@ -466,10 +471,12 @@ public class CrateCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can use /crate " + mode.commandName + "."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         if (args.length < 2) {
             sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " " + mode.commandName + " <crate> [slot]"));
@@ -567,10 +574,12 @@ switch (mode) {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can bind crate chests."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         if (args.length < 2) {
             sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " bind <crate|cancel>"));
@@ -621,10 +630,12 @@ switch (mode) {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can unbind crate chests by looking at them. use: /crate unbind <world> <x> <y> <z>"));
             return true;
         }
+
+        Player player = (Player) sender;
 
         Block target = getTargetBlock(player);
         if (target == null) {
@@ -654,15 +665,15 @@ switch (mode) {
             return true;
         }
 
-        var bound = plugin.getCrateManager().getBoundBlockIds();
+        Map<CrateManager.CrateBlockKey, String> bound = plugin.getCrateManager().getBoundBlockIds();
         if (bound.isEmpty()) {
             sender.sendMessage(ColorUtils.toComponent("&cNo crates are currently bound."));
             return true;
         }
 
         sender.sendMessage(ColorUtils.toComponent("&8&m-------- &bBound crates &8&m--------"));
-        for (var entry : bound.entrySet()) {
-            var key = entry.getKey();
+        for (Map.Entry<CrateManager.CrateBlockKey, String> entry : bound.entrySet()) {
+            CrateManager.CrateBlockKey key = entry.getKey();
             sender.sendMessage(ColorUtils.toComponent("&7- &f" + key.world() + " &7(&f" + key.x() + "," + key.y() + "," + key.z() + "&7) -> &b" + entry.getValue()));
         }
         sender.sendMessage(ColorUtils.toComponent("&8&m--------------------------------"));
@@ -683,10 +694,12 @@ switch (mode) {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can inspect crate chests."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         Block target = getTargetBlock(player);
         if (target == null) {
@@ -773,10 +786,12 @@ switch (mode) {
     }
 
     private boolean openKeysMenu(CommandSender sender) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can view crate keys."));
             return true;
         }
+
+        Player player = (Player) sender;
 
         new KeysMenu(plugin).open(player);
         return true;

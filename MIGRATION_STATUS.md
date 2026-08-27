@@ -2,114 +2,161 @@
 
 Target (from `pom.xml`): Java 8 (`maven.compiler.source/target = 1.8`), Spigot API `1.12.2-R0.1-SNAPSHOT`,
 ProtocolLib 5.3.0 (provided), Adventure MiniMessage 4.14.0 (shaded), Vault/LuckPerms/PlaceholderAPI (provided),
-SQLite/MySQL/HikariCP (bundled). **No MongoDB driver in pom** → any `com.mongodb` import is a hard compile error.
+SQLite/MySQL/HikariCP (bundled).
 
-Source files: 421 main + 69 test. Files with ≥1 Java-8 blocker: **152** (after Java 8 Batch 1; see scan below).
+Source files: **421 src/main + 69 src/test**.
 
-## Current checkpoint
+## Phase overview
 
-- **Structural phase: COMPLETE** — 421/421 `src/main` Java files parse successfully (tree-sitter-java), 0 structural/parser failures, 0 unbalanced files, 0 duplicate methods/classes/fields.
-- **Java 8 Batch 1: COMPLETE** — **48 Java 8 incompatibilities fixed** across 10 files (37 `instanceof` pattern matches → classic `instanceof` + explicit cast, 11 `var` declarations → explicit declared types resolved from the declaring signatures).
-- **Java 8 inventory: 162 files / 392 occurrences before Batch 1 → 152 files / 344 occurrences after.**
-- **Spigot 1.12.2 API migration: NOT STARTED.**
+| Phase | Status |
+|---|---|
+| Structural repair / parser cleanup | ✅ **COMPLETE** |
+| Java 8 — Batch 1 | ✅ **COMPLETE / MERGED** (PR #10, commit `d004861`) |
+| Java 8 — Batch 2 | ✅ **COMPLETE** |
+| Java 8 — Batch 3 | ✅ **COMPLETE** |
+| Java 8 — remaining batches | ⏳ IN PROGRESS (see inventory below) |
+| Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
+| NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
+| Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
-Verification is static only — `javac`/Maven are unavailable in the working environment, so **no compilation is claimed**.
+## Structural health (verified this checkpoint)
 
-### Java 8 Batch 1 files (10)
+- **421/421** `src/main` files parse clean (tree-sitter-java: 0 ERROR nodes, 0 MISSING nodes)
+- **0** delimiter imbalance (brace / paren / bracket, comment- and string-aware)
+- **0** duplicate methods, constructors, classes or fields (varargs-aware signature comparison)
+- `git diff --check` clean
 
-`utils/ShulkerBoxSupport.java` · `commands/FeedCommand.java` · `commands/HealCommand.java` · `commands/GodModeCommand.java` ·
-`listeners/GodModeListener.java` · `listeners/InventoryClickListener.java` · `commands/SpawnerCommand.java` ·
-`hooks/VaultEconomyHook.java` · `listeners/FreezeListener.java` · `utils/SignInputUtil.java`
+`src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
+modified in Batch 1, 2 or 3.
 
-### Remaining Java 8 inventory — 152 files / 344 occurrences
+---
 
-| Category | Files | Occ. |
+## Completed batches
+
+### Batch 1 — merged in PR #10 (43 files)
+`var` → explicit types and `instanceof` pattern matching → explicit casts, plus removal of duplicated/corrupted
+blocks left over from the structural phase.
+
+### Batch 2 — 9 files, 50 occurrences
+| File | Fixes |
+|---|---|
+| `menus/ServerInfoMenu.java` | 17× `List.of(...)` → `Arrays.asList(...)`, 2× `StringBuilder.isEmpty()` |
+| `commands/GamemodeCommand.java` | 6× instanceof pattern |
+| `managers/FreezeManager.java` | 6× instanceof pattern |
+| `commands/UltimateDonutSmpCommand.java` | 4× instanceof pattern |
+| `listeners/ChatListener.java` | 3× `var` → `BaseComponent[]` |
+| `managers/BountyManager.java` | 3× `var` → `HideState` / `EconomyTransactionResult` |
+| `managers/ServerWipeManager.java` | 3× `Path.of(...)` → `Paths.get(...)` |
+| `commands/FindPlayerCommand.java` | 2× `StringBuilder.isEmpty()`, 1× instanceof pattern |
+| `commands/ReportCommand.java` | 1× `StringBuilder.isEmpty()`, 2× instanceof pattern |
+
+### Batch 3 — 10 files, 70 occurrences
+| File | Fixes |
+|---|---|
+| `managers/TablistManager.java` | 13× instanceof pattern |
+| `utils/TablistComponentUpdater.java` | 11× instanceof pattern, 1× `List.getFirst()` |
+| `commands/CrateCommand.java` | 7× instanceof pattern, 3× `var` |
+| `managers/ShopManager.java` | 2× instanceof pattern, 7× `var` |
+| `managers/SpawnerManager.java` | 3× instanceof pattern, 1× `var`, 1× `StringBuilder.isEmpty()`, 1× `Objects.requireNonNullElse()`, 1× `List.getFirst()` |
+| `managers/StaffModeManager.java` | 5× instanceof pattern |
+| `amethyst/AmethystToolsManager.java` | 4× instanceof pattern |
+| `amethyst/AmethystToolsListener.java` | 4× instanceof pattern |
+| `commands/UniversalCommandTabCompleter.java` | 4× instanceof pattern |
+| `managers/KeyAllManager.java` | 2× `List.getFirst()` |
+
+Conversion rules applied in Batches 2–3: short-circuit order and control flow preserved; bindings re-declared
+after the guard so scope is unchanged; where the `instanceof` operand was a snapshot-producing call
+(`block.getState()`, `bsm.getBlockState()`, `item.getItemMeta()`, `event.getWhoClicked()`, `event.getEntity()`)
+a local now holds the **single** invocation instead of the cast re-invoking it.
+
+---
+
+## Remaining Java 8 inventory (verified scanner result, this checkpoint)
+
+### Category A — Java language
+
+| Construct | src/main occ | src/main files | src/test occ | src/test files |
+|---|---:|---:|---:|---:|
+| instanceof pattern matching | 140 | 98 | 6 | 2 |
+| `var` declarations | 35 | 24 | 5 | 4 |
+| switch expressions | 3 | 2 | 0 | 0 |
+| text blocks | 13 | 4 | 18 | 5 |
+| arrow switch cases / records / sealed types | **0** | 0 | 0 | 0 |
+| **Category A total** | **191** | **118** | **29** | **11** |
+
+### Category B — JDK 9+ standard library
+
+| API | src/main occ | src/main files | src/test occ | src/test files |
+|---|---:|---:|---:|---:|
+| `StringBuilder.isEmpty()` (15) | 13 | 11 | 0 | 0 |
+| `String.repeat()` (11) | 6 | 4 | 12 | 2 |
+| `RandomGenerator` / `Random.nextInt(a,b)` (17) | 5 | 3 | 0 | 0 |
+| `Collection.toArray(IntFunction)` (11) | 4 | 3 | 0 | 0 |
+| `java.net.http.*` (11) | 3 | 1 | 0 | 0 |
+| `CompletableFuture.failedFuture()` (9) | 2 | 2 | 0 | 0 |
+| `InputStream.readAllBytes()` (9) | 1 | 1 | 0 | 0 |
+| `Executors.newVirtualThreadPerTaskExecutor()` (21) | 1 | 1 | 0 | 0 |
+| `List.getFirst()` — SequencedCollection (21) | 1 | 1 | 1 | 1 |
+| `Path.of()` (11) | 0 | 0 | 19 | 12 |
+| `Files.readString/writeString` (11) | 0 | 0 | 4 | 3 |
+| `String.lines()` (11) | 0 | 0 | 1 | 1 |
+| **Category B total** | **36** | **23** | **37** | **16** |
+
+Verified **zero** occurrences: `Stream.toList()` (all 86 `.toList()` are `Collectors.toList()`),
+`String.isBlank()` (the only `isBlank` is a project method in `CuboidCommand`), `String.strip()`,
+`List/Set/Map.of` in src/main, `List/Set/Map.copyOf` (all `copyOf` are `Arrays.copyOf*` / `EnumSet.copyOf`),
+`Map.ofEntries/entry`, `Objects.requireNonNullElse`, `Optional` 9+ methods, `Predicate.not`,
+`Collectors.toUnmodifiable*`, `Stream.takeWhile/dropWhile/ofNullable`. All 26 `.reversed()` calls are
+`Comparator.reversed()` (Java 8) and are **not** SequencedCollection usages.
+
+**Combined A + B remaining: 227 occurrences across 135 unique `src/main` files** (plus 66 occurrences in
+27 test files, deliberately deferred — tests are not on the shaded-jar compile path).
+
+### Deferred within the Java 8 phase (need design, not mechanical edits)
+`DatabaseManager` / `OrdersManager` / `AuctionHouseRepository` / `ShopPreferenceRepository` text blocks ·
+`SellStatsExporter` `java.net.http` + virtual threads · `ConfigManager.readAllBytes()` ·
+`LeaderboardManager` + `TpaQueueMenu` switch expressions.
+
+---
+
+## Category C — Spigot 1.12.2 API migration: NOT STARTED
+
+Inventory only. **No Category C item has been modified in Batch 1, 2 or 3** — counts below are byte-identical
+to the pre-Java-8 baseline.
+
+| Item | src/main occ | src/main files |
 |---|---:|---:|
-| A2 `instanceof` pattern matching | 112 | 212 |
-| A3 `var` declarations | 29 | 52 |
-| A4 `StringBuilder.isEmpty()` (Java 15) | 15 | 19 |
-| A5 `List.of(...)` (Java 9) — `ServerInfoMenu` | 1 | 17 |
-| A7 text blocks (Java 15) — `DatabaseManager`, `OrdersManager`, `AuctionHouseRepository`, `ShopPreferenceRepository` | 4 | 13 |
-| A11 `List.getFirst()` (Java 21 `SequencedCollection`) | 4 | 5 |
-| A4 `String.repeat(int)` (Java 11) | 4 | 6 |
-| A11 `Collection.toArray(T[]::new)` (Java 11) | 3 | 4 |
-| A1 switch expressions — `LeaderboardManager`, `TpaQueueMenu` | 2 | 3 |
-| A10 `Path.of(...)` (Java 11) — `ServerWipeManager` | 1 | 3 |
-| A11 `java.net.http.*` (Java 11) — `SellStatsExporter` | 1 | 3 |
-| A9 `CompletableFuture.failedFuture` (Java 9) | 2 | 2 |
-| A9 `InputStream.readAllBytes()` (Java 9) — `ConfigManager` | 1 | 1 |
-| A9 `Objects.requireNonNullElse` (Java 9) — `SpawnerManager` | 1 | 1 |
+| Modern Materials (76 distinct constants not in the 1.12.2 enum) | 334 | 92 |
+| `Material.isAir()` | 108 | 39 |
+| PersistentDataContainer / PersistentDataType | 68 | 7 |
+| ProtocolLib 5.x API | 66 | 8 |
+| NMS via reflection strings | 64 | 5 |
+| Adventure / Kyori | 63 | 11 |
+| Modern entity classes (`TextDisplay`, `ItemDisplay`, …) | 59 | 4 |
+| `NamespacedKey` | 25 | 8 |
+| Modern Bukkit/Paper methods | 23 | 11 |
+| `Particle` | 16 | 4 |
+| `BlockData` | 15 | 3 |
+| `org.bukkit.Tag` / `Registry` | 5 | 3 |
+| `EquipmentSlot.OFF_HAND` · `Sound` · `EntityType` · `Attribute` | 2 · 2 · 2 · 1 | 1 · 2 · 2 · 1 |
+| **Category C total** | **853** (+16 in 5 test files) | **144** |
 
-**Verified absent from `src/main`** (context-checked, so no replacement is required): `String.isBlank()` (the only hits are a project helper in `CuboidCommand`), `String.strip()` (all hits are `ColorUtils.strip`), `Stream.toList()` (all 92 `.toList()` hits are `Collectors.toList()`, already Java 8), `List/Set/Map.copyOf` (all hits are `Arrays.copyOfRange`), `Optional.isEmpty()`, `Map.of`, `Files.readString/writeString`, `Predicate.not`, `Collectors.teeing/toUnmodifiable*`, records, sealed types, arrow-case `switch`, `yield`.
+Stained-glass panes alone account for 146 of the modern-Material occurrences and will be the largest single
+piece of the 1.12.2 API phase.
 
-> The Category A table below is the **original planning inventory** and is superseded by the measured numbers above.
+---
 
-## Category A — Pure Java 8 syntax/API incompatibilities (fixable mechanically)
+## Removed systems — must stay removed
+Duels/FFA · Discord + Discord bot · Redis/network · Floodgate/Bedrock · SkinsRestorer · Lunar/Apollo ·
+MongoDB · AuctionOrderBot.
 
-| # | Pattern | Files | Occ. | Fix (automatable?) |
-|---|---------|------:|-----:|--------------------|
-| A1 | Corrupted switch expressions (`return switch (…) { case X: …; break; … };`) | 66 | ~170 | classic `switch` + `return`/assign (automated converter) |
-| A1d | Arrow-case switch (`case X ->`) | 1 (PlayerRespawnListener) | 4 | manual |
-| A2 | `instanceof` pattern matching | 113 | 238 | `instanceof` + cast (automated converter) |
-| A3 | `var` declarations | 32 | 64 | explicit types (converter + project signature index) |
-| A4 | `String.isBlank()` | 142 | 632 | `trim().isEmpty()` (automated) |
-| A4 | `String.strip()/stripLeading/stripTrailing` | 20 | 63 | `trim()` (automated) |
-| A4 | `String.repeat()` / `String.lines()` | 6 | 14 | manual (small) |
-| A4 | `StringBuilder.isEmpty()` (Java 15) | 13 | ~13 | `length() == 0` (automated) |
-| A5 | `List/Set/Map.copyOf` | 12 | 25 | `new ArrayList/HashSet/HashMap<>(…)` (mostly automated) |
-| A5 | `List.of` | 1 (ServerInfoMenu) | 17 | `Arrays.asList` (manual) |
-| A6 | records | 0 | 0 | already expanded in earlier repairs |
-| A7 | text blocks | 4 (DatabaseManager, OrdersManager, AuctionHouseRepository, ShopPreferenceRepository) | 36 | string concatenation (converter) |
-| A9 | `Stream.toList()` | 44 | 96 | `collect(Collectors.toList())` (automated) |
-| A10 | `Files.readString/writeString` | 1 (ConfigManager) | 2 | manual (streams) |
-| A11 | `java.net.http.HttpClient` | 1 (SellStatsExporter) | 3 | manual (HttpURLConnection) |
+## Preserved systems — verified present
+AntiESP · SpawnStash · Shards · Amethyst Tools · FakePlayer · StaffMode · Shop · Auction House · Orders ·
+Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus.
 
-## Category B — JDK API incompatibilities
-Covered by A4/A5/A9/A10/A11 above (no additional separate B items found).
-
-## Category C — Spigot/Bukkit 1.13+ API incompatibilities (need 1.12.2-specific work)
-
-| Item | Scope | Replacement plan |
-|------|-------|------------------|
-| `Material.isAir()` | 39 files / 246 occ | `getType() == Material.AIR` (1.12.2 has only AIR) — **mechanical, done** |
-| `org.bukkit.Tag` (`Tag.SHULKER_BOXES`) | 2 files (CrateManager, CrashProtectionManager) | `ShulkerBoxSupport.isShulkerBox(...)` project util — **mechanical, done** |
-| Flattened stained glass panes `*_STAINED_GLASS_PANE` | ~150 occ (menus) | 1.12.2: `Material.STAINED_GLASS_PANE` + dye data (short). Needs `ItemUtils` dye-aware helper — **manual design step** |
-| Heads `PLAYER_HEAD/ZOMBIE_HEAD/SKELETON_SKULL/…` | ~36 occ | 1.12.2: `SKULL_ITEM` + damage 0–5 (+ SkullMeta owner) — **manual** |
-| 1.13+ items (`BARREL`, `RESPAWN_ANCHOR`, `AMETHYST_SHARD`, `DEEPSLATE`, `SPYGLASS`, `MACE`, `BRUSH`, `CRAFTER`, `TARGET`, `ENDER_EYE`, `TRIDENT`, `CROSSBOW`, `PHANTOM_MEMBRANE`, potion variants…) | ~30 occ | nearest 1.12.2 visual equivalents — **manual, item-by-item** |
-| `EquipmentSlot.OFF_HAND` / `InventoryCloseEvent.Reason` | 4 files | 1.12.2 equivalents / guard — **manual** |
-| Adventure components (`net.kyori.adventure`, `Component`, tablist) | 8 files (TablistManager, TablistComponentUpdater, AdventureHeadComponentBridge, …) | compiles (dep shaded) but no server-side support on 1.12.2; legacy `BaseComponent`/`ChatColor` paths already exist in `ColorUtils` — **manual review later** |
-
-## Category D — NMS / ProtocolLib incompatibilities
-- `ItemSerializationUtils`, `PacketSidebarRenderer`, `ScoreboardNumberHider`, `TablistComponentUpdater` reference NMS **via reflection** (version-tolerant) — verify at runtime; likely OK at compile time.
-- `FakePlayerProtocolLibBridge`, `HideProtocolLibBridge`, `MoneyNametagManager` use ProtocolLib 5.x wrapper API (`WrappedDataValue`, `WrappedEnumEntityUseAction`) — pom declares ProtocolLib 5.3.0; **dependency pinned, kept as-is per policy**.
-
-## Category E — Dead / removed-system leftovers (must clean, do NOT restore)
-- `DatabaseManager.java`: `com.mongodb.client.*` imports + `MONGODB` enum + `initializeMongoBridgeConnection()` + MONGODB config paths — **MongoDB was removed and its driver is not in pom ⇒ hard compile error. Stripped (SQLite/MySQL kept).**
-- `UltimateDonutSmpCommand.java`: REDIS config-key checks remain but already report "disabled (Redis removed)" — compiles, kept.
-- `lunar_teammates_enabled` DB column / `PlayerData` flag: plain data, not Lunar API — kept.
-- No Duel/FFA, Floodgate, SkinsRestorer, Apollo, Discord-bot or AuctionOrderBot sources found in `src/` (only cosmetic string mentions).
-
-## Category F — Preserved systems (verified present)
-AntiESP, SpawnStash, Shards, Amethyst Tools, FakePlayer, StaffMode, Shop, Auction House, Orders, Worth, Crates, Homes, RTP, Hide + all remaining core managers/menus.
-
-## Highest-risk files
-1. `managers/DatabaseManager.java` (~10k lines): corrupted switches, text blocks, duplicated methods, MongoDB leftovers.
-2. `managers/ConfigManager.java` (Files.readString), `managers/SellStatsExporter.java` (java.net.http).
-3. `UltimateDonutSmp.java` (main class, `var`).
-4. Tablist/Adventure cluster (runtime API gap on 1.12.2).
-5. Menus package (~150 stained-glass-pane icons) — biggest 1.12.2 API job.
-
-## Running checklist
-- [x] Repo inventory + categorisation (this file)
-- [x] CrateManager.java (previous turn)
-- [ ] A4/A5/A9 mechanical sweeps (isBlank, strip, toList, copyOf, sb.isEmpty)
-- [ ] A1 corrupted-switch converter (66 files)
-- [ ] A2 instanceof-pattern converter (113 files)
-- [ ] A3 var converter (32 files)
-- [ ] A7 text-block converter (4 files)
-- [ ] A10/A11 manual (ConfigManager, SellStatsExporter)
-- [ ] E: MongoDB strip in DatabaseManager
-- [ ] C-mechanical: isAir(), Tag.SHULKER_BOXES
-- [ ] Full-repo parser validation (main + test)
-- [ ] C-manual: stained glass panes / heads / modern items (next phase)
-- [ ] D: ProtocolLib/NMS runtime audit (after syntax is clean)
+## Next steps
+1. Java 8 Batch 4 — continue mechanical work: remaining `StringBuilder.isEmpty()` (13), `toArray(IntFunction)` (4),
+   `String.repeat()` (6), `RandomGenerator` (5), the last `List.getFirst()` in `ServerWipeManager`.
+2. Continue the instanceof-pattern / `var` sweep in controlled ≤10-file batches.
+3. Handle the deferred design-level Java 8 items.
+4. Only then begin the Spigot 1.12.2 API phase (Materials first).

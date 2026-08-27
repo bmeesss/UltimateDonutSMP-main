@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp.menus.SpawnerPanelMenu;
 import com.bx.ultimateDonutSmp.menus.SpawnerStorageMenu;
 import com.bx.ultimateDonutSmp.menus.SpawnerWorldListMenu;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.models.SellCategory;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
@@ -24,6 +25,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.Hopper;
 import org.bukkit.configuration.ConfigurationSection;
@@ -715,7 +717,8 @@ public final class WorldSummary {
             return fail("&cyou do not own that spawner.");
         }
 
-        String typeKey = Objects.requireNonNullElse(getSpawnerItemType(item), "");
+        String rawTypeKey = getSpawnerItemType(item);
+        String typeKey = rawTypeKey == null ? "" : rawTypeKey;
         if (!existing.getMobTypeKey().equalsIgnoreCase(typeKey)) {
             return fail("&cyou can only stack the same spawner type onto this block.");
         }
@@ -1202,7 +1205,7 @@ public final class SpawnerSellPreview {
             }
         });
 
-        var depositResult = plugin.getEconomyManager().deposit(player, totalPayout, EconomyReason.SELL_PAYOUT);
+        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, totalPayout, EconomyReason.SELL_PAYOUT);
         if (!depositResult.success()) {
             return failSell("&cfailed to pay out the spawner loot sale.");
         }
@@ -1487,9 +1490,11 @@ public final class SpawnerSellPreview {
         }
 
         org.bukkit.block.BlockState state = blockBelow.getState();
-        if (!(state instanceof Hopper hopper)) {
+        if (!(state instanceof Hopper)) {
             return;
         }
+
+        Hopper hopper = (Hopper) state;
 
         Inventory hopperInventory = hopper.getInventory();
         boolean changed = false;
@@ -1597,7 +1602,7 @@ public final class SpawnerSellPreview {
     public Location getSpawnerCenter(SpawnerInstance instance) {
         World world = Bukkit.getWorld(instance.getWorld());
         return world == null
-                ? new Location(Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().getFirst(), 0, 0, 0)
+                ? new Location(Bukkit.getWorlds().isEmpty() ? null : Bukkit.getWorlds().get(0), 0, 0, 0)
                 : new Location(world, instance.getX() + 0.5D, instance.getY() + 0.5D, instance.getZ() + 0.5D);
     }
 
@@ -1616,10 +1621,13 @@ public final class SpawnerSellPreview {
             return;
         }
 
-        if (!(block.getState() instanceof CreatureSpawner spawnerState)) {
+        BlockState blockState = block.getState();
+        if (!(blockState instanceof CreatureSpawner)) {
             player.sendBlockChange(block.getLocation(), block.getBlockData());
             return;
         }
+
+        CreatureSpawner spawnerState = (CreatureSpawner) blockState;
 
         SpawnerTypeDefinition definition = getTypeDefinition(instance.getMobTypeKey());
         if (definition == null) {
@@ -1960,10 +1968,12 @@ public final class SpawnerSellPreview {
             return;
         }
 
-        if (!(block.getState() instanceof CreatureSpawner spawnerState)) {
+        BlockState blockState = block.getState();
+        if (!(blockState instanceof CreatureSpawner)) {
             return;
         }
 
+        CreatureSpawner spawnerState = (CreatureSpawner) blockState;
         boolean updated = false;
         if (spawnerState.getSpawnedType() != definition.entityType()) {
             spawnerState.setSpawnedType(definition.entityType());
@@ -2034,7 +2044,7 @@ public final class SpawnerSellPreview {
             if (token.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(token.charAt(0))).append(token.substring(1));

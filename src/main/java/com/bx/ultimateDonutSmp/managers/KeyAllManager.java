@@ -293,7 +293,7 @@ public class KeyAllManager {
     private SelectedKeyReward selectWeightedRandom(List<SelectedKeyReward> rewards) {
         int totalWeight = rewards.stream().mapToInt(reward -> Math.max(1, reward.weight())).sum();
         if (totalWeight <= 0) {
-            return rewards.getFirst();
+            return rewards.get(0);
         }
 
         int pick = random.nextInt(totalWeight) + 1;
@@ -305,7 +305,7 @@ public class KeyAllManager {
             }
         }
 
-        return rewards.getFirst();
+        return rewards.get(0);
     }
 
     private void executeConfiguredCommands(Player player, SelectedKeyReward reward) {

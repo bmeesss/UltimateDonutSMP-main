@@ -348,9 +348,11 @@ public final class TablistComponentUpdater {
         Object profile = constructor.newInstance(id, name);
         Object propertyMap = gameProfileType.getMethod("getProperties").invoke(profile);
         Object profileProperties = unwrapOptional(invokeNoArg(playerHead, "profileProperties"));
-        if (!(profileProperties instanceof Iterable<?> iterableProperties)) {
+        if (!(profileProperties instanceof Iterable<?>)) {
             return profile;
         }
+
+        Iterable<?> iterableProperties = (Iterable<?>) profileProperties;
 
         for (Object profileProperty : iterableProperties) {
             String propertyName = getStringValue(profileProperty, "name");
@@ -1154,7 +1156,12 @@ public final class TablistComponentUpdater {
 
     private void replacePlayerInfoDisplayName(Object packet, Object displayName) throws ReflectiveOperationException {
         Object entriesObject = readPlayerInfoEntries(packet);
-        if (!(entriesObject instanceof List<?> entries) || entries.isEmpty()) {
+        if (!(entriesObject instanceof List<?>)) {
+            return;
+        }
+
+        List<?> entries = (List<?>) entriesObject;
+        if (entries.isEmpty()) {
             return;
         }
 
@@ -1197,8 +1204,11 @@ public final class TablistComponentUpdater {
                 }
                 field.setAccessible(true);
                 Object value = field.get(packet);
-                if (value instanceof List<?> list && !list.isEmpty()) {
-                    return list;
+                if (value instanceof List<?>) {
+                    List<?> list = (List<?>) value;
+                    if (!list.isEmpty()) {
+                        return list;
+                    }
                 }
             }
         }
@@ -1218,7 +1228,7 @@ public final class TablistComponentUpdater {
         try {
             method.setAccessible(true);
             Object value = method.invoke(packet);
-            if (value instanceof List<?> list && !list.isEmpty()) {
+            if (value instanceof List<?> && !((List<?>) value).isEmpty()) {
                 return value;
             }
         } catch (ReflectiveOperationException | RuntimeException ignored) {
@@ -1313,9 +1323,11 @@ public final class TablistComponentUpdater {
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private boolean replaceListContents(Object entriesObject, List<Object> replaced) {
-        if (!(entriesObject instanceof List entries)) {
+        if (!(entriesObject instanceof List)) {
             return false;
         }
+
+        List entries = (List) entriesObject;
 
         try {
             entries.clear();
@@ -1335,7 +1347,7 @@ public final class TablistComponentUpdater {
 
                 field.setAccessible(true);
                 Object value = field.get(packet);
-                if (value instanceof List<?> list && !list.isEmpty()) {
+                if (value instanceof List<?> && !((List<?>) value).isEmpty()) {
                     field.set(packet, replaced);
                     return;
                 }
@@ -1358,9 +1370,11 @@ public final class TablistComponentUpdater {
             Enum enumAction = (Enum) action;
             actionSet = EnumSet.noneOf(enumAction.getDeclaringClass());
             for (Object candidate : actions) {
-                if (candidate instanceof Enum candidateAction
-                        && candidateAction.getDeclaringClass() == enumAction.getDeclaringClass()) {
-                    actionSet.add(candidateAction);
+                if (candidate instanceof Enum) {
+                    Enum candidateAction = (Enum) candidate;
+                    if (candidateAction.getDeclaringClass() == enumAction.getDeclaringClass()) {
+                        actionSet.add(candidateAction);
+                    }
                 }
             }
         }
@@ -1412,7 +1426,7 @@ public final class TablistComponentUpdater {
 
     private Object findAction(Class<?> packetClass, String... names) {
         List<Object> actions = findActions(packetClass, names);
-        return actions.isEmpty() ? null : actions.getFirst();
+        return actions.isEmpty() ? null : actions.get(0);
     }
 
     private List<Object> findActions(Class<?> packetClass, String... names) {
@@ -1509,7 +1523,7 @@ public final class TablistComponentUpdater {
         }
 
         Object value = unwrapOptional(invokeNoArg(target, methodName));
-        return value instanceof String string ? string : null;
+        return value instanceof String ? (String) value : null;
     }
 
     private UUID getUuidValue(Object target, String methodName) throws ReflectiveOperationException {
@@ -1518,7 +1532,7 @@ public final class TablistComponentUpdater {
         }
 
         Object value = unwrapOptional(invokeNoArg(target, methodName));
-        return value instanceof UUID uuid ? uuid : null;
+        return value instanceof UUID ? (UUID) value : null;
     }
 
     private boolean getBooleanValue(Object target, String methodName) throws ReflectiveOperationException {
@@ -1527,7 +1541,7 @@ public final class TablistComponentUpdater {
         }
 
         Object value = unwrapOptional(invokeNoArg(target, methodName));
-        return value instanceof Boolean bool && bool;
+        return value instanceof Boolean && (Boolean) value;
     }
 
     private Object invokeNoArg(Object target, String name) throws ReflectiveOperationException {
@@ -1572,7 +1586,8 @@ public final class TablistComponentUpdater {
     }
 
     private Object unwrapOptional(Object value) {
-        if (value instanceof Optional<?> optional) {
+        if (value instanceof Optional<?>) {
+            Optional<?> optional = (Optional<?>) value;
             return optional.orElse(null);
         }
         return value;

@@ -806,9 +806,11 @@ public class TablistManager {
         }
 
         Object nodesObject = invokeNoArg(user, "getNodes", "nodes");
-        if (!(nodesObject instanceof Iterable<?> nodes)) {
+        if (!(nodesObject instanceof Iterable<?>)) {
             return Optional.empty();
         }
+
+        Iterable<?> nodes = (Iterable<?>) nodesObject;
 
         String normalized = PermissionUtils.normalizePermissionNode(permission);
         boolean matchedTrue = false;
@@ -824,7 +826,7 @@ public class TablistManager {
             }
 
             Object value = invokeNoArg(node, "getValue", "value");
-            boolean granted = !(value instanceof Boolean booleanValue) || booleanValue;
+            boolean granted = !(value instanceof Boolean) || (Boolean) value;
             if (!granted) {
                 return Optional.of(false);
             }
@@ -835,7 +837,7 @@ public class TablistManager {
 
     private boolean isLuckPermsNodeExpired(Object node) throws ReflectiveOperationException {
         Object expired = invokeNoArg(node, "hasExpired", "isExpired");
-        return expired instanceof Boolean value && value;
+        return expired instanceof Boolean && (Boolean) expired;
     }
 
     private Optional<Boolean> resolveLuckPermsPermissionData(Object permissionData, String permission)
@@ -896,7 +898,12 @@ public class TablistManager {
     private Optional<Boolean> resolveLuckPermsPermissionMap(Object permissionData, String normalizedPermission)
             throws ReflectiveOperationException {
         Object mapObject = invokeNoArg(permissionData, "getPermissionMap", "permissionMap");
-        if (!(mapObject instanceof Map<?, ?> permissions) || permissions.isEmpty()) {
+        if (!(mapObject instanceof Map<?, ?>)) {
+            return Optional.empty();
+        }
+
+        Map<?, ?> permissions = (Map<?, ?>) mapObject;
+        if (permissions.isEmpty()) {
             return Optional.empty();
         }
 
@@ -908,8 +915,8 @@ public class TablistManager {
             }
 
             Object rawValue = entry.getValue();
-            boolean value = rawValue instanceof Boolean booleanValue
-                    ? booleanValue
+            boolean value = rawValue instanceof Boolean
+                    ? (Boolean) rawValue
                     : Boolean.parseBoolean(String.valueOf(rawValue));
             if (!value) {
                 return Optional.of(false);
@@ -943,8 +950,8 @@ public class TablistManager {
             return Optional.of(booleanValue);
         }
 
-        String name = value instanceof Enum<?> enumValue
-                ? enumValue.name()
+        String name = value instanceof Enum<?>
+                ? ((Enum<?>) value).name()
                 : readStringNoArg(value, "name", "toString");
         if (name != null) {
             if (name.equalsIgnoreCase("TRUE")) {
@@ -956,7 +963,7 @@ public class TablistManager {
         }
 
         Object booleanResult = invokeNoArg(value, "asBoolean", "asBooleanValue");
-        return booleanResult instanceof Boolean result ? Optional.of(result) : Optional.empty();
+        return booleanResult instanceof Boolean ? Optional.of((Boolean) booleanResult) : Optional.empty();
     }
 
     private String resolveLuckPermsPrefix(Player player) {
@@ -1442,7 +1449,8 @@ public class TablistManager {
                     ? Bukkit.createPlayerProfile(playerName)
                     : Bukkit.createPlayerProfile(playerId);
             Object updateResult = invokeNoArg(profile, "update");
-            if (updateResult instanceof CompletableFuture<?> future) {
+            if (updateResult instanceof CompletableFuture<?>) {
+                CompletableFuture<?> future = (CompletableFuture<?>) updateResult;
                 Object updatedProfile = future.get(4L, TimeUnit.SECONDS);
                 SkinTexture texture = resolveProfileTexture(updatedProfile);
                 if (texture != null && texture.isValid()) {
@@ -1664,7 +1672,8 @@ public class TablistManager {
             return null;
         }
 
-        if (textures instanceof Iterable<?> iterable) {
+        if (textures instanceof Iterable<?>) {
+            Iterable<?> iterable = (Iterable<?>) textures;
             for (Object property : iterable) {
                 SkinTexture texture = extractSkinTexture(property);
                 if (texture != null && texture.isValid()) {
@@ -1694,7 +1703,8 @@ public class TablistManager {
             return null;
         }
 
-        if (source instanceof Map<?, ?> map) {
+        if (source instanceof Map<?, ?>) {
+            Map<?, ?> map = (Map<?, ?>) source;
             SkinTexture texture = extractSkinTextureFromMap(map);
             if (texture != null && texture.isValid()) {
                 return texture;
@@ -1780,7 +1790,7 @@ public class TablistManager {
 
     private String stringValue(Object value) {
         value = unwrapOptional(value);
-        return value instanceof CharSequence sequence ? sequence.toString() : null;
+        return value instanceof CharSequence ? ((CharSequence) value).toString() : null;
     }
 
     private Object invokeStaticNoArg(Class<?> type, String methodName) throws ReflectiveOperationException {
@@ -2008,11 +2018,12 @@ public class TablistManager {
     private String readStringNoArg(Object target, String... methodNames) throws ReflectiveOperationException {
         Object value = invokeNoArg(target, methodNames);
         value = unwrapOptional(value);
-        return value instanceof String string ? string : null;
+        return value instanceof String ? (String) value : null;
     }
 
     private Object unwrapOptional(Object value) {
-        if (value instanceof Optional<?> optional) {
+        if (value instanceof Optional<?>) {
+            Optional<?> optional = (Optional<?>) value;
             return optional.orElse(null);
         }
         return value;

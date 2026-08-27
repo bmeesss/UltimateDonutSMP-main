@@ -30,7 +30,8 @@ public class FindPlayerCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         if (args.length == 0) { player.sendMessage(ColorUtils.toComponent("&cUsage: /findplayer <player>")); return true; }
 
         Player target = plugin.getHideManager().findOnlinePlayer(player, args[0]);
@@ -128,7 +129,7 @@ public class FindPlayerCommand implements CommandExecutor {
             if (part.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -137,7 +138,7 @@ public class FindPlayerCommand implements CommandExecutor {
             }
         }
 
-        return builder.isEmpty() ? "unknown" : builder.toString();
+        return builder.length() == 0 ? "unknown" : builder.toString();
     }
 
 public final class LocationMessage {

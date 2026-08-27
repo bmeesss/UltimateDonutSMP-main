@@ -23,6 +23,7 @@ import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionType;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
@@ -382,13 +383,16 @@ public class AmethystToolsManager {
         }
 
         ItemMeta itemMeta = shulkerItem.getItemMeta();
-        if (!(itemMeta instanceof BlockStateMeta bsm)) {
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return false;
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return false;
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         ItemStack[] contents = box.getInventory().getContents();
         boolean changed = false;
@@ -426,13 +430,16 @@ public class AmethystToolsManager {
         }
 
         ItemMeta itemMeta = shulkerItem.getItemMeta();
-        if (!(itemMeta instanceof BlockStateMeta bsm)) {
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return false;
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return false;
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         ItemStack[] contents = box.getInventory().getContents();
         boolean changed = false;

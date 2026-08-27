@@ -162,11 +162,11 @@ public class StaffModeManager {
     }
 
     public boolean canUse(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getStaffPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getStaffPermission());
     }
 
     public boolean canAdmin(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getAdminPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getAdminPermission());
     }
 
     public boolean canUseVanish(Player player) {
@@ -186,9 +186,9 @@ public class StaffModeManager {
     }
 
     public boolean canManageOthers(CommandSender sender) {
-        return !(sender instanceof Player player)
-                || PermissionUtils.has(player, getOthersPermission())
-                || PermissionUtils.has(player, getAdminPermission());
+        return !(sender instanceof Player)
+                || PermissionUtils.has((Player) sender, getOthersPermission())
+                || PermissionUtils.has((Player) sender, getAdminPermission());
     }
 
     public boolean isInStaffMode(UUID uuid) {
@@ -717,7 +717,7 @@ public class StaffModeManager {
     public void notifyExternalToggle(CommandSender actor, Player target, boolean enabled) {
         String status = localizeStatus(enabled);
         String icon = localizeIcon(enabled);
-        String actorName = actor instanceof Player player ? player.getName() : actor.getName();
+        String actorName = actor instanceof Player ? ((Player) actor).getName() : actor.getName();
 
         if (actor instanceof Player) {
             Player player = (Player) actor;
@@ -754,7 +754,7 @@ public class StaffModeManager {
                 target.getName(),
                 icon
         );
-        UUID actorUuid = actor instanceof Player player ? player.getUniqueId() : null;
+        UUID actorUuid = actor instanceof Player ? ((Player) actor).getUniqueId() : null;
         broadcastToStaff(broadcast, actorUuid, target.getUniqueId());
     }
 
