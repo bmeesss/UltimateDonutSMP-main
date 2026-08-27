@@ -55,7 +55,7 @@ public class ServerInfoMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
         slotActions.clear();
         backSlot = -1;
         nextSlot = -1;

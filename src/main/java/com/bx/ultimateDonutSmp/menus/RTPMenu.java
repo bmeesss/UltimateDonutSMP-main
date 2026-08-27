@@ -23,7 +23,7 @@ public class RTPMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         if (plugin.getConfigManager().getRtp().getBoolean("RTP-MENU.PLACEHOLDER", true)) {
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
         }
 
         List<RTPManager.RTPDestination> destinations = plugin.getRtpManager().getMenuDestinations();

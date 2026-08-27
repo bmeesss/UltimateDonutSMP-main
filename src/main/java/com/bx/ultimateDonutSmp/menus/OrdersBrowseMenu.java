@@ -37,7 +37,7 @@ public class OrdersBrowseMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         OrdersManager manager = plugin.getOrdersManager();
         OrderUiState state = manager.getUiState(player.getUniqueId());
