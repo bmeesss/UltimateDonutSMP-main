@@ -3,6 +3,8 @@ package com.bx.ultimateDonutSmp.managers;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.Bounty;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
+import com.bx.ultimateDonutSmp.models.HideState;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
@@ -61,7 +63,7 @@ public class BountyManager {
         if (online != null) {
             return online.getUniqueId();
         }
-        var hiddenState = plugin.getHideManager().findState(input);
+        HideState hiddenState = plugin.getHideManager().findState(input);
         if (hiddenState != null
                 && (hiddenState.alias().equalsIgnoreCase(input)
                 || plugin.getHideManager().canSeeRealIdentity(viewer))) {
@@ -118,7 +120,7 @@ public class BountyManager {
             return PlacementResult.FAILED_FUNDS;
         }
 
-        var withdrawResult = plugin.getEconomyManager().withdraw(placer, amount, EconomyReason.BOUNTY_PLACE);
+        EconomyTransactionResult withdrawResult = plugin.getEconomyManager().withdraw(placer, amount, EconomyReason.BOUNTY_PLACE);
         if (!withdrawResult.success()) {
             return PlacementResult.FAILED_FUNDS;
         }
@@ -179,7 +181,7 @@ public class BountyManager {
             return 0;
         }
 
-        var depositResult = plugin.getEconomyManager().deposit(killer, bounty.getAmount(), EconomyReason.BOUNTY_REWARD);
+        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(killer, bounty.getAmount(), EconomyReason.BOUNTY_REWARD);
         if (!depositResult.success()) {
             return 0;
         }

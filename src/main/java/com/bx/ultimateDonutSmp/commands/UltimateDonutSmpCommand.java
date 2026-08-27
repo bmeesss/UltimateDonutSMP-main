@@ -108,12 +108,13 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
         }
 
         if (args.length == 1 || isGuiAlias(args[1])) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent(message("PLAYER-ONLY-GUI",
                         "&cOpen the stats wipe GUI in-game, or use /" + label + " statswipe <target> confirm.")));
                 return;
             }
 
+            Player player = (Player) sender;
             new StatsWipeMenu(plugin).open(player);
             return;
         }
@@ -341,11 +342,12 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     }
 
     private void handleSetupLocation(CommandSender sender, boolean spawn) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can save setup locations."));
             return;
         }
 
+        Player player = (Player) sender;
         Location location = player.getLocation();
         if (spawn) {
             SpawnManager.SetupLocationResult result = plugin.getSpawnManager().setSpawnLocation(location);
@@ -510,14 +512,15 @@ public class UltimateDonutSmpCommand implements CommandExecutor, TabCompleter {
     }
 
     private String formatAliases(Object rawAliases) {
-        if (rawAliases instanceof Collection<?> aliases) {
+        if (rawAliases instanceof Collection<?>) {
+            Collection<?> aliases = (Collection<?>) rawAliases;
             return aliases.stream()
                     .map(String::valueOf)
                     .reduce((left, right) -> left + ", " + right)
                     .orElse("");
         }
-        if (rawAliases instanceof String alias && !alias.trim().isEmpty()) {
-            return alias;
+        if (rawAliases instanceof String && !((String) rawAliases).trim().isEmpty()) {
+            return (String) rawAliases;
         }
         return "";
     }

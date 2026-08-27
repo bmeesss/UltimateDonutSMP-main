@@ -15,7 +15,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -349,10 +351,13 @@ public class AmethystToolsListener implements Listener {
             return;
         }
 
-        if (!(clicked.getState() instanceof org.bukkit.block.Container container)) {
+        org.bukkit.block.BlockState clickedState = clicked.getState();
+        if (!(clickedState instanceof org.bukkit.block.Container)) {
             player.sendMessage(ColorUtils.toComponent(manager.getMessage("SELL-NO-CHEST")));
             return;
         }
+
+        org.bukkit.block.Container container = (org.bukkit.block.Container) clickedState;
 
         Inventory containerInventory = container.getInventory();
         ShopManager.SellResult result = plugin.getShopManager().sellInventoryContents(
@@ -457,9 +462,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        HumanEntity clicker = event.getWhoClicked();
+        if (!(clicker instanceof Player)) {
             return;
         }
+        Player player = (Player) clicker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -521,9 +528,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        HumanEntity clicker = event.getWhoClicked();
+        if (!(clicker instanceof Player)) {
             return;
         }
+        Player player = (Player) clicker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -608,9 +617,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityPickupItem(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+        LivingEntity picker = event.getEntity();
+        if (!(picker instanceof Player)) {
             return;
         }
+        Player player = (Player) picker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }

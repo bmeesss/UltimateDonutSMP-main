@@ -6,6 +6,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.amethyst.AmethystToolType;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.models.SellCategory;
 import com.bx.ultimateDonutSmp.models.ShopPreference;
@@ -20,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -988,7 +990,7 @@ public final class AuctionQuote {
                 return failPurchase(item, amount, preview.totalPrice(), PurchaseFailureReason.NO_SHARDS);
             }
         } else {
-            var withdrawResult = plugin.getEconomyManager().withdraw(player, preview.totalPrice(), EconomyReason.SHOP_PURCHASE);
+            EconomyTransactionResult withdrawResult = plugin.getEconomyManager().withdraw(player, preview.totalPrice(), EconomyReason.SHOP_PURCHASE);
             if (!withdrawResult.success()) {
                 return failPurchase(item, amount, preview.totalPrice(), PurchaseFailureReason.NO_MONEY);
             }
@@ -1078,7 +1080,7 @@ public final class AuctionQuote {
         ManagedSpawnerReward spawnerReward = parseManagedSpawnerReward(item.command());
         if (spawnerReward != null) {
             try {
-                var result = plugin.getSpawnerManager().giveSpawner(player, spawnerReward.typeKey(), quantity);
+                SpawnerManager.ActionResult result = plugin.getSpawnerManager().giveSpawner(player, spawnerReward.typeKey(), quantity);
                 return result.success()
                         ? RewardDeliveryResult.ok()
                         : RewardDeliveryResult.failure(result.message());
@@ -1155,7 +1157,7 @@ public final class AuctionQuote {
             return;
         }
 
-        var refundResult = plugin.getEconomyManager().deposit(player, purchase.totalPrice(), EconomyReason.SHOP_REFUND);
+        EconomyTransactionResult refundResult = plugin.getEconomyManager().deposit(player, purchase.totalPrice(), EconomyReason.SHOP_REFUND);
         if (!refundResult.success()) {
             plugin.getLogger().warning("[ShopManager] Failed to refund shop purchase for "
                     + player.getName() + " after reward delivery failed.");
@@ -1818,7 +1820,9 @@ public final class PricedItem {
             return resolveEnchantedBookWorth(section, item);
         }
 
-        if (item.getItemMeta() instanceof PotionMeta meta) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta instanceof PotionMeta) {
+            PotionMeta meta = (PotionMeta) itemMeta;
             return resolvePotionWorth(section, item.getType(), meta);
         }
 
@@ -1826,13 +1830,19 @@ public final class PricedItem {
     }
 
     private double resolveEnchantedBookWorth(ConfigurationSection section, ItemStack item) {
-        if (!(item.getItemMeta() instanceof EnchantmentStorageMeta meta) || meta.getStoredEnchants().isEmpty()) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof EnchantmentStorageMeta)) {
+            return -1;
+        }
+
+        EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemMeta;
+        if (meta.getStoredEnchants().isEmpty()) {
             return -1;
         }
 
         double total = 0;
         boolean matched = false;
-        for (var enchantmentEntry : meta.getStoredEnchants().entrySet()) {
+        for (Map.Entry<Enchantment, Integer> enchantmentEntry : meta.getStoredEnchants().entrySet()) {
             String enchantmentKey = enchantmentEntry.getKey().getKey().getKey()
                     .toUpperCase(Locale.US)
                     .replace('-', '_');
@@ -1993,7 +2003,7 @@ public final class PricedItem {
         }
 
         EconomyReason resolvedReason = reason == null ? EconomyReason.SELL_PAYOUT : reason;
-        var depositResult = plugin.getEconomyManager().deposit(player, sale.totalPayout, resolvedReason);
+        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, sale.totalPayout, resolvedReason);
         if (!depositResult.success()) {
             return failedSale();
         }
@@ -2083,7 +2093,7 @@ public final class PricedItem {
         }
 
         Map<SellCategory, Double> earnedCopy = new EnumMap<>(sale.earnedByCategory);
-        for (var entry : sale.earnedByCategory.entrySet()) {
+        for (Map.Entry<SellCategory, Double> entry : sale.earnedByCategory.entrySet()) {
             SellCategory category = entry.getKey();
             double before = sale.currentProgress.getOrDefault(category, 0D);
             double after = before + entry.getValue();
@@ -2098,7 +2108,7 @@ public final class PricedItem {
         plugin.getDatabaseManager().executeAsync(() -> {
             plugin.getDatabaseManager().addSellHistoryBatch(historyBatch);
             plugin.getDatabaseManager().addPlayerLogBatch(logBatch);
-            for (var entry : earnedCopy.entrySet()) {
+            for (Map.Entry<SellCategory, Double> entry : earnedCopy.entrySet()) {
                 plugin.getDatabaseManager().addSellProgress(player.getUniqueId(), entry.getKey(), entry.getValue());
             }
         });
