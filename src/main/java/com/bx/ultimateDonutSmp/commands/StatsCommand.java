@@ -32,10 +32,11 @@ public class StatsCommand implements CommandExecutor {
         String targetName;
 
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <player>"));
                 return true;
             }
+            Player player = (Player) sender;
             targetUuid = player.getUniqueId();
             targetName = plugin.getHideManager().publicName(player);
         } else {

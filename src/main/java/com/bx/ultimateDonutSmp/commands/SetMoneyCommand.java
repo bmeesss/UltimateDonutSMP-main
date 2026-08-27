@@ -4,7 +4,9 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.CurrencyManager;
+import com.bx.ultimateDonutSmp.managers.EconomyManager;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Bukkit;
@@ -48,13 +50,13 @@ public class SetMoneyCommand implements CommandExecutor {
             return true;
         }
 
-        var account = plugin.getEconomyManager().resolveAccount(args[0]);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(args[0]);
         if (account == null) {
             sender.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("BALANCE.ADMIN.PLAYER-NOT-FOUND")));
             return true;
         }
 
-        var result = plugin.getEconomyManager().setBalance(account, amount, EconomyReason.ADMIN_SET);
+        EconomyTransactionResult result = plugin.getEconomyManager().setBalance(account, amount, EconomyReason.ADMIN_SET);
         if (!result.success()) {
             sender.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("BALANCE.ADMIN.PLAYER-NOT-FOUND")));
             return true;

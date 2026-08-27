@@ -148,6 +148,6 @@ public class AFKManager {
         if (cuboidNames.isEmpty()) {
             return false;
         }
-        return plugin.getCuboidManager().isInAnyCuboid(player, cuboidNames.toArray(String[]::new));
+        return plugin.getCuboidManager().isInAnyCuboid(player, cuboidNames.toArray(new String[0]));
     }
 }

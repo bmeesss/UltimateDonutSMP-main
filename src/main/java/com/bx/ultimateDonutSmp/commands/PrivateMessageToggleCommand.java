@@ -28,10 +28,11 @@ public class PrivateMessageToggleCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, message("MESSAGES.PLAYER_ONLY", null, "&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION)) {
             send(player, message("MESSAGES.NO_PERMISSION", "PRIVATE-MESSAGE.NO-PERMISSION",

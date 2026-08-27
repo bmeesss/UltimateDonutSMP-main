@@ -27,12 +27,13 @@ public class FakePlayerCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, manager == null
                     ? "&cOnly players can use this command."
                     : manager.publicMessage("PLAYER-ONLY", "&conly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (manager == null || !manager.isAvailable()) {
             send(sender, manager == null

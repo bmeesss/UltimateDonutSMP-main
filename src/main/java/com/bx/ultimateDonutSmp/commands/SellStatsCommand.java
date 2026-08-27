@@ -192,7 +192,7 @@ public class SellStatsCommand implements CommandExecutor, TabCompleter {
         StringBuilder sb = new StringBuilder();
         for (String w : words) {
             if (w.isEmpty()) continue;
-            if (!sb.isEmpty()) sb.append(' ');
+            if (sb.length() != 0) sb.append(' ');
             sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
         }
         return sb.toString();

@@ -22,10 +22,11 @@ public class AFKCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (args.length > 0 && (args[0].equalsIgnoreCase("set") || args[0].equalsIgnoreCase("setafk") || args[0].equalsIgnoreCase("setup"))) {
             if (!PermissionUtils.has(player, "ultimatedonutsmp.command.setafk") && !PermissionUtils.has(player, "ultimatedonutsmp.admin.setup")) {

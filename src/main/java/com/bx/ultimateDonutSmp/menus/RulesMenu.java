@@ -175,7 +175,7 @@ public class RulesMenu extends BaseMenu {
             if (part.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -183,7 +183,7 @@ public class RulesMenu extends BaseMenu {
                 builder.append(part.substring(1));
             }
         }
-        return builder.isEmpty() ? "Rules" : builder.toString();
+        return builder.length() == 0 ? "Rules" : builder.toString();
     }
 
 public final class RulesButton {

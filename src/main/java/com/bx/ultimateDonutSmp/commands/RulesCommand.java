@@ -18,7 +18,8 @@ public class RulesCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         if (!plugin.getConfigManager().isCommandEnabled("RULES")) {
             player.sendMessage(ColorUtils.toComponent("&cRules command is currently disabled."));
             return true;

@@ -18,7 +18,8 @@ public class NightVisionCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         boolean enabled = NightVisionUtils.toggle(plugin, player);
         if (!enabled) {
             player.sendMessage(ColorUtils.toComponent("&7Night vision &cdisabled&7."));

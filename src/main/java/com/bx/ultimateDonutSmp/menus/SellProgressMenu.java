@@ -156,6 +156,10 @@ public class SellProgressMenu extends BaseMenu {
 
     private String buildCompletedBar(FileConfiguration menus) {
         String symbol = menus.getString("PROGRESS-MENU.PROGRESS-BAR", "\u25A0");
-        return "&#6BF18D" + symbol.repeat(10);
+        StringBuilder bar = new StringBuilder(symbol.length() * 10);
+        for (int i = 0; i < 10; i++) {
+            bar.append(symbol);
+        }
+        return "&#6BF18D" + bar;
     }
 }

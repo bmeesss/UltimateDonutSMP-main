@@ -23,9 +23,10 @@ public class IgnoreTabCompleter implements TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player player) || args.length != 1) {
+        if (!(sender instanceof Player) || args.length != 1) {
             return Collections.emptyList();
         }
+        Player player = (Player) sender;
 
         List<String> completions = new ArrayList<>();
         if (alias.equalsIgnoreCase("unignore")) {
