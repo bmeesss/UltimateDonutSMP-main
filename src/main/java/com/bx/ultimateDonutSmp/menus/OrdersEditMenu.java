@@ -109,9 +109,9 @@ public class OrdersEditMenu extends BaseMenu {
                 List<String> lockedLore = order.active()
                         ? java.util.Collections.singletonList("&7This order already has deliveries.")
                         : java.util.Collections.singletonList("&7This order is no longer active.");
-                set(19, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
-                set(20, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
-                set(22, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
+                set(19, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
+                set(20, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
+                set(22, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
             }
             set(21, ItemUtils.createItem(Material.ENDER_CHEST, "&dCollect", java.util.Collections.singletonList("&7Open your collect queue")));
             if (order.active()) {

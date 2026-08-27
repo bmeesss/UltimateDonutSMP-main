@@ -35,7 +35,8 @@ Source files: **421 src/main + 69 src/test**.
 | Spigot 1.12.2 API — Batch 26 (Materials + `Material.isAir()`, 10 files) | ✅ **COMPLETE / MERGED** (PR #22, master `f18b55d`) — Category C **STARTED** |
 | Spigot 1.12.2 API — Batch 27 (Simple Materials, 10 files: `CLOCK`, `SPAWNER`, `GRASS_BLOCK`, `WRITABLE_BOOK`, `EXPERIENCE_BOTTLE`, `ENDER_EYE`, `RED_DYE`) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 28 (stained-glass panes, 10 files) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–28; later batches not started) |
+| Spigot 1.12.2 API — Batch 29 (dyes → `INK_SACK` + data, 5 files) | ✅ **COMPLETE** (this checkpoint) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–29; later batches not started) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -733,7 +734,63 @@ files with modern Materials 83 → **78**. `Material.isAir()` remains exactly **
 modern pane strings to modern enum constants in this checkpoint; a dedicated config-mapping layer is left
 for a later batch.
 
-**Category C status:** **IN PROGRESS** — Batch 26, 27, and 28 are complete; the remaining pane/dye/head/
+**Category C status:** **IN PROGRESS** — Batch 26, 27, 28, and 29 are complete; the remaining pane/dye/head/
+1.13+ items and the rest of Category C (BlockData, PDC, NamespacedKey, ProtocolLib, NMS, Adventure,
+Particle, Sound, EntityType) remain for later batches.
+
+**Build not verified — Maven/JDK unavailable.**
+
+---
+
+### Batch 29 — Dyes → `INK_SACK` + data (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `960d8d7d6666f3b27a678e19a15dfde792867a8f` (PR #24 merge).
+
+Scope: 23 dye `Material` references migrated to the 1.12.2 legacy `INK_SACK` + durability/data across 5
+isolated source files. No skulls, no `PLAYER_HEAD`, no stained-glass panes, no terracotta, no `SUNFLOWER`,
+no `SPAWNER`, no `CLOCK`, no config strings, no tests, no `Material.isAir()` changes, and no
+BlockData/PDC/NamespacedKey/ProtocolLib/NMS/Adventure changes.
+
+| Legacy Material | 1.12.2 replacement | Legacy data |
+|---|---|---|
+| `GRAY_DYE` | `INK_SACK` | `(short) 8` |
+| `LIME_DYE` | `INK_SACK` | `(short) 10` |
+| `RED_DYE` | `INK_SACK` | `(short) 1` (Rose Red) |
+| `ORANGE_DYE` | `INK_SACK` | `(short) 14` |
+| `PINK_DYE` | `INK_SACK` | `(short) 9` |
+
+(`BLUE_DYE` → `INK_SACK` data **4** is the remaining dye mapping; its only site is a config fallback in
+`menus/HomeMenu.java` and is deferred to config compatibility.)
+
+Files changed:
+`managers/InvseeManager.java`, `menus/FriendDetailMenu.java`, `menus/HomeActionMenu.java`,
+`menus/OrdersEditMenu.java`, `menus/ServerInfoMenu.java`.
+
+- `InvseeManager.buildStatusItem` — `Material` ternary (`ORANGE_DYE`/`LIME_DYE`/`GRAY_DYE`) replaced by a
+  `short data` ternary (`14`/`10`/`8`) feeding `ItemUtils.createItem(Material.INK_SACK, data, name, lore)`.
+- `FriendDetailMenu` — 2 static buttons (`LIME`→10, `GRAY`→8) and 6 toggle ternaries
+  (`cond ? LIME : GRAY` → `cond ? (short) 10 : (short) 8`).
+- `HomeActionMenu` — "Delete Home" `RED_DYE` → `INK_SACK` data 1.
+- `OrdersEditMenu` — 3× "Edit locked" `GRAY_DYE` → `INK_SACK` data 8 via the data-aware 4-arg `createItem`.
+- `ServerInfoMenu` — added a `short data` field to `ButtonDefinition` (5-arg constructor delegates to the
+  new 6-arg constructor with `data=0`; `equals`/`hashCode`/`toString` include `data`; render passes `data`).
+  Settings `GRAY_DYE`→8, Social&media `PINK_DYE`→9.
+
+Every migration is an ItemStack-creation site; name/lore/amount/slot/meta are unchanged. No dye comparison
+was altered, and no `INK_SACK` was introduced without an explicit data value (all 23 sites carry data 1/8/9/10/14).
+
+**Material counts:** 31 → **8** dye references (−23): GRAY 15→3, LIME 9→1, RED 3→2, BLUE 1→1, ORANGE 1→0,
+PINK 2→1. Modern Material references 276 → **253**, unique modern constants 71 → **70** (`ORANGE_DYE`
+eliminated), files with modern Materials 78 → **78**. `Material.isAir()` remains exactly **103**.
+
+**Config-string compatibility is explicitly deferred:** the remaining 8 dye `Material` references are all
+config-parsing fallbacks — `StaffModeManager` (`"GRAY_DYE"`), `HomeMenu` (`BLUE_DYE`/`GRAY_DYE`/`RED_DYE`
+via `ItemUtils.parseMaterial`), `MediaMenu` (`"PINK_DYE"`), `SpawnerFilterMenu` (`"LIME_DYE"`/`"RED_DYE"`).
+`ItemUtils.parseMaterial()` was **not** modified; the modern dye strings in code defaults and resources YAML
+(`filter.yml`, `menus.yml`, `staff-mode.yml`, `worth.yml`) remain byte-identical for a dedicated
+config-compatibility batch.
+
+**Category C status:** **IN PROGRESS** — Batch 26, 27, 28, and 29 are complete; the remaining dye/head/
 1.13+ items and the rest of Category C (BlockData, PDC, NamespacedKey, ProtocolLib, NMS, Adventure,
 Particle, Sound, EntityType) remain for later batches.
 
@@ -751,7 +808,7 @@ regex-counted `Adventure/Kyori` bucket from 65 → 66 occurrences (file count un
 
 | Item | src/main occ | src/main files |
 |---|---:|---:|
-| Modern Materials (71 distinct constants not in the 1.12.2 enum) | 276 | 78 |
+| Modern Materials (70 distinct constants not in the 1.12.2 enum) | 253 | 78 |
 | `Material.isAir()` | 103 | 35 |
 | PersistentDataContainer / PersistentDataType | 68 | 7 |
 | ProtocolLib 5.x API | 66 | 8 |
@@ -798,8 +855,9 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
    Category C (Spigot 1.12.2 API) resolution errors.
 6. ~~Spigot 1.12.2 simple Materials (Batch 27)~~ — **done (Batch 27).**
 7. ~~Spigot 1.12.2 stained-glass panes (Batch 28)~~ — **done (Batch 28).**
-8. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 29 in
-   this checkpoint.** Remaining modern pane/dye/head/1.13+ items and 103 `isAir()` sites are later batches.
+8. ~~Spigot 1.12.2 dyes → `INK_SACK` + data (Batch 29)~~ — **done (Batch 29).**
+9. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Do not start Batch 30 in
+   this checkpoint.** Remaining modern dye/head/1.13+ items and 103 `isAir()` sites are later batches.
    BlockData / PDC / NMS / ProtocolLib stay deferred.
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.

@@ -521,9 +521,9 @@ public class InvseeManager {
     private ItemStack buildStatusItem(InvseeSession session, Player target) {
         boolean live = !session.isFrozen() && target != null && target.isOnline();
         boolean editable = session.isEditable() && !session.isFrozen();
-        Material material = live
-                ? (editable ? Material.ORANGE_DYE : Material.LIME_DYE)
-                : Material.GRAY_DYE;
+        short data = live
+                ? (editable ? (short) 14 : (short) 10)
+                : (short) 8;
         String name = live
                 ? (editable ? "&6live edit" : "&alive sync")
                 : "&7frozen snapshot";
@@ -545,7 +545,7 @@ public class InvseeManager {
                 "&cAll interactions remain blocked."
         ));
 
-        return ItemUtils.createItem(material, name, lore);
+        return ItemUtils.createItem(Material.INK_SACK, data, name, lore);
     }
 
     private void initializeLayout(InvseeSession session) {
