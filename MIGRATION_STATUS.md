@@ -1091,10 +1091,21 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
     `control()`/`button()` fallback-`Material` arguments are config-driven, not directly migratable)
     for later batches, **51** config/default sites deliberately deferred, **0** comparisons.
     `Material.isAir()` remains exactly **103**.
-13. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 34 NOT STARTED.**
-    The 21 remaining direct pane sites, the config-driven pane compatibility layer, and the remaining
-    modern dye/head/1.13+ items plus 103 `isAir()` sites are later batches. BlockData / PDC / NMS /
-    ProtocolLib stay deferred.
+13. ~~Spigot 1.12.2 direct pane fill sites part 4 (Batch 34, 9 files / 9 sites)~~ — **done (Batch 34,
+    this checkpoint).** The 9 remaining direct `fill(Material)` pane sites now use the data-aware
+    `BaseMenu.fill(Material, short)`: 7 × `GRAY_STAINED_GLASS_PANE` → `STAINED_GLASS_PANE` + data 7 and
+    2 × `BLACK_STAINED_GLASS_PANE` → `STAINED_GLASS_PANE` + data 15 (no RED/LIME direct fill sites
+    existed). The **direct-fill subcategory for GRAY/BLACK/RED/LIME is COMPLETE (0 remain)**. 63 true
+    pane refs remain (64 constant occurrences): **0** direct fill sites, **12** protected
+    helper-default lines (the `AuctionHouseMenuSupport.control()` ×7 and `OrdersMenuSupport.button()` ×5
+    fallback-`Material` arguments are config-driven, not directly migratable), **51** config/default
+    sites deliberately deferred, **0** comparisons. `Material.isAir()` remains exactly **103**.
+14. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 35 NOT STARTED.**
+    Remaining for later batches: the 12 protected helper-default lines, the config-driven pane
+    compatibility layer (51 sites), the deferred `LIGHT_GRAY_STAINED_GLASS_PANE` (2 refs, incl. the
+    direct fill in `HomeActionMenu`) and `LIGHT_BLUE_STAINED_GLASS_PANE` (1 ref) mappings, and the
+    remaining modern dye/head/1.13+ items plus 103 `isAir()` sites. BlockData / PDC / NMS /
+    ProtocolLib stay deferred. **Category C = IN PROGRESS.**
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.
 > Java 8 compatibility is statically complete; real javac/Maven verification remains.

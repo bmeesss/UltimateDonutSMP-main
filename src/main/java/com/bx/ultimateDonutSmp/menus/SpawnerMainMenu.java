@@ -35,7 +35,7 @@ public class SpawnerMainMenu extends BaseMenu {
         if (instance == null) {
             inventory = Bukkit.createInventory(this, 27, ColorUtils.toComponent("&8Spawner Missing"));
             clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
             set(13, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
             return;
         }
