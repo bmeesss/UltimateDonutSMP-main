@@ -6,6 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1733,14 +1734,14 @@ public class ConfigManager {
             return new ArrayList<>(block);
         }
 
-        String targetPrefix = " ".repeat(Math.max(0, toIndent));
+        String targetPrefix = repeat(" ", Math.max(0, toIndent));
         List<String> reindented = new ArrayList<>(block.size());
         for (String line : block) {
             if (line.trim().isEmpty()) {
                 reindented.add(line);
                 continue;
             }
-            String sourcePrefix = " ".repeat(Math.min(fromIndent, leadingWhitespace(line).length()));
+            String sourcePrefix = repeat(" ", Math.min(fromIndent, leadingWhitespace(line).length()));
             if (line.startsWith(sourcePrefix)) {
                 reindented.add(targetPrefix + line.substring(sourcePrefix.length()));
             } else {
@@ -1748,6 +1749,25 @@ public class ConfigManager {
             }
         }
         return reindented;
+    }
+
+    /**
+     * Java 8 stand-in for the Java 11 {@code String#repeat} method: {@code value} is repeated
+     * {@code count} times, {@code count == 0} yields an empty string and a negative {@code count}
+     * throws {@link IndexOutOfBoundsException} exactly like the JDK method.
+     */
+    private static String repeat(String value, int count) {
+        if (count < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        if (count == 0 || value.isEmpty()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int index = 0; index < count; index++) {
+            builder.append(value);
+        }
+        return builder.toString();
     }
 
     private boolean isUnderAnyPath(Set<String> parentPaths, String path) {
@@ -1930,7 +1950,13 @@ public class ConfigManager {
             if (input == null) {
                 throw new IllegalArgumentException("Resource not found in jar: " + name);
             }
-            return input.readAllBytes();
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[8192];
+            int read;
+            while ((read = input.read(chunk)) != -1) {
+                buffer.write(chunk, 0, read);
+            }
+            return buffer.toByteArray();
         }
     }
 

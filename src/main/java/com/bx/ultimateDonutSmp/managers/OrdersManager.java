@@ -630,7 +630,7 @@ public class OrdersManager {
                                 plugin.getSpigotScheduler().runEntity(player, () -> {
                                     PlayerData ownerData = getPlayerData(player);
                                     if (ownerData != null) {
-                                        var depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
+                                        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
                                         if (depositResult.success()) {
                                             clearEscrowRemaining(claim.orderId());
                                             ownerData.setMoneySpent(Math.max(0D, ownerData.getMoneySpent() - claim.moneyAmount()));
@@ -1261,14 +1261,14 @@ public class OrdersManager {
             return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
         }
 
-        var escrowWithdraw = plugin.getEconomyManager().withdraw(player, totalBudget, EconomyReason.ORDER_CREATE_ESCROW);
+        EconomyTransactionResult escrowWithdraw = plugin.getEconomyManager().withdraw(player, totalBudget, EconomyReason.ORDER_CREATE_ESCROW);
         if (!escrowWithdraw.success()) {
             return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
         }
 
         boolean feeWithdrawn = false;
         if (creationFee > 0D) {
-            var feeResult = plugin.getEconomyManager().withdraw(player, creationFee, EconomyReason.ORDER_CREATE_FEE);
+            EconomyTransactionResult feeResult = plugin.getEconomyManager().withdraw(player, creationFee, EconomyReason.ORDER_CREATE_FEE);
             if (!feeResult.success()) {
                 plugin.getEconomyManager().deposit(player, totalBudget, EconomyReason.ORDER_REFUND);
                 return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
@@ -2761,7 +2761,7 @@ public class OrdersManager {
                 return new ClaimResult(false, ClaimFailureReason.DATABASE_ERROR, claim);
             }
 
-            var depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
+            EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
             if (!depositResult.success()) {
                 reopenClaim(claim.id());
                 return new ClaimResult(false, ClaimFailureReason.NO_PLAYER_DATA, claim);
@@ -4053,15 +4053,21 @@ public class OrdersManager {
     ) {
         if (capacity <= 0
                 || containerItem == null
-                || !containerItem.getType().name().endsWith("SHULKER_BOX")
-                || !(containerItem.getItemMeta() instanceof BlockStateMeta blockStateMeta)) {
+                || !containerItem.getType().name().endsWith("SHULKER_BOX")) {
             return null;
         }
 
-        BlockState state = blockStateMeta.getBlockState();
-        if (!(state instanceof ShulkerBox shulkerBox)) {
+        ItemMeta containerMeta = containerItem.getItemMeta();
+        if (!(containerMeta instanceof BlockStateMeta)) {
             return null;
         }
+        BlockStateMeta blockStateMeta = (BlockStateMeta) containerMeta;
+
+        BlockState state = blockStateMeta.getBlockState();
+        if (!(state instanceof ShulkerBox)) {
+            return null;
+        }
+        ShulkerBox shulkerBox = (ShulkerBox) state;
 
         ItemStack[] contents = shulkerBox.getInventory().getContents();
         int remaining = capacity;

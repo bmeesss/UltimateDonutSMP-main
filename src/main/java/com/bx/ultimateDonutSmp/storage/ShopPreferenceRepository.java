@@ -167,7 +167,9 @@ public final class ShopPreferenceRepository {
 
     private <T> CompletableFuture<T> submit(Callable<T> task) {
         if (closed) {
-            return CompletableFuture.failedFuture(new IllegalStateException("Shop preference repository is closed"));
+            CompletableFuture<T> failed = new CompletableFuture<T>();
+            failed.completeExceptionally(new IllegalStateException("Shop preference repository is closed"));
+            return failed;
         }
         return CompletableFuture.supplyAsync(() -> {
             for (int attempt = 0; ; attempt++) {

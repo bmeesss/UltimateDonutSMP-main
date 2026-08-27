@@ -22,9 +22,10 @@ Source files: **421 src/main + 69 src/test**.
 | Java 8 — Batch 14 (10 files, 27 instanceof) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) |
 | Java 8 — Batch 15 (10 files, 17 instanceof) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) |
 | Batch 16 — javac-invalid corruption cleanup (FriendsCommand, TPACommand, SellCommand) | ✅ **COMPLETE / MERGED** (PR #16, master `476cd17`) — **0 markers remain repo-wide** |
-| Java 8 — Batch 17 (10 files, 10 instanceof) | ✅ **COMPLETE** (this checkpoint) |
-| Java 8 — Batch 18 (4 files, 5 instanceof) | ✅ **COMPLETE** (this checkpoint) — **non-deferred A+B backlog now 0** |
-| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** (see inventory below) |
+| Java 8 — Batch 17 (10 files, 10 instanceof) | ✅ **COMPLETE / MERGED** (master `8f5c1f4`) |
+| Java 8 — Batch 18 (4 files, 5 instanceof) | ✅ **COMPLETE / MERGED** (master `8f5c1f4`) — **non-deferred A+B backlog now 0** |
+| Java 8 — Batch 19 (5 deferred files: 2× `failedFuture`, 2× `String.repeat`, 1× `InputStream.readAllBytes`, 4× `var`, 3× instanceof) | ✅ **COMPLETE** (this checkpoint, re-derived against master `8f5c1f4`) |
+| Java 8 — remaining batches | ⏳ **DEFERRED/COMPLEX ONLY** — text blocks (4 files), `java.net.http` + virtual threads + `sb.isEmpty()` (`SellStatsExporter`), `RandomGenerator` bounded-long (`ShardManager`), instanceof (8 in `DatabaseManager` / `SellStatsExporter` / `ShardManager`) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
@@ -35,15 +36,23 @@ Source files: **421 src/main + 69 src/test**.
 The earlier local migration commit `b2e898b` ("…186 files") had introduced **34** tree-sitter-ERROR files and
 was **discarded as the migration base**; master `138898fb` parses 421/421 clean.
 
-- **421/421** `src/main` files parse clean (tree-sitter-java 0.23.5, **explicit large buffer** — the native
-  default buffer silently throws on large files; a scanner that treats a throw as "pass" is a false negative)
+- **421/421** `src/main` files parse clean (tree-sitter-java 0.23.5 via tree-sitter 0.26.0, **explicit
+  large buffer** — the native default buffer silently throws on large files; a scanner that treats a throw
+  as "pass" is a false negative)
 - **0** delimiter imbalance (brace / paren / bracket, comment- and string-aware)
-- **0** true duplicate methods/constructors (same name **and** full parameter-type signature)
+- **0** true duplicate methods/constructors/fields (same name **and** full parameter-type signature,
+  scoped per declaring type; a file-wide tripwire scan is unchanged from the pre-batch baseline)
+- **0** javac-invalid corruption markers repo-wide
 - `git diff --check` clean
 - Batch 13 removed the 6 javac-invalid corruption artifacts (tree-sitter-tolerated, javac-invalid) — see below
 
+**Batch 19 baseline:** the branch was found checked out on the stale intermediate commit `b2e898b`
+(125,411 `src/main` lines, duplicated method declarations, tree-sitter ERRORs). The 5 pending edits were
+backed up outside the repository, the branch was reset to the verified `origin/master`
+`8f5c1f4ab44f5aa52e9780db43659410976ecab6`, and every fix was re-derived against that clean tree.
+
 `src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
-modified in Batches 1–16.
+modified in Batches 1–19.
 
 ---
 
@@ -286,6 +295,29 @@ Conversion rules in Batches 17–18 match Batches 2–15. Category C untouched; 
 
 ---
 
+### Batch 19 — 5 deferred files, 12 small/medium deferred Java 8 APIs (this checkpoint)
+
+Baseline: master `8f5c1f4ab44f5aa52e9780db43659410976ecab6`. The branch checkout was found to be sitting on
+the stale intermediate checkpoint `b2e898b`; the 5 edits were backed up outside the repository, the branch
+was reset to the verified `origin/master`, and every fix was **re-derived against the clean master text**
+(not re-applied as an old patch). The re-derived files are byte-identical (SHA-256) to the backups.
+
+| File | Fixes |
+|---|---|
+| `storage/AuctionHouseRepository.java` | `CompletableFuture.failedFuture(...)` → `new CompletableFuture<T>()` + `completeExceptionally(...)` + `return`; generic `T`, exception object and early-return control flow preserved |
+| `storage/ShopPreferenceRepository.java` | same `failedFuture` conversion |
+| `managers/ConfigManager.java` | 2× `" ".repeat(n)` → new `private static String repeat(String, int)` helper that mirrors the JDK semantics (`count < 0` still throws `IndexOutOfBoundsException`, `count == 0` → `""`); `InputStream.readAllBytes()` → explicit `ByteArrayOutputStream` + 8192-byte read loop inside the unchanged try-with-resources (closing, `IOException` propagation, `IllegalArgumentException` for a missing resource and byte ordering all preserved); `import java.io.ByteArrayOutputStream` added |
+| `managers/OrdersManager.java` | 4× `var` → `EconomyTransactionResult` (resolved from `EconomyManager.deposit/withdraw(Player, double, EconomyReason)`; enclosing signatures are `processAutoClaims(Player)`, `createOrder(Player)`, `claim(Player, long)`); 2× instanceof patterns in `extractFromShulker` → guard + explicit cast. `getItemMeta()` is still evaluated exactly once at the same point in the short-circuit chain, and `blockStateMeta` / `shulkerBox` stay in scope for their later uses at the end of the method |
+| `utils/AdventureHeadComponentBridge.java` | 1× instanceof pattern → `instanceof` + explicit `(Component)` cast in the existing ternary. **Language-level conversion only — no additional Adventure API introduced** |
+
+Result: `failedFuture` 2 → 0, `String.repeat` 2 → 0, `InputStream.readAllBytes` 1 → 0, `var` 4 → 0,
+instanceof patterns 11 → 8. All 13 text blocks verified **byte-identical** to master; no test, Material,
+Bukkit/Spigot, NMS, ProtocolLib or removed-system change; `SellStatsExporter`, `DatabaseManager`,
+`ShardManager` and `ScoreboardManager` untouched. Category C is unchanged except the documented `+1`
+`\bComponent\b` token from the explicit cast above.
+
+---
+
 ## Remaining Java 8 inventory (superseded — historical Batch 13 measurement, see current figures below)
 
 Counts below are a **fresh re-measurement** on master `138898fb` (tree-sitter grammar + targeted regex).
@@ -346,42 +378,51 @@ tree-sitter-tolerated but javac-invalid — fix in a near-term batch):
 
 ---
 
-## Current Java 8 inventory (verified this checkpoint, corrected type-aware scanner, post-Batch-18)
+## Current Java 8 inventory (verified this checkpoint, corrected type-aware scanner, post-Batch-19)
 
-**53 raw scanner hits / 8 src/main files** — equivalently **39 semantic issues** (each text block counts
-2 delimiter hits: 13 blocks = 26 hits; and 1 hit is the known `SidebarSettings.lines()` false positive).
+**44 raw scanner hits / 8 src/main files** — 36 Java 8 API hits + 8 instanceof patterns, equivalently
+**31 semantic occurrences** (each text block counts 2 delimiter hits: 13 blocks = 26 hits). Of those 31,
+**29 are genuine Java 8 blockers** — 1 is the known `SidebarSettings.lines()` false positive and 1 is
+`Files.readAllBytes`, a Java 7 API.
 **Every remaining issue is in a deferred file or deferred category. The non-deferred mechanical backlog is 0.**
 
 | Construct | Hits | Where (all deferred) |
 |---|---:|---|
 | text blocks | 26 (13 blocks) | `DatabaseManager` (5), `OrdersManager` (4), `AuctionHouseRepository` (3), `ShopPreferenceRepository` (1) |
-| instanceof patterns | 9 | `DatabaseManager` (6), `OrdersManager` (2), `SellStatsExporter` (1) |
-| `var` | 4 | `OrdersManager` |
-| `java.net.http.*` | 3 | `SellStatsExporter` |
+| instanceof patterns | 8 | `DatabaseManager` (6: lines 2495, 2603, 2746, 4851, 5420, 5550), `SellStatsExporter` (1: 225), `ShardManager` (1: 373) |
+| `java.net.http.*` | 3 | `SellStatsExporter` (imports, lines 22–24) |
 | `RandomGenerator` | 3 | `ShardManager` (bounded `nextLong` — needs Java 8 reimplementation) |
-| `String.repeat` | 2 | `ConfigManager` |
-| `InputStream.readAllBytes` / `Files.readAllBytes` | 2 | `ConfigManager` (the `Files.readAllBytes` site is Java 7 — verify before touching) |
-| `CompletableFuture.failedFuture` | 2 | `AuctionHouseRepository`, `ShopPreferenceRepository` |
-| `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` custom type |
-| virtual threads | 1 | `SellStatsExporter` |
+| `StringBuilder.isEmpty()` (Java 15) | 1 | `SellStatsExporter:773` |
+| `String.lines` | 1 | **false positive** — `SidebarSettings.lines()` custom type (`ScoreboardManager:552`) |
+| virtual threads | 1 | `SellStatsExporter:128` |
+| `Files.readAllBytes` | 1 | **not a blocker** — Java 7 API (`ConfigManager:506`) |
 
-Verified **zero** genuine occurrences of: bare `Stream.toList()` (all 78 `.toList()` hits are
-`Collectors.toList()`), `String.strip()` (all 46 hits are project `ColorUtils.strip(...)`),
-`String.isBlank()`, `List/Set/Map.of/copyOf`, `List.getFirst()`, `Path.of()`, `StringBuilder.isEmpty()`,
-`Objects.requireNonNullElse`, `toArray(IntFunction)`.
+**Cleared by Batch 19:** `CompletableFuture.failedFuture` (2 → 0), `String.repeat` (2 → 0),
+`InputStream.readAllBytes` (1 → 0), `var` declarations (4 → 0), instanceof patterns (11 → 8).
+
+Verified **zero** genuine occurrences of: bare `Stream.toList()` (all `.toList()` hits are
+`Collectors.toList()`), `String.strip()` (all hits are project `ColorUtils.strip(...)`),
+`String.isBlank()`, `List/Set/Map.of/copyOf`, `List.getFirst()`, `Path.of()`,
+`Objects.requireNonNullElse`, `toArray(IntFunction)`, switch expressions, records.
 
 **javac-invalid corruption cleanup: COMPLETE — 0 markers remain repo-wide** (comment/string-aware scan of
-all 421 src/main files: `return break;`, duplicate-`break;` runs, orphaned type declarations).
+all 421 src/main files: `return break;`, duplicate-`break;` runs, arrow-`case`, orphaned type declarations).
 
-Structural: **421/421 src/main files parse clean** (tree-sitter-java, explicit large buffer, ERROR/MISSING
-treated as failures). Delimiter balance and full-signature duplicate scans clean on all changed files.
+Structural: **421/421 src/main files parse clean** (tree-sitter-java 0.23.5 via tree-sitter 0.26.0,
+single explicit large buffer per file, ERROR/MISSING treated as failures). Delimiter balance 0,
+type-scoped full-signature duplicate declarations 0, `git diff --check` clean.
 
 ---
 
 ## Category C — Spigot 1.12.2 API migration: NOT STARTED
 
-Inventory only. **No Category C item has been modified in Batches 1–16.** `Material.isAir()` remains
+Inventory only. **No Category C item has been migrated in Batches 1–19.** `Material.isAir()` remains
 **108 occ / 39 files**, matching the pre-Java-8 baseline for that item.
+
+The single documented exception is **not** a migration: Batch 19's Java 8 `instanceof` conversion in
+`utils/AdventureHeadComponentBridge.java` adds one explicit `(Component)` cast, which raises the
+regex-counted `Adventure/Kyori` bucket from 65 → 66 occurrences (file count unchanged at 4, project total
+524 → 525 across the same 62 files). No Adventure API was added, replaced or removed.
 
 | Item | src/main occ | src/main files |
 |---|---:|---:|
@@ -416,10 +457,15 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
 ## Next steps
 1. ~~Repair corruption artifacts~~ — **done (Batches 13 + 16); 0 markers remain repo-wide.**
 2. ~~Java 8 mechanical work in non-deferred files~~ — **done (Batches 14–18); non-deferred backlog is 0.**
-3. Handle the deferred design-level Java 8 items (text blocks in SQL schema strings, `java.net.http` +
-   virtual threads in `SellStatsExporter`, `ConfigManager` `readAllBytes`/`repeat`, `OrdersManager`
-   `var`/instanceof, `DatabaseManager` instanceof, `failedFuture` in repositories, `ShardManager`
-   `RandomGenerator` bounded-long reimplementation).
-4. Only then begin the Spigot 1.12.2 API phase (Materials first). **Category C: NOT STARTED.**
+3. ~~Small/medium deferred Java 8 APIs~~ — **done (Batch 19): `failedFuture`, `String.repeat`,
+   `InputStream.readAllBytes`, `var`, 3 instanceof patterns.**
+4. Remaining deferred/complex Java 8 items, each needing design rather than mechanical edits:
+   - text blocks → string concatenation in the 4 SQL-schema files (`DatabaseManager`, `OrdersManager`,
+     `AuctionHouseRepository`, `ShopPreferenceRepository`) — 13 blocks
+   - `SellStatsExporter`: `java.net.http` → `HttpURLConnection`, virtual-thread executor → fixed pool,
+     `sb.isEmpty()` → `sb.length() == 0`, 1 instanceof pattern
+   - `ShardManager`: `java.util.random.RandomGenerator` bounded `nextLong` reimplementation + 1 instanceof
+   - `DatabaseManager`: 6 instanceof patterns
+5. Only then begin the Spigot 1.12.2 API phase (Materials first). **Category C: NOT STARTED.**
 
 > **Build not verified — Maven/JDK unavailable.** All structural validation is tree-sitter + static scans only.
