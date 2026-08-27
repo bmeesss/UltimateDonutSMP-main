@@ -182,8 +182,7 @@ public class KeyAllManager {
                 return loadRandomReward();
             default: {
                 SelectedKeyReward reward = loadRandomReward();
-                reward != null ? reward : loadOneKeyOnlyReward();
-                return break;
+                return reward != null ? reward : loadOneKeyOnlyReward();
             }
         }
     }

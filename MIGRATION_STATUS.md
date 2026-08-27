@@ -11,26 +11,52 @@ Source files: **421 src/main + 69 src/test**.
 | Phase | Status |
 |---|---|
 | Structural repair / parser cleanup | ✅ **COMPLETE** |
+| Baseline recovery | ✅ **RECOVERED from master `138898fb`** (corrupt migration commit `b2e898b` discarded as base) |
 | Java 8 — Batch 1 | ✅ **COMPLETE / MERGED** (PR #10, commit `d004861`) |
 | Java 8 — Batch 2 | ✅ **COMPLETE / MERGED** (PR #11) |
 | Java 8 — Batch 3 | ✅ **COMPLETE / MERGED** (PR #11) |
 | Java 8 — Batches 4–8 | ✅ **COMPLETE / MERGED** (PR #12, commit `1c288fb`) |
 | Java 8 — Batches 9–11 | ✅ **COMPLETE / MERGED** (PR #13, commit `5eb81a0`) |
-| Java 8 — Batch 12 | ✅ **COMPLETE** (this checkpoint) |
-| Java 8 — remaining batches | ⏳ IN PROGRESS (see inventory below) |
+| Java 8 — Batch 12 | ✅ **COMPLETE** (master checkpoint `138898fb`) |
+| Java 8 — Batch 13 (javac-invalid corruption, 6 files) | ✅ **COMPLETE** (this checkpoint) |
+| Java 8 — remaining batches | ⏳ **IN PROGRESS** (see inventory below) |
 | Spigot 1.12.2 API migration (Materials / BlockData / PDC / Particle / Sound / entities) | ⛔ **NOT STARTED** |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
 ## Structural health (verified this checkpoint)
 
-- **421/421** `src/main` files parse clean (tree-sitter-java: 0 ERROR nodes, 0 MISSING nodes)
+**Baseline:** recovered from GitHub master `138898fb3fd94b78665f82e71129f5d09546d2cf` (tree `ef615ae1`).
+The earlier local migration commit `b2e898b` ("…186 files") had introduced **34** tree-sitter-ERROR files and
+was **discarded as the migration base**; master `138898fb` parses 421/421 clean.
+
+- **421/421** `src/main` files parse clean (tree-sitter-java 0.23.5, **explicit large buffer** — the native
+  default buffer silently throws on large files; a scanner that treats a throw as "pass" is a false negative)
 - **0** delimiter imbalance (brace / paren / bracket, comment- and string-aware)
-- **0** new duplicate methods, constructors, classes or fields introduced by Batch 12 (per-file HEAD-vs-worktree declaration-count delta scan)
+- **0** true duplicate methods/constructors (same name **and** full parameter-type signature)
 - `git diff --check` clean
+- Batch 13 removed the 6 javac-invalid corruption artifacts (tree-sitter-tolerated, javac-invalid) — see below
 
 `src/test` has 3 pre-existing parse failures inherited from before the Java 8 phase; no test file has been
-modified in Batches 1–12.
+modified in Batches 1–13.
+
+---
+
+## Batch 13 — javac-invalid corruption cleanup (COMPLETE, this checkpoint)
+
+6 files repaired on the recovered master baseline; each repair restores the unambiguous control flow /
+declaration the corruption overwrote. No Materials / Bukkit / NMS / ProtocolLib / Adventure / test changes.
+
+| File | Repair |
+|---|---|
+| `commands/AuctionHouseCommand.java` | 7 switch blocks each had ~30 unreachable `break;` statements (javac §14.21) → collapsed to the single intended `break;`, indentation restored; orphaned `String;` in the cancel-failure resolver → `String key = null;` |
+| `menus/SellGui.java` | orphaned `String;` in create-listing-failure resolver → `String key = null;` |
+| `commands/SocialCommand.java` | orphaned `String;` before label resolver → `String key;` (all branches assign, incl. `default → null`) |
+| `managers/LuckPermsTablistRefreshBridge.java` | orphaned `Boolean;` → `Boolean value;` (null-guarded before unboxing to the primitive `boolean` API) |
+| `managers/KeyAllManager.java` | dangling ternary statement + `return break;` → `return reward != null ? reward : loadOneKeyOnlyReward();` |
+| `commands/CuboidCommand.java` | `break; break;` (spawn/shard cases) → single `break;`; `return; break; break;` (default) → `return;`; indentation restored |
+
+**Build not verified — Maven/JDK unavailable.**
 
 ---
 
@@ -187,47 +213,55 @@ Category C APIs untouched; no tests modified. Batches 1–12: **124 → 103** re
 
 ---
 
-## Remaining Java 8 inventory (verified scanner result, this checkpoint — after Batch 12)
+## Remaining Java 8 inventory (freshly measured this checkpoint on the recovered master + Batch 13)
 
-**103 occurrences across 44 unique `src/main` files** (124 → 103; 54 → 44 files).
+Counts below are a **fresh re-measurement** on master `138898fb` (tree-sitter grammar + targeted regex).
+Batch 13 touched only corruption (no Java 9+ constructs), so the Java 8 inventory is unchanged by Batch 13.
 
 ### Category A — Java language
 
 | Construct | src/main occ | src/main files |
 |---|---:|---:|
-| instanceof pattern matching | 70 | 39 |
-| `var` declarations (all in deferred `OrdersManager`) | 4 | 1 |
+| instanceof pattern matching | ~64 | ~38 |
+| `var` declarations (in deferred `OrdersManager`) | 4 | 1 |
 | switch-in-expression-position (colon/break form, in deferred `LeaderboardManager` ×2 / `TpaQueueMenu` ×1) | 3 | 2 |
 | text blocks | 13 | 4 |
-| **Category A total** | **90** | — |
+| **Category A total** | **~84** | — |
+
+(instanceof count is methodology-sensitive — pattern-`instanceof` inside generics/arrays/bindings used in
+`return`/assignment positions — the prior AST-scanner figure was 70/39; treat ~64–70 occ / ~38–39 files.)
 
 ### Category B — JDK 9+ standard library
 
 | API | src/main occ | src/main files |
 |---|---:|---:|
-| `StringBuilder.isEmpty()` (in deferred `SellStatsExporter`) | 1 | 1 |
+| `StringBuilder.isEmpty()` | 0 | 0 |
 | `String.repeat()` (in deferred `ConfigManager`) | 2 | 1 |
 | `RandomGenerator` (in deferred `ShardManager`) | 3 | 1 |
 | `java.net.http.*` (in deferred `SellStatsExporter`) | 3 | 1 |
 | `CompletableFuture.failedFuture()` (in deferred repositories) | 2 | 2 |
-| `InputStream.readAllBytes()` (in deferred `ConfigManager`; 2 call sites) | 1 | 1 |
+| `InputStream.readAllBytes()` (in deferred `ConfigManager`; 2 call sites) | 2 | 1 |
 | `Executors.newVirtualThreadPerTaskExecutor()` (in deferred `SellStatsExporter`) | 1 | 1 |
-| **Category B total** | **13** | — |
+| **Category B total** | **~13** | — |
 
-Verified **zero** occurrences remain of: `Stream.toList()`, `String.isBlank()`, `String.strip()`,
-`List/Set/Map.of` in src/main, `List/Set/Map.copyOf`, `List.getFirst()`, `Path.of()`,
-`Objects.requireNonNullElse`, `toArray(IntFunction)`.
+Verified **zero** occurrences remain of: bare `Stream.toList()` (all `.toList()` are `Collectors.toList()`),
+`String.isBlank()`, `String.strip()`, `List/Set/Map.of`, `List/Set/Map.copyOf`, `List.getFirst()`,
+`Path.of()`, `Objects.requireNonNullElse`, `toArray(IntFunction)`.
 
-### Pre-existing corruption artifacts still present (javac-invalid; discovered in Batch 12 — fix in a near-term batch)
+### Pre-existing javac-invalid corruption artifacts
 
-| File | Line | Artifact |
-|---|---|---|
-| `commands/AuctionHouseCommand.java` | 443 | orphaned `String;` (mangled `var key = switch(…){…}`) |
-| `menus/SellGui.java` | 220 | orphaned `String;` |
-| `commands/SocialCommand.java` | 36 | orphaned `String;` |
-| `managers/LuckPermsTablistRefreshBridge.java` | 428 | orphaned `Boolean;` |
-| `managers/KeyAllManager.java` | 186 | `return break;` + bare ternary statement |
-| `commands/CuboidCommand.java` | 213 | unreachable `break; break;` after `return;` |
+The **6 Batch-13 artifacts are FIXED** (AuctionHouseCommand, SellGui, SocialCommand,
+LuckPermsTablistRefreshBridge, KeyAllManager, CuboidCommand — see Batch 13 table above).
+
+Three further files with the **same** unreachable-`break;` corruption pattern (repeated `break;` inside switch
+case blocks — javac §14.21) were observed during this checkpoint and are **deferred** (out of Batch 13 scope,
+tree-sitter-tolerated but javac-invalid — fix in a near-term batch):
+
+| File | Artifact |
+|---|---|
+| `commands/FriendsCommand.java` | repeated unreachable `break;` in multiple switch case blocks |
+| `commands/SellCommand.java` | repeated unreachable `break;` in switch case blocks |
+| `commands/TPACommand.java` | unreachable `break;` after `break;`/in `default` block |
 
 (`menus/FriendsMenu.java` continue/break interleaving was inspected and is valid Java — not an artifact.)
 
@@ -275,10 +309,12 @@ AntiESP · SpawnStash · Shards · Amethyst Tools · FakePlayer · StaffMode · 
 Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus.
 
 ## Next steps
-1. Repair the 6 remaining pre-existing corruption artifacts (AuctionHouseCommand, SellGui, SocialCommand,
-   LuckPermsTablistRefreshBridge, KeyAllManager, CuboidCommand — see table above).
-2. Java 8 remaining mechanical work: instanceof (70), `var` (4, inside deferred `OrdersManager`),
-   `StringBuilder.isEmpty()` in `SellStatsExporter` (1), `String.repeat()` in `ConfigManager` (2).
+1. ~~Repair the 6 pre-existing corruption artifacts~~ — **done in Batch 13.** Repair the remaining
+   same-class unreachable-`break;` corruption in `FriendsCommand`, `SellCommand`, `TPACommand` (deferred).
+2. Java 8 remaining mechanical work: pattern instanceof (~64–70), `var` (4, inside deferred `OrdersManager`),
+   `String.repeat()` in `ConfigManager` (2).
 3. Handle the deferred design-level Java 8 items (text blocks, `java.net.http`, switch-in-expression-position,
    `ConfigManager.readAllBytes()`, `failedFuture`, `ShardManager` `RandomGenerator`).
 4. Only then begin the Spigot 1.12.2 API phase (Materials first).
+
+> **Build not verified — Maven/JDK unavailable.** All structural validation is tree-sitter + static scans only.

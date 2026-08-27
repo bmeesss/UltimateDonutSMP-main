@@ -33,8 +33,8 @@ public class SocialCommand implements CommandExecutor {
             return true;
         }
 
-String;
-switch (normalizedLabel) {
+        String key;
+        switch (normalizedLabel) {
             case "twitter":
                 key = "SOCIAL.TWITTER";
                 break;

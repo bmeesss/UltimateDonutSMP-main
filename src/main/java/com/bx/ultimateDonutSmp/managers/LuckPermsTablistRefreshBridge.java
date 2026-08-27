@@ -425,8 +425,8 @@ public final class LuckPermsTablistRefreshBridge {
 
         String operation = parts[4].toLowerCase(java.util.Locale.ROOT);
         String permission = parts[5];
-Boolean;
-switch (operation) {
+        Boolean value;
+        switch (operation) {
             case "set":
             case "add":
             case "settemp":
