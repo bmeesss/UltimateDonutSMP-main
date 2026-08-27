@@ -39,7 +39,8 @@ Source files: **421 src/main + 69 src/test**.
 | Spigot 1.12.2 API — Batch 30 (stained-glass panes part 2, 10 files) | ✅ **COMPLETE / MERGED** (PR #26, master `68ab746`) |
 | Spigot 1.12.2 API — Batch 31 (direct pane ItemStack sites, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
 | Spigot 1.12.2 API — Batch 32 (direct pane fill sites part 2, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
-| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–32; Batch 33 NOT STARTED) |
+| Spigot 1.12.2 API — Batch 33 (direct pane fill sites part 3, 10 files / 10 sites) | ✅ **COMPLETE** (this checkpoint) |
+| Spigot 1.12.2 API migration (remaining Materials / BlockData / PDC / Particle / Sound / entities) | 🚧 **IN PROGRESS** (Batches 26–33; Batch 34 NOT STARTED) |
 | NMS / ProtocolLib runtime audit | ⛔ **NOT STARTED** |
 | Adventure runtime compatibility | ⛔ **NOT STARTED** |
 
@@ -955,6 +956,66 @@ NamespacedKey, ProtocolLib, NMS, Adventure, Particle, Sound, EntityType), remain
 
 ---
 
+### Batch 33 — Direct pane fill sites part 3 (COMPLETE, this checkpoint)
+
+Baseline: `origin/master` `bb14e38e9bce78498f2c68a73ccbc2747e53f7ad` (PR #28 merge, Batch 32). Fresh
+inventory found the four target panes at **83** constant occurrences / **82** distinct source lines
+(61 `Material.`-qualified + 22 config default strings): classified **31** direct sites — **19**
+direct `fill(Material)` plus **12** helper-default non-fill lines — **51** config/default sites,
+**0** comparisons. Of the 12 "direct non-fill" lines (Batch 32's broadened bucket), every one is a
+fallback-`Material` argument to protected config-driven helpers (`AuctionHouseMenuSupport.control()`
+×7 lines, `OrdersMenuSupport.button()` ×5 lines); both helpers take plain `Material` (no data
+overload) and even write `fallbackMaterial.name()` into config defaults, so migrating them requires
+helper changes and/or a config-compat layer — both explicitly out of scope. **Batch 33 therefore
+migrated only fill sites: 10 files × 1 unconditional `fill(Material.GRAY_STAINED_GLASS_PANE)` →
+`fill(Material.STAINED_GLASS_PANE, (short) 7)** (the maximum batch size; simplest tier: one direct
+site per file, no comparisons, no helper changes).
+
+Files changed: `menus/StatsMenu.java`, `menus/TeamInfoMenu.java`, `menus/TeamMenu.java`,
+`menus/TeleportAreaMenu.java`, `menus/SellProgressMenu.java`, `menus/ShopMenu.java`,
+`menus/ProfileViewerHomesMenu.java`, `menus/PurchaseShopMenu.java`, `menus/ConfirmKillMenu.java`,
+`menus/SellGui.java` — exactly 10 insertions / 10 deletions, nothing else. In mixed files
+(`SellProgressMenu`, `ShopMenu`, `ProfileViewerHomesMenu`, `PurchaseShopMenu`, `ConfirmKillMenu`,
+`SellGui`) every config/default pane reference — string defaults, `parseMaterial` defaults,
+`control()` fallbacks — was left byte-identical. All sites reuse the existing Batch-26
+`BaseMenu.fill(Material, short)` helper (amount 1, blank name, same slots; gray visual preserved
+via data 7). `ItemUtils.java` / `BaseMenu.java` / `ItemUtils.parseMaterial()` / `CrateManager`
+config-default logic / dye / head / skull / terracotta / `SUNFLOWER` / `SPAWNER` / `CLOCK` /
+`isAir()` / BlockData / PDC / NamespacedKey / Particle / Sound / EntityType / ProtocolLib / NMS /
+Adventure / tests: untouched.
+
+**Material counts:** GRAY 24→**14**, BLACK 12→**12**, RED 11→**11**, LIME 14→**14**
+(`Material.`-qualified). True target pane refs **82 → 72** distinct lines (**83 → 73** constant
+occurrences; −10 under either unit). Direct sites **31 → 21** (19→**9** fill + 12 protected
+helper-default lines); config/default sites **51 → 51** (untouched); comparisons **0**. Modern
+Material references **210 → 200** (ledger basis: 230 @ Batch 30 − 10 − 10 verified from the
+Batch 31/32 merge diffs − 10 here); independent audited basis (minecraft-data 1.12.2 list +
+hand-audit of Bukkit/vanilla name mismatches): **194 → 184** occurrences, unique constants 60 → 60,
+files with modern Materials 58 → **53** (−5: `TeleportAreaMenu`, `SellProgressMenu`, `ShopMenu`,
+`ProfileViewerHomesMenu`, `PurchaseShopMenu` now modern-free). Both bases agree on the exact −10
+delta and 0 constants eliminated. `Material.isAir()` remains exactly **103**. Batch 26–32 mappings
+intact and additively grown: SGP+7 44→**54**, SGP+15 20, SGP+14 3, SGP+5 2, SGP+8 1, `STAINED_CLAY` 2,
+`WATCH` 5, `MOB_SPAWNER` 4, `BOOK_AND_QUILL` 4, `EYE_OF_ENDER` 1, `EXP_BOTTLE` 1, `GRASS` 1,
+`INK_SACK` 16, `PLAYER_HEAD` 24 — all unchanged except the +10 SGP+7.
+
+**Remaining direct fill sites (9):** `AuctionHouseBrowseMenu:60`, `ConfirmPurchaseGui:58`,
+`FilterGui:38`, `OrdersDeleteConfirmMenu:41`, `OrdersDeliverConfirmMenu:69`, `PlayerAuctionGui:40`,
+`SpawnerMainMenu:38` (guard-branch fill), `TeamDisbandConfirmMenu:25` (BLACK→15),
+`TeamKickConfirmMenu:37` (BLACK→15). The 12 helper-default lines and 51 config/default sites stay
+deferred until `control()`/`button()` data-aware overloads or a config mapping layer are
+authorized. **Batch 34 NOT STARTED.**
+
+**Validation:** tree-sitter 0.26.0 runtime + tree-sitter-java 0.23.5 grammar (PyPI, self-tested
+against injected malformed/unbalanced/duplicate cases), full-buffer parse of all **421** src/main
+files — **421/421 clean**, 0 ERROR/MISSING, 0 delimiter imbalances, 0 conflict/javac-invalid
+markers, **0 new** duplicate full-signature declarations in changed files (changed-file duplicate
+sets byte-identical to baseline; pre-existing enum-constant `@Override` patterns unaffected),
+`git diff --check` clean, 0 string-literal changes in the diff, 0 test/resource files touched.
+
+**Build not verified — Maven/JDK unavailable.**
+
+---
+
 Inventory only for remaining items. Batches 1–30 did not fully migrate Category C. `Material.isAir()` is
 now **103 occ / 35 files**.
 
@@ -1024,8 +1085,14 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
     ItemStack/fill-related sites (19 `fill(Material)` + 12 direct non-fill item creations) for later
     batches, **51** config/default sites deliberately deferred, **0** comparisons. `Material.isAir()`
     remains exactly **103**.
-12. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 33 NOT STARTED.**
-    The 31 remaining direct pane sites, the config-driven pane compatibility layer, and the remaining
+12. ~~Spigot 1.12.2 direct pane fill sites part 3 (Batch 33, 10 files / 10 sites)~~ — **done (Batch 33,
+    this checkpoint).** 72 true pane refs remain (73 constant occurrences): **21** direct
+    ItemStack/fill-related sites (9 `fill(Material)` + 12 protected helper-default lines — the
+    `control()`/`button()` fallback-`Material` arguments are config-driven, not directly migratable)
+    for later batches, **51** config/default sites deliberately deferred, **0** comparisons.
+    `Material.isAir()` remains exactly **103**.
+13. Continue the Spigot 1.12.2 API phase (Materials / `isAir` remaining files). **Batch 34 NOT STARTED.**
+    The 21 remaining direct pane sites, the config-driven pane compatibility layer, and the remaining
     modern dye/head/1.13+ items plus 103 `isAir()` sites are later batches. BlockData / PDC / NMS /
     ProtocolLib stay deferred.
 

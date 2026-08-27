@@ -41,7 +41,7 @@ public class TeamMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         slotMembers.clear();
 
         Team team = plugin.getTeamManager().getTeam(player);

@@ -53,7 +53,7 @@ public final class SellGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         List<Integer> durations = plugin.getAuctionHouseManager().getAllowedDurations();
 
         set(AuctionHouseMenuSupport.slot(plugin, "GUI.SELL.ITEM", 4), escrowItem.clone());
