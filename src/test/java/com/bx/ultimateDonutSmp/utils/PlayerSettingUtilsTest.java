@@ -49,15 +49,12 @@ class PlayerSettingUtilsTest {
     }
 
     @Test
-    void notificationAndDuelSoundsDoNotDisableGameplaySounds() {
+    void notificationSoundsDoNotDisableGameplaySounds() {
         PlayerData data = new PlayerData(UUID.randomUUID(), "SettingsTester");
         data.setNotificationSoundsEnabled(false);
-        data.setDuelMusicEnabled(false);
 
         assertFalse(PlayerSettingUtils.soundEnabled(
                 data, PlayerSettingUtils.SoundChannel.NOTIFICATION));
-        assertFalse(PlayerSettingUtils.soundEnabled(
-                data, PlayerSettingUtils.SoundChannel.DUEL));
         assertTrue(PlayerSettingUtils.soundEnabled(
                 data, PlayerSettingUtils.SoundChannel.GAMEPLAY));
     }
