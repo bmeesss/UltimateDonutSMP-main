@@ -184,10 +184,10 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <!-- 5.10.1 pairs with junit-platform 1.10.1; the whole matched set (engine,
+            <!-- 6.1.3 pairs with junit-platform 1.10.1; the whole matched set (engine,
                  commons, launcher) exists in the offline repository, unlike the old 5.8.2
                  stack whose platform-launcher was never downloaded. -->
-            <version>5.10.1</version>
+            <version>6.1.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
