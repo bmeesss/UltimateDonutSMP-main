@@ -209,7 +209,7 @@ public class BountyMenu extends BaseMenu {
         }
         SkullMeta meta = (SkullMeta) item.getItemMeta();
 
-        meta.setOwningPlayer(resolveOfflinePlayer(bounty.getTargetUuid()));
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, resolveOfflinePlayer(bounty.getTargetUuid()));
         item.setItemMeta(meta);
         return item;
     }

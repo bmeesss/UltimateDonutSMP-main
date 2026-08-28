@@ -69,7 +69,7 @@ public class TpaConfirmMenu extends BaseMenu {
         SkullMeta meta = (SkullMeta) item.getItemMeta();
 
         OfflinePlayer requester = Bukkit.getOfflinePlayer(requesterName);
-        meta.setOwningPlayer(requester);
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, requester);
         item.setItemMeta(meta);
         return item;
     }

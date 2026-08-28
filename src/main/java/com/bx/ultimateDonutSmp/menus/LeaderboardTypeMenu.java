@@ -147,7 +147,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
         if (material == Material.SKULL_ITEM && item.getItemMeta() instanceof SkullMeta) {
             SkullMeta meta = (SkullMeta) item.getItemMeta();
             OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(entry.playerData().getUuid());
-            meta.setOwningPlayer(offlinePlayer);
+            com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, offlinePlayer);
             item.setItemMeta(meta);
         }
         return item;
@@ -177,7 +177,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
 
         if (item.getItemMeta() instanceof SkullMeta) {
             SkullMeta meta = (SkullMeta) item.getItemMeta();
-            meta.setOwningPlayer(player);
+            com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, player);
             item.setItemMeta(meta);
         }
         return item;

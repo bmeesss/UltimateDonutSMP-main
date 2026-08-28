@@ -14,7 +14,6 @@ import com.comphenix.protocol.wrappers.EnumWrappers;
 import com.comphenix.protocol.wrappers.PlayerInfoData;
 import com.comphenix.protocol.wrappers.WrappedDataValue;
 import com.comphenix.protocol.wrappers.WrappedDataWatcher;
-import com.comphenix.protocol.wrappers.WrappedEnumEntityUseAction;
 import com.comphenix.protocol.wrappers.WrappedGameProfile;
 import com.comphenix.protocol.wrappers.WrappedSignedProperty;
 import org.bukkit.Bukkit;
@@ -53,6 +52,8 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
     private static final double VANILLA_KNOCKBACK_VERTICAL = 0.4D;
     private static final long DEFAULT_KNOCKBACK_RESET_TICKS = 20L;
     private static final long DEFAULT_HARD_POSITION_LOCK_INTERVAL_TICKS = 1L;
+    /** 1.8 numeric {@code PacketPlayInUseEntity} action value for ATTACK. */
+    private static final int LEGACY_NUMERIC_ATTACK_ACTION = 1;
 
     private final UltimateDonutSmp plugin;
     private final FakePlayerManager fakePlayerManager;
@@ -107,15 +108,78 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
         return null;
     }
 
+    /**
+     * Reads the use-action out of a {@code PacketPlayInUseEntity} without touching ProtocolLib's
+     * entity-use wrapper.
+     *
+     * <p>ProtocolLib's entity-use wrapper cannot be used on Spigot 1.12.2. Its static
+     * initialiser runs, unconditionally, before any of its methods can be called:</p>
+     * <pre>
+     * private static final ConstructorAccessor INTERACT   = useAction(EnumWrappers.getHandClass());
+     * private static final ConstructorAccessor INTERACT_AT = useAction(EnumWrappers.getHandClass(),
+     *                                                                 MinecraftReflection.getVec3DClass());
+     * ...
+     * throw new IllegalArgumentException("No constructor with " + Arrays.toString(parameterTypes)
+     *                                    + " in " + PACKET_CLASS);
+     * </pre>
+     * <p>{@code useAction} walks {@code PacketPlayInUseEntity.getDeclaredClasses()} looking for a
+     * nested class with an {@code (EnumHand)} constructor. That nested class only exists from
+     * 1.13/1.17 onwards, where the action is a sealed hierarchy of records carrying a hand. In
+     * 1.12_R1 {@code PacketPlayInUseEntity} declares exactly one nested class, the plain enum
+     * {@code EnumEntityUseAction { INTERACT, ATTACK, INTERACT_AT }}, and there is no
+     * {@code EnumHand} field in the packet at all. The lookup therefore throws
+     * {@code IllegalArgumentException}, which the JVM wraps in an
+     * {@code ExceptionInInitializerError} - and because the class failed initialisation, every
+     * later touch of it raises {@code NoClassDefFoundError}.</p>
+     *
+     * <p>So this is a ProtocolLib-side incompatibility with the 1.12.2 packet mapping (option A
+     * of the audit): even a perfectly correct plugin call cannot work. The version-safe fix is to
+     * not use the wrapper at all and read the action field generically, which is what this method
+     * does. The layout is stable across the versions this plugin supports:</p>
+     * <ul>
+     *   <li>1.8: {@code int} action (0 = INTERACT, 1 = ATTACK, 2 = INTERACT_AT);</li>
+     *   <li>1.9-1.16: {@code PacketPlayInUseEntity$EnumEntityUseAction} enum;</li>
+     *   <li>1.17+: {@code ServerboundInteractPacket$Action} implementations named
+     *       {@code ...AttackAction}.</li>
+     * </ul>
+     *
+     * <p>Field 0 is always the target entity id, so a numeric action is only accepted at a later
+     * index; that keeps an entity id of {@code 1} from being mistaken for an attack.</p>
+     */
     private boolean isAttackAction(PacketContainer packet) {
+        if (packet == null) {
+            return false;
+        }
         try {
-            if (packet.getEnumEntityUseActions().size() > 0) {
-                WrappedEnumEntityUseAction action = packet.getEnumEntityUseActions().read(0);
-                return action != null && action.getAction() == EnumWrappers.EntityUseAction.ATTACK;
+            StructureModifier<Object> modifier = packet.getModifier();
+            for (int index = 0; index < modifier.size(); index++) {
+                Object value;
+                try {
+                    value = modifier.read(index);
+                } catch (Throwable ignored) {
+                    continue;
+                }
+                if (isAttackValue(value, index)) {
+                    return true;
+                }
             }
-        } catch (RuntimeException ignored) {
+        } catch (Throwable ignored) {
+            // A packet we cannot read is not an attack; the swing/attack handler stays silent.
         }
         return false;
+    }
+
+    private static boolean isAttackValue(Object value, int fieldIndex) {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof Enum) {
+            return "ATTACK".equalsIgnoreCase(((Enum<?>) value).name());
+        }
+        if (fieldIndex > 0 && value instanceof Number) {
+            return ((Number) value).intValue() == LEGACY_NUMERIC_ATTACK_ACTION;
+        }
+        return value.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT).contains("attack");
     }
 
     @Override

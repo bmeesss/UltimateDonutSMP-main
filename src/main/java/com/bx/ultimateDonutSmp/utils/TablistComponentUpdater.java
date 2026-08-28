@@ -22,14 +22,49 @@ import java.util.UUID;
 
 public final class TablistComponentUpdater {
 
+    /*
+     * Modern (1.17+) Mojang-mapped names first, then the relocated 1.16.5-and-older names.
+     * NmsSupport derives the "net.minecraft.server.<version>." prefix from the running
+     * CraftBukkit package, so on Spigot 1.12.2 these resolve to
+     * net.minecraft.server.v1_12_R1.PacketPlayOutPlayerInfo / IChatBaseComponent. Without the
+     * versioned entries every lookup below throws ClassNotFoundException on 1.12.2, the whole
+     * component route disables itself and the tablist falls back to the 16-character truncated
+     * Bukkit player-list-name path (which is what made player names disappear).
+     */
     private static final String[] PLAYER_INFO_UPDATE_PACKET_CLASS_NAMES = {
             "net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket",
             "net.minecraft.network.protocol.game.PacketPlayOutPlayerInfo"
+    };
+    private static final String[] PLAYER_INFO_UPDATE_PACKET_LEGACY_NAMES = {
+            "PacketPlayOutPlayerInfo"
     };
     private static final String[] PLAYER_INFO_REMOVE_PACKET_CLASS_NAMES = {
             "net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket",
             "net.minecraft.network.protocol.game.PacketPlayOutPlayerInfoRemove"
     };
+    private static final String[] NATIVE_COMPONENT_CLASS_NAMES = {
+            "net.minecraft.network.chat.Component",
+            "net.minecraft.network.chat.IChatBaseComponent"
+    };
+    private static final String[] NATIVE_COMPONENT_LEGACY_NAMES = {
+            "IChatBaseComponent"
+    };
+
+    /** Ordered candidate list for the modern + relocated player-info packet class. */
+    private static List<String> playerInfoUpdatePacketClassNames() {
+        return NmsSupport.candidates(PLAYER_INFO_UPDATE_PACKET_CLASS_NAMES,
+                PLAYER_INFO_UPDATE_PACKET_LEGACY_NAMES);
+    }
+
+    /** Ordered candidate list for the modern + relocated player-info-removal packet class. */
+    private static List<String> playerInfoRemovePacketClassNames() {
+        return NmsSupport.candidates(PLAYER_INFO_REMOVE_PACKET_CLASS_NAMES);
+    }
+
+    /** Ordered candidate list for the modern + relocated chat component class. */
+    private static List<String> nativeComponentClassNames() {
+        return NmsSupport.candidates(NATIVE_COMPONENT_CLASS_NAMES, NATIVE_COMPONENT_LEGACY_NAMES);
+    }
 
     private final UltimateDonutSmp plugin;
     private boolean warned;
@@ -162,11 +197,7 @@ public final class TablistComponentUpdater {
     private Object toNativeComponentDirect(net.kyori.adventure.text.Component adventureComponent) {
         try {
             ClassLoader loader = plugin.getServer().getClass().getClassLoader();
-            Class<?> nativeComponentType = getFirstAvailableClassOrNull(
-                    loader,
-                    "net.minecraft.network.chat.Component",
-                    "net.minecraft.network.chat.IChatBaseComponent"
-            );
+            Class<?> nativeComponentType = NmsSupport.findClass(loader, nativeComponentClassNames());
             if (nativeComponentType == null) {
                 return null;
             }
@@ -920,11 +951,7 @@ public final class TablistComponentUpdater {
 
     private Object parseWithMinecraftSerializer(String json) throws ReflectiveOperationException {
         ClassLoader loader = plugin.getServer().getClass().getClassLoader();
-        Class<?> componentType = getFirstAvailableClassOrNull(
-                loader,
-                "net.minecraft.network.chat.Component",
-                "net.minecraft.network.chat.IChatBaseComponent"
-        );
+        Class<?> componentType = NmsSupport.findClass(loader, nativeComponentClassNames());
         if (componentType == null) {
             return null;
         }
@@ -1088,7 +1115,7 @@ public final class TablistComponentUpdater {
     }
 
     private Object createDisplayNamePacket(Object handle, Object displayName) throws ReflectiveOperationException {
-        Class<?> packetClass = getFirstAvailableClass(PLAYER_INFO_UPDATE_PACKET_CLASS_NAMES);
+        Class<?> packetClass = getFirstAvailableClass(playerInfoUpdatePacketClassNames());
         Object action = findAction(packetClass, "UPDATE_DISPLAY_NAME", "UPDATE_DISPLAY");
         if (action == null) {
             throw new NoSuchFieldException("UPDATE_DISPLAY_NAME action");
@@ -1101,7 +1128,7 @@ public final class TablistComponentUpdater {
     }
 
     private Object createAddPlayerPacket(Object handle) throws ReflectiveOperationException {
-        Class<?> packetClass = getFirstAvailableClass(PLAYER_INFO_UPDATE_PACKET_CLASS_NAMES);
+        Class<?> packetClass = getFirstAvailableClass(playerInfoUpdatePacketClassNames());
         List<Object> actions = findActions(
                 packetClass,
                 "ADD_PLAYER",
@@ -1127,7 +1154,7 @@ public final class TablistComponentUpdater {
 
     private Object createRemovePlayerPacket(UUID playerId, Object handle) throws ReflectiveOperationException {
         try {
-            Class<?> packetClass = getFirstAvailableClass(PLAYER_INFO_REMOVE_PACKET_CLASS_NAMES);
+            Class<?> packetClass = getFirstAvailableClass(playerInfoRemovePacketClassNames());
             List<UUID> playerIds = java.util.Collections.singletonList(playerId);
             for (Constructor<?> constructor : packetClass.getDeclaredConstructors()) {
                 Class<?>[] parameters = constructor.getParameterTypes();
@@ -1145,7 +1172,7 @@ public final class TablistComponentUpdater {
         } catch (ClassNotFoundException ignored) {
         }
 
-        Class<?> packetClass = getFirstAvailableClass(PLAYER_INFO_UPDATE_PACKET_CLASS_NAMES);
+        Class<?> packetClass = getFirstAvailableClass(playerInfoUpdatePacketClassNames());
         Object action = findAction(packetClass, "REMOVE_PLAYER");
         if (action == null) {
             throw new NoSuchFieldException("REMOVE_PLAYER action");
@@ -1600,12 +1627,12 @@ public final class TablistComponentUpdater {
         return null;
     }
 
-    private Class<?> getFirstAvailableClass(String[] classNames) throws ClassNotFoundException {
+    private Class<?> getFirstAvailableClass(Collection<String> classNames) throws ClassNotFoundException {
         ClassLoader loader = plugin.getServer().getClass().getClassLoader();
         for (String className : classNames) {
             try {
                 return Class.forName(className, false, loader);
-            } catch (ClassNotFoundException ignored) {
+            } catch (ClassNotFoundException | LinkageError ignored) {
             }
         }
         throw new ClassNotFoundException(String.join(", ", classNames));

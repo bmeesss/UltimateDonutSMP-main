@@ -577,7 +577,19 @@ public class ItemUtils {
         return null;
     }
 
-    private static boolean applyOwnerToSkullMeta(SkullMeta meta, OfflinePlayer player) {
+    /**
+     * Sets a skull's owning player across Bukkit generations.
+     *
+     * <p>{@code SkullMeta#setOwningPlayer(OfflinePlayer)} only exists from Bukkit 1.13 onwards.
+     * Spigot 1.12.2 exposes {@code SkullMeta#setOwner(String)} and nothing else, so a direct
+     * call to the modern method is a compile error against the 1.12.2 API and a
+     * {@code NoSuchMethodError} at runtime when compiled against a newer one. Call sites must go
+     * through this helper, which prefers the modern method reflectively and falls back to the
+     * 1.12.2 name-based setter.</p>
+     *
+     * @return {@code true} when an owner was applied
+     */
+    public static boolean applyOwnerToSkullMeta(SkullMeta meta, OfflinePlayer player) {
         if (meta == null || player == null) {
             return false;
         }

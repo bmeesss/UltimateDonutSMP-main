@@ -297,7 +297,7 @@ public class ProfileViewerMenu extends BaseMenu {
         SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
-        meta.setOwningPlayer(offlinePlayer);
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, offlinePlayer);
         meta.setDisplayName(ColorUtils.toComponent(displayName));
         meta.setLore(ColorUtils.toComponentList(lore));
         item.setItemMeta(meta);

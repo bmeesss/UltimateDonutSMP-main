@@ -110,7 +110,7 @@ public class StatsMenu extends BaseMenu {
         SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(targetUuid);
-        meta.setOwningPlayer(offlinePlayer);
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, offlinePlayer);
         meta.setDisplayName(ColorUtils.toComponent(displayName));
         meta.setLore(ColorUtils.toComponentList(lore));
         item.setItemMeta(meta);

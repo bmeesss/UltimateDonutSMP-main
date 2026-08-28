@@ -78,6 +78,85 @@ public final class LegacyScoreboardText {
         return sanitize(raw, MAX_PLAYER_LIST_NAME_LENGTH);
     }
 
+    /**
+     * Prepares a tab-list name for {@code Player#setPlayerListName(String)} on 1.12.2 while
+     * guaranteeing that {@code mustKeep} survives the 16-character truncation.
+     *
+     * <p>The plain {@link #sanitizePlayerListName(String)} variant truncates from the right, so a
+     * media badge plus a long prefix can push the player's own name past the limit and the tab
+     * list ends up showing only the badge. This variant inverts the priority: the badge/prefix
+     * side is trimmed (its leading colour codes are preserved so the badge keeps its colour) and
+     * everything after {@code mustKeep} (team suffix and similar decoration) is dropped, because
+     * the requirement is that the player name itself stays readable.</p>
+     *
+     * <p>Only reached when the NMS/Adventure component route is unavailable; the component route
+     * has no length limit and remains the preferred path.</p>
+     *
+     * @param raw      the fully formatted tab-list text (legacy, hex or gradient markup)
+     * @param mustKeep the substring that must survive, typically the player's public name
+     */
+    public static String sanitizePlayerListNameKeeping(String raw, String mustKeep) {
+        if (raw == null || raw.isEmpty()) {
+            return "";
+        }
+        String legacy = collapse(toLegacyColors(raw));
+        int limit = MAX_PLAYER_LIST_NAME_LENGTH;
+        if (legacy.length() <= limit) {
+            return sanitize(raw, limit);
+        }
+        if (mustKeep == null || mustKeep.isEmpty()) {
+            return truncate(legacy, limit);
+        }
+
+        String keep = collapse(toLegacyColors(mustKeep));
+        if (keep.isEmpty()) {
+            return truncate(legacy, limit);
+        }
+        if (keep.length() > limit) {
+            return truncate(keep, limit);
+        }
+
+        int start = legacy.indexOf(keep);
+        if (start < 0) {
+            return truncate(legacy, limit);
+        }
+
+        String head = legacy.substring(0, start);
+        int budget = limit - keep.length();
+        return trimHead(head, budget) + keep;
+    }
+
+    /**
+     * Keeps the leading colour codes of {@code head} and then as many of the following visible
+     * characters as {@code budget} allows, so a media badge keeps its colour instead of being cut
+     * mid escape sequence.
+     */
+    private static String trimHead(String head, int budget) {
+        if (head == null || head.isEmpty() || budget <= 0) {
+            return "";
+        }
+        if (head.length() <= budget) {
+            return head;
+        }
+
+        StringBuilder out = new StringBuilder(budget + 2);
+        int i = 0;
+        int length = head.length();
+        while (i + 1 < length && head.charAt(i) == SECTION && out.length() + 2 <= budget) {
+            out.append(head.charAt(i)).append(head.charAt(i + 1));
+            i += 2;
+        }
+        int remaining = budget - out.length();
+        if (remaining <= 0) {
+            return out.toString();
+        }
+        String visible = head.substring(i);
+        if (visible.length() > remaining) {
+            visible = visible.substring(0, remaining);
+        }
+        return out.append(visible).toString();
+    }
+
     /** Converts, collapses and safely truncates to {@code limit} raw characters. */
     public static String sanitize(String raw, int limit) {
         if (raw == null || raw.isEmpty()) {
