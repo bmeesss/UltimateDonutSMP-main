@@ -96,6 +96,7 @@ public final class SignInputUtil {
 
     public static void open(JavaPlugin plugin, Player player, List<String> lines, int inputLine, Consumer<String> callback) {
         cancel(player);
+        cancelFeatureChatPrompts(plugin, player);
         if (!player.isOnline()) {
             if (callback != null) {
                 callback.accept(null);
@@ -278,7 +279,7 @@ public final class SignInputUtil {
             prompt.add("Enter Value");
         }
 
-        CHAT_PROMPTS.put(uuid, new ChatPrompt(prompt));
+        CHAT_PROMPTS.put(uuid, new ChatPrompt());
 
         for (String line : prompt) {
             player.sendMessage(ColorUtils.toComponent(line));
@@ -309,13 +310,26 @@ public final class SignInputUtil {
         }
     }
 
-    /** Whether this player currently owes this utility an answer (sign or chat transport). */
+    /**
+     * Whether this player currently owes this utility an answer, on either transport.
+     *
+     * <p>Covers the chat transport ({@link #CHAT_PROMPTS}) and the sign transport (a registered
+     * {@link #PLUGINS} entry) alike, so a chat message is consumed as the answer regardless of
+     * which transport the prompt opened with. That also resolves a prompt whose sign editor was
+     * closed with ESC on newer servers, where no {@code SignChangeEvent} ever arrives.</p>
+     */
     public static boolean hasPendingInput(UUID uuid) {
-        return uuid != null && CHAT_PROMPTS.containsKey(uuid);
+        if (uuid == null) {
+            return false;
+        }
+        if (CHAT_PROMPTS.containsKey(uuid)) {
+            return true;
+        }
+        return PLUGINS.containsKey(uuid);
     }
 
     /**
-     * Feeds a chat message into an open chat-input session.
+     * Feeds a chat message into an open input session.
      *
      * <p>Called from {@code ChatListener} so the message is consumed before the chat pipeline can
      * broadcast it. Runs on the main thread.</p>
@@ -327,16 +341,12 @@ public final class SignInputUtil {
             return false;
         }
         UUID uuid = player.getUniqueId();
-        if (!CHAT_PROMPTS.containsKey(uuid)) {
+        if (!hasPendingInput(uuid)) {
             return false;
         }
 
         String text = rawMessage == null ? "" : rawMessage.trim();
-        if (text.equalsIgnoreCase(CANCEL_WORD)) {
-            finish(player, null);
-            return true;
-        }
-        finish(player, text);
+        finish(player, text.equalsIgnoreCase(CANCEL_WORD) ? null : text);
         return true;
     }
 
@@ -395,6 +405,25 @@ public final class SignInputUtil {
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * A new shared-transport prompt supersedes any feature-local chat prompt still marked pending
+     * (home naming, team search), so the next chat message can only ever reach the prompt the
+     * player most recently saw. The reverse direction — a feature prompt cancelling a session of
+     * this utility — happens in those features' prompt methods via {@link #cancel(Player)}.
+     */
+    private static void cancelFeatureChatPrompts(JavaPlugin plugin, Player player) {
+        if (!(plugin instanceof UltimateDonutSmp)) {
+            return;
+        }
+        UltimateDonutSmp uds = (UltimateDonutSmp) plugin;
+        if (uds.getHomeManager() != null) {
+            uds.getHomeManager().cancelPendingInput(player);
+        }
+        if (uds.getTeamManager() != null) {
+            uds.getTeamManager().cancelPendingSearch(player);
+        }
+    }
+
     public static void cancel(Player player) {
         finish(player, null);
     }
@@ -437,7 +466,13 @@ public final class SignInputUtil {
 
         if (callback != null) {
             if (scheduler != null) {
-                scheduler.runEntity(player, () -> callback.accept(text));
+                scheduler.runEntity(player, () -> {
+                    // A prompt answered (or cancelled) at the same moment the player left must not
+                    // reopen a menu for an offline player one tick later.
+                    if (player.isOnline()) {
+                        callback.accept(text);
+                    }
+                });
             } else {
                 callback.accept(text);
             }
@@ -486,7 +521,7 @@ public static final class Placement {
     public MaterialData oldData() { return oldData; }
 
     @Override public String toString() {
-        return "Placement[loc=+loc, oldData=+oldData]";
+        return "Placement[loc=" + loc + ", oldData=" + oldData + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -501,14 +536,7 @@ public static final class Placement {
 
     /** The prompt shown to a player waiting on the chat transport. */
     private static final class ChatPrompt {
-        private final List<String> lines;
-
-        ChatPrompt(List<String> lines) {
-            this.lines = lines;
-        }
-
-        List<String> lines() {
-            return lines;
+        ChatPrompt() {
         }
     }
 

@@ -78,7 +78,7 @@ public class ProfileViewerMenu extends BaseMenu {
 
     private void buildSummary() {
         int slot = menus().getInt(MENU_PATH + ".BUTTONS.SUMMARY.SLOT", 4);
-        Material material = ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.SUMMARY.MATERIAL", "SKULL_ITEM"));
+        Material material = ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.SUMMARY.MATERIAL", "SKULL_ITEM"), Material.SKULL_ITEM);
 
         List<String> lore = replacePlaceholders(
                 menus().getStringList(MENU_PATH + ".BUTTONS.SUMMARY.LORE"),
@@ -130,7 +130,7 @@ public class ProfileViewerMenu extends BaseMenu {
             }
 
             set(slot, ItemUtils.createItem(
-                    ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE")),
+                    ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"), Material.STONE),
                     plugin.getCurrencyManager().applyStaticPlaceholders(section.getString("DISPLAY-NAME", "&b" + key)),
                     lore
             ));
@@ -152,7 +152,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.HOMES.MATERIAL", "WOOL")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.HOMES.MATERIAL", "WOOL"), Material.WOOL),
                 replacePlaceholders(menus().getString(MENU_PATH + ".BUTTONS.HOMES.DISPLAY-NAME", "&bHomes"), snapshot),
                 lore
         ));
@@ -180,7 +180,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.CURRENT-LOCATION.MATERIAL", "COMPASS")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.CURRENT-LOCATION.MATERIAL", "COMPASS"), Material.COMPASS),
                 replacePlaceholders(menus().getString(namePath, fallbackName), snapshot),
                 lore
         ));
@@ -210,7 +210,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.PUNISHMENTS.MATERIAL", "IRON_BARS")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.PUNISHMENTS.MATERIAL", "IRON_BARS"), Material.IRON_FENCE),
                 replacePlaceholders(menus().getString(MENU_PATH + ".BUTTONS.PUNISHMENTS.DISPLAY-NAME", "&bPunishments"), snapshot),
                 lore
         ));
@@ -228,7 +228,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH"), Material.WATCH),
                 replacePlaceholders(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.DISPLAY-NAME", "&bRefresh"), snapshot),
                 lore
         ));

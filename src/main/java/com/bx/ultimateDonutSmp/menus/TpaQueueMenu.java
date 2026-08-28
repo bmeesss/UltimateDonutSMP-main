@@ -51,7 +51,7 @@ public class TpaQueueMenu extends BaseMenu {
 
         FileConfiguration menus = menus();
         if (menus.getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
-            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")));
+            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE));
         }
 
         List<Integer> contentSlots = contentSlots();
@@ -125,7 +125,7 @@ public class TpaQueueMenu extends BaseMenu {
     private void buildEmptyState() {
         String path = MENU_PATH + ".EMPTY-BUTTON";
         set(menus().getInt(path + ".SLOT", 22), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "BARRIER")),
+                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "BARRIER"), Material.BARRIER),
                 replaceStaticPlaceholders(menus().getString(path + ".DISPLAY-NAME", "&cNo queued requests")),
                 replaceStaticPlaceholders(defaultIfEmpty(
                         menus().getStringList(path + ".LORE"),
@@ -182,9 +182,9 @@ public class TpaQueueMenu extends BaseMenu {
             return;
         }
 
-        Material material = ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", active ? "ARROW" : "BARRIER"));
+        Material material = ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", active ? "ARROW" : "BARRIER"), active ? Material.ARROW : Material.BARRIER);
         if (!active && !"RANDOM".equals(key)) {
-            material = ItemUtils.parseMaterial(menus().getString(path + ".DISABLED-MATERIAL", "BARRIER"));
+            material = ItemUtils.parseMaterial(menus().getString(path + ".DISABLED-MATERIAL", "BARRIER"), Material.BARRIER);
         }
         String displayName = menus().getString(path + ".DISPLAY-NAME", "&a" + key.toLowerCase());
         List<String> lore = menus().getStringList(path + ".LORE");

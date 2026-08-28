@@ -176,20 +176,23 @@ public class PlayerRespawnListener implements Listener {
         Set<Material> grantedMaterials = new HashSet<>();
         if (itemList != null) {
             for (Object obj : itemList) {
-                Material mat = Material.STONE;
+                Material mat = null;
                 int amount = 1;
                 String name = null;
+                String configuredMaterial = null;
 
                 if (obj instanceof ConfigurationSection) {
                     ConfigurationSection section = (ConfigurationSection) obj;
-                    mat = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
+                    configuredMaterial = section.getString("MATERIAL", "STONE");
+                    mat = ItemUtils.parseMaterial(configuredMaterial);
                     amount = section.getInt("AMOUNT", 1);
                     name = section.getString("NAME");
                 } else if (obj instanceof java.util.Map<?, ?>) {
                     java.util.Map<?, ?> map = (java.util.Map<?, ?>) obj;
                     Object matObj = map.get("MATERIAL");
                     if (matObj != null) {
-                        mat = ItemUtils.parseMaterial(matObj.toString());
+                        configuredMaterial = matObj.toString();
+                        mat = ItemUtils.parseMaterial(configuredMaterial);
                     }
                     Object amtObj = map.get("AMOUNT");
                     if (amtObj != null) {
@@ -202,6 +205,13 @@ public class PlayerRespawnListener implements Listener {
                         name = nameObj.toString();
                     }
                 } else {
+                    continue;
+                }
+
+                if (mat == null) {
+                    // An unresolvable MATERIAL must not degrade into a stone block in the kit.
+                    plugin.getLogger().warning("SETTINGS.CHAINMAIL-RESPAWN-ITEMS entry has unresolvable MATERIAL '"
+                            + configuredMaterial + "'; the item was skipped.");
                     continue;
                 }
 

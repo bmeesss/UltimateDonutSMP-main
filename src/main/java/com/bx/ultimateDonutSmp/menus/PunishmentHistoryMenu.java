@@ -181,7 +181,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
         }
 
         set(inventory.getSize() / 2, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER"), Material.BARRIER),
                 replaceMenuPlaceholders(name),
                 replaceMenuPlaceholders(lore)
         ));
@@ -194,7 +194,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
                 : java.util.Collections.singletonList("&7Close this history menu.");
 
         set(BACK_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.BACK.MATERIAL", "ARROW")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.BACK.MATERIAL", "ARROW"), Material.ARROW),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS.BACK.DISPLAY-NAME", fallbackName)),
                 replaceMenuPlaceholders(defaultIfEmpty(menus().getStringList(MENU_PATH + ".BUTTONS.BACK.LORE"), fallbackLore))
         ));
@@ -202,7 +202,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
 
     private void buildFilterStateButton() {
         set(FILTER_STATE_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.FILTER-STATE.MATERIAL", "HOPPER")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.FILTER-STATE.MATERIAL", "HOPPER"), Material.HOPPER),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS.FILTER-STATE.DISPLAY-NAME", "&dState filter")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".BUTTONS.FILTER-STATE.LORE"),
@@ -213,7 +213,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
 
     private void buildFilterTypeButton() {
         set(FILTER_TYPE_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.FILTER-TYPE.MATERIAL", "BOOK")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.FILTER-TYPE.MATERIAL", "BOOK"), Material.BOOK),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS.FILTER-TYPE.DISPLAY-NAME", "&dType filter")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".BUTTONS.FILTER-TYPE.LORE"),
@@ -224,7 +224,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
 
     private void buildRefreshButton() {
         set(REFRESH_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH"), Material.WATCH),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.DISPLAY-NAME", "&dRefresh")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".BUTTONS.REFRESH.LORE"),
@@ -234,7 +234,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
     }
 
     private void buildPageButtons() {
-        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(PREVIOUS_PAGE_SLOT, ItemUtils.createItem(
@@ -266,7 +266,10 @@ public class PunishmentHistoryMenu extends BaseMenu {
     private ItemStack createPunishmentItem(PunishmentRecord record) {
         PunishmentState state = plugin.getPunishmentManager().getState(record);
         String materialPath = MENU_PATH + ".PUNISHMENT-ITEM.MATERIALS." + record.getType().name();
-        Material material = ItemUtils.parseMaterial(menus().getString(materialPath, PunishmentItemRenderer.defaultMaterial(record.getType())));
+        String fallbackName = PunishmentItemRenderer.defaultMaterial(record.getType());
+        Material fallback = ItemUtils.parseMaterial(fallbackName, Material.BARRIER);
+        Material material = ItemUtils.parseMaterial(
+                menus().getString(materialPath, fallbackName), fallback);
         String displayNameTemplate = menus().getString(MENU_PATH + ".PUNISHMENT-ITEM.DISPLAY-NAME", "{status_color}{type}");
         List<String> loreTemplate = defaultIfEmpty(
                 menus().getStringList(MENU_PATH + ".PUNISHMENT-ITEM.LORE"),

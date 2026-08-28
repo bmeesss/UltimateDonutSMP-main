@@ -22,7 +22,7 @@ class PlayerSettingDefaultsTest {
     @Test
     void bundledMenusKeepEverySettingEnabledWithBuiltInDefaults() throws Exception {
         YamlConfiguration menus = new YamlConfiguration();
-        menus.load(Path.of("src/main/resources", "menus.yml").toFile());
+        menus.load(java.nio.file.Paths.get("src/main/resources", "menus.yml").toFile());
 
         ConfigurationSection buttons = menus.getConfigurationSection(PlayerSettingDefaults.BUTTONS_PATH);
         assertNotNull(buttons);

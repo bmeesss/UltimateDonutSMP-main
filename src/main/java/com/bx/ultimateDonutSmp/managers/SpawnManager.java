@@ -579,7 +579,7 @@ public final class SetupAreaTarget {
                     key,
                     type,
                     slot,
-                    ItemUtils.parseMaterial(section.getString("MATERIAL", "ITEM_FRAME")),
+                    ItemUtils.parseMaterial(section.getString("MATERIAL", "ITEM_FRAME"), Material.ITEM_FRAME),
                     section.getString("DISPLAY-NAME", type == AreaType.SPAWN ? "&bspawn" : "&#A303F9afk"),
                     section.getStringList("LORE"),
                     cuboidName,
@@ -1368,7 +1368,7 @@ public final class SetupAreaTarget {
         int randomSlot = menus.getInt(menuPath + ".RANDOM-BUTTON.SLOT", -1);
 
         Material material = existingAreas.isEmpty()
-                ? ItemUtils.parseMaterial(menus.getString(menuPath + ".AREAS.1.MATERIAL", "ITEM_FRAME"))
+                ? ItemUtils.parseMaterial(menus.getString(menuPath + ".AREAS.1.MATERIAL", "ITEM_FRAME"), Material.ITEM_FRAME)
                 : existingAreas.get(0).material();
         List<String> lore = existingAreas.isEmpty()
                 ? defaultLore(type)

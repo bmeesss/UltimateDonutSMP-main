@@ -315,7 +315,7 @@ public final class WorldSummary {
                 continue;
             }
 
-            Material iconMaterial = ItemUtils.parseMaterial(section.getString("ICON_MATERIAL", "SPAWNER"));
+            Material iconMaterial = ItemUtils.parseMaterial(section.getString("ICON_MATERIAL", "SPAWNER"), Material.MOB_SPAWNER);
             long baseItemsPerCycle = Math.max(1L, section.getLong("BASE_ITEMS_PER_CYCLE", 1L));
             double xpPerCycle = Math.max(0.0, section.getDouble("XP_PER_CYCLE", defaultXpPerCycle));
             List<SpawnerTypeDefinition.DropDefinition> drops = new ArrayList<>();
@@ -327,7 +327,15 @@ public final class WorldSummary {
                         continue;
                     }
 
-                    Material material = ItemUtils.parseMaterial(dropSection.getString("MATERIAL", "STONE"));
+                    String configuredDropMaterial = dropSection.getString("MATERIAL", "STONE");
+                    Material material = ItemUtils.parseMaterial(configuredDropMaterial);
+                    if (material == null) {
+                        // A broken drop MATERIAL must not silently spawn stone; skip the drop.
+                        plugin.getLogger().warning("[SpawnerManager] Drop '" + dropKey
+                                + "' of spawner type " + key + " has unresolvable MATERIAL '"
+                                + configuredDropMaterial + "'; the drop was skipped.");
+                        continue;
+                    }
                     long min = Math.max(0L, dropSection.getLong("MIN", 0L));
                     long max = Math.max(min, dropSection.getLong("MAX", min));
                     double chance = Math.max(0D, Math.min(1D, dropSection.getDouble("CHANCE", 1D)));

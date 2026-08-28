@@ -187,9 +187,7 @@ ORDERS:
       FAILED: 'Pengiriman gagal: {reason}'
     ORDER:
       TITLE: 'Order #{id}'
-      BUTTON: '#{id} {item} X{remaining}
-
-        {price} Per item - {owner}'
+      BUTTON: '#{id} {item} X{remaining}'
     CANCEL:
       TITLE: Batalkan order
       CONTENT: 'Batalkan order #{id}? sisa escrow akan menjadi klaim refund.'
@@ -2965,8 +2963,8 @@ BUILTIN:
   6c0bdec14d249552d44b: Buat <crate> &7- create a crate
   e9cad36f99dc562a7f9f: Hapus <crate> &7- delete a crate
   d17732f9b82f2fd3b583: Memiliki &a
-  84fff984ba917d96f1b2: Telah mengaktifkan &atpa penerimaan otomatis&7. 
-  c7ebbfbf5e8b3f862aef: Telah mengaktifkan &atpahere penerimaan otomatis&7. 
+  84fff984ba917d96f1b2: 'Telah mengaktifkan &atpa penerimaan otomatis&7. Permintaan &b/tpa&7 Anda sedang diproses.'
+  c7ebbfbf5e8b3f862aef: 'Telah mengaktifkan &atpahere penerimaan otomatis&7. Permintaan &b/tpahere&7 Anda sedang diproses.'
   6f85bea4f47bba24cba1: Daftar &7- list active/configured stashes
   ce95f5f513d28c2b721d: Muat ulang &7- reload spawn-stash.yml
   436821e7b47185f696d0: Hapus <id|nearest|all> &7- rollback stashes
@@ -2992,7 +2990,7 @@ BUILTIN:
   f611e51641ed6ebf3061: Open <crate> &7- open a crate directly
   e969f79d7e1f42d238e2: Type <crate> <choose_one|gacha> &7- set crate type
   fef567638f22cb64901b: Take <player> <crate> <amount> &7- remove keys
-  115620d253b205d50f22: With &f/sell &7and trade better gear through 
+  115620d253b205d50f22: 'With &f/sell &7and trade better gear through &f/auctionhouse&7.'
   76a96b56c02df387cfec: ${price}X &lshards
   7ffe6140f6316a2a89ae: '&#00A4FCRtp guide'
   925060ac7d172cff446c: '&#00A4FCRules'
@@ -4034,4 +4032,4 @@ BUILTIN:
   19cc37298cec4ee00ebd: '{shards_color}{shards_name_plural}: &f%shards_formatted%'
   356276dd7b506bb02ec5: 'You received %amount_formatted% &7(total: %total_formatted%&7)'
   56d883250427ad469055: Mb&8/&f
-  d8b9a7616dfdf1cbb574: usessl=false&allowpublickeyretrieval=true 
+  d8b9a7616dfdf1cbb574: 'usessl=false&allowpublickeyretrieval=true&servertimezone=utc&characterencoding=utf8'

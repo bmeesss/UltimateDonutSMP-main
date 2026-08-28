@@ -33,8 +33,7 @@ public class StatsWipeMenu extends BaseMenu {
         targetSlots.clear();
 
         Material placeholderMaterial = ItemUtils.parseMaterial(
-                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")
-        );
+                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
         if (menus().getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
             fill(placeholderMaterial);
         }
@@ -55,7 +54,7 @@ public class StatsWipeMenu extends BaseMenu {
 
                 Map<String, String> placeholders = basePlaceholders(target, previewCounts.getOrDefault(target, 0));
                 set(slot, ItemUtils.createItem(
-                        ItemUtils.parseMaterial(menus().getString(targetPath + ".MATERIAL", "PAPER")),
+                        ItemUtils.parseMaterial(menus().getString(targetPath + ".MATERIAL", "PAPER"), Material.PAPER),
                         replace(menus().getString(targetPath + ".DISPLAY-NAME", "&b" + target.getDisplayName()), placeholders),
                         replace(menus().getStringList(targetPath + ".LORE"), placeholders)
                 ));
@@ -68,7 +67,7 @@ public class StatsWipeMenu extends BaseMenu {
 
         if (plugin.getStatsWipeManager().isWipeInProgress()) {
             set(menus().getInt(MENU_PATH + ".STATUS.SLOT", 13), ItemUtils.createItem(
-                    ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".STATUS.MATERIAL", "BARRIER")),
+                    ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".STATUS.MATERIAL", "BARRIER"), Material.BARRIER),
                     menus().getString(MENU_PATH + ".STATUS.DISPLAY-NAME", "&cWipe in progress"),
                     menus().getStringList(MENU_PATH + ".STATUS.LORE")
             ));
@@ -112,7 +111,7 @@ public class StatsWipeMenu extends BaseMenu {
         }
 
         set(menus().getInt(path + ".SLOT", 22), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "WATCH")),
+                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "WATCH"), Material.WATCH),
                 menus().getString(path + ".DISPLAY-NAME", "&bRefresh"),
                 menus().getStringList(path + ".LORE")
         ));
@@ -125,7 +124,7 @@ public class StatsWipeMenu extends BaseMenu {
         }
 
         set(menus().getInt(path + ".SLOT", 26), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "BARRIER")),
+                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "BARRIER"), Material.BARRIER),
                 menus().getString(path + ".DISPLAY-NAME", "&cClose"),
                 menus().getStringList(path + ".LORE")
         ));

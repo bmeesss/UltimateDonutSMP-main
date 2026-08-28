@@ -82,8 +82,7 @@ class WorthMenuTest {
 
     private static YamlConfiguration loadWorth() throws Exception {
         YamlConfiguration worth = new YamlConfiguration();
-        worth.options().parseComments(true);
-        worth.load(Path.of("src/main/resources/worth.yml").toFile());
+                worth.load(java.nio.file.Paths.get("src/main/resources/worth.yml").toFile());
         return worth;
     }
 }

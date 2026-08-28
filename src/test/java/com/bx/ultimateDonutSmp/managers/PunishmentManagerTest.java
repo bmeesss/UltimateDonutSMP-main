@@ -101,7 +101,7 @@ class PunishmentManagerTest {
         assertTrue(id > 0L);
 
         // Verify active punishment exists when querying by onlineUuid AND username
-        var active = dbManager.loadPunishmentHistory(
+        java.util.List<com.bx.ultimateDonutSmp.models.PunishmentRecord> active = dbManager.loadPunishmentHistory(
                 onlineUuid,
                 username,
                 new com.bx.ultimateDonutSmp.models.PunishmentQuery(
@@ -126,7 +126,7 @@ class PunishmentManagerTest {
         assertTrue(removed, "Should mark active punishment as removed");
 
         // Verify no active punishment remaining
-        var remaining = dbManager.loadPunishmentHistory(
+        java.util.List<com.bx.ultimateDonutSmp.models.PunishmentRecord> remaining = dbManager.loadPunishmentHistory(
                 onlineUuid,
                 username,
                 new com.bx.ultimateDonutSmp.models.PunishmentQuery(

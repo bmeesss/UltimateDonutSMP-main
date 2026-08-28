@@ -106,7 +106,7 @@ public class SellHistoryMenu extends BaseMenu {
 
     private void buildSortButton(FileConfiguration menus) {
         String path = "SELL-HISTORY-MENU.BUTTONS.SORT";
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "ANVIL"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "ANVIL"), Material.ANVIL);
         String name = menus.getString(path + ".NAME", "&aSort");
         String sortState = sortByPrice ? "Highest price" : "Newest";
         List<String> lore = menus.getStringList(path + ".LORE").stream()
@@ -116,7 +116,7 @@ public class SellHistoryMenu extends BaseMenu {
     }
 
     private void buildPageButtons(FileConfiguration menus) {
-        Material material = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material material = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(FIRST_PAGE_SLOT, ItemUtils.createItem(
@@ -158,7 +158,7 @@ public class SellHistoryMenu extends BaseMenu {
             FileConfiguration menus,
             DatabaseManager.SellHistoryEntry entry
     ) {
-        Material material = ItemUtils.parseMaterial(entry.itemName());
+        Material material = ItemUtils.parseMaterial(entry.itemName(), Material.BARRIER);
         String displayName = "&f" + toDisplayName(entry.itemName());
         List<String> lore = menus.getStringList("SELL-HISTORY-MENU.BUTTONS.MATERIAL-ITEM.LORE").stream()
                 .map(line -> line

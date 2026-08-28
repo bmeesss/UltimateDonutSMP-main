@@ -121,10 +121,33 @@ class DatabaseManagerPlayerSettingsTest {
     void oldPlayersTableReceivesNewColumnsWithCompatibleDefaults() throws Exception {
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:")) {
             DatabaseManager manager = managerWithSchema(connection);
-            try (Statement statement = connection.createStatement()) {
-                for (String column : NEW_COLUMNS) {
-                    statement.execute("ALTER TABLE players DROP COLUMN " + column);
+            // Rebuild the players table without the newer columns (the bundled SQLite driver
+            // predates ALTER TABLE ... DROP COLUMN, so the standard rebuild pattern is used).
+            String[] legacyColumns = {
+                    "uuid", "username", "money", "shards", "kills", "deaths", "playtime_seconds",
+                    "blocks_placed", "blocks_broken", "mobs_killed", "kill_streak", "highest_kill_streak",
+                    "money_spent", "money_made", "tpauto", "phantom_enabled", "payments_enabled",
+                    "scoreboard_visible", "pay_alerts_enabled", "hotbar_messages_enabled",
+                    "worth_display_enabled", "clear_entities_messages_enabled", "bounty_alerts_enabled",
+                    "tpa_confirm_menu_enabled", "chainmail_on_respawn_enabled", "lunar_teammates_enabled",
+                    "tpa_requests_enabled", "auto_tpahere_enabled", "tpahere_requests_enabled",
+                    "team_invites_enabled", "mob_spawn_enabled", "pay_confirm_menu_enabled",
+                    "totem_particles_enabled", "fast_crystals_enabled", "amethyst_break_messages_enabled",
+                    "private_messages_enabled", "keyall_notifications_enabled", "keyall_remaining_seconds",
+                    "shard_booster_expiry", "mob_spawn_disabled_until", "phantom_disabled_until"
+            };
+            StringBuilder selectList = new StringBuilder();
+            for (String column : legacyColumns) {
+                if (selectList.length() > 0) {
+                    selectList.append(", ");
                 }
+                selectList.append(column);
+            }
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("CREATE TABLE players_legacy AS SELECT " + selectList
+                        + " FROM players LIMIT 0");
+                statement.execute("DROP TABLE players");
+                statement.execute("ALTER TABLE players_legacy RENAME TO players");
             }
 
             invoke(manager, "ensurePlayerColumns");

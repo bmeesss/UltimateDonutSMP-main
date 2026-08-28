@@ -735,8 +735,9 @@ COMBAT-MANAGER:
   - /rtp
   - /homes
   - /tpa
-  # Configuration section for Excluded Worlds.
-  EXCLUDED-WORLDS:
+  # Worlds listed here never apply the combat tag. Leave empty to tag combat in
+  # every world.
+  EXCLUDED-WORLDS: []
 
 # Configuration section for Rtp Zone.
 RTP-ZONE:

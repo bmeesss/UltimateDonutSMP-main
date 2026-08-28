@@ -29,7 +29,7 @@ class ChatLogsMenuTest {
 
     @Test
     void aSingleUnbrokenWordIsSplitInsteadOfOverflowing() {
-        List<String> wrapped = ChatLogsMenu.wrap("a".repeat(95));
+        List<String> wrapped = ChatLogsMenu.wrap(repeat("a", 95));
 
         assertEquals(3, wrapped.size());
         assertEquals(95, String.join("", wrapped).length());
@@ -39,5 +39,12 @@ class ChatLogsMenuTest {
     void anEmptyMessageStillProducesALine() {
         assertEquals(java.util.Collections.singletonList(""), ChatLogsMenu.wrap("   "));
         assertEquals(java.util.Collections.singletonList(""), ChatLogsMenu.wrap(null));
+    }
+    private static String repeat(String unit, int count) {
+        StringBuilder builder = new StringBuilder(unit.length() * Math.max(0, count));
+        for (int i = 0; i < count; i++) {
+            builder.append(unit);
+        }
+        return builder.toString();
     }
 }

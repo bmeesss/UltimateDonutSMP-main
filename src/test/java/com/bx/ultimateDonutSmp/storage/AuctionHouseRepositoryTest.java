@@ -32,35 +32,8 @@ class AuctionHouseRepositoryTest {
     void migratesLegacySchemaWithoutResettingRows() throws Exception {
         Path database = tempDir.resolve("legacy.db");
         try (Connection connection = open(database); Statement statement = connection.createStatement()) {
-            statement.execute("""
-                    CREATE TABLE auction_listings (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      seller_uuid TEXT NOT NULL,
-                      seller_name TEXT NOT NULL,
-                      buyer_uuid TEXT,
-                      status TEXT NOT NULL,
-                      price REAL NOT NULL,
-                      tax REAL DEFAULT 0,
-                      item_data TEXT NOT NULL,
-                      created_at INTEGER NOT NULL,
-                      expires_at INTEGER NOT NULL,
-                      sold_at INTEGER DEFAULT 0,
-                      cancelled_at INTEGER DEFAULT 0,
-                      expired_at INTEGER DEFAULT 0
-                    )
-                    """);
-            statement.execute("""
-                    CREATE TABLE auction_claims (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      claim_type TEXT NOT NULL,
-                      source_listing_id INTEGER DEFAULT 0,
-                      money_amount REAL DEFAULT 0,
-                      item_data TEXT,
-                      created_at INTEGER NOT NULL,
-                      claimed_at INTEGER DEFAULT 0
-                    )
-                    """);
+            statement.execute(String.join("\n", "CREATE TABLE auction_listings (\n", "id INTEGER PRIMARY KEY AUTOINCREMENT,\n", "seller_uuid TEXT NOT NULL,\n", "seller_name TEXT NOT NULL,\n", "buyer_uuid TEXT,\n", "status TEXT NOT NULL,\n", "price REAL NOT NULL,\n", "tax REAL DEFAULT 0,\n", "item_data TEXT NOT NULL,\n", "created_at INTEGER NOT NULL,\n", "expires_at INTEGER NOT NULL,\n", "sold_at INTEGER DEFAULT 0,\n", "cancelled_at INTEGER DEFAULT 0,\n", "expired_at INTEGER DEFAULT 0\n", ")\n"));
+            statement.execute(String.join("\n", "CREATE TABLE auction_claims (\n", "id INTEGER PRIMARY KEY AUTOINCREMENT,\n", "owner_uuid TEXT NOT NULL,\n", "claim_type TEXT NOT NULL,\n", "source_listing_id INTEGER DEFAULT 0,\n", "money_amount REAL DEFAULT 0,\n", "item_data TEXT,\n", "created_at INTEGER NOT NULL,\n", "claimed_at INTEGER DEFAULT 0\n", ")\n"));
         }
 
         AuctionHouseRepository repository = repository(database);
@@ -154,11 +127,11 @@ class AuctionHouseRepositoryTest {
             AuctionClaim returnedItem = cancelledSnapshot.claims().stream()
                     .filter(claim -> claim.sourceListingId() == cancelTarget.listing().id())
                     .findFirst()
-                    .orElseThrow();
+                    .get();
             AuctionHouseRepository.ClaimLease lease = repository.acquireClaim(
                     returnedItem.id(),
                     owner
-            ).join().orElseThrow();
+            ).join().get();
             assertFalse(repository.acquireClaim(returnedItem.id(), owner).join().isPresent());
             assertTrue(repository.completeClaim(lease).join());
             assertTrue(repository.restoreClaim(lease).join());

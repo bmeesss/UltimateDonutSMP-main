@@ -32,7 +32,6 @@ class PlayerSettingsConfigurationTest {
             "DISABLE_MOB_SPAWN", 
             "NOTIFICATION_SOUNDS", 
             "ORDER_NOTIFICATIONS", 
-            "DUEL_REQUESTS", 
             "TPA_REQUESTS", 
             "PAYMENTS", 
             "TEAM_CHAT_VISIBILITY", 
@@ -70,7 +69,7 @@ class PlayerSettingsConfigurationTest {
             assertTrue(buttons.isConfigurationSection(setting), setting);
         }
 
-        Map<String, Integer> centeredSlots = new java.util.LinkedHashMap(){{ put("PUBLIC_CHAT",  0); put("PRIVATE_MESSAGES",  1); put("SERVER_BROADCASTS",  2); put("TEAM_CHAT_VISIBILITY",  3); put("LUNAR_TEAMMATES",  4); put("TPA_CONFIRM_MENUS",  5); put("QUICK_AUCTION_PURCHASE",  9); put("DESTROY_PEARL_ON_DEATH",  10); put("PAY_CONFIRM_MENUS",  11); put("PAY_ALERTS",  32); put("AUTO_CONFIRM_TPAS",  12); put("HOTBAR_MESSAGES",  13); put("NOTIFICATION_SOUNDS",  14); put("FOLLOW_ALERT_SETTINGS",  15); put("DISPLAY_DONUT_PLUS",  18); put("CHAINMAIL_ON_RESPAWN",  19); put("EXPLOSION_PARTICLES",  20); put("EXPLOSION_SOUNDS",  21); put("TELEPORT_ALERTS",  22); put("FAST_CRYSTALS",  23); put("RANDOMIZED_COORDS",  24); put("TPA_REQUESTS",  27); put("TPA_HERE_REQUESTS",  28); put("PAYMENTS",  29); put("WORTH_DISPLAY",  30); put("MONEY_NAMETAGS",  33); put("JOIN_LEAVE_MESSAGES",  31); put("ADVANCEMENT_MESSAGES",  36); put("AUCTION_NOTIFICATIONS",  37); put("AMETHYST_BREAK_MESSAGES",  38); put("DUEL_REQUESTS",  39); put("DEATH_MESSAGES",  40); put("KEY_ALL_NOTIFICATIONS",  41); put("QUICK_AUCTION_SELL",  45); put("ORDER_NOTIFICATIONS",  46); put("DISABLE_MOB_SPAWN",  47); put("DISABLE_PHANTOM_SPAWN",  48); put("NIGHT_VISION",  49); put("BOUNTY_ALERTS",  50); }};
+        Map<String, Integer> centeredSlots = new java.util.LinkedHashMap(){{ put("PUBLIC_CHAT",  0); put("PRIVATE_MESSAGES",  1); put("SERVER_BROADCASTS",  2); put("TEAM_CHAT_VISIBILITY",  3); put("LUNAR_TEAMMATES",  4); put("TPA_CONFIRM_MENUS",  5); put("QUICK_AUCTION_PURCHASE",  9); put("DESTROY_PEARL_ON_DEATH",  10); put("PAY_CONFIRM_MENUS",  11); put("PAY_ALERTS",  32); put("AUTO_CONFIRM_TPAS",  12); put("HOTBAR_MESSAGES",  13); put("NOTIFICATION_SOUNDS",  14); put("FOLLOW_ALERT_SETTINGS",  15); put("DISPLAY_DONUT_PLUS",  18); put("CHAINMAIL_ON_RESPAWN",  19); put("EXPLOSION_PARTICLES",  20); put("EXPLOSION_SOUNDS",  21); put("TELEPORT_ALERTS",  22); put("FAST_CRYSTALS",  23); put("RANDOMIZED_COORDS",  24); put("TPA_REQUESTS",  27); put("TPA_HERE_REQUESTS",  28); put("PAYMENTS",  29); put("WORTH_DISPLAY",  30); put("MONEY_NAMETAGS",  33); put("JOIN_LEAVE_MESSAGES",  31); put("ADVANCEMENT_MESSAGES",  36); put("AUCTION_NOTIFICATIONS",  37); put("AMETHYST_BREAK_MESSAGES",  38); put("DEATH_MESSAGES",  40); put("KEY_ALL_NOTIFICATIONS",  41); put("QUICK_AUCTION_SELL",  45); put("ORDER_NOTIFICATIONS",  46); put("DISABLE_MOB_SPAWN",  47); put("DISABLE_PHANTOM_SPAWN",  48); put("NIGHT_VISION",  49); put("BOUNTY_ALERTS",  50); }};
         centeredSlots.forEach((key, slot) ->
                 assertEquals(slot, buttons.getInt(key + ".SLOT"), key));
     }
@@ -93,7 +92,7 @@ class PlayerSettingsConfigurationTest {
 
     private static YamlConfiguration load(String fileName) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.load(Path.of("src/main/resources", fileName).toFile());
+        configuration.load(java.nio.file.Paths.get("src/main/resources", fileName).toFile());
         return configuration;
     }
 }

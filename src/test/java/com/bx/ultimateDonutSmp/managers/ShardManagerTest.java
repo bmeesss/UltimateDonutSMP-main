@@ -29,16 +29,19 @@ class ShardManagerTest {
     @Test
     void rollsBothInclusiveRangeBoundaries() {
         ShardManager.KillRewardRange range = new ShardManager.KillRewardRange(3L, 9L);
+        // ShardManager's bounded roll is the JDK's rejection-sampling algorithm on top of the
+        // plain Java 8 Random.nextLong(): for [3, 9] a source long of 0 lands on the minimum and
+        // a source long of 12 lands on the maximum.
         Random minimum = new Random() {
             @Override
-            public long nextLong(long origin, long bound) {
-                return origin;
+            public long nextLong() {
+                return 0L;
             }
         };
         Random maximum = new Random() {
             @Override
-            public long nextLong(long origin, long bound) {
-                return bound - 1L;
+            public long nextLong() {
+                return 12L;
             }
         };
 

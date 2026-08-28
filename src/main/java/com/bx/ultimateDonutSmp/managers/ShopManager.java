@@ -450,7 +450,7 @@ public static final class RewardDeliveryResult {
     }
 }
 
-public final class ShopItem {
+public static final class ShopItem {
     private final String key;
     private final String menuSection;
     private final Material material;
@@ -822,7 +822,7 @@ public static final class AuctionQuote {
             categories.add(new ShopCategory(
                     key,
                     normalizeMenuSection(section.getString("OPEN-MENU"), key),
-                    ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE")),
+                    ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"), Material.STONE),
                     section.getString("DISPLAY-NAME", key),
                     section.getStringList("LORE"),
                     section.getInt("SLOT", 0)
@@ -855,6 +855,13 @@ public static final class AuctionQuote {
             }
 
             Material material = ItemUtils.parseMaterial(itemSec.getString("MATERIAL", "STONE"));
+            if (material == null) {
+                // A shop item whose material cannot be resolved must not be sold as stone.
+                plugin.getLogger().warning("[Shop] Shop item '" + key + "' in " + menuSection
+                        + " has unresolvable MATERIAL '" + itemSec.getString("MATERIAL")
+                        + "'; the item was skipped.");
+                continue;
+            }
 
             List<String> enchantments = new ArrayList<>();
             if (itemSec.isConfigurationSection("ENCHANTMENTS")) {
@@ -931,10 +938,19 @@ public static final class AuctionQuote {
                     .map(line -> line.replace("{time}", NumberUtils.formatTimeLong(duration)))
                     .collect(java.util.stream.Collectors.toList());
 
+            Material toolMaterial = ItemUtils.parseMaterial(toolSection.getString("MATERIAL", "STONE"));
+            if (toolMaterial == null) {
+                // A broken tool MATERIAL must not put a stone block on sale as an amethyst tool.
+                plugin.getLogger().warning("[Shop] Amethyst tool " + type.getConfigKey()
+                        + " has unresolvable MATERIAL '" + toolSection.getString("MATERIAL")
+                        + "'; the tool was not listed.");
+                continue;
+            }
+
             items.add(new ShopItem(
                     "AMETHYST-" + type.getConfigKey(),
                     menuSection,
-                    ItemUtils.parseMaterial(toolSection.getString("MATERIAL", "STONE")),
+                    toolMaterial,
                     toolSection.getString("NAME", type.getDisplayName()),
                     lore,
                     shopSection.getInt("SLOT", 0),

@@ -39,7 +39,7 @@ public class FeatureToggleMenu extends BaseMenu {
 
         FileConfiguration menus = menus();
         if (menus.getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
-            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")));
+            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE));
         }
 
         List<Integer> contentSlots = contentSlots();
@@ -133,7 +133,7 @@ public class FeatureToggleMenu extends BaseMenu {
 
         Map<String, String> placeholders = placeholders(feature);
         return ItemUtils.createItem(
-                ItemUtils.parseMaterial(material),
+                ItemUtils.parseMaterial(material, Material.STONE),
                 replace(displayName, placeholders),
                 replace(lore, placeholders)
         );
@@ -150,7 +150,7 @@ public class FeatureToggleMenu extends BaseMenu {
             return;
         }
 
-        Material material = ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", active ? "ARROW" : "BARRIER"));
+        Material material = ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", active ? "ARROW" : "BARRIER"), active ? Material.ARROW : Material.BARRIER);
         String displayName = menus().getString(path + ".DISPLAY-NAME", "&b" + prettify(key));
         List<String> lore = menus().getStringList(path + ".LORE");
         Map<String, String> placeholders = new java.util.LinkedHashMap(){{ put(

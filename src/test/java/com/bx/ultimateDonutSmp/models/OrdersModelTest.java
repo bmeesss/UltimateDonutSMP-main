@@ -32,11 +32,11 @@ class OrdersModelTest {
 
     @Test
     void potionVariantRoundTripsWithoutLosingIdentity() {
-        ItemKey key = ItemKey.potion(Material.SPLASH_POTION, PotionType.STRONG_HEALING);
+        ItemKey key = ItemKey.potion(Material.SPLASH_POTION, PotionType.INSTANT_HEAL);
         ItemKey restored = ItemKey.deserialize(key.serialize());
 
         assertEquals(Material.SPLASH_POTION, restored.material);
-        assertEquals(PotionType.STRONG_HEALING, restored.potionType);
+        assertEquals(PotionType.INSTANT_HEAL, restored.potionType);
         assertEquals(key.serialize(), restored.serialize());
     }
 

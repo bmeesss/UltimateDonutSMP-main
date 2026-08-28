@@ -67,10 +67,11 @@ class LeaderboardConfigurationTest {
 
     @Test
     void placeholderDocsListEveryLeaderboardType() throws Exception {
-        String docs = Files.readString(
-                Path.of("docs/wiki/Placeholders-and-Integrations.md"), StandardCharsets.UTF_8);
+        String docs = new String(
+                java.nio.file.Files.readAllBytes(java.nio.file.Paths.get("docs/wiki/Placeholders-and-Integrations.md")),
+                StandardCharsets.UTF_8);
 
-        String supportedTypes = docs.lines()
+        String supportedTypes = java.util.Arrays.stream(docs.split("\\r?\\n"))
                 .filter(line -> line.startsWith("*Supported Types*"))
                 .findFirst()
                 .orElse(null);
@@ -88,7 +89,7 @@ class LeaderboardConfigurationTest {
 
     private static YamlConfiguration load(String fileName) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.load(Path.of("src/main/resources", fileName).toFile());
+        configuration.load(java.nio.file.Paths.get("src/main/resources", fileName).toFile());
         return configuration;
     }
 }

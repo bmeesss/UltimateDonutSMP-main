@@ -2153,6 +2153,7 @@ CONFIG:
       INVALID-CONFIG: '&cSpawnstash config is invalid: &f{reason}&c.'
       ALERT:
       - '&8[&dSpawnstash&8] &f{player} &7triggered &d{reason}&7 on stash &f#{id}&7 (&f{type}&7)'
+      - '&7location: &f{world} {x}, {y}, {z} &8| &7created by: &f{creator}'
       ALERT-HOVER: '&eClick to teleport to &f{player}'
   NETWORK:
     NETWORK:
@@ -2244,7 +2245,7 @@ CONFIG:
       RELOAD-SUCCESS: '&aStaff mode config reloaded.'
   SERVER_WIPE:
     MESSAGES:
-      MAINTENANCE: 
+      MAINTENANCE: '&cthe server is preparing a season reset. try again after the restart.'
       KICK: '&cA season reset is starting. the server will restart shortly.'
   WORTH:
     DISPLAY:
@@ -2754,23 +2755,34 @@ MESSAGES:
       &7Reason: &f{reason}
     BAN: |
       &c&lYou have been banned!
+      &8&m----------------------------
       &7Reason: &f%reason%
       &7Expires: &f%nicest_expiration%
       &7Banned by: &f%issuer%
+      &8&m----------------------------
       &7Appeal at: &fdiscord.eXample.space
     KICK: |
       &c&lYou have been kicked!
+      &8&m----------------------------
       &7Reason: &f%reason%
       &7Kicked by: &f%issuer%
+      &8&m----------------------------
+      &7You may reconnect
     MUTE: |
       &c&lYou have been muted!
+      &8&m----------------------------
       &7Reason: &f%reason%
       &7Expires: &f%nicest_expiration%
       &7Muted by: &f%issuer%
+      &8&m----------------------------
+      &7You cannot speak in chat
     BLACKLIST: |
       &4&lYou have been blacklisted!
+      &8&m----------------------------
       &7Reason: &f%reason%
       &7Blacklisted by: &f%issuer%
+      &8&m----------------------------
+      &4You cannot join the server
   SOCIAL:
     DISCORD:
     - ''
@@ -2993,8 +3005,7 @@ MESSAGES:
     GIVE-SUCCESS-RECEIVER: '&aYou received the safety book.'
     USAGE: '&cUsage: /safety [reload|add <player>|give <player>]'
     BOOK-PAGES:
-    - |
-
+    - "&0⚠ Watch out!\n\nFake discords or\nMods can steal your\nAccount.\n\nThe only official\nDiscord can be found\nUsing &1/discord&0.\n\nNever download files\nOr mods from random\nPeople.\n"
   ANVILMOD:
     NO-PERMISSION: '&cYou do not have permission.'
     USAGE: '&cUsage: /amod <add|reload> [word]'

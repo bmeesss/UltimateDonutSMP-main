@@ -23,13 +23,14 @@ class MobSpawnPolicyTest {
         assertTrue(MobSpawnPolicy.isBoss(EntityType.WITHER));
         assertTrue(MobSpawnPolicy.isBoss(EntityType.ENDER_DRAGON));
         assertTrue(MobSpawnPolicy.isBoss(EntityType.ELDER_GUARDIAN));
-        assertTrue(MobSpawnPolicy.isBoss(EntityType.WARDEN));
+        // WARDEN is matched by name in MobSpawnPolicy for newer servers; the constant does not
+        // exist on 1.12.2 so it cannot be asserted here.
 
         assertFalse(MobSpawnPolicy.isBoss(null));
         assertFalse(MobSpawnPolicy.isBoss(EntityType.ZOMBIE));
         assertFalse(MobSpawnPolicy.isBoss(EntityType.SLIME));
         assertFalse(MobSpawnPolicy.isBoss(EntityType.GHAST));
-        assertFalse(MobSpawnPolicy.isBoss(EntityType.HOGLIN));
+        assertFalse(MobSpawnPolicy.isBoss(EntityType.PIG_ZOMBIE));
         assertFalse(MobSpawnPolicy.isBoss(EntityType.SPIDER));
         assertFalse(MobSpawnPolicy.isBoss(EntityType.CAVE_SPIDER));
     }
@@ -38,20 +39,18 @@ class MobSpawnPolicyTest {
     void trialSpawnersAreLeftAloneByDefault() {
         // Cancelling a trial spawner spawn empties the mob list it waits on, so the spawner rolls
         // straight to ejecting its rewards and the chamber pays out without a fight.
-        assertFalse(MobSpawnPolicy.isPreventableSpawnReason(
-                CreatureSpawnEvent.SpawnReason.TRIAL_SPAWNER, false));
+        assertFalse(MobSpawnPolicy.isPreventableSpawnReason("TRIAL_SPAWNER", false));
     }
 
     @Test
     void trialSpawnersComeBackUnderTheToggleWhenTheServerAsksForIt() {
-        assertTrue(MobSpawnPolicy.isPreventableSpawnReason(
-                CreatureSpawnEvent.SpawnReason.TRIAL_SPAWNER, true));
+        assertTrue(MobSpawnPolicy.isPreventableSpawnReason("TRIAL_SPAWNER", true));
     }
 
     @Test
     void theTrialSpawnerSwitchLeavesEveryOtherSpawnReasonAlone() {
         for (boolean trialSpawnersBlocked : new boolean[]{false, true}) {
-            assertFalse(MobSpawnPolicy.isPreventableSpawnReason(null, trialSpawnersBlocked));
+            assertFalse(MobSpawnPolicy.isPreventableSpawnReason((CreatureSpawnEvent.SpawnReason) null, trialSpawnersBlocked));
 
             assertFalse(MobSpawnPolicy.isPreventableSpawnReason(
                     CreatureSpawnEvent.SpawnReason.CUSTOM, trialSpawnersBlocked));

@@ -21,21 +21,7 @@ class DatabaseManagerHideStateTest {
     void hideStateCrudAndCaseInsensitiveAliasUniqueness() throws Exception {
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
              Statement statement = connection.createStatement()) {
-            statement.execute("""
-                    CREATE TABLE hide_states (
-                      player_uuid TEXT PRIMARY KEY,
-                      real_name_snapshot TEXT NOT NULL,
-                      mode TEXT NOT NULL,
-                      alias TEXT NOT NULL,
-                      alias_normalized TEXT NOT NULL UNIQUE,
-                      skin_key TEXT,
-                      skin_username TEXT,
-                      texture_value TEXT,
-                      texture_signature TEXT,
-                      created_at INTEGER NOT NULL,
-                      updated_at INTEGER NOT NULL
-                    )
-                    """);
+            statement.execute(String.join("\n", "CREATE TABLE hide_states (\n", "player_uuid TEXT PRIMARY KEY,\n", "real_name_snapshot TEXT NOT NULL,\n", "mode TEXT NOT NULL,\n", "alias TEXT NOT NULL,\n", "alias_normalized TEXT NOT NULL UNIQUE,\n", "skin_key TEXT,\n", "skin_username TEXT,\n", "texture_value TEXT,\n", "texture_signature TEXT,\n", "created_at INTEGER NOT NULL,\n", "updated_at INTEGER NOT NULL\n", ")\n"));
 
             DatabaseManager manager = manager(connection);
             UUID firstUuid = UUID.randomUUID();

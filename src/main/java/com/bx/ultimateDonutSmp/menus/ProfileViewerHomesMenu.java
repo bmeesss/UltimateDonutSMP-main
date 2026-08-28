@@ -160,7 +160,7 @@ public class ProfileViewerHomesMenu extends BaseMenu {
         }
 
         set(inventory.getSize() / 2, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER"), Material.BARRIER),
                 replaceSnapshotPlaceholders(name),
                 replaceSnapshotPlaceholders(lore)
         ));
@@ -172,7 +172,7 @@ public class ProfileViewerHomesMenu extends BaseMenu {
         String namePath = valid ? MENU_PATH + ".HOME-BUTTON.DISPLAY-NAME" : MENU_PATH + ".INVALID-HOME-BUTTON.DISPLAY-NAME";
         String lorePath = valid ? MENU_PATH + ".HOME-BUTTON.LORE" : MENU_PATH + ".INVALID-HOME-BUTTON.LORE";
 
-        Material material = ItemUtils.parseMaterial(menus().getString(materialPath, valid ? "WOOL" : "BARRIER"));
+        Material material = ItemUtils.parseMaterial(menus().getString(materialPath, valid ? "WOOL" : "BARRIER"), Material.BARRIER);
         String displayName = menus().getString(namePath, valid ? "&b{name}" : "&c{name}");
         List<String> lore = menus().getStringList(lorePath);
         if (lore.isEmpty()) {
@@ -196,7 +196,7 @@ public class ProfileViewerHomesMenu extends BaseMenu {
                 : java.util.Collections.singletonList("&7Close this home list.");
 
         set(BACK_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "STAINED_GLASS_PANE")),
+                ItemUtils.parseMaterial(menus().getString(path + ".MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                 menus().getString(path + ".DISPLAY-NAME", fallbackName),
                 defaultIfEmpty(menus().getStringList(path + ".LORE"), fallbackLore)
         ));
@@ -204,7 +204,7 @@ public class ProfileViewerHomesMenu extends BaseMenu {
 
     private void buildRefreshButton() {
         set(REFRESH_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".REFRESH-BUTTON.MATERIAL", "WATCH")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".REFRESH-BUTTON.MATERIAL", "WATCH"), Material.WATCH),
                 replaceSnapshotPlaceholders(menus().getString(MENU_PATH + ".REFRESH-BUTTON.DISPLAY-NAME", "&bRefresh")),
                 replaceSnapshotPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".REFRESH-BUTTON.LORE"),
@@ -214,7 +214,7 @@ public class ProfileViewerHomesMenu extends BaseMenu {
     }
 
     private void buildPageButtons(int totalHomes) {
-        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(FIRST_PAGE_SLOT, ItemUtils.createItem(

@@ -21,20 +21,7 @@ class StaffCustomItemTest {
     @Test
     void parsesAFullDefinition() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  invsee:
-                    SLOT: 2
-                    MATERIAL: CHEST
-                    NAME: '&eInventory'
-                    LORE:
-                    - '&7Right-click a player'
-                    EXECUTE-AS: CONSOLE
-                    PERMISSION: ultimatedonutsmp.staff.mode.custom.invsee
-                    REQUIRE-TARGET: true
-                    COMMANDS:
-                    - '/invsee {target}'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  invsee:\n", "    SLOT: 2\n", "    MATERIAL: CHEST\n", "    NAME: '&eInventory'\n", "    LORE:\n", "    - '&7Right-click a player'\n", "    EXECUTE-AS: CONSOLE\n", "    PERMISSION: ultimatedonutsmp.staff.mode.custom.invsee\n", "    REQUIRE-TARGET: true\n", "    COMMANDS:\n", "    - '/invsee {target}'\n"), warnings);
 
         assertEquals(1, items.size());
         StaffCustomItem item = items.get(0);
@@ -51,13 +38,7 @@ class StaffCustomItemTest {
 
     @Test
     void appliesDefaultsForOptionalKeys() throws Exception {
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  minimal:
-                    SLOT: 3
-                    COMMANDS:
-                    - 'spawn'
-                """, new ArrayList<>());
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  minimal:\n", "    SLOT: 3\n", "    COMMANDS:\n", "    - 'spawn'\n"), new ArrayList<>());
 
         assertEquals(1, items.size());
         StaffCustomItem item = items.get(0);
@@ -69,12 +50,7 @@ class StaffCustomItemTest {
 
     @Test
     void acceptsASingleStringCommand() throws Exception {
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  single:
-                    SLOT: 3
-                    COMMANDS: 'heal {player}'
-                """, new ArrayList<>());
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  single:\n", "    SLOT: 3\n", "    COMMANDS: 'heal {player}'\n"), new ArrayList<>());
 
         assertEquals(java.util.Collections.singletonList("heal {player}"), items.get(0).commands());
     }
@@ -82,14 +58,7 @@ class StaffCustomItemTest {
     @Test
     void skipsDisabledEntriesWithoutWarning() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  off:
-                    ENABLED: false
-                    SLOT: 3
-                    COMMANDS:
-                    - 'spawn'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  off:\n", "    ENABLED: false\n", "    SLOT: 3\n", "    COMMANDS:\n", "    - 'spawn'\n"), warnings);
 
         assertTrue(items.isEmpty());
         assertTrue(warnings.isEmpty());
@@ -98,16 +67,7 @@ class StaffCustomItemTest {
     @Test
     void rejectsSlotsOutsideTheHotbar() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  missing-slot:
-                    COMMANDS:
-                    - 'spawn'
-                  too-high:
-                    SLOT: 9
-                    COMMANDS:
-                    - 'spawn'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  missing-slot:\n", "    COMMANDS:\n", "    - 'spawn'\n", "  too-high:\n", "    SLOT: 9\n", "    COMMANDS:\n", "    - 'spawn'\n"), warnings);
 
         assertTrue(items.isEmpty());
         assertEquals(2, warnings.size());
@@ -116,21 +76,7 @@ class StaffCustomItemTest {
     @Test
     void rejectsSlotsHeldByBuiltInToolsAndOtherCustomItems() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  clashes-with-vanish:
-                    SLOT: 0
-                    COMMANDS:
-                    - 'spawn'
-                  first:
-                    SLOT: 2
-                    COMMANDS:
-                    - 'spawn'
-                  second:
-                    SLOT: 2
-                    COMMANDS:
-                    - 'spawn'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  clashes-with-vanish:\n", "    SLOT: 0\n", "    COMMANDS:\n", "    - 'spawn'\n", "  first:\n", "    SLOT: 2\n", "    COMMANDS:\n", "    - 'spawn'\n", "  second:\n", "    SLOT: 2\n", "    COMMANDS:\n", "    - 'spawn'\n"), warnings);
 
         assertEquals(1, items.size());
         assertEquals("FIRST", items.get(0).id());
@@ -140,16 +86,7 @@ class StaffCustomItemTest {
     @Test
     void rejectsEntriesWithoutRunnableCommands() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  no-commands:
-                    SLOT: 2
-                  blank-commands:
-                    SLOT: 3
-                    COMMANDS:
-                    - '   '
-                    - '/'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  no-commands:\n", "    SLOT: 2\n", "  blank-commands:\n", "    SLOT: 3\n", "    COMMANDS:\n", "    - '   '\n", "    - '/'\n"), warnings);
 
         assertTrue(items.isEmpty());
         assertEquals(2, warnings.size());
@@ -160,14 +97,7 @@ class StaffCustomItemTest {
         // Falling back to PLAYER would be surprising, and falling back to CONSOLE would be unsafe,
         // so a typo must drop the item rather than run it with the wrong rights.
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  typo:
-                    SLOT: 2
-                    EXECUTE-AS: SERVER
-                    COMMANDS:
-                    - 'spawn'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  typo:\n", "    SLOT: 2\n", "    EXECUTE-AS: SERVER\n", "    COMMANDS:\n", "    - 'spawn'\n"), warnings);
 
         assertTrue(items.isEmpty());
         assertEquals(1, warnings.size());
@@ -176,14 +106,7 @@ class StaffCustomItemTest {
     @Test
     void keepsAnUnknownMaterialUsableWithAWarning() throws Exception {
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  bad-material:
-                    SLOT: 2
-                    MATERIAL: NOT_A_REAL_BLOCK
-                    COMMANDS:
-                    - 'spawn'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  bad-material:\n", "    SLOT: 2\n", "    MATERIAL: NOT_A_REAL_BLOCK\n", "    COMMANDS:\n", "    - 'spawn'\n"), warnings);
 
         assertEquals(1, items.size());
         assertEquals(Material.STONE, items.get(0).material());
@@ -193,7 +116,7 @@ class StaffCustomItemTest {
     @Test
     void bundledExampleIsValidAndShipsDisabled() throws Exception {
         YamlConfiguration config = new YamlConfiguration();
-        config.load(Path.of("src/main/resources", "staff-mode.yml").toFile());
+        config.load(java.nio.file.Paths.get("src/main/resources", "staff-mode.yml").toFile());
 
         assertNotNull(config.getConfigurationSection("CUSTOM-ITEMS"),
                 "staff-mode.yml must document the CUSTOM-ITEMS section");
@@ -218,21 +141,7 @@ class StaffCustomItemTest {
     void aRenamedEnabledEntryOnAFreeSlotLoads() throws Exception {
         // The shape reported in #145: the bundled example renamed, armed, and moved to a free slot.
         List<String> warnings = new ArrayList<>();
-        List<StaffCustomItem> items = parse("""
-                CUSTOM-ITEMS:
-                  SUS:
-                    ENABLED: true
-                    SLOT: 6
-                    MATERIAL: TNT
-                    NAME: '&cS&cU&cS'
-                    LORE:
-                    - '&7Click to open /sus'
-                    EXECUTE-AS: PLAYER
-                    PERMISSION: ''
-                    REQUIRE-TARGET: false
-                    COMMANDS:
-                    - 'sus'
-                """, warnings);
+        List<StaffCustomItem> items = parse(String.join("\n", "CUSTOM-ITEMS:\n", "  SUS:\n", "    ENABLED: true\n", "    SLOT: 6\n", "    MATERIAL: TNT\n", "    NAME: '&cS&cU&cS'\n", "    LORE:\n", "    - '&7Click to open /sus'\n", "    EXECUTE-AS: PLAYER\n", "    PERMISSION: ''\n", "    REQUIRE-TARGET: false\n", "    COMMANDS:\n", "    - 'sus'\n"), warnings);
 
         assertEquals(1, items.size(), () -> "the entry was rejected: " + warnings);
         StaffCustomItem item = items.get(0);

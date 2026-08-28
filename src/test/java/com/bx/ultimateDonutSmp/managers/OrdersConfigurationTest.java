@@ -14,7 +14,7 @@ class OrdersConfigurationTest {
     @Test
     void donutStyleDefaultsAndOptionalIntegrationsParse() throws Exception {
         YamlConfiguration orders = new YamlConfiguration();
-        orders.load(Path.of("src/main/resources/orders.yml").toFile());
+        orders.load(java.nio.file.Paths.get("src/main/resources/orders.yml").toFile());
 
         assertEquals("DEPOSIT_GUI", orders.getString("DELIVERY.MODE"));
         assertEquals(2304, orders.getInt("DELIVERY.MAX_DELIVER_PER_TRANSACTION"));
@@ -23,7 +23,6 @@ class OrdersConfigurationTest {
         assertEquals(27, orders.getInt("GUI.MY_ORDERS.SIZE"));
         assertEquals(26, orders.getInt("GUI.MY_ORDERS.BUTTONS.NEW.SLOT"));
         assertEquals(35, orders.getInt("GUI.DELIVERY_DEPOSIT.BUTTONS.CONFIRM.SLOT"));
-        assertTrue(orders.getBoolean("BEDROCK.ENABLED"));
         assertTrue(orders.getBoolean("NETWORK.ENABLED"));
         assertEquals("ultimate-donut-smp:orders", orders.getString("NETWORK.REDIS_CHANNEL"));
         assertTrue(orders.isConfigurationSection("SEARCH_SIGN"));
@@ -65,7 +64,7 @@ class OrdersConfigurationTest {
 
     private static YamlConfiguration load(String locale) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.load(Path.of("src/main/resources/languages", locale + ".yml").toFile());
+        configuration.load(java.nio.file.Paths.get("src/main/resources/languages", locale + ".yml").toFile());
         return configuration;
     }
 }

@@ -46,17 +46,15 @@ public class ChatListener implements Listener {
             return;
         }
 
-        if (plugin.getOrdersManager() != null && plugin.getOrdersManager().hasPendingInput(player.getUniqueId())) {
-            event.setCancelled(true);
-            plugin.getSpigotScheduler().runEntity(player, () ->
-                    plugin.getOrdersManager().handlePendingInput(player, rawMessage));
-            return;
-        }
-
-        // Menu text input (search / price / amount). On 1.12.2 the sign editor transport has no
-        // Bukkit API, so SignInputUtil collects the answer through chat instead. This check runs
-        // inside the chat listener on purpose: at EventPriority.NORMAL it is ahead of the chat
-        // pipeline, so cancelling here stops the answer being broadcast to the server.
+        // Shared menu text input (search / price / amount). On 1.12.2 the sign editor transport has
+        // no Bukkit API, so SignInputUtil collects the answer through chat instead; on newer
+        // servers chat still answers a prompt whose sign editor was closed with ESC. This check
+        // runs inside the chat listener ahead of every feature-specific pending state and ahead of
+        // the chat pipeline, so the answer is never broadcast to the server, and it MUST come
+        // first: SignInputUtil is the single transport every prompt (Orders, Auction House,
+        // bounty, friends, punishments) registers through, and it delivers the message to the
+        // callback the opening feature supplied. A feature-local pending check here would swallow
+        // other features' answers instead.
         if (com.bx.ultimateDonutSmp.utils.SignInputUtil.hasPendingInput(player.getUniqueId())) {
             event.setCancelled(true);
             plugin.getSpigotScheduler().runEntity(player, () ->

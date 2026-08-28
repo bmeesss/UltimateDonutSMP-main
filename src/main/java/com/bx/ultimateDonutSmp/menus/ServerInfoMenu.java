@@ -145,8 +145,7 @@ public class ServerInfoMenu extends BaseMenu {
         int reservedNext = plugin.getConfigManager().getMenus().getInt(NAVIGATION_PATH + ".NEXT-SLOT", inventory.getSize() - 1);
 
         Material navMaterial = ItemUtils.parseMaterial(
-                plugin.getConfigManager().getMenus().getString(GLOBAL_PAGE_PATH + ".MATERIAL", "ARROW")
-        );
+                plugin.getConfigManager().getMenus().getString(GLOBAL_PAGE_PATH + ".MATERIAL", "ARROW"), Material.ARROW);
 
         if (page > 1 && isInBounds(reservedBack)) {
             backSlot = reservedBack;
@@ -160,7 +159,7 @@ public class ServerInfoMenu extends BaseMenu {
         if (isInBounds(reservedInfo)) {
             set(reservedInfo, ItemUtils.createItem(
                     ItemUtils.parseMaterial(plugin.getConfigManager().getMenus()
-                            .getString(NAVIGATION_PATH + ".PAGE-INFO-MATERIAL", "BOOK")),
+                            .getString(NAVIGATION_PATH + ".PAGE-INFO-MATERIAL", "BOOK"), Material.BOOK),
                     plugin.getConfigManager().getMenus().getString(NAVIGATION_PATH + ".PAGE-INFO-NAME", "&bHelp pages"),
                     new java.util.ArrayList<>(java.util.Arrays.asList("&7Page: &f" + page + "&7/&f" + pages.size(),  "&7Click the arrows to keep reading."))
             ));

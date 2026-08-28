@@ -170,27 +170,27 @@ class LegacyScoreboardTextTest {
         assertEquals(exact.toString(), LegacyScoreboardText.sanitizeObjectiveName(exact.toString()));
 
         // 33 visible characters become exactly 32.
-        assertEquals(32, LegacyScoreboardText.sanitizeObjectiveName("a".repeat(33)).length());
+        assertEquals(32, LegacyScoreboardText.sanitizeObjectiveName(repeat("a", 33)).length());
 
         // 31 visible characters + a colour code (33 raw): the code colours nothing and is dropped.
-        String withCode = "b".repeat(31) + S + "c";
+        String withCode = repeat("b", 31) + S + "c";
         assertEquals(33, withCode.length());
         String dropped = LegacyScoreboardText.sanitizeObjectiveName(withCode);
         assertEquals(31, dropped.length());
         assertTrue(dropped.endsWith("b"), dropped);
 
         // Exactly 16 raw team-part characters stay whole; 17 cut safely.
-        String team16 = S + "a" + "x".repeat(14);
+        String team16 = S + "a" + repeat("x", 14);
         assertEquals(16, team16.length());
         assertEquals(team16, LegacyScoreboardText.sanitize(team16, LegacyScoreboardText.MAX_TEAM_PART_LENGTH));
-        String team17 = S + "a" + "x".repeat(15);
+        String team17 = S + "a" + repeat("x", 15);
         String cut17 = LegacyScoreboardText.truncate(team17, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
         assertEquals(16, cut17.length());
         assertTrue(wellFormedLegacy(cut17, 16), cut17);
 
         // 14 visible characters + one emoji (2 code units) fit exactly 16 and stay whole.
         String dagger = new String(Character.toChars(0x1F5E1));
-        String emoji16 = "y".repeat(14) + dagger;
+        String emoji16 = repeat("y", 14) + dagger;
         String emojiKept = LegacyScoreboardText.truncate(emoji16, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
         assertEquals(16, emojiKept.length());
         assertTrue(emojiKept.endsWith(dagger));
@@ -219,5 +219,12 @@ class LegacyScoreboardTextTest {
         String sanitized = LegacyScoreboardText.sanitizeObjectiveName(sectionHex("0069D6") + "EconomySMP");
         assertTrue(sanitized.startsWith(String.valueOf(S)), sanitized);
         assertEquals("EconomySMP", stripCodes(sanitized));
+    }
+    private static String repeat(String unit, int count) {
+        StringBuilder builder = new StringBuilder(unit.length() * Math.max(0, count));
+        for (int i = 0; i < count; i++) {
+            builder.append(unit);
+        }
+        return builder.toString();
     }
 }

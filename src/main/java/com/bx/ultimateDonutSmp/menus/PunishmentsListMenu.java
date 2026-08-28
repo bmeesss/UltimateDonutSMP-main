@@ -267,7 +267,7 @@ public class PunishmentsListMenu extends BaseMenu {
 
     private void buildLoadingState() {
         set(inventory.getSize() / 2, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".LOADING-BUTTON.MATERIAL", "WATCH")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".LOADING-BUTTON.MATERIAL", "WATCH"), Material.WATCH),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".LOADING-BUTTON.DISPLAY-NAME", "&eLoading punishments")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".LOADING-BUTTON.LORE"),
@@ -282,7 +282,7 @@ public class PunishmentsListMenu extends BaseMenu {
                 : java.util.Collections.singletonList("&7No punishments match &f{search}&7.");
 
         set(inventory.getSize() / 2, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".EMPTY-BUTTON.MATERIAL", "BARRIER"), Material.BARRIER),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".EMPTY-BUTTON.DISPLAY-NAME", "&cNo punishments found")),
                 replaceMenuPlaceholders(defaultIfEmpty(menus().getStringList(MENU_PATH + ".EMPTY-BUTTON.LORE"), fallbackLore))
         ));
@@ -290,14 +290,16 @@ public class PunishmentsListMenu extends BaseMenu {
 
     private void buildButton(int slot, String key, String fallbackMaterial, String fallbackName, List<String> fallbackLore) {
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS." + key + ".MATERIAL", fallbackMaterial)),
+                ItemUtils.parseMaterial(
+                        menus().getString(MENU_PATH + ".BUTTONS." + key + ".MATERIAL", fallbackMaterial),
+                        ItemUtils.parseMaterial(fallbackMaterial, Material.BARRIER)),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS." + key + ".DISPLAY-NAME", fallbackName)),
                 replaceMenuPlaceholders(defaultIfEmpty(menus().getStringList(MENU_PATH + ".BUTTONS." + key + ".LORE"), fallbackLore))
         ));
     }
 
     private void buildPageButtons() {
-        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material material = ItemUtils.parseMaterial(menus().getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(PREVIOUS_PAGE_SLOT, ItemUtils.createItem(
@@ -331,8 +333,10 @@ public class PunishmentsListMenu extends BaseMenu {
     private ItemStack createPunishmentItem(PunishmentRecord record) {
         PunishmentState state = plugin.getPunishmentManager().getState(record);
         String materialPath = MENU_PATH + ".PUNISHMENT-ITEM.MATERIALS." + record.getType().name();
+        String fallbackName = PunishmentItemRenderer.defaultMaterial(record.getType());
+        Material fallback = ItemUtils.parseMaterial(fallbackName, Material.BARRIER);
         Material material = ItemUtils.parseMaterial(
-                menus().getString(materialPath, PunishmentItemRenderer.defaultMaterial(record.getType())));
+                menus().getString(materialPath, fallbackName), fallback);
 
         String displayName = menus().getString(
                 MENU_PATH + ".PUNISHMENT-ITEM.DISPLAY-NAME", "{status_color}{player} &8- &f{type}");

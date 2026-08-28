@@ -50,7 +50,7 @@ public class LeaderboardMenu extends BaseMenu {
                 continue;
             }
 
-            Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
+            Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"), Material.STONE);
             String typeName = plugin.getLeaderboardManager().getDisplayName(type);
             String displayName = applyMenuPlaceholders(
                     section.getString("DISPLAY-NAME", "&b" + typeName),

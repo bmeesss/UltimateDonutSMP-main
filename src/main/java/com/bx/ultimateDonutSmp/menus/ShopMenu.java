@@ -201,7 +201,7 @@ public class ShopMenu extends BaseMenu {
         String path = "SHOP-GUI.FAVORITES.BUTTON";
         int count = plugin.getShopManager().getPreference(player.getUniqueId()).favorites().size();
         set(config().getInt(path + ".SLOT", 26), ItemUtils.createItem(
-                ItemUtils.parseMaterial(config().getString(path + ".MATERIAL", "NETHER_STAR")),
+                ItemUtils.parseMaterial(config().getString(path + ".MATERIAL", "NETHER_STAR"), Material.NETHER_STAR),
                 replace(config().getString(path + ".NAME", "&dFavorite items"), "{count}", String.valueOf(count)),
                 replace(config().getStringList(path + ".LORE"), "{count}", String.valueOf(count))
         ));
@@ -399,7 +399,7 @@ public class ShopMenu extends BaseMenu {
             return;
         }
         set(getBackSlot(), ItemUtils.createItem(
-                ItemUtils.parseMaterial(backButton.getString("MATERIAL", "STAINED_GLASS_PANE")),
+                ItemUtils.parseMaterial(backButton.getString("MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                 backButton.getString("DISPLAY-NAME", "&cBack"),
                 backButton.getStringList("LORE")
         ));
@@ -407,7 +407,7 @@ public class ShopMenu extends BaseMenu {
 
     private void buildPageButtons(int totalItems) {
         FileConfiguration menus = plugin.getConfigManager().getMenus();
-        Material arrowMaterial = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material arrowMaterial = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(getFirstPageSlot(), ItemUtils.createItem(

@@ -67,12 +67,11 @@ class LanguageManagerTest {
 
     @Test
     void bundledLanguageResourcesParseRecursively() throws Exception {
-        Path root = Path.of("src/main/resources/languages");
+        Path root = java.nio.file.Paths.get("src/main/resources/languages");
         try (Stream<Path> paths = Files.walk(root)) {
             for (Path path : paths.filter(LanguageManagerTest::isYaml).collect(java.util.stream.Collectors.toList())) {
                 YamlConfiguration configuration = new YamlConfiguration();
-                configuration.options().parseComments(true);
-                configuration.load(path.toFile());
+                        configuration.load(path.toFile());
             }
         }
     }
@@ -209,17 +208,12 @@ class LanguageManagerTest {
                 new java.util.ArrayList<>(java.util.Arrays.asList("FREEZE.SERVER-NAME",  "FREEZE.ALLOWED-COMMANDS")));
         added += mergeText(target, "CONFIG.AUCTION_HOUSE", "auction-house.yml", false, java.util.Collections.singletonList("BOTS.BOT_NAMES"));
         added += mergeText(target, "CONFIG.ORDERS", "orders.yml", false, new java.util.ArrayList<>(java.util.Arrays.asList("CATEGORY_FILTERS",  "BOTS.BOT_NAMES")));
-        added += mergeText(target, "CONFIG.DUELS", "duels.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("ARENA_SETTINGS",  "MAP_SOURCES")));
-        added += mergeText(target, "CONFIG.FFA", "ffa.yml", false, java.util.Collections.singletonList("ARENA_SETTINGS"));
+        // duels.yml / ffa.yml / network.yml are not bundled in this code base revision (there is
+        // no duels or ffa feature, and ConfigManager.getNetwork() is an empty stub), so they have
+        // no player-facing text to merge.
         added += mergeText(target, "CONFIG.CRATES", "crates.yml", false, java.util.Collections.singletonList("CRATES"));
         added += mergeText(target, "CONFIG.SPAWNERS", "spawners.yml", false, java.util.Collections.singletonList("TYPES"));
         added += mergeText(target, "CONFIG.SPAWN_STASH", "spawn-stash.yml", false, java.util.Collections.singletonList("TYPES"));
-        added += mergeText(target, "CONFIG.NETWORK", "network.yml", false, new java.util.ArrayList<>(java.util.Arrays.asList(
-                "NETWORK-STATUS.SERVERS", 
-                "NETWORK.LOCAL_DISPLAY_NAME", 
-                "NETWORK-STATUS.LOCAL-DISPLAY-NAME"
-        )));
         added += mergeText(target, "CONFIG.STAFF_MODE", "staff-mode.yml", false, java.util.Collections.singletonList("CUSTOM-ITEMS"));
         added += mergeText(target, "CONFIG.SERVER_WIPE", "server-wipe.yml", false, java.util.Collections.emptyList());
         added += mergeText(target, "CONFIG.WORTH", "worth.yml", false, java.util.Collections.singletonList("BLOCK-ITEMS"));
@@ -266,20 +260,18 @@ class LanguageManagerTest {
 
     private static YamlConfiguration loadResource(String name) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
-        configuration.load(Path.of("src/main/resources", name).toFile());
+        configuration.load(java.nio.file.Paths.get("src/main/resources", name).toFile());
         return configuration;
     }
 
     private static boolean isTextValue(Object value) {
         return value instanceof String
-                || value instanceof List<?> list && list.stream().allMatch(String.class::isInstance);
+                || value instanceof List<?> && ((List<?>) value).stream().allMatch(String.class::isInstance);
     }
 
     private static YamlConfiguration load(String locale) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
-        configuration.load(Path.of("src/main/resources/languages", locale + ".yml").toFile());
+        configuration.load(java.nio.file.Paths.get("src/main/resources/languages", locale + ".yml").toFile());
         return configuration;
     }
 
@@ -296,136 +288,17 @@ class LanguageManagerTest {
     private static List<String> matches(Object value, Pattern pattern) {
         List<String> matches = new java.util.ArrayList<>();
         if (value instanceof String) {
-            String text = (String) added > 0) {
-            english.save(new java.io.File("src/main/resources/languages/en_US.yml"));
-            added = 0;
-        }
-
-        assertEquals(0, added, "en_US.yml is missing player-facing text from current UDS resources");
-    }
-
-
-    private static int mergeCurrentResourceText(YamlConfiguration target) throws Exception {
-        int added = 0;
-        added += mergeAll(target, "MESSAGES", "messages.yml");
-        added += mergeAll(target, "DEATH_MESSAGES", "death-messages.yml");
-        added += mergeText(target, "MENUS", "menus.yml", true, new java.util.ArrayList<>(java.util.Arrays.asList(
-                "MEDIA-MENU",  "RULES-MENU",  "SERVER-INFO-MENU",  "SERVERS-MENU", 
-                "SPAWN-MENU.AREAS",  "AFK-MENU.AREAS"
-        )));
-        added += mergeText(target, "CONFIG.BILLFORD", "billford.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("BILLFORD",  "ACCESS.NPC.DISPLAY_NAME")));
-        added += mergeText(target, "CONFIG.RTP", "rtp.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("DENIED-WORLDS",  "WORLD-SETTINGS")));
-        added += mergeText(target, "CONFIG.AMETHYST_TOOLS", "amethyst-tools.yml", false, java.util.Collections.emptyList());
-        added += mergeText(target, "CONFIG.ENDER_CHEST", "ender-chest.yml", false, java.util.Collections.emptyList());
-        added += mergeText(target, "CONFIG.INVSEE", "invsee.yml", false, java.util.Collections.emptyList());
-        added += mergeText(target, "CONFIG.FREEZE", "freeze.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("FREEZE.SERVER-NAME",  "FREEZE.ALLOWED-COMMANDS")));
-        added += mergeText(target, "CONFIG.AUCTION_HOUSE", "auction-house.yml", false, java.util.Collections.singletonList("BOTS.BOT_NAMES"));
-        added += mergeText(target, "CONFIG.ORDERS", "orders.yml", false, new java.util.ArrayList<>(java.util.Arrays.asList("CATEGORY_FILTERS",  "BOTS.BOT_NAMES")));
-        added += mergeText(target, "CONFIG.DUELS", "duels.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("ARENA_SETTINGS",  "MAP_SOURCES")));
-        added += mergeText(target, "CONFIG.FFA", "ffa.yml", false, java.util.Collections.singletonList("ARENA_SETTINGS"));
-        added += mergeText(target, "CONFIG.CRATES", "crates.yml", false, java.util.Collections.singletonList("CRATES"));
-        added += mergeText(target, "CONFIG.SPAWNERS", "spawners.yml", false, java.util.Collections.singletonList("TYPES"));
-        added += mergeText(target, "CONFIG.SPAWN_STASH", "spawn-stash.yml", false, java.util.Collections.singletonList("TYPES"));
-        added += mergeText(target, "CONFIG.NETWORK", "network.yml", false, new java.util.ArrayList<>(java.util.Arrays.asList(
-                "NETWORK-STATUS.SERVERS", 
-                "NETWORK.LOCAL_DISPLAY_NAME", 
-                "NETWORK-STATUS.LOCAL-DISPLAY-NAME"
-        )));
-        added += mergeText(target, "CONFIG.STAFF_MODE", "staff-mode.yml", false, java.util.Collections.singletonList("CUSTOM-ITEMS"));
-        added += mergeText(target, "CONFIG.SERVER_WIPE", "server-wipe.yml", false, java.util.Collections.emptyList());
-        added += mergeText(target, "CONFIG.WORTH", "worth.yml", false, java.util.Collections.singletonList("BLOCK-ITEMS"));
-        added += LanguageManager.mergeShopText(target, loadResource("shop.yml"));
-        added += mergeText(target, "CONFIG.HIDE", "hide.yml", false,
-                new java.util.ArrayList<>(java.util.Arrays.asList("ALIASES",  "SKINS",  "STAFF-MARKER")));
-        added += mergeText(target, "CONFIG.ENCHANTMENTS", "enchantments.yml", false, new java.util.ArrayList<>(java.util.Arrays.asList(
-                "helmet",  "chestplate",  "leggings",  "boots",  "elytra",  "bow",  "crossbow", 
-                "sword",  "axe",  "pickaxe",  "shovel",  "hoe",  "fishing_rod",  "trident",  "mace"
-        )));
-        return added;
-    }
-
-    private static int mergeAll(YamlConfiguration target, String root, String resource) throws Exception {
-        YamlConfiguration source = loadResource(resource);
-        int added = 0;
-        for (String path : source.getKeys(true)) {
-            Object value = source.get(path);
-            if (!source.isConfigurationSection(path)
-                    && isTextValue(value)
-                    && !target.contains(root + "." + path, true)) {
-                target.set(root + "." + path, source.get(path));
-                added++;
-            }
-        }
-        return added;
-    }
-
-    private static int mergeText(
-            YamlConfiguration target,
-            String root,
-            String resource,
-            boolean menu,
-            List<String> excludedPaths
-    ) throws Exception {
-        return LanguageManager.mergeTranslatableSection(
-                target,
-                root,
-                loadResource(resource),
-                menu,
-                excludedPaths
-        );
-    }
-
-    private static YamlConfiguration loadResource(String name) throws Exception {
-        YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
-        configuration.load(Path.of("src/main/resources", name).toFile());
-        return configuration;
-    }
-
-    private static boolean isTextValue(Object value) {
-        return value instanceof String
-                || value instanceof List<?> list && list.stream().allMatch(String.class::isInstance);
-    }
-
-    private static YamlConfiguration load(String locale) throws Exception {
-        YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
-        configuration.load(Path.of("src/main/resources/languages", locale + ".yml").toFile());
-        return configuration;
-    }
-
-    private static Set<String> scalarKeys(YamlConfiguration configuration) {
-        Set<String> keys = new HashSet<>();
-        for (String key : configuration.getKeys(true)) {
-            if (!configuration.isConfigurationSection(key)) {
-                keys.add(key);
-            }
-        }
-        return keys;
-    }
-
-    private static List<String> matches(Object value, Pattern pattern) {
-        List<String> matches = new java.util.ArrayList<>();
-        if (value;
-            collectMatches(text, pattern, matches);
-        } else if (value instanceof List<?> list) {
-            for (Object entry : list) {
+            collectMatches((String) value, pattern, matches);
+        } else if (value instanceof List<?>) {
+            for (Object entry : (List<?>) value) {
                 if (entry instanceof String) {
-            String text = (String) value instanceof List<?> list) {
-            for (Object entry : list) {
-                if (entry;
-                    collectMatches(text, pattern, matches);
+                    collectMatches((String) entry, pattern, matches);
                 }
             }
         }
         matches.sort(String::compareTo);
         return matches;
     }
-
     private static void collectMatches(String text, Pattern pattern, List<String> target) {
         Matcher matcher = pattern.matcher(text);
         while (matcher.find()) {

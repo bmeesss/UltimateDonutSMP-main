@@ -230,13 +230,21 @@ public class OrdersBrowseMenu extends BaseMenu {
         // Queries typed with a modern (1.13+) name resolve through the central layer so they
         // still find the 1.12.2 material the orders actually store, e.g. "oak_door" -> WOOD_DOOR.
         org.bukkit.Material searchMaterial = plugin.getOrdersManager().resolveSearchMaterial(query);
+        // A query that resolves to one material matches by material equality only: the
+        // material-key substring would otherwise drag in unrelated orders ("oak_door" matching
+        // DARK_OAK_DOOR_ITEM because "dark_oak_door_item" contains "oak_door"). Free-text
+        // queries keep the substring behaviour — player names have no material to compare.
+        if (searchMaterial != null) {
+            return orders.stream()
+                    .filter(order -> order.requestedItem() != null
+                            && order.requestedItem().getType() == searchMaterial)
+                    .collect(java.util.stream.Collectors.toList());
+        }
         return orders.stream()
                 .filter(order -> plugin.getOrdersManager().describeItem(order.requestedItem())
                         .toLowerCase(Locale.ROOT).contains(normalized)
                         || order.requestedMaterialKey().toLowerCase(Locale.ROOT).contains(normalized)
-                        || order.ownerName().toLowerCase(Locale.ROOT).contains(normalized)
-                        || (searchMaterial != null && order.requestedItem() != null
-                        && order.requestedItem().getType() == searchMaterial))
+                        || order.ownerName().toLowerCase(Locale.ROOT).contains(normalized))
                 .collect(java.util.stream.Collectors.toList());
     }
 

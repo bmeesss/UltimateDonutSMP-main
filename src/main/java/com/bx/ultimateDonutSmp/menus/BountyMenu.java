@@ -196,8 +196,7 @@ public class BountyMenu extends BaseMenu {
                 .collect(java.util.stream.Collectors.toList());
 
         Material material = ItemUtils.parseMaterial(
-                menus.getString("BOUNTIES-MENU.BOUNTY-BUTTON.MATERIAL", "SKULL_ITEM")
-        );
+                menus.getString("BOUNTIES-MENU.BOUNTY-BUTTON.MATERIAL", "SKULL_ITEM"), Material.SKULL_ITEM);
 
         if (material != Material.SKULL_ITEM) {
             return ItemUtils.createItem(material, displayName, lore);
@@ -216,7 +215,7 @@ public class BountyMenu extends BaseMenu {
 
     private void buildRefreshButton(FileConfiguration menus) {
         String path = "BOUNTIES-MENU.REFRESH-BUTTON";
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SKULL_ITEM"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SKULL_ITEM"), Material.SKULL_ITEM);
         String name = menus.getString(path + ".NAME", "&#6BF18DBounties");
         List<String> lore = menus.getStringList(path + ".LORE");
         set(menus.getInt(path + ".SLOT", 49), ItemUtils.createItem(material, name, lore));
@@ -233,7 +232,7 @@ public class BountyMenu extends BaseMenu {
 
     private void buildSearchButton(FileConfiguration menus) {
         String path = "BOUNTIES-MENU.SEARCH-BUTTON";
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SIGN"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SIGN"), Material.SIGN);
         String name = menus.getString(path + ".NAME", "&aSearch");
         List<String> rawLore = menus.getStringList(path + ".LORE");
         if (rawLore.isEmpty()) {
@@ -250,7 +249,7 @@ public class BountyMenu extends BaseMenu {
     }
 
     private void buildPageButtons(FileConfiguration menus, int totalItems) {
-        Material material = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"));
+        Material material = ItemUtils.parseMaterial(menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "ARROW"), Material.ARROW);
 
         if (hasPreviousPage) {
             set(FIRST_PAGE_SLOT, ItemUtils.createItem(
