@@ -182,13 +182,14 @@ public final class SignInputUtil {
 
         Location loc = placement.loc.clone();
         MaterialData oldData = placement.oldData;
+        final List<String> finalList = list;
 
         Runnable openAction = () -> {
             Block block = loc.getBlock();
             Material signMaterial = resolveSignBlockMaterial();
             if (signMaterial == null) {
                 // Should not happen: isSignEditorAvailable() already verified this.
-                scheduleChatFallback(plugin, player, list, lineIndex, scheduler);
+                scheduleChatFallback(plugin, player, finalList, lineIndex, scheduler);
                 return;
             }
             block.setType(signMaterial, false);
