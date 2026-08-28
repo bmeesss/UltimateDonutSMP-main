@@ -1005,6 +1005,11 @@ public final class PlayerWipeResult {
     }
 
     private void ensurePlayerColumns() throws SQLException {
+        // tpauto/phantom_enabled/payments_enabled predate the blocks_* columns but were never in
+        // this migration list; a database last written before they existed could not be saved to.
+        ensureColumnExists("players", "tpauto", "INTEGER DEFAULT 0");
+        ensureColumnExists("players", "phantom_enabled", "INTEGER DEFAULT 1");
+        ensureColumnExists("players", "payments_enabled", "INTEGER DEFAULT 1");
         ensureColumnExists("players", "blocks_placed", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "blocks_broken", "INTEGER DEFAULT 0");
         ensureColumnExists("players", "mobs_killed", "INTEGER DEFAULT 0");
@@ -1900,6 +1905,10 @@ public final class PlayerWipeResult {
             uuidByUsernameCache.put(data.getUsername().toLowerCase(Locale.ROOT), data.getUuid());
         }
 
+        // Column list, placeholder count and the bound parameters below must all stay in the
+        // exact order of the players schema (62 columns; see createTables and
+        // ensurePlayerColumns). SQLite fails preparation with "N values for M columns" when they
+        // drift apart, which is what the previous 57-column / 64-placeholder version produced.
         String sql = "REPLACE INTO players\n"
                 + "(uuid, username, money, shards, kills, deaths, playtime_seconds, blocks_placed, blocks_broken, mobs_killed,\n"
                 + " kill_streak, highest_kill_streak, money_spent, money_made, tpauto, phantom_enabled, payments_enabled,\n"
@@ -1909,13 +1918,15 @@ public final class PlayerWipeResult {
                 + " chainmail_on_respawn_enabled, lunar_teammates_enabled, tpa_requests_enabled, auto_tpahere_enabled,\n"
                 + " tpahere_requests_enabled, team_invites_enabled, mob_spawn_enabled, pay_confirm_menu_enabled,\n"
                 + " totem_particles_enabled, fast_crystals_enabled, amethyst_break_messages_enabled,\n"
-                + " public_chat_enabled, server_broadcasts_enabled, auction_notifications_enabled,\n"
-                + " explosion_particles_enabled, hide_all_players_enabled, notification_sounds_enabled,\n"
-                + " rtp_coordinates_enabled, order_notifications_enabled, team_chat_visible,\n"
-                + "    shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until, destroy_pearl_on_death, randomized_coords, death_messages_choice,\n"
-                + "    advancement_messages_choice, join_leave_messages_choice, teleport_alerts_enabled,\n"
-                + "    follow_alerts_enabled, explosion_sounds_enabled, display_donutplus_enabled)\n"
-                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)\n";
+                + " private_messages_enabled, keyall_notifications_enabled, public_chat_enabled,\n"
+                + " server_broadcasts_enabled, auction_notifications_enabled, explosion_particles_enabled,\n"
+                + " hide_all_players_enabled, notification_sounds_enabled, rtp_coordinates_enabled,\n"
+                + " order_notifications_enabled, team_chat_visible, quiet_spawn_enabled, night_vision_enabled,\n"
+                + " keyall_remaining_seconds, shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until,\n"
+                + " destroy_pearl_on_death, randomized_coords, death_messages_choice, advancement_messages_choice,\n"
+                + " join_leave_messages_choice, teleport_alerts_enabled, follow_alerts_enabled,\n"
+                + " explosion_sounds_enabled, display_donutplus_enabled)\n"
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)\n";
 
         if (hikariDataSource != null && !hikariDataSource.isClosed()) {
             try (Connection conn = hikariDataSource.getConnection();
@@ -1941,6 +1952,8 @@ public final class PlayerWipeResult {
     }
 
     private void bindPlayerSaveParameters(PreparedStatement ps, PlayerData data) throws SQLException {
+            // 1-62 in the exact order of the savePlayer column list / players schema; load uses the
+            // same fields through mapPlayerRow, so save and load stay symmetric.
             ps.setString(1, data.getUuid().toString());
             ps.setString(2, data.getUsername());
             ps.setDouble(3, data.getMoney());
@@ -1979,30 +1992,30 @@ public final class PlayerWipeResult {
             ps.setInt(36, data.isAmethystBreakMessagesEnabled() ? 1 : 0);
             ps.setInt(37, data.getPrivateMessagesChoice().ordinal());
             ps.setInt(38, data.isKeyAllNotificationsEnabled() ? 1 : 0);
-            ps.setInt(40, data.isPublicChatEnabled() ? 1 : 0);
-            ps.setInt(41, data.isServerBroadcastsEnabled() ? 1 : 0);
-            ps.setInt(42, data.isAuctionNotificationsEnabled() ? 1 : 0);
-            ps.setInt(43, data.isExplosionParticlesEnabled() ? 1 : 0);
-            ps.setInt(44, data.isHideAllPlayersEnabled() ? 1 : 0);
-            ps.setInt(45, data.isNotificationSoundsEnabled() ? 1 : 0);
-            ps.setInt(46, data.isRtpCoordinatesEnabled() ? 1 : 0);
-            ps.setInt(47, data.isOrderNotificationsEnabled() ? 1 : 0);
-            ps.setInt(48, data.isTeamChatVisible() ? 1 : 0);
-            ps.setInt(50, data.isQuietSpawnEnabled() ? 1 : 0);
-            ps.setInt(51, data.isNightVisionEnabled() ? 1 : 0);
-            ps.setLong(52, data.getKeyAllRemainingSeconds());
-            ps.setLong(53, data.getShardBoosterExpiryMillis());
-            ps.setLong(54, data.getMobSpawnDisabledUntil());
-            ps.setLong(55, data.getPhantomDisabledUntil());
-            ps.setInt(56, data.isDestroyPearlOnDeath() ? 1 : 0);
-            ps.setInt(57, data.isRandomizedCoords() ? 1 : 0);
-            ps.setInt(58, data.getDeathMessagesChoice().ordinal());
-            ps.setInt(59, data.getAdvancementMessagesChoice().ordinal());
-            ps.setInt(60, data.getJoinLeaveMessagesChoice().ordinal());
-            ps.setInt(61, data.isTeleportAlertsEnabled() ? 1 : 0);
-            ps.setInt(62, data.isFollowAlertsEnabled() ? 1 : 0);
-            ps.setInt(63, data.isExplosionSoundsEnabled() ? 1 : 0);
-            ps.setInt(64, data.isDisplayDonutPlusEnabled() ? 1 : 0);
+            ps.setInt(39, data.isPublicChatEnabled() ? 1 : 0);
+            ps.setInt(40, data.isServerBroadcastsEnabled() ? 1 : 0);
+            ps.setInt(41, data.isAuctionNotificationsEnabled() ? 1 : 0);
+            ps.setInt(42, data.isExplosionParticlesEnabled() ? 1 : 0);
+            ps.setInt(43, data.isHideAllPlayersEnabled() ? 1 : 0);
+            ps.setInt(44, data.isNotificationSoundsEnabled() ? 1 : 0);
+            ps.setInt(45, data.isRtpCoordinatesEnabled() ? 1 : 0);
+            ps.setInt(46, data.isOrderNotificationsEnabled() ? 1 : 0);
+            ps.setInt(47, data.isTeamChatVisible() ? 1 : 0);
+            ps.setInt(48, data.isQuietSpawnEnabled() ? 1 : 0);
+            ps.setInt(49, data.isNightVisionEnabled() ? 1 : 0);
+            ps.setLong(50, data.getKeyAllRemainingSeconds());
+            ps.setLong(51, data.getShardBoosterExpiryMillis());
+            ps.setLong(52, data.getMobSpawnDisabledUntil());
+            ps.setLong(53, data.getPhantomDisabledUntil());
+            ps.setInt(54, data.isDestroyPearlOnDeath() ? 1 : 0);
+            ps.setInt(55, data.isRandomizedCoords() ? 1 : 0);
+            ps.setInt(56, data.getDeathMessagesChoice().ordinal());
+            ps.setInt(57, data.getAdvancementMessagesChoice().ordinal());
+            ps.setInt(58, data.getJoinLeaveMessagesChoice().ordinal());
+            ps.setInt(59, data.isTeleportAlertsEnabled() ? 1 : 0);
+            ps.setInt(60, data.isFollowAlertsEnabled() ? 1 : 0);
+            ps.setInt(61, data.isExplosionSoundsEnabled() ? 1 : 0);
+            ps.setInt(62, data.isDisplayDonutPlusEnabled() ? 1 : 0);
             data.setDirty(false);
     }
 

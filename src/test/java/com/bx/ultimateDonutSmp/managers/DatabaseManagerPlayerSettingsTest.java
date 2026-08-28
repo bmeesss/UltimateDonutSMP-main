@@ -31,7 +31,6 @@ class DatabaseManagerPlayerSettingsTest {
             "rtp_coordinates_enabled", 
             "order_notifications_enabled", 
             "team_chat_visible", 
-            "duel_music_enabled", 
             "quiet_spawn_enabled", 
             "night_vision_enabled", 
             "destroy_pearl_on_death", 
@@ -61,7 +60,6 @@ class DatabaseManagerPlayerSettingsTest {
             original.setRtpCoordinatesEnabled(false);
             original.setOrderNotificationsEnabled(false);
             original.setTeamChatVisible(false);
-            original.setDuelMusicEnabled(false);
             original.setQuietSpawnEnabled(true);
             original.setNightVisionEnabled(true);
 
@@ -96,7 +94,6 @@ class DatabaseManagerPlayerSettingsTest {
             assertFalse(loaded.isRtpCoordinatesEnabled());
             assertFalse(loaded.isOrderNotificationsEnabled());
             assertFalse(loaded.isTeamChatVisible());
-            assertFalse(loaded.isDuelMusicEnabled());
             assertTrue(loaded.isQuietSpawnEnabled());
             assertTrue(loaded.isNightVisionEnabled());
 
@@ -146,7 +143,6 @@ class DatabaseManagerPlayerSettingsTest {
                     assertTrue(result.getInt("rtp_coordinates_enabled") != 0);
                     assertTrue(result.getInt("order_notifications_enabled") != 0);
                     assertTrue(result.getInt("team_chat_visible") != 0);
-                    assertTrue(result.getInt("duel_music_enabled") != 0);
                     assertFalse(result.getInt("quiet_spawn_enabled") != 0);
                     assertFalse(result.getInt("night_vision_enabled") != 0);
 

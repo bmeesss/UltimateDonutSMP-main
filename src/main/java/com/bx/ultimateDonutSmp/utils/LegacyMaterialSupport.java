@@ -28,9 +28,15 @@ import java.util.Map;
  *   <li>it does not create items. {@link ItemUtils#createItem(Material, short, String,
  *       java.util.List)} and {@link ItemUtils#createPlaceholder(Material, short)} stay the only
  *       ItemStack factories;</li>
- *   <li>only the stained glass pane family is implemented today. Dyes ({@code INK_SACK}),
- *       terracotta ({@code STAINED_CLAY}), heads and every other 1.13+ item stay in their own
- *       batches until their data mapping is validated the same way;</li>
+ *   <li>besides the stained glass pane family it now also resolves the flattened colour
+ *       families ({@code *_WOOL}, {@code *_TERRACOTTA}, {@code *_CONCRETE}, {@code *_CARPET},
+ *       {@code *_GLASS}, {@code *_BED}, {@code *_BANNER}, {@code *_DYE}, {@code *_SHULKER_BOX}),
+ *       the wood families ({@code *_LOG}, {@code *_PLANKS}, {@code *_SAPLING}, {@code *_BOAT},
+ *       {@code *_SLAB}, {@code *_DOOR}), the stone variants ({@code ANDESITE},
+ *       {@code POLISHED_GRANITE}, {@code CHISELED_SANDSTONE}, &hellip;), the wood tool renames
+ *       ({@code WOODEN_}/{@code GOLDEN_}/{@code *_SHOVEL}) and the straight 1.13 renames
+ *       ({@code GRASS_BLOCK}, {@code PISTON}, {@code LEAD}, {@code GUNPOWDER}, &hellip;) that
+ *       the shipped filter/orders configurations use;</li>
  *   <li>legacy 1.12.2 names ({@code WATCH}, {@code MOB_SPAWNER}, {@code BOOK_AND_QUILL},
  *       {@code EYE_OF_ENDER}, {@code EXP_BOTTLE}, {@code GRASS}, {@code HOPPER}, {@code INK_SACK},
  *       &hellip;) are passed through untouched with data {@code 0};</li>
@@ -58,6 +64,21 @@ public final class LegacyMaterialSupport {
     /** Inverse of {@link #PANE_DATA}, used to write a pane back into a config file. */
     private static final Map<Short, String> PANE_COLOR_BY_DATA;
 
+    /** 1.13+ flat name &rarr; the 1.12.2 enum name of the same item. */
+    private static final Map<String, String> RENAMES;
+
+    /** 1.13+ wood type &rarr; 1.12.2 data value for the LOG/LOG_2, WOOD, SAPLING and BOAT families. */
+    private static final Map<String, Integer> WOOD_DATA;
+
+    /** Colour names ordered longest-first so {@code LIGHT_GRAY} is never read as {@code GRAY}. */
+    private static final String[] COLOR_ORDER = {
+            "LIGHT_BLUE", "LIGHT_GRAY", "MAGENTA", "ORANGE", "PURPLE", "YELLOW", "BROWN",
+            "GREEN", "WHITE", "BLACK", "BLUE", "GRAY", "LIME", "PINK", "CYAN", "RED"
+    };
+
+    /** Wood prefixes ordered so {@code DARK_OAK} is never read as {@code OAK}. */
+    private static final String[] WOOD_ORDER = {"DARK_OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "OAK"};
+
     static {
         Map<String, Short> data = new HashMap<String, Short>();
         data.put("WHITE", Short.valueOf((short) 0));
@@ -83,6 +104,115 @@ public final class LegacyMaterialSupport {
             colors.put(entry.getValue(), entry.getKey());
         }
         PANE_COLOR_BY_DATA = Collections.unmodifiableMap(colors);
+
+        Map<String, String> renames = new HashMap<String, String>();
+        // 1.13+ renames of items/blocks that exist unchanged (bar the name) on 1.12.2.
+        renames.put("GRASS_BLOCK", "GRASS");
+        renames.put("DIRT_PATH", "GRASS_PATH");
+        renames.put("PISTON", "PISTON_BASE");
+        renames.put("STICKY_PISTON", "PISTON_STICKY_BASE");
+        renames.put("COBBLESTONE_WALL", "COBBLE_WALL");
+        renames.put("STONE_BRICKS", "SMOOTH_BRICK");
+        renames.put("STONE_BRICK_STAIRS", "SMOOTH_STAIRS");
+        renames.put("NETHER_BRICKS", "NETHER_BRICK");
+        renames.put("RED_NETHER_BRICKS", "RED_NETHER_BRICK");
+        renames.put("END_STONE_BRICKS", "END_BRICKS");
+        renames.put("BRICKS", "BRICK");
+        renames.put("CHISELED_STONE_BRICKS", "SMOOTH_BRICK");
+        renames.put("LEAD", "LEASH");
+        renames.put("CLOCK", "WATCH");
+        renames.put("PORKCHOP", "PORK");
+        renames.put("COOKED_PORKCHOP", "GRILLED_PORK");
+        renames.put("BEEF", "RAW_BEEF");
+        renames.put("CHICKEN", "RAW_CHICKEN");
+        renames.put("MUSHROOM_STEW", "MUSHROOM_SOUP");
+        renames.put("MELON_SLICE", "MELON");
+        renames.put("WRITABLE_BOOK", "BOOK_AND_QUILL");
+        renames.put("FILLED_MAP", "MAP");
+        renames.put("ENDER_EYE", "EYE_OF_ENDER");
+        renames.put("EXPERIENCE_BOTTLE", "EXP_BOTTLE");
+        renames.put("GUNPOWDER", "SULPHUR");
+        renames.put("ENCHANTING_TABLE", "ENCHANTMENT_TABLE");
+        renames.put("TOTEM_OF_UNDYING", "TOTEM");
+        renames.put("DRAGON_BREATH", "DRAGONS_BREATH");
+        renames.put("COBWEB", "WEB");
+        renames.put("LILY_PAD", "WATER_LILY");
+        renames.put("WHEAT_SEEDS", "SEEDS");
+        renames.put("NETHER_WART", "NETHER_WARTS");
+        renames.put("CARROTS", "CARROT_ITEM");
+        renames.put("POTATOES", "POTATO_ITEM");
+        renames.put("REPEATER", "DIODE");
+        renames.put("COMPARATOR", "REDSTONE_COMPARATOR");
+        renames.put("STONE_PRESSURE_PLATE", "STONE_PLATE");
+        renames.put("LIGHT_WEIGHTED_PRESSURE_PLATE", "GOLD_PLATE");
+        renames.put("HEAVY_WEIGHTED_PRESSURE_PLATE", "IRON_PLATE");
+        renames.put("OAK_FENCE", "FENCE");
+        renames.put("OAK_FENCE_GATE", "FENCE_GATE");
+        renames.put("OAK_TRAPDOOR", "TRAP_DOOR");
+        renames.put("OAK_BUTTON", "WOOD_BUTTON");
+        renames.put("OAK_PRESSURE_PLATE", "WOOD_PLATE");
+        renames.put("OAK_DOOR", "WOOD_DOOR");
+        renames.put("OAK_STAIRS", "WOOD_STAIRS");
+        renames.put("SPRUCE_STAIRS", "SPRUCE_WOOD_STAIRS");
+        renames.put("BIRCH_STAIRS", "BIRCH_WOOD_STAIRS");
+        renames.put("JUNGLE_STAIRS", "JUNGLE_WOOD_STAIRS");
+        renames.put("CHEST_MINECART", "STORAGE_MINECART");
+        renames.put("FURNACE_MINECART", "POWERED_MINECART");
+        renames.put("TNT_MINECART", "EXPLOSIVE_MINECART");
+        renames.put("COMMAND_BLOCK_MINECART", "COMMAND_MINECART");
+        renames.put("CARROT_ON_A_STICK", "CARROT_STICK");
+        renames.put("OAK_PLANKS", "WOOD");
+        renames.put("WOODEN_PICKAXE", "WOOD_PICKAXE");
+        renames.put("WOODEN_AXE", "WOOD_AXE");
+        renames.put("WOODEN_SHOVEL", "WOOD_SPADE");
+        renames.put("WOODEN_HOE", "WOOD_HOE");
+        renames.put("WOODEN_SWORD", "WOOD_SWORD");
+        renames.put("STONE_SHOVEL", "STONE_SPADE");
+        renames.put("IRON_SHOVEL", "IRON_SPADE");
+        renames.put("GOLDEN_SHOVEL", "GOLD_SPADE");
+        renames.put("GOLDEN_PICKAXE", "GOLD_PICKAXE");
+        renames.put("GOLDEN_AXE", "GOLD_AXE");
+        renames.put("GOLDEN_HOE", "GOLD_HOE");
+        renames.put("GOLDEN_SWORD", "GOLD_SWORD");
+        renames.put("GOLDEN_HELMET", "GOLD_HELMET");
+        renames.put("GOLDEN_CHESTPLATE", "GOLD_CHESTPLATE");
+        renames.put("GOLDEN_LEGGINGS", "GOLD_LEGGINGS");
+        renames.put("GOLDEN_BOOTS", "GOLD_BOOTS");
+        renames.put("END_STONE", "ENDER_STONE");
+        renames.put("CRAFTING_TABLE", "WORKBENCH");
+        renames.put("NETHER_QUARTZ_ORE", "QUARTZ_ORE");
+        renames.put("BREWING_STAND", "BREWING_STAND_ITEM");
+        renames.put("CAULDRON", "CAULDRON_ITEM");
+        renames.put("REDSTONE_TORCH", "REDSTONE_TORCH_ON");
+        renames.put("FIRE_CHARGE", "FIREBALL");
+        renames.put("STONE_STAIRS", "SMOOTH_STAIRS");
+        renames.put("MUSIC_DISC_13", "GOLD_RECORD");
+        renames.put("MUSIC_DISC_CAT", "GREEN_RECORD");
+        renames.put("MUSIC_DISC_BLOCKS", "RECORD_3");
+        renames.put("MUSIC_DISC_CHIRP", "RECORD_4");
+        renames.put("MUSIC_DISC_FAR", "RECORD_5");
+        renames.put("MUSIC_DISC_MALL", "RECORD_6");
+        renames.put("MUSIC_DISC_MELLOHI", "RECORD_7");
+        renames.put("MUSIC_DISC_STAL", "RECORD_8");
+        renames.put("MUSIC_DISC_STRAD", "RECORD_9");
+        renames.put("MUSIC_DISC_WARD", "RECORD_10");
+        renames.put("MUSIC_DISC_11", "RECORD_11");
+        renames.put("MUSIC_DISC_WAIT", "RECORD_12");
+        // Closest-role stand-ins for post-1.12.2 items the configs still name.
+        renames.put("AMETHYST_SHARD", "PRISMARINE_CRYSTALS");
+        renames.put("BLUE_ICE", "PACKED_ICE");
+        renames.put("CHIPPED_ANVIL", "ANVIL");
+        renames.put("DAMAGED_ANVIL", "ANVIL");
+        RENAMES = Collections.unmodifiableMap(renames);
+
+        Map<String, Integer> woods = new HashMap<String, Integer>();
+        woods.put("OAK", Integer.valueOf(0));
+        woods.put("SPRUCE", Integer.valueOf(1));
+        woods.put("BIRCH", Integer.valueOf(2));
+        woods.put("JUNGLE", Integer.valueOf(3));
+        woods.put("ACACIA", Integer.valueOf(4));
+        woods.put("DARK_OAK", Integer.valueOf(5));
+        WOOD_DATA = Collections.unmodifiableMap(woods);
     }
 
     private LegacyMaterialSupport() {}
@@ -191,7 +321,7 @@ public final class LegacyMaterialSupport {
         String color = name.endsWith(PANE_SUFFIX)
                 ? name.substring(0, name.length() - PANE_SUFFIX.length())
                 : name;
-        Short data = PANE_DATA.get(color);
+        Short data = (Short) PANE_DATA.get(color);
         if (data == null) {
             return null;
         }
@@ -219,6 +349,12 @@ public final class LegacyMaterialSupport {
         String name = normalize(raw);
         if (name.isEmpty()) {
             return null;
+        }
+        // Modern configs mean the door item; on 1.12.2 the wood door block names exist as
+        // block-only materials, so they must map to the *_DOOR_ITEM form before the enum lookup.
+        Icon doorItem = resolveWoodDoorItem(name);
+        if (doorItem != null) {
+            return doorItem;
         }
         Material material;
         try {
@@ -307,8 +443,221 @@ public final class LegacyMaterialSupport {
         if ("NETHERITE_BLOCK".equals(name) || "SHROOMLIGHT".equals(name)
                 || "OCHRE_FROGLIGHT".equals(name) || "PEARLESCENT_FROGLIGHT".equals(name)
                 || "VERDANT_FROGLIGHT".equals(name)) return of(Material.GLOWSTONE);
+        // Families the 1.13 flattening turned into one material plus a colour/wood prefix.
+        Icon family = resolveColorFamily(name);
+        if (family != null) {
+            return family;
+        }
+        family = resolveWoodFamily(name);
+        if (family != null) {
+            return family;
+        }
+        family = resolveStoneFamily(name);
+        if (family != null) {
+            return family;
+        }
+        String renamed = (String) RENAMES.get(name);
+        if (renamed != null) {
+            Material renamedMaterial = Material.matchMaterial(renamed);
+            if (renamedMaterial != null) {
+                return new Icon(renamedMaterial, (short) 0, name);
+            }
+        }
         // These blocks were introduced after 1.12.2 and have no safe equivalent.
         if ("LIGHT".equals(name) || "JIGSAW".equals(name)) return null;
+        return null;
+    }
+
+    /** Maps the flattened {@code *_DOOR} item names to the 1.12.2 {@code *_DOOR_ITEM} materials. */
+    private static Icon resolveWoodDoorItem(String name) {
+        for (String wood : WOOD_ORDER) {
+            if ((wood + "_DOOR").equals(name)) {
+                String target = "OAK".equals(wood) ? "WOOD_DOOR" : wood + "_DOOR_ITEM";
+                Material door = Material.matchMaterial(target);
+                if (door != null) {
+                    return new Icon(door, (short) 0, name);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the flattened colour families ({@code WHITE_WOOL}, {@code RED_TERRACOTTA},
+     * {@code LIGHT_BLUE_DYE}, {@code BLACK_BED}, …) to the shared 1.12.2 material plus the
+     * dye-order data value. Dyes are the one inverted family: dye data runs opposite to the
+     * other colour orders.
+     *
+     * @return the icon, or {@code null} when the value is not a flattened colour family member
+     */
+    private static Icon resolveColorFamily(String name) {
+        String color = null;
+        String suffix = null;
+        // COLOR_ORDER is longest-first so LIGHT_BLUE is not read as BLUE.
+        for (String candidate : COLOR_ORDER) {
+            if (name.startsWith(candidate + "_")) {
+                color = candidate;
+                suffix = name.substring(candidate.length() + 1);
+                break;
+            }
+        }
+        if (color == null) {
+            return null;
+        }
+        short data = ((Short) PANE_DATA.get(color)).shortValue();
+        if ("WOOL".equals(suffix)) {
+            return new Icon(Material.WOOL, data, name);
+        }
+        if ("CARPET".equals(suffix)) {
+            return new Icon(Material.CARPET, data, name);
+        }
+        if ("TERRACOTTA".equals(suffix)) {
+            return new Icon(Material.STAINED_CLAY, data, name);
+        }
+        if ("GLASS".equals(suffix)) {
+            return new Icon(Material.THIN_GLASS, data, name);
+        }
+        if ("CONCRETE".equals(suffix)) {
+            return new Icon(Material.CONCRETE, data, name);
+        }
+        if ("CONCRETE_POWDER".equals(suffix)) {
+            return new Icon(Material.CONCRETE_POWDER, data, name);
+        }
+        if ("BED".equals(suffix)) {
+            return new Icon(Material.BED, data, name);
+        }
+        if ("BANNER".equals(suffix)) {
+            return new Icon(Material.BANNER, data, name);
+        }
+        if ("DYE".equals(suffix)) {
+            // Dye data runs opposite to the wool order (ink sac 0, bone meal 15).
+            return new Icon(Material.INK_SACK, (short) (15 - data), name);
+        }
+        if ("SHULKER_BOX".equals(suffix)) {
+            // 1.12.2 spells light gray "SILVER" in the per-colour shulker box enum names.
+            String enumColor = "LIGHT_GRAY".equals(color) ? "SILVER" : color;
+            Material box = Material.matchMaterial(enumColor + "_SHULKER_BOX");
+            return box != null ? new Icon(box, (short) 0, name) : null;
+        }
+        if ("GLASS_PANE".equals(suffix)) {
+            return new Icon(Material.STAINED_GLASS_PANE, data, name);
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the wood families ({@code OAK_LOG}, {@code STRIPPED_BIRCH_LOG}, {@code SPRUCE_PLANKS},
+     * {@code ACACIA_SAPLING}, {@code DARK_OAK_BOAT}, {@code OAK_SLAB}, …) to their 1.12.2
+     * material and data value.
+     */
+    private static Icon resolveWoodFamily(String name) {
+        String wood = null;
+        String suffix = null;
+        if (name.startsWith("STRIPPED_")) {
+            name = name.substring("STRIPPED_".length());
+        }
+        // WOOD_ORDER lists DARK_OAK before OAK so the longer prefix wins.
+        for (String candidate : WOOD_ORDER) {
+            if (name.startsWith(candidate + "_")) {
+                wood = candidate;
+                suffix = name.substring(candidate.length() + 1);
+                break;
+            }
+        }
+        if (wood == null) {
+            return null;
+        }
+        int woodData = ((Integer) WOOD_DATA.get(wood)).intValue();
+        if ("LOG".equals(suffix) || "WOOD".equals(suffix)) {
+            // LOG: oak/spruce/birch/jungle in LOG, acacia/dark_oak in LOG_2.
+            if (woodData <= 3) {
+                return new Icon(Material.LOG, (short) woodData, name);
+            }
+            return new Icon(Material.LOG_2, (short) (woodData - 4), name);
+        }
+        if ("PLANKS".equals(suffix)) {
+            return new Icon(Material.WOOD, (short) woodData, name);
+        }
+        if ("SAPLING".equals(suffix)) {
+            return new Icon(Material.SAPLING, (short) woodData, name);
+        }
+        if ("BOAT".equals(suffix)) {
+            return new Icon(Material.BOAT, (short) woodData, name);
+        }
+        if ("SLAB".equals(suffix)) {
+            return new Icon(Material.WOOD_STEP, (short) woodData, name);
+        }
+        if ("DOOR".equals(suffix)) {
+            Material door = Material.matchMaterial(wood + "_DOOR_ITEM");
+            return door != null ? new Icon(door, (short) 0, name) : null;
+        }
+        if ("FENCE".equals(suffix)) {
+            // Only oak is the plain FENCE; the other woods carry their own enum names already.
+            return "OAK".equals(wood) ? of(Material.FENCE) : null;
+        }
+        if ("FENCE_GATE".equals(suffix)) {
+            return "OAK".equals(wood) ? of(Material.FENCE_GATE) : null;
+        }
+        if ("TRAPDOOR".equals(suffix) || "BUTTON".equals(suffix) || "PRESSURE_PLATE".equals(suffix)) {
+            return null; // single wood-only items on 1.12.2; renames cover the oak spellings
+        }
+        return null;
+    }
+
+    /**
+     * Resolves the stone variants that 1.13 split into their own names ({@code ANDESITE},
+     * {@code POLISHED_GRANITE}, {@code CHISELED_SANDSTONE}, {@code PRISMARINE_BRICKS}, …) to
+     * the shared 1.12.2 material with the matching data value.
+     */
+    private static Icon resolveStoneFamily(String name) {
+        if ("GRANITE".equals(name)) return new Icon(Material.STONE, (short) 1, name);
+        if ("POLISHED_GRANITE".equals(name)) return new Icon(Material.STONE, (short) 2, name);
+        if ("DIORITE".equals(name)) return new Icon(Material.STONE, (short) 3, name);
+        if ("POLISHED_DIORITE".equals(name)) return new Icon(Material.STONE, (short) 4, name);
+        if ("ANDESITE".equals(name)) return new Icon(Material.STONE, (short) 5, name);
+        if ("POLISHED_ANDESITE".equals(name)) return new Icon(Material.STONE, (short) 6, name);
+        if ("COARSE_DIRT".equals(name)) return new Icon(Material.DIRT, (short) 1, name);
+        if ("PODZOL".equals(name)) return new Icon(Material.DIRT, (short) 2, name);
+        if ("RED_SAND".equals(name)) return new Icon(Material.SAND, (short) 1, name);
+        if ("CHISELED_SANDSTONE".equals(name)) return new Icon(Material.SANDSTONE, (short) 1, name);
+        if ("CUT_SANDSTONE".equals(name) || "SMOOTH_SANDSTONE".equals(name)) {
+            return new Icon(Material.SANDSTONE, (short) 2, name);
+        }
+        if ("CHISELED_RED_SANDSTONE".equals(name)) return new Icon(Material.RED_SANDSTONE, (short) 1, name);
+        if ("CUT_RED_SANDSTONE".equals(name) || "SMOOTH_RED_SANDSTONE".equals(name)) {
+            return new Icon(Material.RED_SANDSTONE, (short) 2, name);
+        }
+        if ("CHISELED_QUARTZ_BLOCK".equals(name)) return new Icon(Material.QUARTZ_BLOCK, (short) 1, name);
+        if ("QUARTZ_PILLAR".equals(name) || "SMOOTH_QUARTZ".equals(name)) {
+            return new Icon(Material.QUARTZ_BLOCK, (short) 2, name);
+        }
+        if ("PRISMARINE_BRICKS".equals(name)) return new Icon(Material.PRISMARINE, (short) 1, name);
+        if ("DARK_PRISMARINE".equals(name)) return new Icon(Material.PRISMARINE, (short) 2, name);
+        if ("MOSSY_STONE_BRICKS".equals(name)) return new Icon(Material.SMOOTH_BRICK, (short) 1, name);
+        if ("CRACKED_STONE_BRICKS".equals(name)) return new Icon(Material.SMOOTH_BRICK, (short) 2, name);
+        if ("CHISELED_STONE_BRICKS".equals(name)) return new Icon(Material.SMOOTH_BRICK, (short) 3, name);
+        if ("MOSSY_COBBLESTONE_WALL".equals(name)) return new Icon(Material.COBBLE_WALL, (short) 1, name);
+        if ("TERRACOTTA".equals(name)) return of(Material.HARD_CLAY);
+        if ("GLASS_PANE".equals(name)) return of(Material.THIN_GLASS);
+        if ("SHULKER_BOX".equals(name)) return of(Material.PURPLE_SHULKER_BOX);
+        if ("STONE_SLAB".equals(name) || "SMOOTH_STONE_SLAB".equals(name)) {
+            return new Icon(Material.STEP, (short) 0, name);
+        }
+        if ("SANDSTONE_SLAB".equals(name)) return new Icon(Material.STEP, (short) 1, name);
+        if ("PETRIFIED_OAK_SLAB".equals(name)) return new Icon(Material.STEP, (short) 2, name);
+        if ("COBBLESTONE_SLAB".equals(name)) return new Icon(Material.STEP, (short) 3, name);
+        if ("BRICK_SLAB".equals(name)) return new Icon(Material.STEP, (short) 4, name);
+        if ("STONE_BRICK_SLAB".equals(name)) return new Icon(Material.STEP, (short) 5, name);
+        if ("NETHER_BRICK_SLAB".equals(name)) return new Icon(Material.STEP, (short) 6, name);
+        if ("QUARTZ_SLAB".equals(name)) return new Icon(Material.STEP, (short) 7, name);
+        if ("RED_SANDSTONE_SLAB".equals(name)) return new Icon(Material.STONE_SLAB2, (short) 0, name);
+        if ("COD".equals(name)) return new Icon(Material.RAW_FISH, (short) 0, name);
+        if ("SALMON".equals(name)) return new Icon(Material.RAW_FISH, (short) 1, name);
+        if ("COOKED_COD".equals(name)) return new Icon(Material.COOKED_FISH, (short) 0, name);
+        if ("COOKED_SALMON".equals(name)) return new Icon(Material.COOKED_FISH, (short) 1, name);
+        if ("CHARCOAL".equals(name)) return new Icon(Material.COAL, (short) 1, name);
+        if ("INK_SAC".equals(name)) return new Icon(Material.INK_SACK, (short) 0, name);
+        if ("BEETROOTS".equals(name)) return of(Material.BEETROOT);
         return null;
     }
 
@@ -346,7 +695,7 @@ public final class LegacyMaterialSupport {
         }
         Material type = item.getType();
         if (type == PANE_MATERIAL && item.getDurability() != 0) {
-            String color = PANE_COLOR_BY_DATA.get(Short.valueOf(item.getDurability()));
+            String color = (String) PANE_COLOR_BY_DATA.get(Short.valueOf(item.getDurability()));
             if (color != null) {
                 return color + PANE_SUFFIX;
             }

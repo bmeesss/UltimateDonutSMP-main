@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.managers;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyScoreboardText;
 import com.bx.ultimateDonutSmp.utils.PacketSidebarRenderer;
 import com.bx.ultimateDonutSmp.utils.ScoreboardNumberHider;
 import org.bukkit.Bukkit;
@@ -313,7 +314,9 @@ public class ScoreboardManager {
 
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
         Objective obj = board.registerNewObjective("sidebar", "dummy");
-        obj.setDisplayName(getTitle(player, settings));
+        // 1.12.2 rejects objective display names longer than 32 raw characters; the shipped
+        // gradient title with its per-letter hex colours is far over that before conversion.
+        obj.setDisplayName(LegacyScoreboardText.sanitizeObjectiveName(getTitle(player, settings)));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         playerBoards.put(player.getUniqueId(), board);
@@ -370,7 +373,7 @@ public class ScoreboardManager {
             // A title with no placeholder in it renders to the same string every pass, so the render
             // that is already on screen still stands and there is nothing to format.
             if (hasPlaceholder(title) || !title.equals(playerLastRawTitle.get(uuid))) {
-                String formattedTitle = ColorUtils.toComponent(title, player);
+                String formattedTitle = LegacyScoreboardText.sanitizeObjectiveName(ColorUtils.toComponent(title, player));
                 String oldTitle = playerLastTitle.get(uuid);
                 if (oldTitle == null || !oldTitle.equals(formattedTitle)) {
                     obj.setDisplayName(formattedTitle);
@@ -394,6 +397,9 @@ public class ScoreboardManager {
             Team team = teams[i];
             if (team == null) continue;
             String text = ColorUtils.colorize(lines.get(i), player);
+            // A 1.12.2 client cannot render §x hex sequences (each also costs 14 of the 16
+            // characters a team prefix may hold), so lines are reduced to nearest legacy colours.
+            text = LegacyScoreboardText.toLegacyColors(text);
             text = alignSidebarIconColumn(text, settings);
             if (!text.equals(oldLines[i])) {
                 applyLineSpigot(team, text);
@@ -455,18 +461,23 @@ public class ScoreboardManager {
     }
 
     private void applyLineSpigot(Team team, String text) {
-        // The caller has already run the text through ColorUtils; a second pass would redo the whole
-        // placeholder and colour pipeline on a string that is finished.
-        if (text.length() <= 64) {
+        // The caller has already run the text through ColorUtils and LegacyScoreboardText; a
+        // second pass would redo the whole placeholder and colour pipeline on a finished string.
+        // Bukkit 1.12.2 allows a team prefix and suffix at most 16 raw characters each; the two
+        // halves together carry at most 32 characters of the line, codes included.
+        if (text.length() <= LegacyScoreboardText.MAX_TEAM_PART_LENGTH) {
             team.setPrefix(text);
             team.setSuffix("");
             return;
         }
 
-        int split = findSafeSplit(text, 64);
-        int end = findSafeSplit(text, split + 64);
+        int split = findSafeSplit(text, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
+        // The invisible entry between prefix and suffix resets formatting, so the suffix re-opens
+        // the colour/format state that was active where the line was cut.
+        String remainder = LegacyScoreboardText.codesActiveAt(text, split) + text.substring(split);
+        int end = findSafeSplit(remainder, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
         team.setPrefix(text.substring(0, split));
-        team.setSuffix(text.substring(split, end));
+        team.setSuffix(remainder.substring(0, end));
     }
 
     private void hidePlayerSpigot(Player player) {

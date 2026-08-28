@@ -969,6 +969,10 @@ public class OrdersManager {
 
     public List<OrderCatalogEntry> getCatalogEntries(String categoryKey, OrderAlphaSort alphaSort, String search) {
         String normalizedSearch = normalizeSearchText(search);
+        // A query written with a modern (1.13+) name must find the entry it maps to; the entry
+        // text carries the 1.12.2 material name, so "oak_door" would otherwise only ever match
+        // "darkoakdoor" by substring. Resolving the query once fixes that centrally.
+        Material searchMaterial = resolveSearchMaterial(search);
         Comparator<OrderCatalogEntry> comparator = Comparator
                 .comparing(entry -> entry.displayName().toLowerCase(Locale.ROOT));
         if (alphaSort == OrderAlphaSort.Z_A) {
@@ -976,10 +980,25 @@ public class OrdersManager {
         }
         return getCatalogEntries(categoryKey).stream()
                 .filter(entry -> normalizedSearch.trim().isEmpty()
+                        || (searchMaterial != null && entry.material() == searchMaterial)
                         || normalizeSearchText(entry.searchText()).contains(normalizedSearch)
                         || normalizeSearchText(entry.displayName()).contains(normalizedSearch))
                 .sorted(comparator)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Resolves a search query to a single 1.12.2 material through the central compatibility
+     * layer, so both spellings ({@code OAK_DOOR} and {@code WOOD_DOOR}, {@code GRASS_BLOCK}
+     * and {@code GRASS}, &hellip;) find the same catalog entry and the same orders. Returns
+     * {@code null} for anything that is not one resolvable material name.
+     */
+    public Material resolveSearchMaterial(String rawQuery) {
+        if (rawQuery == null || rawQuery.trim().isEmpty()) {
+            return null;
+        }
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(rawQuery.trim());
+        return resolved == null ? null : resolved.material();
     }
 
     public List<OrderCatalogEntry> searchCatalogEntries(String rawQuery) {
@@ -2038,7 +2057,7 @@ public class OrdersManager {
                 || name.contains("SHIELD")
                 || material.name().equals("TRIDENT")
                 || material.name().equals("MACE")
-                || material == resolveMaterial("FIREWORKS_SPARK", null);
+                || material == resolveMaterial("FIREWORK_ROCKET", "FIREWORK");
     }
 
     private boolean isRedstoneMaterial(Material material) {
@@ -2077,12 +2096,23 @@ public class OrdersManager {
     }
 
     private static Material resolveMaterial(String modernName, String legacyName) {
-        Material modern = modernName == null ? null : Material.matchMaterial(modernName);
-        if (modern != null) {
-            return modern;
+        // Resolve through the central 1.12.2 compatibility layer first: filter.yml and orders.yml
+        // are written against modern material names, and Material.matchMaterial alone silently
+        // fails for every one of them. Unresolvable names stay null ("unsupported") instead of
+        // degrading to STONE, which used to classify unrelated materials into wrong categories.
+        if (modernName != null) {
+            LegacyMaterialSupport.Icon modern = LegacyMaterialSupport.resolve(modernName);
+            if (modern != null) {
+                return modern.material();
+            }
         }
-        Material legacy = legacyName == null ? null : Material.matchMaterial(legacyName);
-        return legacy == null ? Material.STONE : legacy;
+        if (legacyName != null) {
+            LegacyMaterialSupport.Icon legacy = LegacyMaterialSupport.resolve(legacyName);
+            if (legacy != null) {
+                return legacy.material();
+            }
+        }
+        return null;
     }
 
     private static boolean isAir(Material material) {

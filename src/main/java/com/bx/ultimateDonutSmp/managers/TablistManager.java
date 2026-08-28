@@ -5,6 +5,7 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.utils.AdventureHeadComponentBridge;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyScoreboardText;
 import com.bx.ultimateDonutSmp.utils.TablistComponentUpdater;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -145,7 +146,10 @@ public class TablistManager {
             }
         }
 
-        player.setPlayerListName(parseTabText(nameFormat, player));
+        // The component route needs modern server internals; on 1.12.2 it disables itself and
+        // this legacy fallback runs instead. A 1.12.2 player list name may be at most 16 raw
+        // characters, and its client cannot render §x hex sequences, so sanitise before setting.
+        player.setPlayerListName(LegacyScoreboardText.sanitizePlayerListName(parseTabText(nameFormat, player)));
         lastNameCache.put(player.getUniqueId(), nameFormat);
     }
 

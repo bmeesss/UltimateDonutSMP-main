@@ -122,6 +122,7 @@ commands:
   orders:
     description: Open the Orders board
     usage: /orders [my|collect|reload]
+    aliases: [order]
     permission: ultimatedonutsmp.command.orders
     permission-message: "&cYou do not have permission to use /orders."
   queue:
