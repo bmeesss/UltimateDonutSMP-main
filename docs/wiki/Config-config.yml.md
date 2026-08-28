@@ -998,22 +998,24 @@ MONEY-NAMETAGS:
 
 ### 4. Where The Line Sits
 
-The username is never touched, moved or hidden. The balance goes in the scoreboard slot Minecraft
-reserves for a line under a username, the same slot a health display would use, so the client draws
-it itself directly beneath the name. It cannot drift away from the player, lag behind a sprint or
-land on top of the name, because it is drawn in the same pass as the name itself.
+The username is never touched, moved or hidden. The balance is rendered as a scoreboard team
+suffix, the same mechanism 1.12.2 uses for team tags, so the client draws it directly after the
+name in the world and again after the name in the tab list. It cannot drift away from the player,
+lag behind a sprint or land on top of the name, because it is attached to the name itself.
 
-Two rules come with that slot and belong to the client rather than to this plugin:
+Two rules come with teams and belong to the client rather than to this plugin:
 
-- **The line only appears within about ten blocks.** Further out the username still shows and the
-  balance does not. There is no setting for this; the distance is baked into Minecraft.
-- **Only one objective can hold that slot at a time.** Any other plugin using the below-name slot,
-  a health display for instance, will fight over it for players who switched money nametags on.
+- **A team prefix or suffix holds at most 16 raw characters.** Colour codes count towards the
+  limit, so a balance line longer than that is cut at the last whole colour code. The default
+  format keeps `$1.25M` or `$1,250,000` fully intact; only very long custom formats are shortened.
+- **The same suffix appears in the viewer's tab list as well.** Teams were the feature 1.12.2 used
+  to decorate tab names with, so the text cannot be shown next to the name without also being
+  shown there. It only happens for players who switched money nametags on.
 
-The slot normally draws a raw score, which is an integer and no use for a balance in the billions,
-so each score carries a fixed number format holding the finished text instead. That needs Minecraft
-1.20.3 or newer; on anything older the feature logs a warning once and stays off rather than
-printing a wrong number.
+The line is visible wherever the name is visible, which on the 1.12.2 protocol means there is no
+ten-block cutoff as there is for the below-name slot of newer versions. Only one plugin can own a
+viewer's scoreboard, and nothing is written to the server-wide main scoreboard: each viewer with
+the feature on gets a private board carrying both their sidebar's objective and the nametag teams.
 
 ### 5. Who Sees The Line
 
