@@ -965,17 +965,6 @@ public final class PlayerWipeResult {
             ")"
         );
         execute(
-            "  uuid VARCHAR(36) NOT NULL PRIMARY KEY," +
-            "  world_name VARCHAR(128) NOT NULL," +
-            "  x DOUBLE NOT NULL," +
-            "  y DOUBLE NOT NULL," +
-            "  z DOUBLE NOT NULL," +
-            "  yaw FLOAT NOT NULL," +
-            "  pitch FLOAT NOT NULL," +
-            "  timestamp BIGINT NOT NULL" +
-            ")"
-        );
-        execute(
             "CREATE TABLE IF NOT EXISTS player_logs (" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "  player_uuid TEXT NOT NULL," +

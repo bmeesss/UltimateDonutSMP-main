@@ -1,4 +1,4 @@
-﻿META:
+META:
   NAME: "Español (España)"
 ORDERS:
   DISABLED: "&cLos pedidos están desactivados."
@@ -747,8 +747,6 @@ MENUS:
         DISPLAY-NAME: '&#6BF18DAmethyst break messages'
         LORE:
         - '&7Show message when amethyst cluster breaks'
-        - '&fCurrently: {status}'
-        LORE:
         - '&fCurrently: {status}'
       DEATH_MESSAGES:
         DISPLAY-NAME: '&#6BF18DDeath messages'
@@ -1842,34 +1840,6 @@ CONFIG:
       - Price
       - ''
       input-line: 0
-    COMMAND_BLOCK:
-    CROSS_SERVER:
-      PROXY_SERVER_NAME: Locales
-    START-COUNTDOWN:
-      MESSAGES:
-        '5': '&a5'
-        '4': '&a4'
-        '3': '&a3'
-        '2': '&a2'
-        '1': '&a1'
-      START-MESSAGE: '&aMatch started!'
-    RESULT-TITLES:
-      victory:
-        title: '&e&lVictory!'
-        subtitle: '&e<player> &fWon the match!'
-      defeat:
-        title: '&c&lDefeat!'
-        subtitle: '&c<opponent> &fWon this match!'
-      draw:
-        title: '&e&lDraw!'
-        subtitle: '&fTime''s up - no winner.'
-        message: '&e[Timer] &ftime limit reached! match ended as a &edraw &f- streaks
-          unchanged.'
-    GUI:
-      QUEUE:
-        TITLE: "&8Casual queue"
-      CREATE:
-      CLAIMS:
   CRATES:
     SETTINGS:
       LIST-MENU:
@@ -1933,8 +1903,7 @@ CONFIG:
       INVALID-TYPE: "&cUnknown stash type '&f{type}&c'. use &f/spawnstash lista&c."
       INVALID-CONFIG: "&cSpawnstash config is invalid: &f{reason}&c."
       ALERT:
-      - "&8[&dSpawnstash&8] &f{player} &7triggered &d{reason}&7 on stash &f#{id}&7
-        (&f{type}&7)"
+      - "&8[&dSpawnstash&8] &f{player} &7triggered &d{reason}&7 on stash &f#{id}&7 (&f{type}&7)"
       - "&7Location: &f{world} {x}, {y}, {z} &8| &7created by: &f{creator}"
       ALERT-HOVER: "&eClick to teleport to &f{player}"
   NETWORK:
@@ -2863,10 +2832,6 @@ BUILTIN:
   6c0bdec14d249552d44b: Crear <crate> &7- create a crate
   e9cad36f99dc562a7f9f: Eliminar <crate> &7- delete a crate
   d17732f9b82f2fd3b583: Tiene &a
-  84fff984ba917d96f1b2: "Tiene &aaceptación automática de tpa&7 habilitada. su solicitud
-    &b/tpa&7 se está procesando."
-  c7ebbfbf5e8b3f862aef: "Tiene &atpaquí la aceptación automática &7 habilitada. su
-    solicitud &b/tpahere&7 se está procesando."
   6f85bea4f47bba24cba1: Lista &7- list active/configured stashes
   ce95f5f513d28c2b721d: Recargar &7- reload spawn-stash.yml
   436821e7b47185f696d0: Eliminar <id|nearest|all> &7- rollback stashes
@@ -2880,9 +2845,7 @@ BUILTIN:
   6796ebbb532cbdf59971: Bind <crate|cancel> &7- bind a crate chest
   280f05f9bb6415d6020f: Has &a
   d0ff6a4f4954d7f9d3a4: Has &atpa auto-accept&7 enabled. your &b/tpa&7 request 
-    is being processed.
   d24a8e799edfd86fcfdc: Has &atpahere auto-accept&7 enabled. your &b/tpahere&7 
-    request is being processed.
   6bcc8a5dddf15a8dadd6: Set <player> <crate> <amount> &7- set key balance
   532248f9ea8f47ddd841: Setpos <id> &euntuk set pusat arena combat.
   f752cfabea4219230f02: Setup setspawn &7and &f/
@@ -2895,7 +2858,6 @@ BUILTIN:
   e969f79d7e1f42d238e2: Type <crate> <choose_one|gacha> &7- set crate type
   fef567638f22cb64901b: Take <player> <crate> <amount> &7- remove keys
   115620d253b205d50f22: With &f/sell &7and trade better gear through 
-    &f/auctionhouse&7.
   76a96b56c02df387cfec: ${price}X &lshards
   7ffe6140f6316a2a89ae: '&#00A4FCRtp guide'
   925060ac7d172cff446c: '&#00A4FCRules'
@@ -2933,12 +2895,6 @@ BUILTIN:
   f99c404d59b90caf896c: '&#A303F9'
   939ae9aa044944599aae: '&#A303F9+{shards} Shard'
   02457852d9cbcd023eea: '&#A303F9You received %amount% shard &7(total: &#A303F9%total%&7)'
-  1051ac66a370696ebe38: '&#A303F9You received %amount% shard &8[everywhere] &7(total:
-    &#A303F9%total%&7)'
-  a474e8f0510d915cfd99: '&#A303F9You received %amount% shards &7(&ax%multiplier%&7)
-    &7(total: &#A303F9%total%&7)'
-  9e49359616b93bc29b78: '&#A303F9You received %amount% shards &7(&ax%multiplier%&7)
-    &8[everywhere] &7(total: &#A303F9%total%&7)'
   08d5c8b556c394211b78: '&#A303F9Shard reward'
   81de377058d4f63e12d5: '&#A303F9Shards everywhere &7for &b'
   dfe471e38024f31f16ca: '&#A303F9Afk #'
@@ -2947,17 +2903,6 @@ BUILTIN:
   7953a3c4b4ebc808dc51: "&#F97603☠ &fDeaths: &#F97603"
   50fc11cb8ad6e39772a5: "&#FC0000⚔ &fKills: &#FC0000"
   a4d7259cc01ca0e39896: "&#FCE300⌚ &fPlaytime: &#FCE300"
-  ae6cab948efe6bfcd8de: '&4&lYou have been blacklisted!
-
-    &8&m----------------------------
-
-    &7Reason: &f%reason%
-
-    &7Blacklisted by: &f%issuer%
-
-    &8&m----------------------
-
-    &4You cannot join the server'
   e4b55377e146954c7e26: '&6&l[Billford] &etrade rotated! &7next change in &b{countdown}&7.'
   8f2929db061025549858: '&6Vista previa del borrado del servidor'
   5bb503360e7210800b8a: '&6Inventory of &f'
@@ -3002,8 +2947,6 @@ BUILTIN:
   5cd7b5cd7407990acda7: "&7Aceptación automática de solicitud &b/tpahere&7 de &f"
   965f5a0a53aaaa8532a3: "&7Aceptación automática pendiente &b"
   05d1a5b91c3b9f12b6b0: '&7Mejor racha: &f'
-  ede3d9a315bc1661110d: "&7Haz clic para obtener una vista previa de este paquete
-    de botín."
   46971c0f9626940e8cf8: '&7Configura arenas o habilita biomas aleatorios.'
   6c29e1113f81288c9e4c: '&7Configura arenas de cola o habilita biomas aleatorios.'
   182348d0b2458605900d: '&7Sorteo: &f'
@@ -3019,13 +2962,10 @@ BUILTIN:
   672d35ff0786d724fdaf: "&7Modo: &fgeneración básica deshabilitada"
   fe4106765c01d20caa4c: '&7Apodo: &f{player}'
   3b682568a491267a775e: "&7No se ha seleccionado ningún mapa."
-  b559feacd592f5b4db5f: '&7Solo los miembros del mismo equipo pueden aceptar este
   2ac84f362949bcb9b626: '&7Jugadores en cola: &f'
   8a9cbc62547f0d88c6cd: '&7Jugadores: &f'
   03705cd52fed57070bd1: '&7Privacidad: &f'
   6ea63a768ab1574a651b: '&7Cola: &f#{position}'
-  ffff66fa41a744c8ecad: "&7Las solicitudes enviadas mientras esta configuración estaba
-    deshabilitada aparecerán aquí."
   67854ea05223531a8d05: '&7Restablecer generadores de mundos: &f'
   d7c2d7dd963c64895fba: "&7Volver al menú de cola."
   576e7df1bf80f9fc94b4: '&7Seleccionado: &f'
@@ -3074,13 +3014,9 @@ BUILTIN:
   f210b24b82ae047d8040: '&7Your &b'
   ea1fc2655f469ccace3c: '&7Your ping is &b%ping%ms'
   6850da5b6aa7cb8bfec1: '&7Base: &f{base_formatted} &8| &7contents: &f{contents_formatted}'
-  dfe0b285e29679d9e8d5: '&7Build your base, gear up, and use &f/spawn &7or &f/rtp
-    &7to begin exploring.'
   b09bcaf19e36ee280ae6: '&7Homes saved: &f'
   7a447163567483bcbdbd: '&7Homes: &f'
   51553dd2a494a55857cf: '&7Left click: &fnext sort'
-  087dad3db924861d36ab: '&7Left-click a chest, trapped chest, barrel, ender chest,
-    or shulker box to bind it.'
   6498e9d2f4012a661661: '&7Location: &f'
   2baa20d5404dc6377c61: '&7Shard bonus: &#A303F9+'
   1c7d8c708d75d554e9f2: '&7Scoreboard is now &aenabled&7.'
@@ -3147,15 +3083,9 @@ BUILTIN:
   f9e79b8f33eba2ad7fd8: '&7Delivered: &e'
   bfc50a204927c7b86398: '&7Defeated player: &f'
   32dbd44ab9d3bb82af2b: '&7Duration: &f'
-  a3f18144561cb6a8ef86: '&7Enable queue with &f/arena cola <id> verdadero&7, then
-    set &fpos1 &7and &fpos2&7.'
-  3b4a5e4da4541857a8fd: '&7Enable queue with &f/arena cola <id> true&7, then set &fpos1
-    &7and &fpos2&7.'
   ec8ed3963b00bfe3da12: '&7Enabled: &f'
   1b4c992b8e1f5c068dff: '&7Entries shown: &f'
   93c18f71c8d95a6754bc: '&7Entries: &f'
-  dadab7422c9e843ae22c: '&7Earn money with &f/sell &7and trade better gear through
-    &f/auctionhouse&7.'
   40cc716d9d187b8a71dc: '&7Keys: &f'
   217844e86b0605bfed29: '&7Keys: &f{keys}'
   0efc0f9dc828680b9ded: '&7Managed spawners: &f'
@@ -3181,10 +3111,6 @@ BUILTIN:
   6d8205beded64171ac8c: '&7Position: &f#'
   12fa81f18331f003ed9f: '&7Time left: &f'
   02f272b0f4be84c79f6c: '&7Try a name like &fshulker&7, &foak&7, or &fblocks&7.'
-  da5c4d5b403ade3d69cc: '&7Type a team member name in chat to search. type &ccancel
-    &7to abort or &cclear &7to reset the filter.'
-  6b816460956a47dbf886: '&7Type a team member name in chat to search. type &ccancel
-    &7to abort.'
   10418d04b074bf657942: '&7Type a team member name or &ccancel&7.'
   23e289b9983667b76c10: '&7Type: &f'
   09e5e54b0f2d64f5aa60: '&7This order no longer exists.'
@@ -3193,8 +3119,6 @@ BUILTIN:
   02ba0d8026e1e0a7a941: '&7Tps: &f'
   f518d960bcfb0403155a: '&7Usage: &f/'
   d9c62d7bef70f0c5a5dd: '&7Use &f/arena setpos1 <id> &7and &f/arena setpos2 <id>'
-  592a9557654fc68438c6: '&7Use &f/crates &7to open crates and &f/keys &7to view your
-    keys.'
   9ea339959430ea40c7f5: '&7Use &f/leave &7to leave the arena.'
   2a7e49f5374ae75185d4: '&7Use &f/leave &7to surrender.'
   1d36a62ac8acd5d4bb62: '&7Use &f/tpa <player> &7to request teleporting to them.'
@@ -3234,14 +3158,6 @@ BUILTIN:
   695388b4f9df6d90a2d0: "&8Eliminar está disponible dentro de la vista previa."
   28560369e43ec651f680: '&8[&a+&8] &a%player% &7Joined &b%server%'
   1097cbf293c16a2bfc22: '&8[&b'
-  e2821a2d929b0e8272dc: '&8[&bCrates&8] &7click item di inventory kamu untuk memilih
-    template, lalu klik slot crate untuk menaruh atau menggantinya.'
-  c00d7776b2419e528d53: '&8[&bCrates&8] &7click a reward slot with no selected template
-    to remove the item reward from that slot.'
-  6812ea0356de1717f9ff: '&8[&bCrates&8] &7click an item in your inventory to select
-    it as a template, then click a crate slot to place or replace it.'
-  9c68362a943e59a4a6d2: '&8[&bCrates&8] &7klik slot reward tanpa template terpilih
-    untuk menghapus reward item dari slot itu.'
   8f08824e71a6f3ae4e10: '&8[&bCrates&8] &f'
   180a81d6158a4e5bacd4: '&8[&c-&8] &a%player% &7Left &b%server%'
   f772797820dd75085276: '&8] &7%player%&8: &f%message%'
@@ -3275,19 +3191,14 @@ BUILTIN:
   fda2c368d3ef886b0825: '&a. &7Saldo: &f'
   8a0bf2769f3dc2b3a756: '&a. &7Antes: &f'
   2518f4f624c790dcc550: '&a. &7Area &f'
-  090603aa6fac648aea85: '&a. &7Combat area dan rollback akan dibangun otomatis dari
-    titik ini.'
   378fff8b5a167cafa646: '&a. Balance: &f'
   897c7ee91f0621e2034e: '&a. Click a crate slot to place it.'
   76bfae8cab082b6bf11c: '&a. This now acts as spawn 1 and rollback anchor.'
   d8e478b5d2f9e0dc2b87: '&a. This now acts as spawn 2 and rollback anchor.'
-    servidor coincidente..."
   fe85b54f917869cb0fa1: '&aActualmente seleccionado.'
   325c02ea0fa1faf73833: "&aÚnete a la cola informal"
   7b2775c182abd82b6b2a: "&aPágina siguiente"
   11205d371144a19e8866: "&aPágina anterior"
-  4cd2ab7345bb3843b719: "&aValidación aprobada. la consola puede ejecutar /serverwipe
-    preparar."
   0ca91c519b580f620150: '&aTus fragmentos fueron actualizados por &f'
   c5e780c242e48cf7faac: '&a{feature} Is now {state}.'
   48fa35f34212cda88fe3: '&a{feature} Is now {state}.'
@@ -3301,8 +3212,6 @@ BUILTIN:
   f251f848b15eb2677e7e: '&aRemoved crate binding from &f'
   82282ef3ecdf6cc2d742: '&aYes'
   6394c098911501af54b8: '&aYou received &f'
-  3b1483d1b58e5e2fbc2f: '&aYou received the &6cuboid wand&a. &7set both positions
-    to continue.'
   aec0179a5e26cbaf4266: '&aYou can trade &f'
   bacd5488b5b285619e68: '&aYou defeated &f'
   2e5f7b530631b7946592: '&aYour health has been restored!'
@@ -3351,8 +3260,6 @@ BUILTIN:
   1c8285a9fc72c4345f1b: '&aMoney: &f%money%'
   2666d5f3c0709fd7f8da: '&aOn'
   625c252ae7e02455cf89: '&aOnline'
-  7cd33dcd88c4eaab436b: '&aOrder created! &7#{order_id} &ffor &e{quantity} {item}&7
-    at {price_each_formatted} &7each. budget locked: {budget_formatted}&7.'
   d60855dfbd27056128f9: '&aOk'
   bf658dc26f39985b9788: '&aOptimization runtime counters reset.'
   cf58e5630e69aa228bcf: '&aOptimization settings reloaded.'
@@ -3428,47 +3335,8 @@ BUILTIN:
   89165933bfd462b3a1cc: '&c%player% Has blocked you.'
   d6537893922149f3be71: '&c%player% Has private messages disabled.'
   a543c4b0c49af01ede5f: '&c&lRtp zone'
-  6a8dfc3e1de27f6885c0: '&c&lYou have been banned!
-
-    &8&m----------------------------
-
-    &7Reason: &f%reason%
-
-    &7Expires: &f%nicest_expiration%
-
-    &7Banned by: &f%issuer%
-
-    &8&m----------------------
-
-    &7Appeal at: &fdiscord.ejemplo.espacio'
-  cdb04f0c9929b15a7ab8: '&c&lYou have been kicked!
-
-    &8&m----------------------------
-
-    &7Reason: &f%reason%
-
-    &7Kicked by: &f%issuer%
-
-    &8&m----------------------
-
-    &7You may reconnect'
-  69e43f973abc074327c0: '&c&lYou have been muted!
-
-    &8&m----------------------------
-
-    &7Reason: &f%reason%
-
-    &7Expires: &f%nicest_expiration%
-
-    &7Muted by: &f%issuer%
-
-    &8&m----------------------
-
-    &7You cannot speak in chat'
   753e3ae375cbcb4a752c: '&c&lYou''re currently frozen!'
   e733ec8f4d852f615dbc: '&c&lLimit reached this rotation.'
-  c511c356a9d743468207: '&c&lError &7>> &cyou don''t have permission to manage other
-    players'' staff mode!'
   f121af0caa3fd4103e19: '&c&lError &7>> &cfailed to toggle staff mode!'
   97b5139e5b6c3ded760e: '&c&lOff'
   8e2e749b69a4d94f06f8: '&c'' Not found.'
@@ -3484,23 +3352,13 @@ BUILTIN:
   1b5027c924f41a4b4253: '&cLa cantidad debe ser mayor que cero.'
   5670885372f15c0e0a1a: '&cLa cantidad debe ser cero o mayor.'
   b6103232a52f05d3a495: "&cNo se pudo reclamar ese botín en este momento."
-    arena disponible.'
-  96d5cab743be40671ded: "&cLos artículos de amatista caducados no se pueden usar como
-    recompensas de cajas."
   b4e22355679e7e4691c7: '&cError al guardar config.yml.'
-  f117562619f3eb6b3102: "&cNo se pudo serializar ese artículo para la recompensa de
-    la caja."
-    de tu equipo.'
-    estén en el mismo equipo."
   89fa0273b7210398746f: '&cSalir de la cola'
   6d286cbc27c885285df2: '&cFalta clave de idioma:'
-    momento.'
   de84b9a17265204a9393: '&cNo hay reclamos pendientes'
   53962bf273fa4c596325: '&cSin permiso.'
   e7fa74a6c79996dbd2c8: '&cNo hay mapas de cola disponibles'
   133539422c544a3af4bf: '&cNo hay solicitudes en cola'
-  ab5c40615fa505a7d377: "&cSolo la consola del servidor puede ejecutar esta acción
-    destructiva."
   b503925d3edcd63d8ff7: '&cNo se pudieron cargar los datos del reproductor.'
   b62943893361686d7a50: '&cJugador no encontrado.'
   fb6d9d871a67e5be64ad: "&cEl jugador no está en línea."
@@ -3508,11 +3366,8 @@ BUILTIN:
   5d4b723a0cb7d4e566bb: "&cEl solicitante ya no está en línea."
   639dc6ff765ee67dcf15: "&cTpaquí se deshabilitó la aceptación automática &7."
   747c32da44db1da748d4: "&cObjetivo sin conexión"
-  947447d608f76d588c39: "&cEse objeto amatista tiene metadatos no válidos y no puede
-    usarse como recompensa de caja."
   baa77723b76d97d2312f: "&cEse jugador no está en línea."
   02c55e5cced4f07cbf80: "&cEsa solicitud en cola ya no está disponible."
-    de elementos no seguros.'
   8c0399103c6a30b12a4b: '&cNo hay solicitudes en cola para aceptar.'
   1161b4adfe4be95ba25e: "&cComando de administración de fragmentos desconocido."
   12b535faecf1834e0f82: '&cUso: /'
@@ -3522,10 +3377,6 @@ BUILTIN:
   e857a26465083a0c9747: '&c[Congelar] &4%player% &cleft while frozen on &4%server%'
   668035e73c3259866e10: '&cQueue arenas exist but are not ready yet.'
   8ecacc7ebb703543ad31: '&cInvalid quantity.'
-  a697b924138bb97b49ee: '&cInvalid block. left-click a chest, trapped chest, barrel,
-    ender chest, or shulker box.'
-  f59000a7f841ea92cf51: '&cInvalid block. left-click a chest, trapped chest, barrel,
-    or ender chest.'
   1d10045da43ec623f1e6: '&cInvalid delay.'
   6542c5aa3020bb7fc8b8: '&cInvalid price format.'
   c5e4d99f607bfb410678: '&cInvalid price.'
@@ -3621,21 +3472,15 @@ BUILTIN:
   1c3d17a87c7411ccf96e: '&cYou must be in staff mode to use /vanish.'
   b5b65e10136d179aeae2: '&cYou must hold an item to rename it'
   37245da79ba90f89d4f0: '&cYou must specify an arena id.'
-  7031c53729cbe3d65108: '&cYou''ve reached your home limit or the home already exists
-    at this name.'
   6ccc41404761259956cb: '&cYou''ve reached the trade limit for this rotation.'
   edf03598e4da3efcca28: '&cYour inventory is too full to receive the reward.'
   a843225467a5cd998e34: '&cYour inventory is full.'
-  25833bc3b300ec1f4f28: '&cYour inventory is full. clear space before claiming this
-    reward.'
   63c8dc3c6cac5397f7a4: '&cYour request is too long. max: %max% characters.'
   3b850b0cccf02702375d: '&cYour report reason is too long. max: %max% characters.'
   6157f0d7a588a04ffb2e: '&cYour rtp is already in progress.'
   3535ba9e8acd412bf8b0: '&cYour draw request expired.'
   1f66ac1d2b969456af9e: '&cYour message is too long! (max: %max%)'
   ca796baa738358aa76e3: '&cYour message is too short! (min: %min%)'
-  7b357d67b12fe6aed193: '&cYour message contains characters that are not allowed on
-    this server.'
   5801e26feef3715ebb6c: '&cYour opponent is no longer online.'
   171e61a8d6404a151649: '&cYour player data could not be loaded.'
   60f84b7c6c3a2783c018: '&cYour player data could not be loaded. try again in a moment.'
@@ -3657,10 +3502,6 @@ BUILTIN:
   3957f0021fa2acb28966: '&cLook at a crate chest first.'
   bb6182c8822c170e4daf: '&cLook at a managed spawner to inspect it.'
   72f1a126594c33e53edc: '&cLook at a managed spawner to remove it.'
-  45479c4c04b8707b4a93: '&cSingle paper preset was applied in memory, but one or more
-    files failed to save. check console.'
-  4c68ecb6655b867a0be8: '&cSingle-paper preset was applied in memory, but one or more
-    files failed to save. check console.'
   cb4c3bfcf20888a8e429: '&cShard reward cancelled &7(left %cuboid% zone)'
   820658f327075503d057: '&cShard reward cancelled &7(left %cuboid% zone)'
   56ec6520540183a49d9f: '&cShards are disabled in this world'
@@ -3698,10 +3539,6 @@ BUILTIN:
   27ecf805b0de953c7754: '&cAfk command is currently disabled.'
   a75ef1d8052180bdba69: '&cCritical'
   6dd1318f79ffca50348c: '&cCrate ''&f'
-  86bfa18f29d7508a9691: '&cCrate id may only contain lowercase letters, numbers, ''-''
-    and ''_''.'
-  51924b2a7df3f0f2d0a1: '&cCrate id may only contain lowercase letters, numbers, ''-''
-    and ''_''.'
   99c9c3921bc496c8a699: '&cCrate commands are currently disabled.'
   bb63d4e52488ffc73489: '&cClaim not found'
   40c51d145de11197a3d1: '&cClose editor'
@@ -3779,9 +3616,6 @@ BUILTIN:
   330cfaea8da18efb3c5b: '&cThis crate chest is bound to an invalid crate.'
   9da2819f2b5df11a9d78: '&cThis destination is currently disabled.'
   9a11f70a86cbd3e90b69: '&cThis menu button is missing a command.'
-    has been disabled.'
-    disabled.'
-    been disabled.'
   4bc6aab85a0be01e3e83: '&cThat is not a managed spawner item.'
   187b736b8711efe4881e: '&cThat is not a managed spawner.'
   a74fab976402ec041c83: '&cThat reward is no longer valid.'
@@ -3790,12 +3624,6 @@ BUILTIN:
   a1a695338f7ebcfaa895: '&cThat block is already a managed spawner.'
   c316f5263812098444b5: '&cThat loot entry is empty.'
   edc6524e33d3f4a6023f: '&cThat slot already has a reward. use &f/crate editar'
-  f35c2d9f75e2c085be82: '&cThat slot contains a non-item reward and cannot be edited
-    from the gui.'
-  9e9a8fcc1a88c15f9aab: '&cThat slot contains a non-item reward. edit it in cajas.yml
-    if needed.'
-  edc67e272730e8134096: '&cThat slot contains a non-item reward. edit it in crates.yml
-    if needed.'
   c0919c7dd219d5d60100: '&cThat slot does not have a reward yet. use &f/crate agregar'
   b68ec67884537c265c43: '&cThat server is not configured in network.yml.'
   3b615dec9b735848d305: '&cThat server is not configured in network.yml.'
@@ -3807,8 +3635,6 @@ BUILTIN:
   82b492160abc60a4371a: '&cThat action is unavailable right now.'
   da8237276f4f20964304: '&cThat crate no longer exists.'
   e632a7617c68201aa06e: '&cThat crate has no valid rewards configured.'
-  59bae69841a519f75b6d: '&cThat crate chest is bound and cannot be broken until it
-    is unbound.'
   ba60f253f601f9699050: '&cThat crate does not have any rewards configured.'
   3f09bc942676b5b3d785: '&cThat challenger is no longer online.'
   52d3936f9101e7832703: '&cThat player is no longer online.'
@@ -3837,13 +3663,8 @@ BUILTIN:
   c3d23cfac92ae68044dc: '&cUnknown arena subcommand.'
   43f09e396650deb7a4d3: '&cUnknown command category. available: &f'
   279b904f3f0318eb2fcf: '&cUnknown feature: &f{feature}'
-    nofalldamage'
   392ca6e8d3cb48a6231c: '&cUsage: /'
   978fe9da9d3182761b29: '&cUsage: /%label% <player>'
-  03389aa963eac44220fa: '&cUsage: /%label% <survival|creative|adventure|spectator>
-    <player>'
-  dd5c00075b3d9d9f3e02: '&cUsage: /%label% <survival|creative|adventure|spectator>
-    [jugador]'
   7d08a126b0d2802f5a3c: '&cUsage: /%label% [jugador]'
   acc122c78a16b773ccac: '&cUsage: /addmoney <player> <amount>'
   2a825c2e75ecb8737c12: '&cUsage: /ah cancelar <listingid>'
@@ -3855,10 +3676,6 @@ BUILTIN:
   e47ae37b001096892a1c: '&cUsage: /bounty agregar <player> <amount>'
   2e2445de3409ced50018: "&cUsage: /bounty información <player>"
   1bca546d7f574375dd71: '&cUsage: /crate'
-  73035a1b3c43e0f3e2cc: '&cUsage: /cuboid <varita|crear <name>|eliminar <name>|lista|vincular
-    <cuboid> <spawn|shard|rtp-zone> <true|false>|reload>'
-  413d026c424d9384f776: '&cUsage: /cuboid <varita|crear <name>|delete <name>|list|bind
-    <cuboid> <spawn|shard|rtp-zone> <true|false>|reload>'
   11329febc1f9efe46ae6: '&cUsage: /cuboid unir <cuboid> <spawn|shard|rtp-zone> <true|false>'
   c77190ba5e78d1b8df80: '&cUsage: /cuboid crear <name>'
   4d29a2b8774a78044eff: '&cUsage: /cuboid eliminar <name>'
@@ -3877,10 +3694,6 @@ BUILTIN:
   78da85ac0582190a2900: '&cUsage: /team invitar a <player>'
   38b4dfef97783ed41c9a: "&cUsage: /team únete a <team>"
   9ee4ce1cb505c347ea0d: '&cUsage: /team patada <player>'
-  5fc4a5d6602069a88a68: "&cUsage: /tempban <player> <time> [razón] &7(time: 30s, 15m,
-    2h, 5d, or 5d 15m 30º)"
-  d53dc54783b97c1bfbb8: "&cUsage: /tempmute <player> <time> [razón] &7(time: 30s,
-    15m, 2h, 5d, or 5d 15m 30º)"
   f7c9644a15050d176231: '&cUsage: /tpall'
   60dd353842540256be54: '&cUsage: /tphere <player>'
   1266c2e2590643b1524d: '&cUsage: /unban <player> [motivo]'
@@ -3971,17 +3784,11 @@ BUILTIN:
   9be4b6bfd9890d79dbfc: "&eHaz clic para enviar el desafío."
   4e355d5a9c5d508ffd05: "&eBotín de &f"
   5c056e60ea8385a7f7de: '&eObjetivo: &f'
-  c77b14567116b97c2389: '&e[Temporizador] &ftime limit reached! match ended as a &edraw
-    &f- streaks unchanged.'
   02840708f6b53fa3d201: '&eQuery: &f'
-  007cf2235227e728f965: '&eRestart the server before going live so storage changes
-    are fully applied.'
   ba08b01dd83e2a7a8608: '&eRefresh'
   49d1588157a3820ba2d1: '&eYou already requested a draw.'
   68ed2f79c5c8cc5a9be5: '&eYour inventory is being viewed by staff.'
   e5d7397a095c659e8b4e: '&eYour rank'
-  ae7790295ed86c2c7952: '&eBind mode is active. left-click the target chest to finish
-    binding, or use &f/crate vincular cancelar&e.'
   c6aced9795f4f5b900f9: '&eBalance check'
   70106ff8d74a04c04bc0: '&eLeft-click &7to collect one stack'
   03c4e23ac3f57ab439c3: '&eLoot summary'
@@ -3991,8 +3798,6 @@ BUILTIN:
   f9460b490eaed934956b: '&eSort: &f'
   47d11934f77da22ef5fa: '&eSoftware: &a%software%'
   28384ccc8235949fb914: '&eStep 3/3 &7type'
-  f55f79292834288afc37: '&eAnother staff member is already editing this inventory.
-    opened in read-only mode.'
   baf5c2601c39e99e6669: '&eChange quantity'
   ec5ef1b82c70dba8a827: '&eChange price'
   604f8b953e0647242917: '&eCheck'
@@ -4022,8 +3827,6 @@ BUILTIN:
   e2d844d6d24483b9d89d: '&ePlaytime: &f%playtime%'
   49fc4a3847ba43b32e6f: '&ePlace to create or stack this spawner.'
   d92c6fcc8d0194ced327: '&ePage'
-  46a1b8eae4be31682c0d: '&eThis inventory is now a frozen snapshot because the target
-    logged out.'
   35b679743c15ef8e872a: '&eTarget: &f'
   b5ac33a4a9bc9b2ad746: '&eTeleported to staff member &f'
   8ad8da9fc489590c49cf: '&eTeleported to frozen player &f'
@@ -4089,16 +3892,8 @@ BUILTIN:
   d7e549a7f9fc2b01d1e5: '&l'
   f33ae22aa6c9add1be07: '&r'
   f45e0052108b575928a1: 
-    usessl=false&allowpublickeyretrieval=true&servertimezone=utc&characterencoding=utf8
   3243ec39eaf4e7ba59f8: '{money_color}{money_name_plural}: &f%money_formatted%'
   19cc37298cec4ee00ebd: '{shards_color}{shards_name_plural}: &f%shards_formatted%'
-  efe932379b53b1a38b2c: 'You received %amount_formatted% &7(&ax%multiplier%&7) &7(total:
-    %total_formatted%&7)'
-  14e9d13ee37df698116c: 'You received %amount_formatted% &7(&ax%multiplier%&7) &8[en
-    todas partes] &7(total: %total_formatted%&7)'
   356276dd7b506bb02ec5: 'You received %amount_formatted% &7(total: %total_formatted%&7)'
-  23d6007c51d950a18c48: 'You received %amount_formatted% &8[en todas partes] &7(total:
-    %total_formatted%&7)'
   56d883250427ad469055: Mb&8/&f
   d8b9a7616dfdf1cbb574: usessl=false&allowpublickeyretrieval=true 
-    &servertimezone=utc&characterencoding=utf8

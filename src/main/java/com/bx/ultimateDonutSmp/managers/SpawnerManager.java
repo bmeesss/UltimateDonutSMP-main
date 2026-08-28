@@ -16,6 +16,7 @@ import com.bx.ultimateDonutSmp.models.SpawnerTypeDefinition;
 import com.bx.ultimateDonutSmp.models.WorthResult;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -308,9 +309,8 @@ public final class WorldSummary {
 
             String key = rawKey.trim().toUpperCase(Locale.US);
             EntityType entityType;
-            try {
-                entityType = EntityType.valueOf(section.getString("ENTITY_TYPE", key).trim().toUpperCase(Locale.US));
-            } catch (Exception exception) {
+            entityType = LegacyMaterialSupport.resolveEntityType(section.getString("ENTITY_TYPE", key));
+            if (entityType == null) {
                 plugin.getLogger().warning("[SpawnerManager] Invalid ENTITY_TYPE for spawner type " + key + ".");
                 continue;
             }

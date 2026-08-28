@@ -884,7 +884,7 @@ AMETHYST-TOOLS:
     - SAND
     - RED_SAND
     - GRAVEL
-    - SPAWNER
+    - MOB_SPAWNER
     NAME: '&#A303F9Amethyst Pickaxe'
     LORE:
     - '&79 Blocks Per Break'

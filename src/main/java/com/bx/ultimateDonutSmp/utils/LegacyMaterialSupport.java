@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.utils;
 
 import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
@@ -219,8 +220,102 @@ public final class LegacyMaterialSupport {
         if (name.isEmpty()) {
             return null;
         }
-        Material material = Material.matchMaterial(name);
-        return material == null ? null : of(material);
+        Material material;
+        try {
+            material = Material.valueOf(name);
+        } catch (IllegalArgumentException ignored) {
+            material = Material.matchMaterial(name);
+        }
+        if (material != null) {
+            return of(material);
+        }
+        // Bukkit 1.12.2 uses COMMAND, COMMAND_CHAIN and COMMAND_REPEATING.
+        if ("COMMAND_BLOCK".equals(name)) return of(Material.COMMAND);
+        if ("CHAIN_COMMAND_BLOCK".equals(name)) return of(Material.COMMAND_CHAIN);
+        if ("REPEATING_COMMAND_BLOCK".equals(name)) return of(Material.COMMAND_REPEATING);
+        if ("SPAWNER".equals(name)) {
+            return of(Material.MOB_SPAWNER);
+        }
+        if ("RAIL".equals(name)) {
+            return of(Material.RAILS);
+        }
+        if ("OAK_SIGN".equals(name)) {
+            return of(Material.SIGN_POST);
+        }
+        if ("DRAGON_HEAD".equals(name)) {
+            return new Icon(Material.SKULL_ITEM, (short) 5, name);
+        }
+        if ("ENCHANTED_GOLDEN_APPLE".equals(name)) {
+            return new Icon(Material.GOLDEN_APPLE, (short) 1, name);
+        }
+        if ("FIREWORK_ROCKET".equals(name)) {
+            return of(Material.FIREWORK);
+        }
+        // Names introduced after 1.12.2 retain their reward/tool role using the
+        // closest item that actually exists in the 1.12.2 Bukkit enum.
+        if ("DIAMOND_SHOVEL".equals(name)) return of(Material.DIAMOND_SPADE);
+        if (name.startsWith("NETHERITE_")) {
+            if (name.endsWith("HELMET")) return of(Material.DIAMOND_HELMET);
+            if (name.endsWith("CHESTPLATE")) return of(Material.DIAMOND_CHESTPLATE);
+            if (name.endsWith("LEGGINGS")) return of(Material.DIAMOND_LEGGINGS);
+            if (name.endsWith("BOOTS")) return of(Material.DIAMOND_BOOTS);
+            if (name.endsWith("SWORD")) return of(Material.DIAMOND_SWORD);
+            if (name.endsWith("AXE")) return of(Material.DIAMOND_AXE);
+            if (name.endsWith("PICKAXE")) return of(Material.DIAMOND_PICKAXE);
+            if (name.endsWith("SHOVEL")) return of(Material.DIAMOND_SPADE);
+            if ("NETHERITE_INGOT".equals(name) || "NETHERITE_SCRAP".equals(name)) return of(Material.DIAMOND);
+            if ("NETHERITE_UPGRADE_SMITHING_TEMPLATE".equals(name)) return of(Material.DIAMOND);
+        }
+        if ("CROSSBOW".equals(name)) return of(Material.BOW);
+        if ("MACE".equals(name)) return of(Material.DIAMOND_AXE);
+        // SpawnStash structures use these flattened block names; retain their closest 1.12.2 role.
+        if ("DEEPSLATE".equals(name) || "BUDDING_AMETHYST".equals(name)) {
+            return of(Material.STONE);
+        }
+        if ("DEEPSLATE_TILES".equals(name) || "DEEPSLATE_BRICKS".equals(name)) {
+            return of(Material.SMOOTH_BRICK);
+        }
+        if ("COBBLED_DEEPSLATE".equals(name) || "POLISHED_DEEPSLATE".equals(name)
+                || "CHISELED_DEEPSLATE".equals(name)) return of(Material.STONE);
+        if ("POLISHED_BLACKSTONE_BRICKS".equals(name) || "REINFORCED_DEEPSLATE".equals(name)) {
+            return of(Material.SMOOTH_BRICK);
+        }
+        if ("AMETHYST_CLUSTER".equals(name)) {
+            return of(Material.QUARTZ_BLOCK);
+        }
+        if ("ECHO_SHARD".equals(name)) {
+            return of(Material.PRISMARINE_SHARD);
+        }
+        if ("DEEPSLATE_REDSTONE_ORE".equals(name)) {
+            return of(Material.REDSTONE_ORE);
+        }
+        if ("DEEPSLATE_GOLD_ORE".equals(name)) {
+            return of(Material.GOLD_ORE);
+        }
+        if ("DEEPSLATE_IRON_ORE".equals(name)) {
+            return of(Material.IRON_ORE);
+        }
+        if ("PURPLE_SHULKER_BOX".equals(name)) {
+            return of(Material.CHEST);
+        }
+        if ("LANTERN".equals(name)) return of(Material.TORCH);
+        if ("GOAT_HORN".equals(name) || "BREEZE_ROD".equals(name)) return of(Material.BLAZE_ROD);
+        if ("AXOLOTL_BUCKET".equals(name) || "FROGSPAWN".equals(name)) return of(Material.WATER_BUCKET);
+        if ("SNIFFER_EGG".equals(name) || "SNIFFER_SPAWN_EGG".equals(name)
+                || "CAMEL_SPAWN_EGG".equals(name)) return of(Material.MONSTER_EGG);
+        if (name.endsWith("_SPAWN_EGG")) return of(Material.MONSTER_EGG);
+        if ("NETHERITE_BLOCK".equals(name) || "SHROOMLIGHT".equals(name)
+                || "OCHRE_FROGLIGHT".equals(name) || "PEARLESCENT_FROGLIGHT".equals(name)
+                || "VERDANT_FROGLIGHT".equals(name)) return of(Material.GLOWSTONE);
+        // These blocks were introduced after 1.12.2 and have no safe equivalent.
+        if ("LIGHT".equals(name) || "JIGSAW".equals(name)) return null;
+        return null;
+    }
+
+    /** Returns whether a name is known to be intentionally unavailable on Bukkit 1.12.2. */
+    public static boolean isUnsupportedOnLegacy(String raw) {
+        String name = normalize(raw);
+        return "LIGHT".equals(name) || "JIGSAW".equals(name) || "AMETHYST_BLOCK".equals(name);
     }
 
     /**
@@ -257,6 +352,25 @@ public final class LegacyMaterialSupport {
             }
         }
         return type.name();
+    }
+
+    /** Resolves renamed entity types without pretending newer mobs exist on 1.12.2. */
+    public static EntityType resolveEntityType(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        String name = normalize(raw).replace('-', '_');
+        if ("ZOMBIFIED_PIGLIN".equals(name)) {
+            return EntityType.PIG_ZOMBIE;
+        }
+        if ("PIGLIN".equals(name)) {
+            return null;
+        }
+        try {
+            return EntityType.valueOf(name);
+        } catch (IllegalArgumentException ignored) {
+            return null;
+        }
     }
 
     private static String normalize(String raw) {

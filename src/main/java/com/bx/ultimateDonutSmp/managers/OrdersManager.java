@@ -3925,7 +3925,8 @@ public class OrdersManager {
             if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
                 continue;
             }
-            if (parseMaterial(rawMaterial) == null) {
+            if (parseMaterial(rawMaterial) == null
+                    && !LegacyMaterialSupport.isUnsupportedOnLegacy(rawMaterial)) {
                 plugin.getLogger().warning("Invalid Orders blocked material: " + rawMaterial);
             }
         }

@@ -877,7 +877,9 @@ public final class UltimateDonutSmp extends JavaPlugin {
             mcVersion = parts[0] + "." + parts[1] + "." + parts[2];
         }
 
-        if (compareVersions(mcVersion, minVersion) < 0 || compareVersions(mcVersion, maxVersion) > 0) {
+        boolean legacySpigot1122 = !isFolia && "1.12.2".equals(mcVersion);
+        if (!legacySpigot1122
+                && (compareVersions(mcVersion, minVersion) < 0 || compareVersions(mcVersion, maxVersion) > 0)) {
             getLogger().severe("====================================================");
             getLogger().severe("ERROR: Unsupported Minecraft version!");
             getLogger().severe("Platform detected: " + platformName);

@@ -36,13 +36,9 @@ RESTRICTIONS:
   BLOCKED_MATERIALS:
     - BEDROCK
     - BARRIER
-    - COMMAND_BLOCK
-    - CHAIN_COMMAND_BLOCK
-    - REPEATING_COMMAND_BLOCK
+    - COMMAND
     - STRUCTURE_BLOCK
     - STRUCTURE_VOID
-    - JIGSAW
-    - LIGHT
   # Lore text phrases that block an item from being listed if present
   BLOCKED_IF_HAS_LORE_CONTAINS: []
 

@@ -2,7 +2,6 @@ package com.bx.ultimateDonutSmp.listeners;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
-import org.bukkit.entity.Phantom;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,7 +18,7 @@ public class PhantomListener implements Listener {
     @EventHandler
     public void onPhantomTarget(EntityTargetEvent event) {
         if (!plugin.getFeatureManager().isEnabled(com.bx.ultimateDonutSmp.managers.FeatureManager.Feature.PHANTOM)) return;
-        if (!(event.getEntity() instanceof Phantom)) return;
+        if (!event.getEntityType().name().equals("PHANTOM")) return;
         org.bukkit.entity.Entity target = event.getTarget();
         if (!(target instanceof Player)) return;
         Player player = (Player) target;

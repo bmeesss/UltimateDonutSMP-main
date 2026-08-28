@@ -13,6 +13,7 @@ import com.bx.ultimateDonutSmp.models.PlayerAuctionSession;
 import com.bx.ultimateDonutSmp.models.PlayerPreference;
 import com.bx.ultimateDonutSmp.storage.AuctionHouseRepository;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
@@ -328,11 +329,8 @@ public final class ClaimResult {
                 "GUI.CATEGORIES." + effective.name() + ".MATERIAL",
                 effective.defaultIcon().name()
         );
-        try {
-            return Material.valueOf(configured.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException exception) {
-            return effective.defaultIcon();
-        }
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(configured);
+        return resolved == null ? effective.defaultIcon() : resolved.material();
     }
 
     public String getSortDisplayName(AuctionSort sort) {
@@ -1147,9 +1145,9 @@ public final class ClaimResult {
         }
         Set<Material> blocked = EnumSet.noneOf(Material.class);
         for (String raw : config().getStringList("RESTRICTIONS.BLOCKED_MATERIALS")) {
-            try {
-                blocked.add(Material.valueOf(raw.trim().toUpperCase(Locale.ROOT)));
-            } catch (IllegalArgumentException ignored) {
+            LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(raw);
+            if (resolved != null) {
+                blocked.add(resolved.material());
             }
         }
         if (blocked.contains(item.getType())) {
@@ -1297,9 +1295,7 @@ public final class ClaimResult {
             plugin.getLogger().warning("auction-house.yml has PRICING.MIN_PRICE greater than PRICING.MAX_PRICE.");
         }
         for (String material : config().getStringList("RESTRICTIONS.BLOCKED_MATERIALS")) {
-            try {
-                Material.valueOf(material.trim().toUpperCase(Locale.ROOT));
-            } catch (IllegalArgumentException exception) {
+            if (LegacyMaterialSupport.resolve(material) == null) {
                 plugin.getLogger().warning("Invalid Auction House blocked material: " + material);
             }
         }

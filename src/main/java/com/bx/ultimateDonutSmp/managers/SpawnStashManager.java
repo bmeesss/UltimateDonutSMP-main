@@ -6,6 +6,7 @@ import com.bx.ultimateDonutSmp.models.SpawnStashInstance;
 import com.bx.ultimateDonutSmp.models.SpawnStashItemDefinition;
 import com.bx.ultimateDonutSmp.models.SpawnStashOffset;
 import com.bx.ultimateDonutSmp.models.SpawnStashTypeDefinition;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.PermissionUtils;
@@ -22,9 +23,6 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Rotatable;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -403,7 +401,7 @@ public class SpawnStashManager {
             long ttl = Math.max(1L, typeSection.getLong("TTL_SECONDS", defaultTtlSeconds));
             double radius = Math.max(1.0D, typeSection.getDouble("ALERT_RADIUS", defaultAlertRadius));
             SpawnStashOffset pasteOffset = parseOffsetValue(typeSection.get("PASTE_OFFSET"), SpawnStashOffset.ZERO);
-            List<SpawnStashBlockDefinition> blocks = parseBlocks(normalizedKey, typeSection.getList("BLOCKS"));
+            List<SpawnStashBlockDefinition> blocks = parseBlocks(normalizedKey, typeSection.get("BLOCKS"));
             if (blocks.isEmpty()) {
                 plugin.getLogger().warning("Skipping SpawnStash type " + key + " because it has no valid blocks.");
                 continue;
@@ -419,13 +417,26 @@ public class SpawnStashManager {
         }
     }
 
-    private List<SpawnStashBlockDefinition> parseBlocks(String typeKey, List<?> rawBlocks) {
-        if (rawBlocks == null || rawBlocks.isEmpty()) {
+    private List<SpawnStashBlockDefinition> parseBlocks(String typeKey, Object rawBlocks) {
+        if (rawBlocks == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        List<?> blockList;
+        if (rawBlocks instanceof List<?>) {
+            blockList = (List<?>) rawBlocks;
+        } else if (rawBlocks instanceof Map<?, ?>) {
+            // Older files store BLOCKS as a numeric-keyed map instead of a YAML list.
+            blockList = new ArrayList<>(((Map<?, ?>) rawBlocks).values());
+        } else {
+            return java.util.Collections.emptyList();
+        }
+        if (blockList.isEmpty()) {
             return java.util.Collections.emptyList();
         }
 
         List<SpawnStashBlockDefinition> blocks = new ArrayList<>();
-        for (Object rawBlock : rawBlocks) {
+        for (Object rawBlock : blockList) {
             if (!(rawBlock instanceof Map<?, ?>)) {
                 plugin.getLogger().warning("Ignoring invalid SpawnStash block in type " + typeKey + ".");
                 continue;
@@ -433,10 +444,25 @@ public class SpawnStashManager {
             Map<?, ?> map = (Map<?, ?>) rawBlock;
 
             SpawnStashOffset offset = parseOffsetValue(value(map, "OFFSET"), SpawnStashOffset.ZERO);
-            String materialName = stringValue(value(map, "MATERIAL"));
-            String blockData = stringValue(value(map, "BLOCK_DATA"));
-            Material material = materialName == null ? null : parseMaterial(materialName);
+            Object materialValue = firstValue(map, "MATERIAL", "BLOCK", "ID");
+            if (materialValue instanceof Map<?, ?>) {
+                materialValue = firstValue((Map<?, ?>) materialValue, "MATERIAL", "BLOCK", "ID");
+            }
+            String materialName = stringValue(materialValue);
+            String blockData = stringValue(firstValue(map, "BLOCK_DATA", "BLOCK-DATA", "DATA"));
+            LegacyMaterialSupport.Icon resolvedMaterial = materialName == null
+                    ? null : LegacyMaterialSupport.resolve(materialName);
+            Material material = resolvedMaterial == null ? null : resolvedMaterial.material();
+            if ((blockData == null || blockData.trim().isEmpty()) && resolvedMaterial != null
+                    && resolvedMaterial.data() != 0) {
+                blockData = String.valueOf(resolvedMaterial.data());
+            }
             if (material == null && (blockData == null || blockData.trim().isEmpty())) {
+                if (materialName != null) {
+                    plugin.getLogger().warning("Ignoring unsupported SpawnStash material " + materialName
+                            + " in type " + typeKey + " on this Bukkit version.");
+                    continue;
+                }
                 plugin.getLogger().warning("Ignoring SpawnStash block in type " + typeKey + " with no material/block data.");
                 continue;
             }
@@ -451,7 +477,7 @@ public class SpawnStashManager {
                         && plugin.getSpawnerManager().getTypeDefinition(legacyKey) != null) {
                     spawnerTypeKey = legacyKey;
                 } else {
-                    spawnerEntity = parseEntityType(legacySpawnerEntity);
+                    spawnerEntity = LegacyMaterialSupport.resolveEntityType(legacySpawnerEntity);
                 }
             }
             long spawnerStackAmount = Math.max(1L, longValue(firstValue(map, "SPAWNER_STACK", "STACK_AMOUNT", "AMOUNT"), 1L));
@@ -488,7 +514,8 @@ public class SpawnStashManager {
                 continue;
             }
             Map<?, ?> map = (Map<?, ?>) rawItem;
-            Material material = parseMaterial(stringValue(value(map, "MATERIAL")));
+            LegacyMaterialSupport.Icon resolvedMaterial = LegacyMaterialSupport.resolve(stringValue(value(map, "MATERIAL")));
+            Material material = resolvedMaterial == null ? null : resolvedMaterial.material();
             if (material == null || !material.isItem()) {
                 continue;
             }
@@ -953,21 +980,8 @@ public class SpawnStashManager {
                 .replace("minecraft:", "")
                 .replace('-', '_')
                 .toUpperCase(Locale.US);
-        return Material.matchMaterial(normalized);
-    }
-
-    private EntityType parseEntityType(String input) {
-        if (input == null || input.trim().isEmpty()) {
-            return null;
-        }
-        try {
-            return EntityType.valueOf(input.trim()
-                    .replace("minecraft:", "")
-                    .replace('-', '_')
-                    .toUpperCase(Locale.US));
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(normalized);
+        return resolved == null ? null : resolved.material();
     }
 
     private String normalizeTypeKey(String typeKey) {

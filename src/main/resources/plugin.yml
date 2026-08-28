@@ -767,7 +767,7 @@ permissions:
       ultimatedonutsmp.staff.mode.randomtp: true
       ultimatedonutsmp.staff.mode.seevanished: true
       ultimatedonutsmp.staff.mode.others: true
-       ultimatedonutsmp.staff.teleport: true
+      ultimatedonutsmp.staff.teleport: true
       ultimatedonutsmp.staff.rename: true
       ultimatedonutsmp.staff.alts: true
       ultimatedonutsmp.staff.invsee: true
@@ -776,8 +776,8 @@ permissions:
       ultimatedonutsmp.staff.punishments.view: true
       ultimatedonutsmp.staff.punishments.create: true
       ultimatedonutsmp.staff.punishments.remove: true
-       ultimatedonutsmp.staff.punishments.delete: true
-       ultimatedonutsmp.shards.everywhere: true
+      ultimatedonutsmp.staff.punishments.delete: true
+      ultimatedonutsmp.shards.everywhere: true
       ultimatedonutsmp.admin.ecsee: true
   ultimatedonutsmp.admin.clearlag:
     description: Manually clear lag
@@ -911,10 +911,10 @@ permissions:
       ultimatedonutsmp.staff.mode.randomtp: true
       ultimatedonutsmp.staff.mode.seevanished: true
       ultimatedonutsmp.staff.mode.others: true
-       ultimatedonutsmp.staff.teleport: true
+      ultimatedonutsmp.staff.teleport: true
       ultimatedonutsmp.staff.rename: true
       ultimatedonutsmp.staff.alts: true
-       ultimatedonutsmp.staff.invsee: true
+      ultimatedonutsmp.staff.invsee: true
       ultimatedonutsmp.staff.profileviewer: true
       ultimatedonutsmp.staff.seehomes: true
       ultimatedonutsmp.staff.punishments.view: true
@@ -1488,10 +1488,10 @@ permissions:
   ultimatedonutsmp.command.settings:
     description: Access to /settings command
     default: true
-   ultimatedonutsmp.command.twitter:
-     description: Access to /twitter command
-     default: true
-   ultimatedonutsmp.command.store:
+  ultimatedonutsmp.command.twitter:
+    description: Access to /twitter command
+    default: true
+  ultimatedonutsmp.command.store:
     description: Access to /store command
     default: true
   ultimatedonutsmp.command.social:

@@ -447,11 +447,8 @@ public class ItemUtils {
 
     public static Material parseMaterial(String name) {
         if (name == null || name.isEmpty()) return Material.STONE;
-        try {
-            return Material.valueOf(name.toUpperCase().trim());
-        } catch (IllegalArgumentException e) {
-            return Material.STONE;
-        }
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(name);
+        return resolved == null ? Material.STONE : resolved.material();
     }
 
     public static ItemStack addEnchantments(ItemStack item, List<String> enchantmentStrings) {
