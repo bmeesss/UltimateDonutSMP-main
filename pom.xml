@@ -20,7 +20,7 @@
           Paper/Folia support is intentionally removed for this HollandSMP fork.
         -->
         <spigot-api.version>1.12.2-R0.1-SNAPSHOT</spigot-api.version>
-        <placeholderapi.version>2.11.6</placeholderapi.version>
+        <placeholderapi.version>2.12.3</placeholderapi.version>
         <server-api.groupId>org.spigotmc</server-api.groupId>
         <server-api.artifactId>spigot-api</server-api.artifactId>
         <server-api.version>${spigot-api.version}</server-api.version>
