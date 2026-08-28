@@ -49,6 +49,8 @@ public class ScoreboardManager {
     // Spigot/Paper implementation fields
     private final ScoreboardNumberHider numberHider;
     private final Map<UUID, Scoreboard> playerBoards;
+    /** Players whose money nametag teams live on their private board. */
+    private final Set<UUID> nametagBoards = ConcurrentHashMap.newKeySet();
 
     // Line and title caching to avoid redundant Bukkit/Packet updates
     private final Map<UUID, String[]> playerLastLines = new ConcurrentHashMap<>();
@@ -136,6 +138,46 @@ public class ScoreboardManager {
         }
     }
 
+    /**
+     * Returns the player's private scoreboard for the money nametag feature, creating it and
+     * attaching it to the player when they do not own one yet.
+     *
+     * <p>The board is the same one the sidebar lives on when the sidebar is active, so the two
+     * features never fight over {@code Player#setScoreboard}: whoever asks first creates the board
+     * and the other one adds to it. Money nametag teams are per-viewer state carried by this
+     * board, and {@link #releaseNametagBoard(UUID)} ends the lease so an unused board can be
+     * detached again.</p>
+     *
+     * <p>Returns {@code null} on Folia and on servers without a scoreboard manager, where no
+     * per-player board can be handed out.</p>
+     */
+    public Scoreboard getNametagBoard(Player player) {
+        if (folia || player == null || !player.isOnline()
+                || Bukkit.getScoreboardManager() == null) {
+            return null;
+        }
+        UUID uuid = player.getUniqueId();
+        Scoreboard board = playerBoards.get(uuid);
+        if (board == null) {
+            board = Bukkit.getScoreboardManager().getNewScoreboard();
+            playerBoards.put(uuid, board);
+            player.setScoreboard(board);
+        }
+        nametagBoards.add(uuid);
+        return board;
+    }
+
+    /** Ends the money nametag lease on a player's board, detaching it when the sidebar does not need it. */
+    public void releaseNametagBoard(UUID uuid) {
+        if (folia || uuid == null) {
+            return;
+        }
+        nametagBoards.remove(uuid);
+        if (playerBoards.get(uuid) != null && !playerObjectives.containsKey(uuid)) {
+            detachOwnedBoard(uuid);
+        }
+    }
+
     public void removePlayer(UUID uuid) {
         if (folia) {
             removePlayerFolia(uuid);
@@ -186,6 +228,7 @@ public class ScoreboardManager {
     public void invalidateAll() {
         if (!folia) {
             playerBoards.clear();
+            nametagBoards.clear();
             playerLastLines.clear();
             playerLastTitle.clear();
             playerLastRawTitle.clear();
@@ -199,6 +242,7 @@ public class ScoreboardManager {
         if (!folia && player != null) {
             UUID uuid = player.getUniqueId();
             playerBoards.remove(uuid);
+            nametagBoards.remove(uuid);
             playerLastLines.remove(uuid);
             playerLastTitle.remove(uuid);
             playerLastRawTitle.remove(uuid);
@@ -310,23 +354,35 @@ public class ScoreboardManager {
         }
 
         // A fresh board starts with empty teams, so any cached line/title state is stale.
-        clearCacheSpigot(player.getUniqueId());
+        UUID uuid = player.getUniqueId();
+        clearCacheSpigot(uuid);
 
-        Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = board.registerNewObjective("sidebar", "dummy");
-        // 1.12.2 rejects objective display names longer than 32 raw characters; the shipped
-        // gradient title with its per-letter hex colours is far over that before conversion.
-        obj.setDisplayName(LegacyScoreboardText.sanitizeObjectiveName(getTitle(player, settings)));
-        obj.setDisplaySlot(DisplaySlot.SIDEBAR);
-
-        playerBoards.put(player.getUniqueId(), board);
-        playerObjectives.put(player.getUniqueId(), obj);
-        player.setScoreboard(board);
+        // The player may already own a private board (created for the money nametag teams while
+        // the sidebar was off). Add the sidebar objective to it rather than replacing it.
+        Scoreboard board = playerBoards.get(uuid);
+        boolean fresh = board == null;
+        if (fresh) {
+            board = Bukkit.getScoreboardManager().getNewScoreboard();
+            playerBoards.put(uuid, board);
+        }
+        Objective obj = board.getObjective("sidebar");
+        if (obj == null) {
+            obj = board.registerNewObjective("sidebar", "dummy");
+            // 1.12.2 rejects objective display names longer than 32 raw characters; the shipped
+            // gradient title with its per-letter hex colours is far over that before conversion.
+            obj.setDisplayName(LegacyScoreboardText.sanitizeObjectiveName(getTitle(player, settings)));
+            obj.setDisplaySlot(DisplaySlot.SIDEBAR);
+        }
+        playerObjectives.put(uuid, obj);
+        if (fresh || player.getScoreboard() != board) {
+            player.setScoreboard(board);
+        }
         updateTextSpigot(player, board, obj, settings);
     }
 
     private void removePlayerSpigot(UUID uuid) {
         playerBoards.remove(uuid);
+        nametagBoards.remove(uuid);
         clearCacheSpigot(uuid);
     }
 
@@ -350,7 +406,12 @@ public class ScoreboardManager {
         Objective obj = playerObjectives.get(uuid);
         if (obj == null) {
             obj = board.getObjective("sidebar");
-            if (obj == null) return;
+            if (obj == null) {
+                // The board exists but has no sidebar objective, which happens when the board was
+                // created for the money nametag teams while the sidebar was off. Register it.
+                setupPlayerSpigot(player, settings);
+                return;
+            }
             playerObjectives.put(uuid, obj);
         }
 
@@ -493,6 +554,7 @@ public class ScoreboardManager {
             releaseOwnedBoardSpigot(player);
         }
         playerBoards.clear();
+        nametagBoards.clear();
         playerLastLines.clear();
         playerLastTitle.clear();
         playerLastRawTitle.clear();
@@ -507,12 +569,39 @@ public class ScoreboardManager {
         }
 
         UUID uuid = player.getUniqueId();
-        Scoreboard board = playerBoards.remove(uuid);
+        Objective obj = playerObjectives.remove(uuid);
         clearCacheSpigot(uuid);
-        if (board == null || Bukkit.getScoreboardManager() == null) {
+        if (Bukkit.getScoreboardManager() == null) {
             return;
         }
-        if (player.getScoreboard() == board) {
+        Scoreboard board = playerBoards.get(uuid);
+        if (board == null) {
+            return;
+        }
+
+        if (nametagBoards.contains(uuid)) {
+            // The board also carries money nametag teams, so it has to stay attached. Only the
+            // sidebar objective is taken down, otherwise the board alone would keep showing it.
+            if (obj != null) {
+                try {
+                    obj.unregister();
+                } catch (IllegalStateException ignored) {
+                    // Already unregistered or the board was replaced under us.
+                }
+            }
+            return;
+        }
+        detachOwnedBoard(uuid);
+    }
+
+    /** Detaches a player's private board and forgets it, unless something else owns the slot. */
+    private void detachOwnedBoard(UUID uuid) {
+        Scoreboard board = playerBoards.remove(uuid);
+        if (board == null) {
+            return;
+        }
+        Player player = Bukkit.getPlayer(uuid);
+        if (player != null && player.isOnline() && player.getScoreboard() == board) {
             player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
         }
     }

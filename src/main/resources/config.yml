@@ -373,12 +373,14 @@ WORTH-LORE:
   ENABLED: true
   # The text or value for Format. Available options: Any valid string text
   FORMAT: '&7Worth: &a$%price%'
-# The balance line players can switch on under /settings > Money Nametags. It uses the
-# scoreboard slot Minecraft reserves for a line under a username, so the client draws it
-# itself, one line below the name and never anywhere else. Two of the client's own rules
-# come with that: the line only appears within about ten blocks, and only one plugin can
-# own that slot at a time. Every player keeps their own switch, so turning it on only
-# changes what that player sees under other players' names.
+# The balance line players can switch on under /settings > Money Nametags. On 1.12.2 it is a
+# scoreboard team suffix, so the client draws it attached to the username itself: the name
+# stays untouched and the balance follows it wherever the name is visible. That is the same
+# mechanism 1.12.2 players use for team tags, and two client rules come with it - a team
+# prefix or suffix holds at most 16 raw characters (legacy colour codes included, longer
+# text is cut safely), and the same suffix also appears after the name in the viewer's tab
+# list. Every player keeps their own switch, so turning it on only changes what that player
+# sees under other players' names.
 MONEY-NAMETAGS:
   # Determines whether Money Nametags is enabled or disabled. Turning this off takes the
   # line away from everyone, whatever players picked in /settings.

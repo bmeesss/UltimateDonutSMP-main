@@ -3,68 +3,54 @@ package com.bx.ultimateDonutSmp.managers;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyScoreboardText;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
-import com.comphenix.protocol.PacketType;
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
-import com.comphenix.protocol.events.PacketContainer;
-import com.comphenix.protocol.reflect.StructureModifier;
-import com.comphenix.protocol.reflect.accessors.FieldAccessor;
-import com.comphenix.protocol.wrappers.BukkitConverters;
-import com.comphenix.protocol.wrappers.EnumWrappers;
-import com.comphenix.protocol.wrappers.WrappedChatComponent;
-import com.comphenix.protocol.wrappers.WrappedNumberFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 
 /**
- * Renders a player's balance on the line under their username.
+ * Renders a player's balance attached to their username.
  *
- * <p>This is the line Minecraft draws for a scoreboard objective in the {@code BELOW_NAME} slot, so
- * the client places it itself as part of the nametag. It cannot drift, lag behind a sprint or cover
- * the username, because it is drawn in the same pass as the name and always one line beneath it.</p>
+ * <p>Minecraft 1.12.2 has no scoreboard number formats, so the balance cannot be carried by the
+ * below-name slot the way newer servers can. What the 1.12.2 client does support is scoreboard
+ * teams: it draws a team's suffix directly after a member's name, in the world and in the tab
+ * list. Every viewer who switched the feature on gets their own private scoreboard, and every
+ * visible player becomes a member of a team carrying their formatted balance in the suffix, so
+ * the text is attached to the nametag itself, follows it everywhere and never touches the
+ * player's actual name.</p>
  *
- * <p>The slot normally shows a raw score, which is an integer and no use for a balance in the
- * billions, so each score carries a fixed number format holding the text to draw instead. That is a
- * packet level feature with no Bukkit API, which is why everything here is sent through
- * ProtocolLib.</p>
+ * <p>Nothing is written to the server-wide main scoreboard. The board is the viewer's own — the
+ * same board that carries the sidebar when the sidebar is active, because {@link ScoreboardManager}
+ * owns it and hands it out here — so a player who left the setting off never hears about a team
+ * at all, and the balances a viewer sees are decided entirely by which teams were sent to them.</p>
  *
- * <p>Nothing is written to anybody's real scoreboard. Every packet goes to one viewer, so a player
- * who left the setting off never hears about the objective at all, and the balances a viewer sees
- * are decided entirely by which scores were sent to them.</p>
- *
- * <p>Two things about the slot are the client's rules rather than ours: it only draws within about
- * ten blocks, and a server can only show one objective there at a time.</p>
+ * <p>Two rules belong to the client rather than to us. The 1.12.2 protocol allows a team prefix
+ * or suffix of at most sixteen raw characters, so a balance line longer than that is safely
+ * truncated at the last whole colour code. And the same suffix the client draws next to the name
+ * in the world also appears after the name in the viewer's tab list, because teams were the
+ * mechanism 1.12.2 used to decorate tab names with.</p>
  */
 public class MoneyNametagManager {
 
-    private static final String OBJECTIVE = "uds_money";
     private static final String LEGACY_DISPLAY_TAG = "uds_money_nametag";
     private static final String BALANCE_PLACEHOLDER = "{balance}";
-
-    private static final int OBJECTIVE_CREATE = 0;
-    private static final int OBJECTIVE_REMOVE = 1;
+    /** Every team this feature registers starts with this, so cleanup can find its own teams. */
+    private static final String TEAM_PREFIX = "udsm";
 
     private final UltimateDonutSmp plugin;
-    /** Viewer to the balance text each player was last sent, so unchanged lines are not resent. */
-    private final Map<UUID, Map<UUID, String>> sentText = new ConcurrentHashMap<>();
-    /** Viewers whose client has been told the objective exists. */
-    private final Set<UUID> installed = ConcurrentHashMap.newKeySet();
-    private ProtocolManager protocolManager;
-    private boolean warnedUnsupported;
-    /** Set once ProtocolLib proves it cannot build this server's scoreboard packets. */
-    private volatile boolean packetsUnsupported;
+    private final MoneyNametagState state = new MoneyNametagState();
+    /** The scoreboard each viewer's teams were last written to, so they can be removed again. */
+    private final Map<UUID, Scoreboard> viewerBoards = new ConcurrentHashMap<>();
+    private boolean warnedBoardUnavailable;
 
     public MoneyNametagManager(UltimateDonutSmp plugin) {
         this.plugin = plugin;
@@ -74,6 +60,20 @@ public class MoneyNametagManager {
     public static String render(String format, double balance, boolean shortFormat) {
         String amount = shortFormat ? NumberUtils.formatNice(balance) : NumberUtils.format(balance);
         return format == null ? amount : format.replace(BALANCE_PLACEHOLDER, amount);
+    }
+
+    /**
+     * Fits the rendered balance into the suffix of a 1.12.2 nametag team: at most sixteen raw
+     * characters, legacy colours only, never cut through a colour code, and one leading space so
+     * the text does not run into the username.
+     */
+    static String fitTeamSuffix(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        String legacy = LegacyScoreboardText.sanitize(
+                text, LegacyScoreboardText.MAX_TEAM_PART_LENGTH - 1);
+        return legacy.isEmpty() ? "" : " " + legacy;
     }
 
     public boolean isEnabled() {
@@ -95,14 +95,14 @@ public class MoneyNametagManager {
 
     /** Sends every viewer who wants balances the ones that have changed since their last update. */
     public void updateAll() {
-        if (!isEnabled() || !isPacketPathUsable()) {
+        if (!isEnabled()) {
             clearAll();
             return;
         }
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             if (isEnabledFor(viewer)) {
                 push(viewer);
-            } else {
+            } else if (isActive(viewer.getUniqueId())) {
                 clearViewer(viewer);
             }
         }
@@ -110,21 +110,19 @@ public class MoneyNametagManager {
 
     /** Pushes {@code player}'s balance out again, and gives them the objective if they want one. */
     public void update(Player player) {
-        if (player == null || !isEnabled() || !isPacketPathUsable()) {
+        if (player == null || !isEnabled()) {
             return;
         }
-        for (Map<UUID, String> known : sentText.values()) {
-            known.remove(player.getUniqueId());
-        }
+        state.markChanged(player.getUniqueId());
         refreshViewer(player);
     }
 
-    /** Installs or removes the objective on one player's client to match their own choice. */
+    /** Installs or removes the teams on one player's client to match their own choice. */
     public void refreshViewer(Player viewer) {
         if (viewer == null) {
             return;
         }
-        if (!isEnabled() || !isPacketPathUsable() || !isEnabledFor(viewer)) {
+        if (!isEnabled() || !isEnabledFor(viewer)) {
             clearViewer(viewer);
             return;
         }
@@ -136,19 +134,20 @@ public class MoneyNametagManager {
         if (playerUuid == null) {
             return;
         }
-        installed.remove(playerUuid);
-        sentText.remove(playerUuid);
-        for (Map<UUID, String> known : sentText.values()) {
-            known.remove(playerUuid);
+        for (UUID viewerUuid : state.viewersFor(playerUuid)) {
+            if (!viewerUuid.equals(playerUuid)) {
+                removeFromViewerBoard(viewerUuid, playerUuid);
+            }
         }
+        state.forgetTarget(playerUuid);
+        clearViewerState(playerUuid);
     }
 
     public void clearAll() {
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             clearViewer(viewer);
         }
-        installed.clear();
-        sentText.clear();
+        state.clear();
     }
 
     public void reload() {
@@ -176,31 +175,117 @@ public class MoneyNametagManager {
     }
 
     private void push(Player viewer) {
-        if (!installed.contains(viewer.getUniqueId())) {
-            if (!sendObjective(viewer, OBJECTIVE_CREATE) || !sendDisplaySlot(viewer)) {
-                return;
-            }
-            installed.add(viewer.getUniqueId());
+        if (viewer == null || !viewer.isOnline()) {
+            return;
         }
-
-        Map<UUID, String> known = sentText.computeIfAbsent(viewer.getUniqueId(), key -> new ConcurrentHashMap<>());
+        Scoreboard board = boardFor(viewer);
+        if (board == null) {
+            warnBoardUnavailable();
+            return;
+        }
+        UUID viewerId = viewer.getUniqueId();
         for (Player target : Bukkit.getOnlinePlayers()) {
+            UUID targetId = target.getUniqueId();
             if (!shouldDisplayFor(target) || !viewer.canSee(target)) {
-                known.remove(target.getUniqueId());
+                removeFromViewerBoard(viewerId, targetId);
                 continue;
             }
-            String text = ColorUtils.colorize(currentText(target), target);
-            if (!text.equals(known.get(target.getUniqueId())) && sendScore(viewer, target.getName(), text)) {
-                known.put(target.getUniqueId(), text);
+            MoneyNametagState.Entry entry = state.entryFor(viewerId, targetId);
+            String memberName = target.getName();
+            String text = fitTeamSuffix(ColorUtils.colorize(currentText(target), target));
+            if (entry.currentlyShows(text, memberName) && board.getTeam(entry.teamName) != null) {
+                continue;
+            }
+            Team team = board.getTeam(entry.teamName);
+            try {
+                if (team == null) {
+                    team = board.registerNewTeam(entry.teamName);
+                }
+                if (entry.memberName != null && !entry.memberName.equals(memberName)) {
+                    team.removeEntry(entry.memberName);
+                }
+                if (!team.hasEntry(memberName)) {
+                    team.addEntry(memberName);
+                }
+                team.setPrefix("");
+                team.setSuffix(text);
+                entry.text = text;
+                entry.memberName = memberName;
+            } catch (IllegalStateException | IllegalArgumentException unavailable) {
+                // The board or the team was replaced under us (a reload rebuilt the board). Drop
+                // the remembered state and try again on the next pass.
+                entry.text = "";
+                entry.memberName = null;
             }
         }
     }
 
-    private void clearViewer(Player viewer) {
-        sentText.remove(viewer.getUniqueId());
-        if (installed.remove(viewer.getUniqueId())) {
-            sendObjective(viewer, OBJECTIVE_REMOVE);
+    /**
+     * Removes one target's entry from one viewer's board, e.g. because the target is hidden or
+     * gone. The empty team is kept registered so showing the target again is one entry away.
+     */
+    private void removeFromViewerBoard(UUID viewerUuid, UUID targetUuid) {
+        MoneyNametagState.Entry entry = state.entryOrNull(viewerUuid, targetUuid);
+        if (entry == null || entry.memberName == null) {
+            return;
         }
+        Scoreboard board = viewerBoards.get(viewerUuid);
+        if (board == null) {
+            return;
+        }
+        Team team = board.getTeam(entry.teamName);
+        if (team != null && team.hasEntry(entry.memberName)) {
+            team.removeEntry(entry.memberName);
+        }
+        entry.memberName = null;
+        entry.text = "";
+    }
+
+    /** Drops a player's own view: their board lease, its teams and the remembered state. */
+    private void clearViewer(Player viewer) {
+        if (viewer != null) {
+            clearViewerState(viewer.getUniqueId());
+        }
+    }
+
+    private void clearViewerState(UUID uuid) {
+        Scoreboard board = viewerBoards.remove(uuid);
+        boolean hadState = state.hasViewer(uuid);
+        if (board == null && !hadState) {
+            return;
+        }
+        state.forgetViewer(uuid);
+        if (board != null) {
+            for (Team team : board.getTeams()) {
+                if (isOurTeam(team.getName())) {
+                    try {
+                        team.unregister();
+                    } catch (IllegalStateException ignored) {
+                        // Already unregistered.
+                    }
+                }
+            }
+        }
+        ScoreboardManager scoreboards = plugin.getScoreboardManager();
+        if (scoreboards != null) {
+            scoreboards.releaseNametagBoard(uuid);
+        }
+    }
+
+    private boolean isActive(UUID uuid) {
+        return viewerBoards.containsKey(uuid) || state.hasViewer(uuid);
+    }
+
+    private Scoreboard boardFor(Player viewer) {
+        ScoreboardManager scoreboards = plugin.getScoreboardManager();
+        if (scoreboards == null) {
+            return null;
+        }
+        Scoreboard board = scoreboards.getNametagBoard(viewer);
+        if (board != null) {
+            viewerBoards.put(viewer.getUniqueId(), board);
+        }
+        return board;
     }
 
     private String currentText(Player target) {
@@ -216,168 +301,17 @@ public class MoneyNametagManager {
         return hideManager == null || !hideManager.isHidden(target.getUniqueId());
     }
 
-    private boolean sendObjective(Player viewer, int method) {
-        ProtocolManager manager = protocolManager();
-        if (manager == null) {
-            return false;
-        }
-        try {
-            PacketContainer packet = manager.createPacket(PacketType.Play.Server.SCOREBOARD_OBJECTIVE);
-            packet.getStrings().write(0, OBJECTIVE);
-            packet.getChatComponents().writeSafely(0, WrappedChatComponent.fromText(""));
-            packet.getRenderTypes().writeSafely(0, EnumWrappers.RenderType.INTEGER);
-            packet.getIntegers().write(0, method);
-            emptyEveryOptional(packet);
-            return send(viewer, packet);
-        } catch (RuntimeException | LinkageError error) {
-            warnPacketFailure("Unable to set up the money nametag objective.", error);
-            return false;
-        }
+    private boolean isOurTeam(String name) {
+        return name != null && name.startsWith(TEAM_PREFIX);
     }
 
-    private boolean sendDisplaySlot(Player viewer) {
-        ProtocolManager manager = protocolManager();
-        if (manager == null) {
-            return false;
-        }
-        try {
-            PacketContainer packet = manager.createPacket(PacketType.Play.Server.SCOREBOARD_DISPLAY_OBJECTIVE);
-            packet.getDisplaySlots().write(0, EnumWrappers.DisplaySlot.BELOW_NAME);
-            packet.getStrings().write(0, OBJECTIVE);
-            return send(viewer, packet);
-        } catch (RuntimeException | LinkageError error) {
-            warnPacketFailure("Unable to place the money nametag under the name.", error);
-            return false;
-        }
-    }
-
-    /**
-     * The score itself stays at zero and never reaches the screen. What the client draws is the
-     * fixed number format carried alongside it, which is where the formatted balance lives.
-     */
-    private boolean sendScore(Player viewer, String targetName, String text) {
-        ProtocolManager manager = protocolManager();
-        if (manager == null) {
-            return false;
-        }
-        try {
-            PacketContainer packet = manager.createPacket(PacketType.Play.Server.SCOREBOARD_SCORE);
-            packet.getStrings().write(0, targetName);
-            packet.getStrings().write(1, OBJECTIVE);
-            packet.getIntegers().write(0, 0);
-            emptyEveryOptional(packet);
-            writeNumberFormat(packet, WrappedNumberFormat.fixed(WrappedChatComponent.fromLegacyText(text)));
-            return send(viewer, packet);
-        } catch (RuntimeException | LinkageError error) {
-            warnPacketFailure("Unable to send a money nametag balance.", error);
-            return false;
-        }
-    }
-
-    /**
-     * Empties every optional field on a freshly built packet. ProtocolLib fills the ones it has no
-     * default for with a bare {@link Object}, which survives right up to the moment Minecraft tries
-     * to encode it as whatever the field really holds and throws instead.
-     */
-    private void emptyEveryOptional(PacketContainer packet) {
-        StructureModifier<Object> optionals = packet.getModifier().withType(Optional.class);
-        for (int index = 0; index < optionals.size(); index++) {
-            optionals.writeSafely(index, Optional.empty());
-        }
-    }
-
-    /**
-     * Writes the format into whichever optional field actually holds one. The scoreboard packets
-     * carry more than one optional and their order is Minecraft's business, so the field is picked
-     * by what it declares rather than by counting.
-     */
-    private void writeNumberFormat(PacketContainer packet, WrappedNumberFormat format) {
-        StructureModifier<Optional<WrappedNumberFormat>> optionals =
-                packet.getOptionals(BukkitConverters.getWrappedNumberFormatConverter());
-        List<FieldAccessor> fields = optionals.getFields();
-        for (int index = 0; index < fields.size(); index++) {
-            if (holdsNumberFormat(fields.get(index))) {
-                optionals.write(index, Optional.of(format));
-                return;
-            }
-        }
-        throw new IllegalStateException("This server's score packet has nowhere to put a number format.");
-    }
-
-    private boolean holdsNumberFormat(FieldAccessor accessor) {
-        return accessor.getField().getGenericType().getTypeName().contains("NumberFormat");
-    }
-
-    /**
-     * A packet that will not build or send means ProtocolLib does not recognise this server's
-     * scoreboard packets, which nothing short of a ProtocolLib update will change. The feature
-     * turns itself off on the first failure and says so once, in the same plain terms an
-     * unsupported server gets from {@link #isNumberFormatSupported()}. The trace itself is kept at
-     * FINE for anyone debugging it.
-     */
-    private void warnPacketFailure(String message, Throwable error) {
-        if (packetsUnsupported) {
-            plugin.getLogger().log(Level.FINE, message, error);
+    private void warnBoardUnavailable() {
+        if (warnedBoardUnavailable) {
             return;
         }
-        packetsUnsupported = true;
-        plugin.getLogger().warning("Money nametags need scoreboard packets that the installed"
-                + " ProtocolLib understands, and it cannot build them on this server. The feature"
-                + " will stay off until ProtocolLib supports this Minecraft build.");
-        plugin.getLogger().log(Level.FINE, message, error);
-    }
-
-    /**
-     * Both reasons the packet path can be unusable, checked together everywhere the feature starts
-     * work. Once either is known the answer cannot change while the server is running.
-     */
-    private boolean isPacketPathUsable() {
-        return !packetsUnsupported && isNumberFormatSupported();
-    }
-
-    private boolean send(Player viewer, PacketContainer packet) {
-        ProtocolManager manager = protocolManager();
-        if (manager == null || viewer == null || !viewer.isOnline()) {
-            return false;
-        }
-        try {
-            manager.sendServerPacket(viewer, packet, false);
-            return true;
-        } catch (RuntimeException | LinkageError error) {
-            warnPacketFailure("Unable to send a money nametag packet.", error);
-            return false;
-        }
-    }
-
-    /**
-     * Without fixed number formats the slot can only draw a raw integer, which no balance worth
-     * showing fits into, so the feature stays off rather than printing a wrong number.
-     */
-    private boolean isNumberFormatSupported() {
-        try {
-            if (WrappedNumberFormat.isSupported()) {
-                return true;
-            }
-        } catch (RuntimeException | LinkageError ignored) {
-            // Treated the same as an unsupported server below.
-        }
-        if (!warnedUnsupported) {
-            warnedUnsupported = true;
-            plugin.getLogger().warning("Money nametags need a server that supports scoreboard number"
-                    + " formats (Minecraft 1.20.3 or newer). The feature will stay off.");
-        }
-        return false;
-    }
-
-    private ProtocolManager protocolManager() {
-        if (protocolManager == null) {
-            try {
-                protocolManager = ProtocolLibrary.getProtocolManager();
-            } catch (RuntimeException | LinkageError ignored) {
-                return null;
-            }
-        }
-        return protocolManager;
+        warnedBoardUnavailable = true;
+        plugin.getLogger().warning("Money nametags need the plugin's per-player scoreboard"
+                + " manager, which is unavailable on this server. The feature will stay off.");
     }
 
     private FileConfiguration config() {
