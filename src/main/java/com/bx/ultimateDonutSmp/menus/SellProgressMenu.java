@@ -38,7 +38,7 @@ public class SellProgressMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         buildTypeButton(menus);
@@ -90,7 +90,7 @@ public class SellProgressMenu extends BaseMenu {
             if (index < info.completedLevels()) {
                 String title = menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.TITLE", "&aCompleted");
                 Material material = ItemUtils.parseMaterial(
-                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE")
+                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "STAINED_GLASS_PANE")
                 );
                 List<String> lore = applyProgressPlaceholders(
                         menus.getStringList("PROGRESS-MENU.COMPLETED-BUTTON.LORE"),
@@ -156,6 +156,10 @@ public class SellProgressMenu extends BaseMenu {
 
     private String buildCompletedBar(FileConfiguration menus) {
         String symbol = menus.getString("PROGRESS-MENU.PROGRESS-BAR", "\u25A0");
-        return "&#6BF18D" + symbol.repeat(10);
+        StringBuilder bar = new StringBuilder(symbol.length() * 10);
+        for (int i = 0; i < 10; i++) {
+            bar.append(symbol);
+        }
+        return "&#6BF18D" + bar;
     }
 }

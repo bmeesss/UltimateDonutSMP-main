@@ -4,8 +4,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.material.MaterialData;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -24,7 +25,7 @@ public final class SignInputUtil {
     private static final Set<String> REGISTERED = ConcurrentHashMap.newKeySet();
     private static final Map<UUID, JavaPlugin> PLUGINS = new ConcurrentHashMap<>();
     private static final Map<UUID, Location> SIGN_LOC = new ConcurrentHashMap<>();
-    private static final Map<UUID, BlockData> OLD_DATA = new ConcurrentHashMap<>();
+    private static final Map<UUID, MaterialData> OLD_DATA = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> INPUT_LINE = new ConcurrentHashMap<>();
     private static final Map<UUID, Consumer<String>> CALLBACK = new ConcurrentHashMap<>();
     private static final Map<UUID, org.bukkit.scheduler.BukkitTask> HIDE_TASK = new ConcurrentHashMap<>();
@@ -113,7 +114,7 @@ public final class SignInputUtil {
 
         player.setMetadata(META_SIGN_INPUT, new FixedMetadataValue(plugin, true));
 
-        var scheduler = getScheduler(plugin);
+        SpigotScheduler scheduler = getScheduler(plugin);
 
         // Close inventory immediately so player is ready for sign input
         try {
@@ -132,16 +133,18 @@ public final class SignInputUtil {
         }
 
         Location loc = placement.loc.clone();
-        BlockData oldData = placement.oldData;
+        MaterialData oldData = placement.oldData;
 
         Runnable openAction = () -> {
             Block block = loc.getBlock();
-            block.setType(Material.OAK_SIGN, false);
+            block.setType(Material.SIGN, false);
 
-            if (!(block.getState() instanceof Sign sign)) {
+            BlockState blockState = block.getState();
+            if (!(blockState instanceof Sign)) {
                 finish(player, null);
                 return;
             }
+            Sign sign = (Sign) blockState;
 
             // Set sign lines (supporting 1.20+ Side API via reflection)
             try {
@@ -179,7 +182,7 @@ public final class SignInputUtil {
             sign.update(true, false);
 
             // Open sign for player
-            player.sendBlockChange(loc, sign.getBlockData());
+            player.sendBlockChange(loc, sign.getType(), sign.getRawData());
             try {
                 player.sendSignChange(loc, signLines);
             } catch (Throwable ignored) {}
@@ -191,7 +194,7 @@ public final class SignInputUtil {
                 openSignMethod.invoke(player, sign, frontSide);
             } catch (Throwable t) {
                 try {
-                    player.openSign(sign);
+                    finish(player, null);
                 } catch (Throwable t2) {
                     finish(player, null);
                 }
@@ -218,7 +221,7 @@ public final class SignInputUtil {
 
         JavaPlugin plugin = PLUGINS.remove(uuid);
         Location loc = SIGN_LOC.remove(uuid);
-        BlockData oldData = OLD_DATA.remove(uuid);
+        MaterialData oldData = OLD_DATA.remove(uuid);
         INPUT_LINE.remove(uuid);
         EXPECTED_LINES.remove(uuid);
         ORIGINAL_LINES.remove(uuid);
@@ -233,14 +236,15 @@ public final class SignInputUtil {
             player.removeMetadata(META_SIGN_INPUT, plugin);
         }
 
-        var scheduler = getScheduler(plugin);
+        SpigotScheduler scheduler = getScheduler(plugin);
 
         if (loc != null && oldData != null && plugin != null && scheduler != null) {
             // Restore block in the world
             scheduler.runRegion(loc, () -> {
                 Block block = loc.getBlock();
-                block.setBlockData(oldData, false);
-                player.sendBlockChange(loc, oldData);
+                block.setTypeId(oldData.getItemTypeId());
+                block.setData(oldData.getData(), false);
+                player.sendBlockChange(loc, oldData.getItemType(), oldData.getData());
                 sendOriginalToOthers(plugin, player, loc, oldData);
             });
         }
@@ -261,18 +265,18 @@ public final class SignInputUtil {
             loc.setY(maxHeight);
         }
         Block block = loc.getBlock();
-        return new Placement(block.getLocation(), block.getBlockData());
+        return new Placement(block.getLocation(), block.getState().getData());
     }
 
-    private static void startHideFromOthers(JavaPlugin plugin, Player player, Location loc, BlockData oldData) {
+    private static void startHideFromOthers(JavaPlugin plugin, Player player, Location loc, MaterialData oldData) {
         for (Player other : loc.getWorld().getPlayers()) {
             if (!other.getUniqueId().equals(player.getUniqueId()) && other.getLocation().distanceSquared(loc) < 2500) {
-                other.sendBlockChange(loc, oldData);
+                other.sendBlockChange(loc, oldData.getItemType(), oldData.getData());
             }
         }
     }
 
-    private static void sendOriginalToOthers(JavaPlugin plugin, Player player, Location loc, BlockData oldData) {
+    private static void sendOriginalToOthers(JavaPlugin plugin, Player player, Location loc, MaterialData oldData) {
         startHideFromOthers(plugin, player, loc, oldData);
     }
 
@@ -283,17 +287,17 @@ public final class SignInputUtil {
         }
     }
 
-public final class Placement {
+public static final class Placement {
     private final Location loc;
-    private final BlockData oldData;
+    private final MaterialData oldData;
 
-    public Placement(Location loc, BlockData oldData) {
+    public Placement(Location loc, MaterialData oldData) {
         this.loc = loc;
         this.oldData = oldData;
     }
 
     public Location loc() { return loc; }
-    public BlockData oldData() { return oldData; }
+    public MaterialData oldData() { return oldData; }
 
     @Override public String toString() {
         return "Placement[loc=+loc, oldData=+oldData]";
@@ -349,7 +353,7 @@ public final class Placement {
                         finish(player, null);
 
                         if (plugin != null && origLines != null && cb != null) {
-                            var scheduler = getScheduler(plugin);
+                            SpigotScheduler scheduler = getScheduler(plugin);
                             if (scheduler != null) {
                                 scheduler.runEntity(player, () -> {
                                     open(plugin, player, origLines, inputIdx, cb);

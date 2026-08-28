@@ -63,7 +63,7 @@ public final class ExplosionParticleFilter {
                         if (!data.isExplosionParticlesEnabled()) {
                             WrappedParticle<?> wrapped = event.getPacket().getNewParticles().readSafely(0);
                             Particle particle = wrapped == null ? null : wrapped.getParticle();
-                            if (particle == Particle.EXPLOSION || particle == Particle.EXPLOSION_EMITTER) {
+                            if (particle == Particle.EXPLOSION_HUGE || particle == Particle.EXPLOSION_LARGE || particle == Particle.EXPLOSION_NORMAL) {
                                 event.setCancelled(true);
                             }
                         }

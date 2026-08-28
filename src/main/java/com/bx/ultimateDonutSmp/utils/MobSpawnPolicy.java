@@ -20,7 +20,7 @@ public final class MobSpawnPolicy {
         return entity instanceof Monster
                 || entity instanceof org.bukkit.entity.Slime
                 || entity instanceof org.bukkit.entity.Ghast
-                || entity instanceof org.bukkit.entity.Hoglin;
+                ;
     }
 
     /**
@@ -37,7 +37,6 @@ public final class MobSpawnPolicy {
             case WITHER:
             case ENDER_DRAGON:
             case ELDER_GUARDIAN:
-            case WARDEN:
                 return true;
             default:
                 return false;
@@ -59,9 +58,6 @@ public final class MobSpawnPolicy {
     ) {
         if (reason == null) {
             return false;
-        }
-        if (reason == CreatureSpawnEvent.SpawnReason.TRIAL_SPAWNER) {
-            return trialSpawnersBlocked;
         }
         switch (reason) {
             case CUSTOM:

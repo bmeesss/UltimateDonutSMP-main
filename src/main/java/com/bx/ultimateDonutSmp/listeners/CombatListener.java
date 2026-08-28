@@ -151,11 +151,10 @@ public class CombatListener implements Listener {
 
     private boolean isRespawnAnchorDamage(EntityDamageByBlockEvent event) {
         Block damager = event.getDamager();
-        if (damager != null && damager.getType() == Material.RESPAWN_ANCHOR) {
+        if (damager != null && damager.getType() == Material.OBSIDIAN) {
             return true;
         }
-        BlockState state = event.getDamagerBlockState();
-        return state != null && state.getType() == Material.RESPAWN_ANCHOR;
+        return false;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

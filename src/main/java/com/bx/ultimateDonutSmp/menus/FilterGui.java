@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.AuctionHouseManager;
 import com.bx.ultimateDonutSmp.models.AuctionBrowseRequest;
 import com.bx.ultimateDonutSmp.models.AuctionCategory;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -35,7 +36,7 @@ public final class FilterGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         categorySlots.clear();
 
         AuctionCategory[] categories = {
@@ -58,8 +59,8 @@ public final class FilterGui extends BaseMenu {
                     plugin,
                     "GUI.FILTER.CATEGORY",
                     selected
-                            ? Material.LIME_STAINED_GLASS_PANE
-                            : plugin.getAuctionHouseManager().getCategoryIcon(category),
+                            ? LegacyMaterialSupport.pane("LIME")
+                            : LegacyMaterialSupport.of(plugin.getAuctionHouseManager().getCategoryIcon(category)),
                     (selected ? "&a" : "&f")
                             + plugin.getAuctionHouseManager().getCategoryDisplayName(category),
                     java.util.Collections.singletonList(selected ? "&aSelected" : "&7Click to select"),

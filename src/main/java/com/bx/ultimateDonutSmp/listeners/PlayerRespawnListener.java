@@ -134,7 +134,7 @@ public class PlayerRespawnListener implements Listener {
     }
 
     private boolean isRespawningAtBedOrAnchor(PlayerRespawnEvent event, Player player) {
-        if (event.isBedSpawn() || event.isAnchorSpawn()) {
+        if (event.isBedSpawn()) {
             return true;
         }
         Location respawnLoc = event.getRespawnLocation();
@@ -180,11 +180,13 @@ public class PlayerRespawnListener implements Listener {
                 int amount = 1;
                 String name = null;
 
-                if (obj instanceof ConfigurationSection section) {
+                if (obj instanceof ConfigurationSection) {
+                    ConfigurationSection section = (ConfigurationSection) obj;
                     mat = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
                     amount = section.getInt("AMOUNT", 1);
                     name = section.getString("NAME");
-                } else if (obj instanceof java.util.Map<?, ?> map) {
+                } else if (obj instanceof java.util.Map<?, ?>) {
+                    java.util.Map<?, ?> map = (java.util.Map<?, ?>) obj;
                     Object matObj = map.get("MATERIAL");
                     if (matObj != null) {
                         mat = ItemUtils.parseMaterial(matObj.toString());
@@ -222,7 +224,7 @@ public class PlayerRespawnListener implements Listener {
             ensureDefaultItem(player, grantedMaterials, Material.STONE_SWORD);
             ensureDefaultItem(player, grantedMaterials, Material.STONE_PICKAXE);
             ensureDefaultItem(player, grantedMaterials, Material.STONE_AXE);
-            ensureDefaultItem(player, grantedMaterials, Material.STONE_SHOVEL);
+            ensureDefaultItem(player, grantedMaterials, Material.STONE_SPADE);
         }
 
         player.updateInventory();
@@ -303,7 +305,7 @@ public class PlayerRespawnListener implements Listener {
                 return 1;
             case STONE_AXE:
                 return 2;
-            case STONE_SHOVEL:
+            case STONE_SPADE:
                 return 3;
             default:
                 return -1;
@@ -311,6 +313,6 @@ public class PlayerRespawnListener implements Listener {
     }
 
     private static boolean isEmpty(ItemStack item) {
-        return item == null || item.getType().isAir();
+        return item == null || item.getType() == Material.AIR;
     }
 }

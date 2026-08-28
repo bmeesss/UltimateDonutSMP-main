@@ -23,30 +23,30 @@ public class ConfirmKillMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         String cancelTitle = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CANCEL-BUTTON.TITLE", "&cCancel");
-        String cancelMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CANCEL-BUTTON.MATERIAL", "RED_STAINED_GLASS_PANE");
+        String cancelMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CANCEL-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material cancelMaterial = Material.matchMaterial(cancelMaterialStr);
-        if (cancelMaterial == null) cancelMaterial = Material.RED_STAINED_GLASS_PANE;
+        if (cancelMaterial == null) cancelMaterial = Material.STAINED_GLASS_PANE;
         List<String> cancelLore = plugin.getConfigManager().getMenus().getStringList("CONFIRM-KILL-MENU.CANCEL-BUTTON.LORE");
         if (cancelLore.isEmpty()) {
             cancelLore = java.util.Collections.singletonList("&7Click to cancel and live.");
         }
 
         String confirmTitle = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CONFIRM-BUTTON.TITLE", "&aConfirm");
-        String confirmMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CONFIRM-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE");
+        String confirmMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material confirmMaterial = Material.matchMaterial(confirmMaterialStr);
-        if (confirmMaterial == null) confirmMaterial = Material.LIME_STAINED_GLASS_PANE;
+        if (confirmMaterial == null) confirmMaterial = Material.STAINED_GLASS_PANE;
         List<String> confirmLore = plugin.getConfigManager().getMenus().getStringList("CONFIRM-KILL-MENU.CONFIRM-BUTTON.LORE");
         if (confirmLore.isEmpty()) {
             confirmLore = java.util.Collections.singletonList("&7Click to confirm suicide.");
         }
 
         String skullTitle = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.SKULL-BUTTON.TITLE", "&cKill yourself");
-        String skullMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.SKULL-BUTTON.MATERIAL", "SKELETON_SKULL");
+        String skullMaterialStr = plugin.getConfigManager().getMenus().getString("CONFIRM-KILL-MENU.SKULL-BUTTON.MATERIAL", "SKULL_ITEM");
         Material skullMaterial = Material.matchMaterial(skullMaterialStr);
-        if (skullMaterial == null) skullMaterial = Material.SKELETON_SKULL;
+        if (skullMaterial == null) skullMaterial = Material.SKULL_ITEM;
         List<String> skullLore = plugin.getConfigManager().getMenus().getStringList("CONFIRM-KILL-MENU.SKULL-BUTTON.LORE");
         if (skullLore.isEmpty()) {
             skullLore = new java.util.ArrayList<>(java.util.Arrays.asList("&7Are you sure you want",  "&7To end your life?"));
@@ -60,7 +60,7 @@ public class ConfirmKillMenu extends BaseMenu {
         set(confirmSlot, ItemUtils.createItem(confirmMaterial, confirmTitle, confirmLore));
 
         ItemStack skullItem;
-        if (skullMaterial == Material.PLAYER_HEAD) {
+        if (skullMaterial == Material.SKULL_ITEM) {
             skullItem = ItemUtils.createPlayerHead(player, skullTitle, skullLore);
         } else {
             skullItem = ItemUtils.createItem(skullMaterial, skullTitle, skullLore);

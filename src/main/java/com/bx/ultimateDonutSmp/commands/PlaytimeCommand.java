@@ -29,10 +29,11 @@ public class PlaytimeCommand implements CommandExecutor {
         Player target = null;
         String requestedName = null;
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <player>"));
                 return true;
             }
+            Player player = (Player) sender;
             target = player;
             requestedName = plugin.getHideManager().publicName(player);
         } else {
@@ -55,9 +56,9 @@ public class PlaytimeCommand implements CommandExecutor {
         String time = NumberUtils.formatTimeLong(seconds);
         String server = resolveServerName();
 
-        boolean selfRequest = args.length == 0 || (sender instanceof Player player
+        boolean selfRequest = args.length == 0 || (sender instanceof Player
                 && target != null
-                && player.getUniqueId().equals(target.getUniqueId()));
+                && ((Player) sender).getUniqueId().equals(target.getUniqueId()));
         String path = selfRequest ? "PLAYTIME.MESSAGE" : "PLAYTIME.OTHER";
         String fallback = selfRequest
                 ? "&a%time% &eplaying on &a%server%"

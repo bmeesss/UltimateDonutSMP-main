@@ -9,6 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
@@ -52,12 +53,12 @@ public class PayConfirmMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
-        set(11, ItemUtils.createItem(Material.RED_STAINED_GLASS_PANE, "&cCancel",
+        set(11, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 14, "&cCancel",
                 java.util.Collections.singletonList("&7Click to cancel this payment.")));
 
-        set(15, ItemUtils.createItem(Material.LIME_STAINED_GLASS_PANE, "&aConfirm",
+        set(15, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 5, "&aConfirm",
                 java.util.Collections.singletonList("&7Click to confirm this payment.")));
 
         String amountText = paymentType == PaymentType.MONEY
@@ -89,10 +90,12 @@ public class PayConfirmMenu extends BaseMenu {
     }
 
     private ItemStack createTargetItem(List<String> lore) {
-        ItemStack item = ItemUtils.createItem(Material.PLAYER_HEAD, "&a" + targetName, lore);
-        if (!(item.getItemMeta() instanceof SkullMeta meta)) {
+        ItemStack item = ItemUtils.createItem(Material.SKULL_ITEM, "&a" + targetName, lore);
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof SkullMeta)) {
             return item;
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
         meta.setOwningPlayer(target);

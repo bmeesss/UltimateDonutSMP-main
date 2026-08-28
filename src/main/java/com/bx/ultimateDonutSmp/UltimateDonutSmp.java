@@ -14,8 +14,8 @@ import com.bx.ultimateDonutSmp.managers.*;
 import com.bx.ultimateDonutSmp.tasks.*;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.SpigotScheduler;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
@@ -382,7 +382,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
     // ── Startup Banner ─────────────────────────────────────────────────────────
 
     private void printStartupBanner() {
-        var console = getServer().getConsoleSender();
+        ConsoleCommandSender console = getServer().getConsoleSender();
         String v = getDescription().getVersion();
 
         console.sendMessage("");
@@ -591,7 +591,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
         setExecutor("ping", new PingCommand(this), FeatureManager.Feature.STATS);
         setExecutor("playtime", new PlaytimeCommand(this), FeatureManager.Feature.STATS);
         LeaderboardCommand lbCmd = new LeaderboardCommand(this);
-        setExecutor("leaderboard", lbCmd, FeatureManager.Feature.LEADERBOARDS);
+        setExecutor("leaderboard", lbCmd, FeatureManager.Feature.LEASHERBOARDS);
         setExecutor("freeze", new FreezeCommand(this));
         setExecutor("fly", new FlyCommand(this));
         setExecutor("flyspeed", new FlySpeedCommand(this));
@@ -768,7 +768,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
             if (!isTabCompletionFeatureEnabled(tabCommand.getName())) {
                 return java.util.Collections.emptyList();
             }
-            var completions = tabCompleter.onTabComplete(sender, tabCommand, alias, args);
+            java.util.List<String> completions = tabCompleter.onTabComplete(sender, tabCommand, alias, args);
             return completions == null ? java.util.Collections.emptyList() : completions;
         });
     }
@@ -877,7 +877,9 @@ public final class UltimateDonutSmp extends JavaPlugin {
             mcVersion = parts[0] + "." + parts[1] + "." + parts[2];
         }
 
-        if (compareVersions(mcVersion, minVersion) < 0 || compareVersions(mcVersion, maxVersion) > 0) {
+        boolean legacySpigot1122 = !isFolia && "1.12.2".equals(mcVersion);
+        if (!legacySpigot1122
+                && (compareVersions(mcVersion, minVersion) < 0 || compareVersions(mcVersion, maxVersion) > 0)) {
             getLogger().severe("====================================================");
             getLogger().severe("ERROR: Unsupported Minecraft version!");
             getLogger().severe("Platform detected: " + platformName);
@@ -993,10 +995,6 @@ public final class UltimateDonutSmp extends JavaPlugin {
 
     public static UltimateDonutSmp getInstance() {
         return instance;
-    }
-
-    public NamespacedKey getKey(String key) {
-        return new NamespacedKey(this, key);
     }
 
     public SpigotScheduler getSpigotScheduler() {
@@ -1308,12 +1306,7 @@ public final class UltimateDonutSmp extends JavaPlugin {
                 syncCommandState(commandName, features);
             }
         }
-        for (org.bukkit.entity.Player player : getServer().getOnlinePlayers()) {
-            try {
-                player.updateCommands();
-            } catch (Exception ignored) {
-            }
-        }
+        // 1.12.2 has no Player#updateCommands; command map sync above is sufficient.
     }
 
     private void syncCommandState(String commandName, FeatureManager.Feature... features) {

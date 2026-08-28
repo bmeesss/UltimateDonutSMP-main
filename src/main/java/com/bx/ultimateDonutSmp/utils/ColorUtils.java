@@ -35,7 +35,7 @@ public class ColorUtils {
         }
 
         Matcher matcher = HEX_PATTERN.matcher(text);
-        StringBuilder builder = new StringBuilder();
+        StringBuffer builder = new StringBuffer();
         while (matcher.find()) {
             matcher.appendReplacement(builder, Matcher.quoteReplacement(toLegacyHex(matcher.group(1))));
         }
@@ -320,7 +320,7 @@ public class ColorUtils {
             return text;
         }
         Matcher matcher = UNICODE_ESCAPE_PATTERN.matcher(text);
-        StringBuilder sb = new StringBuilder();
+        StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             try {
                 char ch = (char) Integer.parseInt(matcher.group(1), 16);

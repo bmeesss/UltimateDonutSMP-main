@@ -23,13 +23,14 @@ public class ShopCommand implements CommandExecutor {
             return reload(sender);
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.colorize(text(
                     "SHOP-GUI.MESSAGES.PLAYER-ONLY",
                     "&cOnly players can use this command."
             )));
             return true;
         }
+        Player player = (Player) sender;
 
         if (command.getName().equalsIgnoreCase("shardshop")) {
             new ShopMenu(plugin, "SHARD-MENU", 0).open(player);

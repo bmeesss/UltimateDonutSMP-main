@@ -394,7 +394,7 @@ public final class PlayerSettingDefaults {
         void copy(PlayerData target, PlayerData source);
     }
 
-public final class Binding {
+    public static final class Binding {
     private final ValueApplier applier;
     private final ValueCopier copier;
 

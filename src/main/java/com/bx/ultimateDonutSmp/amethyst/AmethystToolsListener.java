@@ -15,7 +15,9 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -109,7 +111,7 @@ public class AmethystToolsListener implements Listener {
 
         if (!canUseTool(player, item, type, false, true)) {
             event.setCancelled(true);
-            player.sendBlockChange(event.getBlock().getLocation(), event.getBlock().getBlockData());
+            player.sendBlockChange(event.getBlock().getLocation(), event.getBlock().getType(), event.getBlock().getData());
             return;
         }
 
@@ -140,14 +142,14 @@ public class AmethystToolsListener implements Listener {
         isProcessingAoe.set(true);
         try {
             for (Block block : toBreak) {
-                if (disabled.contains(block.getType()) || block.getType().isAir()) {
+                if (disabled.contains(block.getType()) || block.getType() == Material.AIR) {
                     continue;
                 }
 
                 BlockBreakEvent simulated = new BlockBreakEvent(block, player);
                 plugin.getServer().getPluginManager().callEvent(simulated);
                 if (simulated.isCancelled()) {
-                    player.sendBlockChange(block.getLocation(), block.getBlockData());
+                    player.sendBlockChange(block.getLocation(), block.getType(), block.getData());
                     continue;
                 }
 
@@ -190,14 +192,14 @@ public class AmethystToolsListener implements Listener {
         isProcessingAoe.set(true);
         try {
             for (Block block : toBreak) {
-                if (!allowed.contains(block.getType()) || block.getType().isAir()) {
+                if (!allowed.contains(block.getType()) || block.getType() == Material.AIR) {
                     continue;
                 }
 
                 BlockBreakEvent simulated = new BlockBreakEvent(block, player);
                 plugin.getServer().getPluginManager().callEvent(simulated);
                 if (simulated.isCancelled()) {
-                    player.sendBlockChange(block.getLocation(), block.getBlockData());
+                    player.sendBlockChange(block.getLocation(), block.getType(), block.getData());
                     continue;
                 }
 
@@ -240,14 +242,14 @@ public class AmethystToolsListener implements Listener {
         isProcessingAoe.set(true);
         try {
             for (Block log : logs) {
-                if (log.getType().isAir()) {
+                if (log.getType() == Material.AIR) {
                     continue;
                 }
 
                 BlockBreakEvent simulated = new BlockBreakEvent(log, player);
                 plugin.getServer().getPluginManager().callEvent(simulated);
                 if (simulated.isCancelled()) {
-                    player.sendBlockChange(log.getLocation(), log.getBlockData());
+                    player.sendBlockChange(log.getLocation(), log.getType(), log.getData());
                     continue;
                 }
 
@@ -344,15 +346,18 @@ public class AmethystToolsListener implements Listener {
 
         if (clicked.getType() != Material.CHEST
                 && clicked.getType() != Material.TRAPPED_CHEST
-                && clicked.getType() != Material.BARREL) {
+                && clicked.getType() != Material.CHEST) {
             player.sendMessage(ColorUtils.toComponent(manager.getMessage("SELL-NO-CHEST")));
             return;
         }
 
-        if (!(clicked.getState() instanceof org.bukkit.block.Container container)) {
+        org.bukkit.block.BlockState clickedState = clicked.getState();
+        if (!(clickedState instanceof org.bukkit.block.Container)) {
             player.sendMessage(ColorUtils.toComponent(manager.getMessage("SELL-NO-CHEST")));
             return;
         }
+
+        org.bukkit.block.Container container = (org.bukkit.block.Container) clickedState;
 
         Inventory containerInventory = container.getInventory();
         ShopManager.SellResult result = plugin.getShopManager().sellInventoryContents(
@@ -402,7 +407,7 @@ public class AmethystToolsListener implements Listener {
         int particleCount = 0;
         for (Block water : waterBlocks) {
             water.setType(Material.AIR);
-            player.sendBlockChange(water.getLocation(), Material.AIR.createBlockData());
+            player.sendBlockChange(water.getLocation(), Material.AIR, (byte) 0);
             if (particleCount < 5) {
                 manager.spawnAmethystParticles(water.getLocation());
                 particleCount++;
@@ -457,9 +462,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        HumanEntity clicker = event.getWhoClicked();
+        if (!(clicker instanceof Player)) {
             return;
         }
+        Player player = (Player) clicker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -521,9 +528,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        HumanEntity clicker = event.getWhoClicked();
+        if (!(clicker instanceof Player)) {
             return;
         }
+        Player player = (Player) clicker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -608,9 +617,11 @@ public class AmethystToolsListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onEntityPickupItem(EntityPickupItemEvent event) {
-        if (!(event.getEntity() instanceof Player player)) {
+        LivingEntity picker = event.getEntity();
+        if (!(picker instanceof Player)) {
             return;
         }
+        Player player = (Player) picker;
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
         }
@@ -697,7 +708,7 @@ public class AmethystToolsListener implements Listener {
         } else {
             block.setType(Material.AIR);
         }
-        player.sendBlockChange(block.getLocation(), Material.AIR.createBlockData());
+        player.sendBlockChange(block.getLocation(), Material.AIR, (byte) 0);
     }
 
     private List<Block> getAoeBlocks(Block origin, Player player, int radius) {

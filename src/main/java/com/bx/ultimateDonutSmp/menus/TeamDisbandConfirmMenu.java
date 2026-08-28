@@ -22,14 +22,14 @@ public class TeamDisbandConfirmMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         if (menus().getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
-            fill(Material.BLACK_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 15);
         }
 
         String cancelPath = MENU_PATH + ".cancel-button";
         set(
                 menus().getInt(cancelPath + ".SLOT", 11),
                 ItemUtils.createItem(
-                        material(cancelPath + ".MATERIAL", Material.RED_STAINED_GLASS_PANE),
+                        material(cancelPath + ".MATERIAL", Material.STAINED_GLASS_PANE),
                         menus().getString(cancelPath + ".TITLE", "&cCancel"),
                         menus().getStringList(cancelPath + ".LORE")
                 )
@@ -39,7 +39,7 @@ public class TeamDisbandConfirmMenu extends BaseMenu {
         set(
                 menus().getInt(confirmPath + ".SLOT", 15),
                 ItemUtils.createItem(
-                        material(confirmPath + ".MATERIAL", Material.LIME_STAINED_GLASS_PANE),
+                        material(confirmPath + ".MATERIAL", Material.STAINED_GLASS_PANE),
                         menus().getString(confirmPath + ".TITLE", "&aConfirm"),
                         menus().getStringList(confirmPath + ".LORE")
                 )
@@ -68,7 +68,7 @@ public class TeamDisbandConfirmMenu extends BaseMenu {
             return;
         }
         if (!team.isLeader(player.getUniqueId())) {
-            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("TEAM.NOT-LEADER")));
+            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("TEAM.NOT-LEASHER")));
             player.closeInventory();
             return;
         }

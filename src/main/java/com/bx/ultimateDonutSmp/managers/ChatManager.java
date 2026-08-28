@@ -603,7 +603,7 @@ public final class ClickAction {
     }
 }
 
-public final class FilterResult {
+public static final class FilterResult {
     private final boolean allowed;
     private final String blockMessage;
     private final String normalizedMessage;
@@ -641,7 +641,7 @@ public final class FilterResult {
     }
 }
 
-public final class DelayResult {
+public static final class DelayResult {
     private final boolean allowed;
     private final long remainingSeconds;
 

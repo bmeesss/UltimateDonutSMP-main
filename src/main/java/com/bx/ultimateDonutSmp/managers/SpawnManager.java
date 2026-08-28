@@ -83,7 +83,7 @@ public final class TeleportArea {
     }
 }
 
-public final class SetupLocationResult {
+public static final class SetupLocationResult {
     private final boolean success;
     private final String areaId;
     private final int slot;
@@ -124,7 +124,7 @@ public final class SetupLocationResult {
     }
 }
 
-public final class AreaDeleteResult {
+public static final class AreaDeleteResult {
     private final boolean success;
     private final String message;
 
@@ -1117,12 +1117,12 @@ public final class SetupAreaTarget {
 
         int x = location.getBlockX();
         int z = location.getBlockZ();
-        int preferredFeetY = clamp((int) Math.floor(location.getY()), world.getMinHeight() + 1, world.getMaxHeight() - 2);
+        int preferredFeetY = clamp((int) Math.floor(location.getY()), 1, world.getMaxHeight() - 2);
 
         Location nearby = scanForSafeStandingLocation(
                 location,
                 Math.min(world.getMaxHeight() - 2, preferredFeetY + 4),
-                Math.max(world.getMinHeight() + 1, preferredFeetY - 16)
+                Math.max(1, preferredFeetY - 16)
         );
         if (nearby != null) {
             return nearby;
@@ -1134,7 +1134,7 @@ public final class SetupAreaTarget {
             return surface;
         }
 
-        return scanForSafeStandingLocation(location, world.getMaxHeight() - 2, world.getMinHeight() + 1);
+        return scanForSafeStandingLocation(location, world.getMaxHeight() - 2, 1);
     }
 
     private Location scanForSafeStandingLocation(Location origin, int startFeetY, int minFeetY) {
@@ -1164,7 +1164,7 @@ public final class SetupAreaTarget {
     }
 
     private boolean isSafeStandingLocation(World world, int x, int feetY, int z) {
-        if (feetY <= world.getMinHeight() || feetY + 1 >= world.getMaxHeight()) {
+        if (feetY <= 0 || feetY + 1 >= world.getMaxHeight()) {
             return false;
         }
 
@@ -1184,7 +1184,9 @@ public final class SetupAreaTarget {
     }
 
     private boolean isSafeBodySpace(Block block) {
-        return block.isPassable() && !isHazardous(block.getType());
+        Material type = block.getType();
+        return (type == Material.AIR || type == Material.LONG_GRASS || type == Material.DEAD_BUSH)
+                && !isHazardous(type);
     }
 
     private boolean isHazardous(Material material) {

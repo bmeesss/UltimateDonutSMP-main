@@ -65,7 +65,7 @@ public final class AdventureHeadComponentBridge {
 
         try {
             Object component = componentObjectMethod.invoke(null, contents);
-            return component instanceof Component adventureComponent ? adventureComponent : Component.empty();
+            return component instanceof Component ? (Component) component : Component.empty();
         } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
             return Component.empty();
         }

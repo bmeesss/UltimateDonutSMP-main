@@ -9,9 +9,7 @@ import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Particle;
-import org.bukkit.block.data.BlockData;
+import org.bukkit.Effect;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -20,9 +18,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionType;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
@@ -38,10 +36,13 @@ import java.util.UUID;
 
 public class AmethystToolsManager {
 
-    public final NamespacedKey KEY_TYPE;
-    public final NamespacedKey KEY_EXPIRY;
-    public final NamespacedKey KEY_OWNER;
-    public final NamespacedKey KEY_ID;
+    public final String KEY_TYPE;
+    public final String KEY_EXPIRY;
+    public final String KEY_OWNER;
+    public final String KEY_ID;
+
+    private static final String LORE_MARKER = "\u00A70UDS_AMETHYST_TOOL";
+    private static final String LORE_META_PREFIX = "\u00A70UDS_AMETHYST:";
 
     private static final long DEFAULT_USE_COOLDOWN_MS = 250L;
     private static final long DEFAULT_VISUAL_SYNC_SUPPRESSION_MS = 3000L;
@@ -52,10 +53,10 @@ public class AmethystToolsManager {
 
     public AmethystToolsManager(UltimateDonutSmp plugin) {
         this.plugin = plugin;
-        KEY_TYPE = new NamespacedKey(plugin, "amethyst_tool_type");
-        KEY_EXPIRY = new NamespacedKey(plugin, "amethyst_tool_expiry");
-        KEY_OWNER = new NamespacedKey(plugin, "amethyst_tool_owner");
-        KEY_ID = new NamespacedKey(plugin, "amethyst_tool_id");
+        KEY_TYPE = "amethyst_tool_type";
+        KEY_EXPIRY = "amethyst_tool_expiry";
+        KEY_OWNER = "amethyst_tool_owner";
+        KEY_ID = "amethyst_tool_id";
     }
 
     public ItemStack createTool(AmethystToolType type, UUID ownerUuid, long durationSeconds) {
@@ -88,19 +89,18 @@ public class AmethystToolsManager {
 
         if (type == AmethystToolType.SHARD_BOOSTER && meta instanceof PotionMeta) {
             PotionMeta potionMeta = (PotionMeta) meta;
-            potionMeta.setBasePotionType(PotionType.WATER);
+            potionMeta.setBasePotionData(new PotionData(PotionType.WATER));
             meta = potionMeta;
         }
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
         meta.setUnbreakable(true);
 
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(KEY_TYPE, PersistentDataType.STRING, type.name());
-        pdc.set(KEY_EXPIRY, PersistentDataType.LONG, expiryEpoch);
-        pdc.set(KEY_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
+        setLoreMeta(meta, KEY_TYPE, type.name());
+        setLoreMeta(meta, KEY_EXPIRY, String.valueOf(expiryEpoch));
+        setLoreMeta(meta, KEY_ID, UUID.randomUUID().toString());
         if (ownerUuid != null) {
-            pdc.set(KEY_OWNER, PersistentDataType.STRING, ownerUuid.toString());
+            setLoreMeta(meta, KEY_OWNER, ownerUuid.toString());
         }
 
         item.setItemMeta(meta);
@@ -114,7 +114,7 @@ public class AmethystToolsManager {
     public boolean hasAmethystMetadata(ItemStack item) {
         return item != null
                 && item.hasItemMeta()
-                && item.getItemMeta().getPersistentDataContainer().has(KEY_TYPE, PersistentDataType.STRING);
+                && hasLoreMeta(item.getItemMeta(), KEY_TYPE);
     }
 
     public boolean isAmethystTool(ItemStack item) {
@@ -131,11 +131,10 @@ public class AmethystToolsManager {
             return false;
         }
 
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        if (!pdc.has(KEY_EXPIRY, PersistentDataType.LONG)) {
+        if (!hasLoreMeta(meta, KEY_EXPIRY)) {
             return false;
         }
-        if (requiresItemId() && !pdc.has(KEY_ID, PersistentDataType.STRING)) {
+        if (requiresItemId() && !hasLoreMeta(meta, KEY_ID)) {
             return false;
         }
 
@@ -157,7 +156,7 @@ public class AmethystToolsManager {
         if (!hasAmethystMetadata(item)) {
             return null;
         }
-        String raw = item.getItemMeta().getPersistentDataContainer().get(KEY_TYPE, PersistentDataType.STRING);
+        String raw = getLoreMeta(item.getItemMeta(), KEY_TYPE);
         return AmethystToolType.fromString(raw);
     }
 
@@ -165,14 +164,14 @@ public class AmethystToolsManager {
         if (!isAmethystTool(item)) {
             return null;
         }
-        return item.getItemMeta().getPersistentDataContainer().get(KEY_ID, PersistentDataType.STRING);
+        return getLoreMeta(item.getItemMeta(), KEY_ID);
     }
 
     public long getExpiryEpoch(ItemStack item) {
         if (!hasAmethystMetadata(item)) {
             return 0L;
         }
-        return item.getItemMeta().getPersistentDataContainer().getOrDefault(KEY_EXPIRY, PersistentDataType.LONG, 0L);
+        return parseLongOrDefault(getLoreMeta(item.getItemMeta(), KEY_EXPIRY), 0L);
     }
 
     public long getRemainingSeconds(ItemStack item) {
@@ -200,18 +199,17 @@ public class AmethystToolsManager {
             return null;
         }
 
-        String rawType = meta.getPersistentDataContainer().get(KEY_TYPE, PersistentDataType.STRING);
+        String rawType = getLoreMeta(meta, KEY_TYPE);
         AmethystToolType type = AmethystToolType.fromString(rawType);
         if (type == null) {
             return null;
         }
 
         long duration = durationSeconds > 0L ? durationSeconds : getConfiguredDuration(type);
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
-        pdc.set(KEY_EXPIRY, PersistentDataType.LONG, (System.currentTimeMillis() / 1000L) + Math.max(1L, duration));
-        pdc.set(KEY_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
+        setLoreMeta(meta, KEY_EXPIRY, String.valueOf((System.currentTimeMillis() / 1000L) + Math.max(1L, duration)));
+        setLoreMeta(meta, KEY_ID, UUID.randomUUID().toString());
         if (ownerUuid != null) {
-            pdc.set(KEY_OWNER, PersistentDataType.STRING, ownerUuid.toString());
+            setLoreMeta(meta, KEY_OWNER, ownerUuid.toString());
         }
 
         reward.setItemMeta(meta);
@@ -229,7 +227,6 @@ public class AmethystToolsManager {
             return false;
         }
 
-        PersistentDataContainer pdc = meta.getPersistentDataContainer();
         AmethystToolType type = getToolType(item);
         if (type == null) {
             return false;
@@ -237,21 +234,21 @@ public class AmethystToolsManager {
 
         boolean changed = false;
 
-        if (!pdc.has(KEY_EXPIRY, PersistentDataType.LONG)) {
+        if (!hasLoreMeta(meta, KEY_EXPIRY)) {
             long defaultDuration = getToolSection(type) != null
                     ? getToolSection(type).getLong("DURATION", 86400L)
                     : 86400L;
-            pdc.set(KEY_EXPIRY, PersistentDataType.LONG, (System.currentTimeMillis() / 1000L) + defaultDuration);
+            setLoreMeta(meta, KEY_EXPIRY, String.valueOf((System.currentTimeMillis() / 1000L) + defaultDuration));
             changed = true;
         }
 
-        if (forceNewId || !pdc.has(KEY_ID, PersistentDataType.STRING)) {
-            pdc.set(KEY_ID, PersistentDataType.STRING, UUID.randomUUID().toString());
+        if (forceNewId || !hasLoreMeta(meta, KEY_ID)) {
+            setLoreMeta(meta, KEY_ID, UUID.randomUUID().toString());
             changed = true;
         }
 
-        if (defaultOwner != null && !pdc.has(KEY_OWNER, PersistentDataType.STRING)) {
-            pdc.set(KEY_OWNER, PersistentDataType.STRING, defaultOwner.toString());
+        if (defaultOwner != null && !hasLoreMeta(meta, KEY_OWNER)) {
+            setLoreMeta(meta, KEY_OWNER, defaultOwner.toString());
             changed = true;
         }
 
@@ -267,7 +264,7 @@ public class AmethystToolsManager {
             return true;
         }
 
-        String owner = item.getItemMeta().getPersistentDataContainer().get(KEY_OWNER, PersistentDataType.STRING);
+        String owner = getLoreMeta(item.getItemMeta(), KEY_OWNER);
         return owner == null || owner.equalsIgnoreCase(player.getUniqueId().toString());
     }
 
@@ -370,7 +367,7 @@ public class AmethystToolsManager {
         }
 
         long duration = durationSeconds > 0L ? durationSeconds : getConfiguredDuration(type);
-        meta.getPersistentDataContainer().set(KEY_EXPIRY, PersistentDataType.LONG, (System.currentTimeMillis() / 1000L) + Math.max(1L, duration));
+        setLoreMeta(meta, KEY_EXPIRY, String.valueOf((System.currentTimeMillis() / 1000L) + Math.max(1L, duration)));
         display.setItemMeta(meta);
         updateLoreCountdown(display);
         return display;
@@ -382,13 +379,16 @@ public class AmethystToolsManager {
         }
 
         ItemMeta itemMeta = shulkerItem.getItemMeta();
-        if (!(itemMeta instanceof BlockStateMeta bsm)) {
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return false;
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return false;
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         ItemStack[] contents = box.getInventory().getContents();
         boolean changed = false;
@@ -426,13 +426,16 @@ public class AmethystToolsManager {
         }
 
         ItemMeta itemMeta = shulkerItem.getItemMeta();
-        if (!(itemMeta instanceof BlockStateMeta bsm)) {
+        if (!(itemMeta instanceof BlockStateMeta)) {
             return false;
         }
+        BlockStateMeta bsm = (BlockStateMeta) itemMeta;
 
-        if (!(bsm.getBlockState() instanceof ShulkerBox box)) {
+        BlockState blockState = bsm.getBlockState();
+        if (!(blockState instanceof ShulkerBox)) {
             return false;
         }
+        ShulkerBox box = (ShulkerBox) blockState;
 
         ItemStack[] contents = box.getInventory().getContents();
         boolean changed = false;
@@ -833,41 +836,73 @@ public class AmethystToolsManager {
             return;
         }
 
-        int count = root.getInt("COUNT", 12);
+        int count = Math.max(1, root.getInt("COUNT", 12));
         double spread = root.getDouble("SPREAD", 0.4D);
         String particleName = root.getString("TYPE", "BLOCK").toUpperCase(Locale.ROOT);
-        Material blockMaterial = ItemUtils.parseMaterial(root.getString("BLOCK-MATERIAL", "PURPLE_CONCRETE_POWDER"));
-
+        Effect effect;
         try {
-            Particle particle = Particle.valueOf(particleName);
-            if (particle.getDataType() == BlockData.class) {
-                BlockData blockData = blockMaterial.createBlockData();
-                location.getWorld().spawnParticle(
-                        particle,
-                        location.clone().add(0.5, 0.5, 0.5),
-                        count,
-                        spread,
-                        spread,
-                        spread,
-                        0.0D,
-                        blockData
-                );
-                return;
-            }
+            effect = Effect.valueOf(particleName);
         } catch (IllegalArgumentException ignored) {
+            effect = Effect.PORTAL;
         }
 
-        Particle.DustOptions dust = new Particle.DustOptions(Color.fromRGB(0x9B, 0x59, 0xB6), 1.2f);
-        location.getWorld().spawnParticle(
-                Particle.DUST,
-                location.clone().add(0.5, 0.5, 0.5),
-                count,
-                spread,
-                spread,
-                spread,
-                0.0D,
-                dust
-        );
+        Location center = location.clone().add(0.5, 0.5, 0.5);
+        for (int i = 0; i < count; i++) {
+            double dx = (Math.random() - 0.5D) * 2D * spread;
+            double dy = (Math.random() - 0.5D) * 2D * spread;
+            double dz = (Math.random() - 0.5D) * 2D * spread;
+            location.getWorld().playEffect(center.clone().add(dx, dy, dz), effect, 0);
+        }
+    }
+
+    private boolean hasLoreMeta(ItemMeta meta, String key) {
+        return getLoreMeta(meta, key) != null;
+    }
+
+    private String getLoreMeta(ItemMeta meta, String key) {
+        if (meta == null || key == null || !meta.hasLore() || meta.getLore() == null) {
+            return null;
+        }
+        String prefix = LORE_META_PREFIX + key + "=";
+        for (String line : meta.getLore()) {
+            if (line == null) {
+                continue;
+            }
+            if (line.equals(LORE_MARKER)) {
+                continue;
+            }
+            if (line.startsWith(prefix)) {
+                return line.substring(prefix.length());
+            }
+        }
+        return null;
+    }
+
+    private void setLoreMeta(ItemMeta meta, String key, String value) {
+        if (meta == null || key == null || value == null) {
+            return;
+        }
+        List<String> lore = meta.hasLore() && meta.getLore() != null
+                ? new ArrayList<>(meta.getLore())
+                : new ArrayList<>();
+        String prefix = LORE_META_PREFIX + key + "=";
+        lore.removeIf(line -> line != null && line.startsWith(prefix));
+        if (!lore.contains(LORE_MARKER)) {
+            lore.add(LORE_MARKER);
+        }
+        lore.add(prefix + value);
+        meta.setLore(lore);
+    }
+
+    private long parseLongOrDefault(String raw, long fallback) {
+        if (raw == null) {
+            return fallback;
+        }
+        try {
+            return Long.parseLong(raw.trim());
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
     private ConfigurationSection getSecuritySection() {

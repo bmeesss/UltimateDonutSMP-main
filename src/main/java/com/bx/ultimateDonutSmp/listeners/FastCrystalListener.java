@@ -83,65 +83,12 @@ public class FastCrystalListener implements Listener {
 
     private Player resolveAttacker(Entity damager) {
         if (damager instanceof Player) {
-            Player player = (Player) !fastCrystalManager.isEnabled()) return;
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (event.getHand() != EquipmentSlot.HAND) return;
-        if (event.getClickedBlock() == null) return;
-        if (event.getItem() == null || event.getItem().getType() != Material.END_CRYSTAL) return;
-
-        Player player = event.getPlayer();
-
-        if (!fastCrystalManager.isEnabledFor(player)) {
-            scheduleCooldownApply(player);
-            return;
-        }
-
-        if (!fastCrystalManager.tryBeginPlace(player, event.getClickedBlock())) {
-            return;
-        }
-
-        scheduleCooldownApply(player);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onCrystalBreak(EntityDamageByEntityEvent event) {
-        FastCrystalManager fastCrystalManager = plugin.getFastCrystalManager();
-        if (!fastCrystalManager.isEnabled()) return;
-        if (!(event.getEntity() instanceof EnderCrystal)) return;
-
-        Player attacker = resolveAttacker(event.getDamager());
-        if (attacker == null) return;
-
-        if (!fastCrystalManager.isEnabledFor(attacker)) return;
-        if (!fastCrystalManager.shouldClearCooldownAfterHit()) return;
-
-        plugin.getSpigotScheduler().runEntity(attacker, () -> fastCrystalManager.clearCrystalCooldown(attacker));
-    }
-
-    @EventHandler
-    public void onJoin(PlayerJoinEvent event) {
-        plugin.getFastCrystalManager().clearState(event.getPlayer().getUniqueId());
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        plugin.getFastCrystalManager().clearState(event.getPlayer().getUniqueId());
-    }
-
-    private void scheduleCooldownApply(Player player) {
-        plugin.getSpigotScheduler().runEntity(player, () -> {
-            if (player.isOnline()) {
-                plugin.getFastCrystalManager().applyCrystalCooldown(player);
-            }
-        });
-    }
-
-    private Player resolveAttacker(Entity damager) {
-        if (damager;
+            Player player = (Player) damager;
             return player;
         }
-        if (damager instanceof Projectile projectile && projectile.getShooter() instanceof Player) {
-            Player player = (Player) damager instanceof Projectile projectile && projectile.getShooter();
+
+        if (damager instanceof Projectile && ((Projectile) damager).getShooter() instanceof Player) {
+            Player player = (Player) ((Projectile) damager).getShooter();
             return player;
         }
         return null;

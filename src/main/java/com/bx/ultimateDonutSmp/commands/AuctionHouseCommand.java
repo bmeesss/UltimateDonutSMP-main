@@ -32,13 +32,14 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(plugin.getLanguageManager().message(
                     "AUCTION_HOUSE.PLAYERS_ONLY",
                     "Only players can use this command."
             ));
             return true;
         }
+        Player player = (Player) sender;
 
         AuctionHouseManager manager = plugin.getAuctionHouseManager();
         String subcommand = args.length == 0 ? "" : args[0].toLowerCase(Locale.ROOT);
@@ -54,224 +55,44 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         switch (subcommand) {
             case "": {
                 if (requirePermission(player, "use")) {
-                                openBrowse(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openBrowse(player);
+                }
                 break;
             }
             case "sell": {
                 if (requirePermission(player, "sell")) {
-                                handleSell(player, args);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleSell(player, args);
+                }
                 break;
             }
             case "my": {
                 if (requirePermission(player, "my")) {
-                                openPlayerItems(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openPlayerItems(player);
+                }
                 break;
             }
             case "claims": {
                 if (!requirePermission(player, "claims")) {
-                                return true;
-                            }
-                            if (!manager.isClaimsEnabled()) {
-                                manager.processAutoClaims(player);
-                                send(player, "AUCTION_HOUSE.CLAIMS_AUTOMATIC", "&eClaims are collected automatically.");
-                            } else {
-                                openPlayerItems(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    return true;
+                }
+                if (!manager.isClaimsEnabled()) {
+                    manager.processAutoClaims(player);
+                    send(player, "AUCTION_HOUSE.CLAIMS_AUTOMATIC", "&eClaims are collected automatically.");
+                } else {
+                    openPlayerItems(player);
+                }
                 break;
             }
             case "cancel": {
                 if (requirePermission(player, "cancel")) {
-                                handleCancel(player, args);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleCancel(player, args);
+                }
                 break;
             }
             case "limit": {
                 if (requirePermission(player, "limit")) {
-                                handleLimit(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    handleLimit(player);
+                }
                 break;
             }
             case "fastbuy":
@@ -282,38 +103,8 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
                 break;
             default: {
                 if (requirePermission(player, "use")) {
-                                openBrowse(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    openBrowse(player);
+                }
                 break;
             }
         }
@@ -345,7 +136,7 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         }
 
         ItemStack hand = player.getInventory().getItemInMainHand();
-        if (hand == null || hand.getType().isAir()) {
+        if (hand == null || hand.getType() == Material.AIR) {
             send(player, "AUCTION_HOUSE.NO_ITEM_IN_HAND", "&cHold the item you want to list.");
             return;
         }
@@ -440,8 +231,8 @@ public final class AuctionHouseCommand implements CommandExecutor, TabCompleter 
         plugin.getAuctionHouseManager().cancelListing(player, listingId)
                 .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                     if (!result.success()) {
-String;
-switch (result.reason()) {
+                        String key = null;
+                        switch (result.reason()) {
                             case DISABLED:
                                 key = "AUCTION_HOUSE.DISABLED";
                                 break;
@@ -619,9 +410,10 @@ switch (result.reason()) {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player player) || args.length != 1) {
+        if (!(sender instanceof Player) || args.length != 1) {
             return java.util.Collections.emptyList();
         }
+        Player player = (Player) sender;
         List<String> values = new ArrayList<>();
         if (canUse(player, "sell")) {
             values.add("sell");

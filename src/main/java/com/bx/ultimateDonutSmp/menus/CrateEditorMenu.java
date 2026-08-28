@@ -68,9 +68,11 @@ public class CrateEditorMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
 
         CrateManager.CrateDefinition crate = getCrate();
         if (crate == null) {
@@ -159,7 +161,7 @@ public class CrateEditorMenu extends BaseMenu {
                 return;
             }
 
-            if (inventory.getItem(rawSlot) == null || inventory.getItem(rawSlot).getType().isAir()) {
+            if (inventory.getItem(rawSlot) == null || inventory.getItem(rawSlot).getType() == Material.AIR) {
                 player.sendMessage(ColorUtils.toComponent("&cSelect an item from your inventory first."));
                 return;
             }
@@ -173,7 +175,7 @@ public class CrateEditorMenu extends BaseMenu {
             return;
         }
 
-        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
             event.setCancelled(true);
             return;
         }
@@ -247,7 +249,7 @@ public class CrateEditorMenu extends BaseMenu {
             if (part.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1));

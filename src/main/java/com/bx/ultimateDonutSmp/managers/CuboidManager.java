@@ -261,7 +261,7 @@ public final class Cuboid {
     }
 
     private boolean isSafeStandingSpot(World world, int x, int groundY, int z) {
-        if (groundY < world.getMinHeight() || groundY + 2 >= world.getMaxHeight()) {
+        if (groundY < 0 || groundY + 2 >= world.getMaxHeight()) {
             return false;
         }
 
@@ -270,11 +270,15 @@ public final class Cuboid {
         Block head = world.getBlockAt(x, groundY + 2, z);
 
         return ground.getType().isSolid()
-                && feet.isPassable()
-                && head.isPassable()
+                && isPassableLegacy(feet.getType())
+                && isPassableLegacy(head.getType())
                 && !isHazardous(ground.getType())
                 && !isHazardous(feet.getType())
                 && !isHazardous(head.getType());
+    }
+
+    private boolean isPassableLegacy(Material material) {
+        return material == Material.AIR || material == Material.LONG_GRASS || material == Material.DEAD_BUSH;
     }
 
     private boolean isHazardous(Material material) {

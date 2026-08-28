@@ -40,18 +40,18 @@ public class FeatureManager {
     }
 
     public enum Feature {
-        CHAT("CHAT", "chat", "global chat commands and moderation controls.", "WRITABLE_BOOK", "CHAT"),
+        CHAT("CHAT", "chat", "global chat commands and moderation controls.", "BOOK_AND_QUILL", "CHAT"),
         IGNORE("IGNORE", "ignore", "player ignore and unignore commands.", "BARRIER", "IGNORE"),
         MESSAGING("MESSAGING", "messaging", "private messages, replies, and pm toggles.", "PAPER", "MESSAGE"),
         BOUNTY("BOUNTY", "bounty", "bounty command and menus.", "TARGET", "BOUNTY"),
         CUBOIDS("CUBOIDS", "cuboids", "cuboid region management and bound region helpers.", "WOODEN_AXE", "CUBOID"),
-        AFK("AFK", "afk", "afk command, menus, and afk movement task.", "CLOCK", "AFK"),
+        AFK("AFK", "afk", "afk command, menus, and afk movement task.", "WATCH", "AFK"),
         SHARDS("SHARDS", "shards", "shard balances, shard pay, passive rewards, and shard cuboids.", "AMETHYST_SHARD", "SHARDS"),
         WARPS("WARPS", "warps", "warp commands and warp manager commands.", "ENDER_PEARL", "WARP"),
         TEAMS("TEAMS", "teams", "team command, team homes, and team menus.", "IRON_HELMET", "TEAM"),
         BILLFORD("BILLFORD", "billford", "billford trade menu and rotation task.", "EMERALD", "BILLFORD"),
-        HOMES("HOMES", "homes", "home commands and home menu.", "LIGHT_BLUE_BED", "HOME"),
-        LEADERBOARDS("LEADERBOARDS", "leaderboards", "leaderboard commands and leaderboard menus.", "GOLD_INGOT", "LEADERBOARDS"),
+        HOMES("HOMES", "homes", "home commands and home menu.", "WOOL", "HOME"),
+        LEASHERBOARDS("LEASHERBOARDS", "leaderboards", "leaderboard commands and leaderboard menus.", "GOLD_INGOT", "LEASHERBOARDS"),
         NIGHT_VISION("NIGHT_VISION", "night vision", "night vision player toggle command.", "GOLDEN_CARROT", "NIGHT-VISION"),
         PHANTOM("PHANTOM", "phantom toggle", "phantom spawning toggle command.", "PHANTOM_MEMBRANE", "PHANTOM"),
         RTP("RTP", "rtp", "random teleport command and rtp menu.", "COMPASS", "RTP"),
@@ -64,22 +64,22 @@ public class FeatureManager {
         GAMEMODE("GAMEMODE", "gamemode", "staff gamemode commands.", "GRASS_BLOCK", "GAMEMODE"),
         SOCIAL("SOCIAL", "social", "social media, store, and media commands.", "BOOK", "SOCIAL"),
         SPAWN("SPAWN", "spawn", "spawn command and spawn menu.", "BEACON", "SPAWN"),
-        STATS("STATS", "stats", "stats, ping, and playtime commands.", "PLAYER_HEAD", "STATS"),
+        STATS("STATS", "stats", "stats, ping, and playtime commands.", "SKULL_ITEM", "STATS"),
         TPA("TPA", "tpa", "teleport request commands and confirm menu.", "ENDER_PEARL", "TPA"),
         TPA_AUTO("TPA_AUTO", "tpa auto", "tpa auto-accept commands.", "REDSTONE_TORCH", "TPAUTO"),
-        FIND_PLAYER("FIND_PLAYER", "find player", "staff find player command.", "SPYGLASS", "FINDPLAYER"),
+        FIND_PLAYER("FIND_PLAYER", "find player", "staff find player command.", "COMPASS", "FINDPLAYER"),
         CRATES("CRATES", "crates", "crate commands, menus, key-all, and visual effects.", "TRIPWIRE_HOOK", "CRATE"),
         RULES("RULES", "rules", "rules command and rules menu.", "BOOKSHELF", "RULES"),
         HELP("HELP", "help", "help command and server info menu.", "KNOWLEDGE_BOOK", "HELP"),
         SCOREBOARD("SCOREBOARD", "scoreboard", "sidebar scoreboard task and display.", "MAP", null),
         TABLIST("TABLIST", "tablist", "tablist header, footer, and player list names.", "NAME_TAG", null),
         AUCTION_HOUSE("AUCTION_HOUSE", "auction house", "auction house commands, listings, claims, and expiry task.", "GOLD_INGOT", null),
-        ORDERS("ORDERS", "orders", "orders board commands, menus, and expiry task.", "WRITABLE_BOOK", null),
+        ORDERS("ORDERS", "orders", "orders board commands, menus, and expiry task.", "BOOK_AND_QUILL", null),
         STAFF_MODE("STAFF_MODE", "staff mode", "staff mode command, hotbar, vanish, and staff tools.", "NETHERITE_CHESTPLATE", null),
         SPAWN_STASH("SPAWN_STASH", "SpawnStash", "Staff bait stash spawning, alerts, and rollback cleanup.", "CHEST", "SPAWN-STASH"),
         FREEZE("FREEZE", "freeze", "freeze command, listeners, and freeze state enforcement.", "PACKED_ICE", null),
         INVSEE("INVSEE", "invsee", "inventory inspection command and sessions.", "CHEST_MINECART", null),
-        PROFILE_VIEWER("PROFILE_VIEWER", "profile viewer", "profile viewer command and homes browser.", "PLAYER_HEAD", null),
+        PROFILE_VIEWER("PROFILE_VIEWER", "profile viewer", "profile viewer command and homes browser.", "SKULL_ITEM", null),
         PUNISHMENTS("PUNISHMENTS", "punishments", "punishment commands, aliases, and history menus.", "IRON_AXE", null),
         SPAWNERS("SPAWNERS", "spawners", "managed spawner commands, listeners, visibility, and generation.", "SPAWNER", null),
         CLEAR_LAG("CLEAR_LAG", "clearlag", "clearlag command and cleanup task.", "LAVA_BUCKET", null),
@@ -91,7 +91,7 @@ public class FeatureManager {
         OPTIMIZATION("OPTIMIZATION", "optimization", "runtime optimization monitor and adaptive task skipping.", "REDSTONE", null),
         MAINTENANCE("MAINTENANCE", "maintenance", "seamless maintenance system with lobby redirection.", "REDSTONE_LAMP", "MAINTENANCE"),
         HIDE("HIDE", "Hide", "Persistent player identity scrambling and configured disguises.", "NAME_TAG", "HIDE"),
-        FRIENDS("FRIENDS", "friends", "player friends/follows system.", "PLAYER_HEAD", "FRIEND"),
+        FRIENDS("FRIENDS", "friends", "player friends/follows system.", "SKULL_ITEM", "FRIEND"),
         SAFETY("SAFETY", "safety", "safety command and info.", "BOOK", "SAFETY");
 
         private final String configKey;
@@ -174,7 +174,7 @@ public class FeatureManager {
     }
 
     public List<Feature> getFeatures() {
-        return java.util.Collections.singletonList(Feature.values());
+        return java.util.Arrays.asList(Feature.values());
     }
 
     public boolean isEnabled(Feature feature) {
@@ -273,7 +273,7 @@ public class FeatureManager {
             case "playtime":
                 return new Feature[]{Feature.STATS};
             case "leaderboard":
-                return new Feature[]{Feature.LEADERBOARDS};
+                return new Feature[]{Feature.LEASHERBOARDS};
             case "freeze":
                 return new Feature[]{Feature.FREEZE};
             case "gamemode":
@@ -497,7 +497,7 @@ public class FeatureManager {
                             if (plugin.getAntiEspManager() != null) {
                                 plugin.getAntiEspManager().refreshAllPlayers();
                             }
-                        break;        }        case AUCTION_HOUSE: {
+                        break;        }        case SPAWN_STASH: {
 
                             if (plugin.getAuctionHouseManager() != null) {
                                 plugin.getAuctionHouseManager().reload();

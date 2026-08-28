@@ -43,11 +43,11 @@ public class OrdersEditMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         OrdersManager manager = plugin.getOrdersManager();
         Order order = manager.getOrder(orderId);
-        set(18, ItemUtils.createItem(Material.RED_STAINED_GLASS_PANE, "&cBack", java.util.Collections.singletonList("&7Return to the previous menu")));
+        set(18, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 14, "&cBack", java.util.Collections.singletonList("&7Return to the previous menu")));
 
         if (order == null) {
             set(13, ItemUtils.createItem(
@@ -75,7 +75,7 @@ public class OrdersEditMenu extends BaseMenu {
                 ))
         ));
         set(16, ItemUtils.createItem(
-                Material.CLOCK,
+                Material.WATCH,
                 "&eProgress",
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Delivered: &e" + order.deliveredQuantity() + "&7/&e" + order.requestedQuantity(), 
@@ -96,7 +96,7 @@ public class OrdersEditMenu extends BaseMenu {
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Use the configured item selection mode.",  "",  "&eClick to edit"))
                 ));
                 set(20, ItemUtils.createItem(
-                        Material.WRITABLE_BOOK,
+                        Material.BOOK_AND_QUILL,
                         "&eChange quantity",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &e" + order.requestedQuantity(),  "",  "&eClick to edit"))
                 ));
@@ -109,9 +109,9 @@ public class OrdersEditMenu extends BaseMenu {
                 List<String> lockedLore = order.active()
                         ? java.util.Collections.singletonList("&7This order already has deliveries.")
                         : java.util.Collections.singletonList("&7This order is no longer active.");
-                set(19, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
-                set(20, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
-                set(22, ItemUtils.createItem(Material.GRAY_DYE, "&cEdit locked", lockedLore));
+                set(19, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
+                set(20, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
+                set(22, ItemUtils.createItem(Material.INK_SACK, (short) 8, "&cEdit locked", lockedLore));
             }
             set(21, ItemUtils.createItem(Material.ENDER_CHEST, "&dCollect", java.util.Collections.singletonList("&7Open your collect queue")));
             if (order.active()) {

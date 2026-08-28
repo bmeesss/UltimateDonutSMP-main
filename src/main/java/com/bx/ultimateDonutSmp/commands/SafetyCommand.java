@@ -68,46 +68,7 @@ public class SafetyCommand implements CommandExecutor {
                 }
             } else {
                 if (sender instanceof Player) {
-            Player player = (Player) args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-            if (!PermissionUtils.has(sender, "safety.reload")) {
-                sender.sendMessage(ColorUtils.toComponent(
-                        plugin.getLanguageManager().text("MESSAGES.SAFETY.NO-PERMISSION", "&cYou do not have permission.")
-                ));
-                return true;
-            }
-
-            try {
-                plugin.reloadAllPluginConfigurations();
-                sender.sendMessage(ColorUtils.toComponent(
-                        plugin.getLanguageManager().text("MESSAGES.SAFETY.RELOAD-SUCCESS", "&aSafety config reloaded.")
-                ));
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to reload safety configurations.", e);
-                sender.sendMessage(ColorUtils.toComponent("&cFailed to reload configuration. Check console for details."));
-            }
-            return true;
-        }
-
-        // Handle add/give subcommand
-        if (args.length > 0 && (args[0].equalsIgnoreCase("add") || args[0].equalsIgnoreCase("give"))) {
-            if (!PermissionUtils.has(sender, "safety.add")) {
-                sender.sendMessage(ColorUtils.toComponent(
-                        plugin.getLanguageManager().text("MESSAGES.SAFETY.NO-PERMISSION", "&cYou do not have permission.")
-                ));
-                return true;
-            }
-
-            Player target;
-            if (args.length > 1) {
-                target = Bukkit.getPlayer(args[1]);
-                if (target == null) {
-                    sender.sendMessage(ColorUtils.toComponent(
-                            plugin.getLanguageManager().text("MESSAGES.SAFETY.PLAYER-NOT-FOUND", "&cPlayer not found.")
-                    ));
-                    return true;
-                }
-            } else {
-                if (sender;
+                    Player player = (Player) sender;
                     target = player;
                 } else {
                     sender.sendMessage(ColorUtils.toComponent(
@@ -122,10 +83,11 @@ public class SafetyCommand implements CommandExecutor {
         }
 
         // Must be player to view the book directly on screen
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         // Check view permission
         if (!PermissionUtils.has(player, "safety.use")) {
@@ -178,7 +140,7 @@ public class SafetyCommand implements CommandExecutor {
                 player.sendMessage(ColorUtils.toComponent("&cAn error occurred: bookmeta is null."));
                 return;
             }
-            player.openBook(book);
+            player.getInventory().setItemInHand(book);
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to open safety book for " + player.getName(), e);
             player.sendMessage(ColorUtils.toComponent("&cAn error occurred while opening the safety book."));
@@ -204,7 +166,7 @@ public class SafetyCommand implements CommandExecutor {
             ));
 
             // Notify sender if it is a different entity
-            if (!(sender instanceof Player senderPlayer) || !senderPlayer.getUniqueId().equals(target.getUniqueId())) {
+            if (!(sender instanceof Player) || !((Player) sender).getUniqueId().equals(target.getUniqueId())) {
                 sender.sendMessage(ColorUtils.toComponent(
                         plugin.getLanguageManager().text("MESSAGES.SAFETY.GIVE-SUCCESS-SENDER", "&aSuccessfully gave safety book to {player}.", "{player}", target.getName())
                 ));

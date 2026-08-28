@@ -7,14 +7,12 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.util.BoundingBox;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.nio.charset.StandardCharsets;
@@ -228,7 +226,7 @@ public class FakePlayerManager {
 
             if ((resolvedTexture == null || !resolvedTexture.isValid())
                     && tablistManager != null
-                    && skinSourceMode != SkinSourceMode.SKINSRESTORER) {
+                    && skinSourceMode != SkinSourceMode.GAMEPROFILE) {
                 try {
                     resolvedTexture = tablistManager.resolveOriginalGameProfileSkinTexture(creatorId, creatorName);
                     if (resolvedTexture != null && resolvedTexture.isValid()) {
@@ -478,19 +476,11 @@ public class FakePlayerManager {
             return null;
         }
 
-        RayTraceResult rayTrace = world.rayTraceBlocks(
-                location.clone().add(0D, 0.05D, 0D),
-                new Vector(0D, -1D, 0D),
-                distance,
-                FluidCollisionMode.NEVER,
-                true
-        );
-        if (rayTrace == null || rayTrace.getHitBlock() == null || rayTrace.getHitBlock().isPassable()) {
+        Block below = world.getBlockAt(floor(location.getX()), floor(location.getY() - distance), floor(location.getZ()));
+        if (below == null || !below.getType().isSolid()) {
             return null;
         }
-
-        BoundingBox box = rayTrace.getHitBlock().getBoundingBox();
-        double groundY = box == null ? rayTrace.getHitBlock().getY() + 1.0D : box.getMaxY();
+        double groundY = below.getY() + 1.0D;
         Location ground = location.clone();
         ground.setY(groundY);
         return ground;
@@ -523,7 +513,7 @@ public class FakePlayerManager {
         if (world == null) {
             return false;
         }
-        if (location.getY() <= world.getMinHeight()) {
+        if (location.getY() <= 0.0D) {
             return true;
         }
 
@@ -557,10 +547,10 @@ public class FakePlayerManager {
     }
 
     private boolean hasSolidBlockAt(World world, double x, double y, double z) {
-        if (y < world.getMinHeight() || y > world.getMaxHeight()) {
+        if (y < 0.0D || y > world.getMaxHeight()) {
             return false;
         }
-        return !world.getBlockAt(floor(x), floor(y), floor(z)).isPassable();
+        return world.getBlockAt(floor(x), floor(y), floor(z)).getType().isSolid();
     }
 
     private int floor(double value) {
@@ -707,24 +697,14 @@ public class FakePlayerManager {
             return false;
         }
 
-        RayTraceResult rayTrace = eye.getWorld().rayTraceBlocks(
-                eye,
-                direction,
-                distance,
-                FluidCollisionMode.NEVER,
-                true
-        );
-        if (rayTrace == null || rayTrace.getHitBlock() == null) {
+        Block hitBlock = player.getTargetBlock((Set<Material>) null, (int) Math.ceil(distance));
+        if (hitBlock == null || hitBlock.getType() == org.bukkit.Material.AIR) {
             return false;
         }
-
-        Block hitBlock = rayTrace.getHitBlock();
-        if (hitBlock.isPassable()) {
+        if (!hitBlock.getType().isSolid()) {
             return false;
         }
-
-        Location hitPosition = rayTrace.getHitPosition().toLocation(eye.getWorld());
-        return hitPosition.distanceSquared(eye) < Math.max(0.0D, distance - 0.35D) * Math.max(0.0D, distance - 0.35D);
+        return hitBlock.getLocation().distanceSquared(eye) < Math.max(0.0D, distance - 0.35D) * Math.max(0.0D, distance - 0.35D);
     }
 
     private synchronized int removeAllInternal(String reason) {
@@ -868,13 +848,11 @@ public class FakePlayerManager {
                 continue;
             }
 
-            BoundingBox hitbox = BoundingBox.of(location.clone().add(0D, 0.9D, 0D), 0.45D, 0.9D, 0.45D);
-            RayTraceResult hit = hitbox.rayTrace(eye.toVector(), direction, reach);
-            if (hit == null) {
+            Location eyeTarget = eye.clone().add(direction.clone().multiply(reach));
+            if (location.distanceSquared(eyeTarget) > 2.0D) {
                 continue;
             }
-
-            double distance = hit.getHitPosition().distanceSquared(eye.toVector());
+            double distance = location.distanceSquared(eye);
             if (distance < nearestDistance) {
                 nearestDistance = distance;
                 nearest = fakePlayer;
@@ -1075,7 +1053,7 @@ public class FakePlayerManager {
         }
     }
 
-public final class SpawnResult {
+public static final class SpawnResult {
     private final boolean success;
     private final String message;
     private final FakePlayerSession fakePlayer;

@@ -41,7 +41,8 @@ public class MobSpawnListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMobSpawn(CreatureSpawnEvent event) {
-        if (!(event.getEntity() instanceof LivingEntity entity)) return;
+        if (!(event.getEntity() instanceof LivingEntity)) return;
+        LivingEntity entity = (LivingEntity) event.getEntity();
 
         if (MobSpawnPolicy.hasCustomName(entity)) return;
 
@@ -49,7 +50,7 @@ public class MobSpawnListener implements Listener {
 
         if (!MobSpawnPolicy.isPreventableSpawnReason(event.getSpawnReason(), trialSpawnersBlocked)) return;
 
-        if (event.getEntityType() == EntityType.PHANTOM) {
+        if ("PHANTOM".equals(event.getEntityType().name())) {
             if (shouldCancelPhantomSpawn(entity.getLocation())) {
                 event.setCancelled(true);
             }

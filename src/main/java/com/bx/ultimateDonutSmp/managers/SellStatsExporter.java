@@ -9,22 +9,17 @@ import com.sun.net.httpserver.HttpServer;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -125,7 +120,7 @@ public class SellStatsExporter {
                         exchange.close();
                     }
                 });
-                executor = Executors.newVirtualThreadPerTaskExecutor();
+                executor = Executors.newCachedThreadPool();
                 server.setExecutor(executor);
                 server.start();
                 activeHttpServer = server;
@@ -187,7 +182,7 @@ public class SellStatsExporter {
             try {
                 File htmlFile = new File(plugin.getDataFolder(), "sell-stats.html");
                 String html = generateDashboardHtmlCached();
-                try (PrintWriter writer = new PrintWriter(new FileWriter(htmlFile, StandardCharsets.UTF_8))) {
+                try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(htmlFile), StandardCharsets.UTF_8.name()))) {
                     writer.print(html);
                 }
 
@@ -222,10 +217,14 @@ public class SellStatsExporter {
                 ? configuredUrl
                 : "http://localhost:" + actualBoundPort + "/stats";
 
-        if (sender instanceof Player player && player.isOnline()) {
+        if (sender instanceof Player && ((Player) sender).isOnline()) {
+            Player player = (Player) sender;
             TextComponent linkMsg = new TextComponent(ColorUtils.toComponent("&a&l[Sell Stats Web] &fOpen live Shop Analytics site: &e&n" + localWebUrl));
             linkMsg.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, localWebUrl));
-            linkMsg.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(ColorUtils.toComponent("&7Click to open &e" + localWebUrl + "\n&7File: plugins/UltimateDonutSMP/sell-stats.html"))));
+            linkMsg.setHoverEvent(new HoverEvent(
+                    HoverEvent.Action.SHOW_TEXT,
+                    TextComponent.fromLegacyText(ColorUtils.colorize("&7Click to open &e" + localWebUrl + "\n&7File: plugins/UltimateDonutSMP/sell-stats.html"))
+            ));
             player.spigot().sendMessage(linkMsg);
         } else if (sender != null) {
             sender.sendMessage(ColorUtils.toComponent("&a&l[Sell Stats Web] &fLive web site: &e" + localWebUrl + " &7(or open plugins/UltimateDonutSMP/sell-stats.html)"));
@@ -711,28 +710,7 @@ public class SellStatsExporter {
     private String resolvePlayerSkinHeadUrl(java.util.UUID uuid, String playerName) {
         String textureHash = null;
 
-        // 2. Try online player profile if online
-        if (textureHash == null && uuid != null) {
-            Player onlinePlayer = plugin.getServer().getPlayer(uuid);
-            if (onlinePlayer != null) {
-                try {
-                    Object profile = onlinePlayer.getClass().getMethod("getPlayerProfile").invoke(onlinePlayer);
-                    if (profile != null) {
-                        java.util.Collection<?> properties = (java.util.Collection<?>) profile.getClass().getMethod("getProperties").invoke(profile);
-                        for (Object prop : properties) {
-                            String name = (String) prop.getClass().getMethod("getName").invoke(prop);
-                            if ("textures".equals(name)) {
-                                String val = (String) prop.getClass().getMethod("getValue").invoke(prop);
-                                textureHash = parseTextureHashFromBase64(val);
-                                break;
-                            }
-                        }
-                    }
-                } catch (Throwable ignored) {}
-            }
-        }
-
-        // 3. If texture hash resolved, mc-heads renders exact texture head directly
+        // If texture hash resolved, mc-heads renders exact texture head directly
         if (textureHash != null && !textureHash.trim().isEmpty()) {
             return "https://mc-heads.net/avatar/" + textureHash + "/24";
         }
@@ -770,7 +748,7 @@ public class SellStatsExporter {
         StringBuilder sb = new StringBuilder();
         for (String w : words) {
             if (w.isEmpty()) continue;
-            if (!sb.isEmpty()) sb.append(' ');
+            if (sb.length() != 0) sb.append(' ');
             sb.append(Character.toUpperCase(w.charAt(0))).append(w.substring(1));
         }
         return sb.toString();

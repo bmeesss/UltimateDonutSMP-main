@@ -14,6 +14,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -89,7 +90,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                 }
             } else {
                 ItemStack current = topInventory.getItem(slot);
-                if (current != null && !current.getType().isAir()) {
+                if (current != null && current.getType() != Material.AIR) {
                     topInventory.setItem(slot, null);
                 }
             }
@@ -99,7 +100,7 @@ public class SpawnerStorageMenu extends BaseMenu {
 
     public static ItemStack applyStorageMeta(UltimateDonutSmp plugin, SpawnerInstance instance, Material material, int amount) {
         ItemStack item = new ItemStack(material, Math.max(1, Math.min(amount, material.getMaxStackSize())));
-        var meta = item.getItemMeta();
+        ItemMeta meta = item.getItemMeta();
         if (meta != null) {
             FileConfiguration config = plugin.getConfigManager().getMenus();
             boolean isFiltered = instance.isLootDisabled(material.name());
@@ -150,11 +151,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public static ItemStack stripStorageMeta(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return item;
         }
         ItemStack copy = item.clone();
-        var meta = copy.getItemMeta();
+        ItemMeta meta = copy.getItemMeta();
         if (meta != null) {
             meta.setDisplayName(null);
             meta.setLore(null);
@@ -169,7 +170,7 @@ public class SpawnerStorageMenu extends BaseMenu {
         if (instance == null) {
             inventory = Bukkit.createInventory(this, plugin.getSpawnerManager().getStorageSize(), ColorUtils.toComponent("&8Spawner Missing"));
             clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
             set(inventory.getSize() / 2, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
             return;
         }
@@ -186,7 +187,7 @@ public class SpawnerStorageMenu extends BaseMenu {
         clear();
         int lastRow = inventory.getSize() - 9;
         for (int r = lastRow; r < inventory.getSize(); r++) {
-            set(r, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(r, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         int contentSlots = Math.min(itemsPerPage, inventory.getSize() - 9);
@@ -250,7 +251,7 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
             set(prevSlot, ItemUtils.createItem(prevMat, prevTitle, prevLore));
         } else {
-            set(prevSlot, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(prevSlot, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         // 4. Next Page Button
@@ -271,7 +272,7 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
             set(nextSlot, ItemUtils.createItem(nextMat, nextTitle, nextLore));
         } else {
-            set(nextSlot, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(nextSlot, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         // 5. Drop Loot Button
@@ -296,9 +297,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
         this.lastInteractionTime = System.currentTimeMillis();
 
         SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);
@@ -322,7 +325,7 @@ public class SpawnerStorageMenu extends BaseMenu {
         if (clickedInventory != null && !clickedInventory.equals(topInventory)) {
             if (clickType.isShiftClick()) {
                 ItemStack current = event.getCurrentItem();
-                if (current != null && !current.getType().isAir()) {
+                if (current != null && current.getType() != Material.AIR) {
                     event.setCancelled(true);
                     Material mat = current.getType();
                     int remainingToAdd = current.getAmount();
@@ -347,7 +350,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                     // Step B: Fill first available empty slots if remainder > 0
                     for (int s = 0; s < lastRow && remainingToAdd > 0; s++) {
                         ItemStack inSlot = topInventory.getItem(s);
-                        if (inSlot == null || inSlot.getType().isAir()) {
+                        if (inSlot == null || inSlot.getType() == Material.AIR) {
                             int add = Math.min(maxStack, remainingToAdd);
                             int slotIndex = pageOffset + s;
 
@@ -414,7 +417,7 @@ public class SpawnerStorageMenu extends BaseMenu {
 
             // Shift + Right Click (or Middle Click) -> Toggle Filter Status
             if (clickType == ClickType.SHIFT_RIGHT || clickType == ClickType.MIDDLE) {
-                if (slotItem != null && !slotItem.getType().isAir()) {
+                if (slotItem != null && slotItem.getType() != Material.AIR) {
                     boolean currentState = instance.isLootDisabled(slotItem.getType().name());
                     instance.setLootDisabled(slotItem.getType().name(), !currentState);
                     instance.setUpdatedAt(System.currentTimeMillis());
@@ -433,10 +436,10 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
 
             // Case A: Holding Item on Cursor
-            if (cursorItem != null && !cursorItem.getType().isAir()) {
+            if (cursorItem != null && cursorItem.getType() != Material.AIR) {
                 if (clickType.isRightClick()) {
                     // Right Click -> Place 1 item from cursor into slot (1-by-1 split or merge 1)
-                    if (slotItem == null || slotItem.getType().isAir()) {
+                    if (slotItem == null || slotItem.getType() == Material.AIR) {
                         topInventory.setItem(rawSlot, applyStorageMeta(plugin, instance, cursorItem.getType(), 1));
                         instance.setSlotLoot(slotIndex, cursorItem.getType(), 1);
                         instance.setUpdatedAt(System.currentTimeMillis());
@@ -462,7 +465,7 @@ public class SpawnerStorageMenu extends BaseMenu {
                 }
 
                 // Left Click -> Place entire cursor stack into slot (or merge cursor stack into slot)
-                if (slotItem == null || slotItem.getType().isAir()) {
+                if (slotItem == null || slotItem.getType() == Material.AIR) {
                     topInventory.setItem(rawSlot, applyStorageMeta(plugin, instance, cursorItem.getType(), cursorItem.getAmount()));
                     instance.setSlotLoot(slotIndex, cursorItem.getType(), cursorItem.getAmount());
                     instance.setUpdatedAt(System.currentTimeMillis());
@@ -488,7 +491,7 @@ public class SpawnerStorageMenu extends BaseMenu {
             }
 
             // Case B: Cursor is Empty
-            if (slotItem != null && !slotItem.getType().isAir()) {
+            if (slotItem != null && slotItem.getType() != Material.AIR) {
                 if (clickType.isShiftClick()) {
                     // Shift + Left Click -> Collect stack to player inventory
                     ItemStack cleanStack = stripStorageMeta(slotItem);
@@ -543,9 +546,11 @@ public class SpawnerStorageMenu extends BaseMenu {
     }
 
     public void handleInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity whoClicked = event.getWhoClicked();
+        if (!(whoClicked instanceof Player)) {
             return;
         }
+        Player player = (Player) whoClicked;
         this.lastInteractionTime = System.currentTimeMillis();
 
         SpawnerInstance instance = plugin.getSpawnerManager().getSpawner(spawnerId);

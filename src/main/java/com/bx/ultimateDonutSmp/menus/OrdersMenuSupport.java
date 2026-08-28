@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp.models.Order;
 import com.bx.ultimateDonutSmp.models.OrderCollectionClaim;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -30,6 +31,22 @@ final class OrdersMenuSupport {
         return material == null ? fallback : material;
     }
 
+    /**
+     * 1.12.2 companion of {@link #material(UltimateDonutSmp, String, Material)} for icons whose colour
+     * is stored in a legacy data value. A flattened 1.13+ pane name in {@code orders.yml} resolves to
+     * {@code STAINED_GLASS_PANE} plus that colour's data; a valid 1.12.2 Material name still resolves
+     * to itself with data {@code 0}; a missing or unresolvable value still returns the caller's
+     * fallback untouched.
+     */
+    static LegacyMaterialSupport.Icon materialIcon(
+            UltimateDonutSmp plugin,
+            String path,
+            LegacyMaterialSupport.Icon fallback
+    ) {
+        String raw = plugin.getConfigManager().getOrders().getString(path, fallback.configuredName());
+        return LegacyMaterialSupport.resolve(raw, fallback);
+    }
+
     static String text(UltimateDonutSmp plugin, String path, String fallback, String... placeholders) {
         return plugin.getLanguageManager().text(path, null, fallback, placeholders);
     }
@@ -49,6 +66,30 @@ final class OrdersMenuSupport {
     ) {
         return ItemUtils.createItem(
                 material(plugin, configPath + ".MATERIAL", fallbackMaterial),
+                text(plugin, languagePath + ".NAME", fallbackName, placeholders),
+                list(plugin, languagePath + ".LORE", fallbackLore, placeholders)
+        );
+    }
+
+    /**
+     * 1.12.2 variant of {@link #button(UltimateDonutSmp, String, String, Material, String, List, String...)}
+     * for buttons whose colour is carried by a legacy data value instead of a dedicated 1.13+
+     * Material. Name and lore resolution is unchanged; only the icon goes through
+     * {@link LegacyMaterialSupport}.
+     */
+    static ItemStack button(
+            UltimateDonutSmp plugin,
+            String configPath,
+            String languagePath,
+            LegacyMaterialSupport.Icon fallbackIcon,
+            String fallbackName,
+            List<String> fallbackLore,
+            String... placeholders
+    ) {
+        LegacyMaterialSupport.Icon icon = materialIcon(plugin, configPath + ".MATERIAL", fallbackIcon);
+        return ItemUtils.createItem(
+                icon.material(),
+                icon.data(),
                 text(plugin, languagePath + ".NAME", fallbackName, placeholders),
                 list(plugin, languagePath + ".LORE", fallbackLore, placeholders)
         );
@@ -101,7 +142,7 @@ final class OrdersMenuSupport {
     ) {
         if (claim.refundClaim()) {
             return ItemUtils.createItem(
-                    Material.SUNFLOWER,
+                    Material.GOLD_INGOT,
                     text(plugin, "ORDERS.GUI.CLAIM.REFUND_NAME", "&aEscrow refund"),
                     list(
                             plugin,
@@ -142,7 +183,7 @@ final class OrdersMenuSupport {
             List<String> extraLore,
             boolean preserveOriginalLore
     ) {
-        if (source == null || source.getType().isAir()) {
+        if (source == null || source.getType() == Material.AIR) {
             return ItemUtils.createItem(Material.BARRIER, "&cMissing item", java.util.Collections.singletonList("&7Stored item data is unavailable."));
         }
 

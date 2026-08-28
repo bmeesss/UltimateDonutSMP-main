@@ -32,10 +32,11 @@ public class FlyCommand implements CommandExecutor {
 
         Player target;
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 sender.sendMessage(ColorUtils.toComponent("&cUsage: /" + label + " <player>"));
                 return true;
             }
+            Player player = (Player) sender;
 
             boolean isStaff = PermissionUtils.has(player, PERMISSION);
             String playerFlyPerm = plugin.getConfigManager().getConfig()
@@ -79,11 +80,14 @@ public class FlyCommand implements CommandExecutor {
             target = player;
         } else {
             // Target player specified - staff only
-            if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-                player.sendMessage(ColorUtils.toComponent(
-                        plugin.getConfigManager().getMessageOrDefault("STAFF.NO_PERMISSION_OTHERS", "&cYou do not have permission.")
-                ));
-                return true;
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (!PermissionUtils.has(player, PERMISSION)) {
+                    player.sendMessage(ColorUtils.toComponent(
+                            plugin.getConfigManager().getMessageOrDefault("STAFF.NO_PERMISSION_OTHERS", "&cYou do not have permission.")
+                    ));
+                    return true;
+                }
             }
 
             target = findOnlinePlayer(args[0]);
@@ -99,7 +103,7 @@ public class FlyCommand implements CommandExecutor {
         String targetMessage = plugin.getConfigManager().getMessageOrDefault(path, fallback);
         target.sendMessage(ColorUtils.toComponent(targetMessage, target));
 
-        if (!(sender instanceof Player player) || !player.getUniqueId().equals(target.getUniqueId())) {
+        if (!(sender instanceof Player) || !((Player) sender).getUniqueId().equals(target.getUniqueId())) {
             sender.sendMessage(ColorUtils.toComponent(
                     "&7Flight for &e" + target.getName() + " &7was " + (enabled ? "&aEnabled" : "&cDisabled") + "&7."
             ));

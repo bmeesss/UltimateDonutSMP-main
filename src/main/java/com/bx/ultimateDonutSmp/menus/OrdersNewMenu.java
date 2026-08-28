@@ -24,14 +24,15 @@ public class OrdersNewMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         OrdersManager manager = plugin.getOrdersManager();
         OrdersManager.NewOrderSession session = manager.getOrCreateNewOrderSession(player.getUniqueId());
 
         // Slot 10: Cancel
         set(10, ItemUtils.createItem(
-                Material.RED_STAINED_GLASS_PANE,
+                Material.STAINED_GLASS_PANE,
+                (short) 14,
                 "&cCancel",
                 java.util.Collections.singletonList("&7Click to cancel an item and return")
         ));
@@ -64,7 +65,7 @@ public class OrdersNewMenu extends BaseMenu {
         ItemStack amountDisplay = ItemUtils.createItem(
                 Material.PAPER,
                 "&bOrder quantity",
-                java.util.Collections.singletonList(
+                 java.util.Arrays.asList(
                         "&7Current quantity: &e" + (amount <= 0 ? "Not set" : amount),
                         "",
                         "&eClick to set quantity"
@@ -78,9 +79,9 @@ public class OrdersNewMenu extends BaseMenu {
         // Slot 14: Price
         double priceEach = session.getPriceEach();
         ItemStack priceDisplay = ItemUtils.createItem(
-                Material.SUNFLOWER,
+                Material.GOLD_INGOT,
                 "&bPrice each",
-                java.util.Collections.singletonList(
+                 java.util.Arrays.asList(
                         "&7Current price: &e" + (priceEach <= 0D ? "Not set" : plugin.getCurrencyManager().formatMoney(priceEach)),
                         "",
                         "&eClick to s..."
@@ -91,7 +92,7 @@ public class OrdersNewMenu extends BaseMenu {
         priceLore.add("&7Current price: &e" + (priceEach <= 0D ? "Not set" : plugin.getCurrencyManager().formatMoney(priceEach)));
         priceLore.add("");
         priceLore.add("&eClick to set price");
-        priceDisplay = ItemUtils.createItem(Material.SUNFLOWER, "&bPrice each", priceLore);
+        priceDisplay = ItemUtils.createItem(Material.GOLD_INGOT, "&bPrice each", priceLore);
         set(14, priceDisplay);
 
         // Slot 16: Confirm
@@ -113,8 +114,10 @@ public class OrdersNewMenu extends BaseMenu {
             confirmLore.add("&aClick to confirm &7(locks budget in escrow)");
         }
 
+        short confirmData = (short) (canConfirm ? 5 : 14);
         ItemStack confirmDisplay = ItemUtils.createItem(
-                canConfirm ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE,
+                Material.STAINED_GLASS_PANE,
+                confirmData,
                 "&aConfirm order",
                 confirmLore
         );

@@ -86,7 +86,7 @@ public class FrozenPlayersMenu extends BaseMenu {
 
     private void render() {
         clear();
-        fill(plugin.getStaffModeManager().getMenuPlaceholderMaterial(MENU_KEY, Material.LIGHT_BLUE_STAINED_GLASS_PANE));
+        fill(plugin.getStaffModeManager().getMenuPlaceholderMaterial(MENU_KEY, Material.STAINED_GLASS_PANE));
         slotTargets.clear();
 
         int refreshSlot = plugin.getStaffModeManager().getMenuRefreshSlot(MENU_KEY);
@@ -132,7 +132,7 @@ public class FrozenPlayersMenu extends BaseMenu {
         ));
 
         if (player == null) {
-            return ItemUtils.createItem(Material.PLAYER_HEAD, "&b" + state.getTargetNameSnapshot(), lore);
+            return ItemUtils.createItem(Material.SKULL_ITEM, "&b" + state.getTargetNameSnapshot(), lore);
         }
         return ItemUtils.createPlayerHead(player, "&b" + state.getTargetNameSnapshot(), lore);
     }

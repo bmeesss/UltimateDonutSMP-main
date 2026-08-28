@@ -31,7 +31,7 @@ public class EnchantSelectMenu extends BaseMenu {
         this.maxPage = plugin.getEnchantmentsManager().maxPage(this.options);
 
         // Load existing enchants from draft session if present
-        com.bx.ultimateDonutSmp.managers.PendingOrderCreationSnapshot draft = plugin.getOrdersManager().getPendingCreation(player.getUniqueId());
+        com.bx.ultimateDonutSmp.managers.OrdersManager.PendingOrderCreationSnapshot draft = plugin.getOrdersManager().getPendingCreation(player.getUniqueId());
         if (draft != null && draft.requestedItem() != null) {
             ItemStack draftItem = draft.requestedItem();
             if (draftItem.getType() == Material.ENCHANTED_BOOK) {
@@ -51,7 +51,7 @@ public class EnchantSelectMenu extends BaseMenu {
         EnchantmentsManager em = plugin.getEnchantmentsManager();
 
         // 1. Fill background if enabled
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         // 2. Preview item slot (usually 0)
         ItemStack preview = new ItemStack(material);
@@ -73,13 +73,15 @@ public class EnchantSelectMenu extends BaseMenu {
 
         // 3. Navigation and action buttons
         set(em.getCancelSlot(), ItemUtils.createItem(
-                Material.RED_STAINED_GLASS_PANE,
+                Material.STAINED_GLASS_PANE,
+                (short) 14,
                 "&cCancel",
                 java.util.Collections.singletonList("&7Click to return without saving")
         ));
 
         set(em.getConfirmSlot(), ItemUtils.createItem(
-                Material.LIME_STAINED_GLASS_PANE,
+                Material.STAINED_GLASS_PANE,
+                (short) 5,
                 "&aConfirm",
                 java.util.Collections.singletonList("&7Click to confirm these enchantments")
         ));
@@ -91,7 +93,7 @@ public class EnchantSelectMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page &f" + (page - 1))
             ));
         } else {
-            set(em.getPrevSlot(), ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(em.getPrevSlot(), ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         if (page < maxPage) {
@@ -101,7 +103,7 @@ public class EnchantSelectMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page &f" + (page + 1))
             ));
         } else {
-            set(em.getNextSlot(), ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(em.getNextSlot(), ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         // 4. Render enchant option books for current page
@@ -203,7 +205,7 @@ public class EnchantSelectMenu extends BaseMenu {
             SoundUtils.play(player, plugin.getConfigManager().getSound("MENUS.BUTTON-CLICK"));
         } else {
             // Conflicts
-            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.8f);
+            player.playSound(player.getLocation(), org.bukkit.Sound.BLOCK_NOTE_HARP, 1.0f, 0.8f);
             player.sendMessage(ColorUtils.toComponent(plugin.getEnchantmentsManager().getMessageCannot()));
         }
         build(player);
@@ -225,7 +227,7 @@ public class EnchantSelectMenu extends BaseMenu {
     }
 
     private String formatEnchantName(Enchantment ench) {
-        String key = ench.getKey().getKey().replace('_', ' ');
+        String key = ench.getName().replace('_', ' ');
         return Arrays.stream(key.split(" "))
                 .map(word -> word.isEmpty() ? "" : Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase())
                 .collect(Collectors.joining(" "));

@@ -59,8 +59,7 @@ public class PortalTabCompleter implements TabCompleter {
                     list.add("RTP");
                     list.add("AFK");
                     list.addAll(plugin.getRtpManager().getPortalSelectorSuggestions());
-                    partialMatches(args[2], list);
-                    return break;
+                    return partialMatches(args[2], list);
                 }
                 default:
                     return Collections.emptyList();

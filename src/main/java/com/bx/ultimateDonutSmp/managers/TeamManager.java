@@ -397,6 +397,25 @@ public class TeamManager {
         }
     }
 
+    private void refreshRichPresence(UUID uuid) {
+        if (uuid == null) {
+            return;
+        }
+        Player player = Bukkit.getPlayer(uuid);
+        if (player != null) {
+            plugin.getTablistManager().update(player);
+        }
+    }
+
+    private void refreshRichPresence(Collection<UUID> uuids) {
+        if (uuids == null) {
+            return;
+        }
+        for (UUID uuid : uuids) {
+            refreshRichPresence(uuid);
+        }
+    }
+
     @FunctionalInterface
     private interface PermissionAccessor {
         boolean hasPermission(Team.TeamMember member);

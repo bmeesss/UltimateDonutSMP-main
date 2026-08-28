@@ -9,6 +9,7 @@ import com.bx.ultimateDonutSmp.models.Team;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
+import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -82,7 +83,7 @@ public class ChatListener implements Listener {
                 return;
             }
             String teamFormat = "&8[&b" + team.getName().toUpperCase() + "&8] &7%player%&8: &f%message%";
-            var component = plugin.getHoverStatsManager().buildChatComponent(player, "", rawMessage, teamFormat);
+            BaseComponent[] component = plugin.getHoverStatsManager().buildChatComponent(player, "", rawMessage, teamFormat);
             for (java.util.UUID uuid : team.getMemberUuids()) {
                 Player member = Bukkit.getPlayer(uuid);
                 if (member != null) {
@@ -135,10 +136,10 @@ public class ChatListener implements Listener {
 
         String chatFormat = chatManager.getChatFormat();
         String prefix = resolvePrefix(player);
-        var chatComponent = plugin.getHoverStatsManager()
+        BaseComponent[] chatComponent = plugin.getHoverStatsManager()
                 .buildChatComponent(player, prefix, rawMessage, chatFormat);
 
-        final var finalMsg = chatComponent;
+        final BaseComponent[] finalMsg = chatComponent;
         plugin.getSpigotScheduler().forEachOnlinePlayer(p -> {
             if (PlayerSettingUtils.notificationEnabled(plugin, p, PlayerSettingUtils.NotificationChannel.PUBLIC_CHAT)) {
                 p.spigot().sendMessage(finalMsg);

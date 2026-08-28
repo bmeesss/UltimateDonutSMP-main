@@ -3,12 +3,12 @@ package com.bx.ultimateDonutSmp.managers;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Container;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.Material;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -207,7 +207,7 @@ public static final class ContainerStats {
             }
         }
 
-        int pdcKeys = meta.getPersistentDataContainer().getKeys().size();
+        int pdcKeys = 0;
         int maxPdcKeys = maxPersistentDataKeys();
         if (pdcKeys > maxPdcKeys) {
             return ValidationResult.blocked("too many persistent data keys (" + pdcKeys + "/" + maxPdcKeys + ")");
@@ -249,14 +249,20 @@ public static final class ContainerStats {
     }
 
     private ContainerValidation validateContainers(ItemStack item, int depth) {
-        if (isMissing(item) || !(item.getItemMeta() instanceof BlockStateMeta blockStateMeta)) {
+        if (isMissing(item)) {
             return ContainerValidation.allowed(0);
         }
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof BlockStateMeta)) {
+            return ContainerValidation.allowed(0);
+        }
+        BlockStateMeta blockStateMeta = (BlockStateMeta) itemMeta;
 
         BlockState blockState = blockStateMeta.getBlockState();
-        if (!(blockState instanceof Container container)) {
+        if (!(blockState instanceof Container)) {
             return ContainerValidation.allowed(0);
         }
+        Container container = (Container) blockState;
 
         int maxDepth = maxContainerDepth();
         if (depth > maxDepth) {
@@ -275,14 +281,16 @@ public static final class ContainerStats {
                 return ContainerValidation.blocked("container has too many stored items (" + nestedItems + "/" + maxNestedItems + ")");
             }
 
-            if (content.getItemMeta() instanceof BlockStateMeta nestedMeta
-                    && nestedMeta.getBlockState() instanceof Container) {
+            ItemMeta contentItemMeta = content.getItemMeta();
+            if (contentItemMeta instanceof BlockStateMeta
+                    && ((BlockStateMeta) contentItemMeta).getBlockState() instanceof Container) {
+                BlockStateMeta nestedMeta = (BlockStateMeta) contentItemMeta;
                 Container nestedContainer = (Container) nestedMeta.getBlockState();
                 if (blockNestedContainers()) {
-                    boolean isShulker = org.bukkit.Tag.SHULKER_BOXES.isTagged(content.getType());
+                    boolean isShulker = content.getType().name().contains("SHULKER");
                     boolean hasItems = false;
                     for (ItemStack nestedContent : nestedContainer.getInventory().getContents()) {
-                        if (nestedContent != null && !nestedContent.getType().isAir()) {
+                        if (nestedContent != null && nestedContent.getType() != Material.AIR) {
                             hasItems = true;
                             break;
                         }
@@ -356,7 +364,7 @@ public static final class ContainerValidation {
     }
 
     private boolean isMissing(ItemStack item) {
-        return item == null || item.getType().isAir() || item.getAmount() <= 0;
+        return item == null || item.getType() == Material.AIR || item.getAmount() <= 0;
     }
 
     private String describeItem(ItemStack item) {

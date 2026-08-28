@@ -90,7 +90,7 @@ public class HoverStatsManager {
         Map<String, String> placeholders = buildPlaceholders(speaker, resolvedPrefix, data);
         StringBuilder hoverText = new StringBuilder();
         for (String line : hoverLines) {
-            if (!hoverText.isEmpty()) {
+            if (hoverText.length() != 0) {
                 hoverText.append("\n");
             }
             hoverText.append(replacePlaceholders(line, placeholders));

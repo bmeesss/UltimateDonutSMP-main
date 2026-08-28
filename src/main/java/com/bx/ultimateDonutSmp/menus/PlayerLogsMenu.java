@@ -41,7 +41,7 @@ public class PlayerLogsMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         totalItems = plugin.getDatabaseManager().getPlayerLogsCount(targetUuid);
         totalPages = Math.max(1, (int) Math.ceil(totalItems / (double) MAX_ITEMS_PER_PAGE));
@@ -103,7 +103,7 @@ public class PlayerLogsMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page " + page + ".")
             ));
         } else {
-            set(PREVIOUS_PAGE_SLOT, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(PREVIOUS_PAGE_SLOT, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         // Next Page Button
@@ -114,13 +114,41 @@ public class PlayerLogsMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page " + (page + 2) + ".")
             ));
         } else {
-            set(NEXT_PAGE_SLOT, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(NEXT_PAGE_SLOT, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
     }
 
     private ItemStack createLogItem(PlayerLogEntry entry) {
         Material material;
-        switch (entry.category().toLowerCase()) {        case "shop": material = Material.CHEST            break;        case "auctions": material = Material.DIAMOND            break;        case "economy": material = Material.GOLD_INGOT            break;        case "crates": material = Material.TRIPWIRE_HOOK            break;        case "spawners": material = Material.SPAWNER            break;        case "deaths": material = Material.SKELETON_SKULL            break;        case "messages": case "msg": material = Material.WRITABLE_BOOK            break;        case "chat": material = Material.BOOK            break;        default: material = Material.PAPER            break;
+        switch (entry.category().toLowerCase()) {
+            case "shop":
+                material = Material.CHEST;
+                break;
+            case "auctions":
+                material = Material.DIAMOND;
+                break;
+            case "economy":
+                material = Material.GOLD_INGOT;
+                break;
+            case "crates":
+                material = Material.TRIPWIRE_HOOK;
+                break;
+            case "spawners":
+                material = Material.MOB_SPAWNER;
+                break;
+            case "deaths":
+                material = Material.SKULL_ITEM;
+                break;
+            case "messages":
+            case "msg":
+                material = Material.BOOK_AND_QUILL;
+                break;
+            case "chat":
+                material = Material.BOOK;
+                break;
+            default:
+                material = Material.PAPER;
+                break;
         }
 
         String formattedTime = DATE_FORMAT.format(new Date(entry.timestamp()));

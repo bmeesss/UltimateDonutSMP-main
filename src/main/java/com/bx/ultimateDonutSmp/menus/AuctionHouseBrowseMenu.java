@@ -7,12 +7,14 @@ import com.bx.ultimateDonutSmp.models.AuctionCategory;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.AuctionPage;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
 import com.bx.ultimateDonutSmp.utils.SignInputUtil;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.inventory.ItemStack;
@@ -56,7 +58,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         slotMappings.clear();
 
         AuctionHouseManager manager = plugin.getAuctionHouseManager();
@@ -106,7 +108,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
         set(controlSlot("PREVIOUS", 45), renderedPage.hasPrevious()
                 ? control("PREVIOUS", Material.ARROW, "&fPrevious page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(renderedPage.page() - 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
         set(controlSlot("SORT", 47), control(
                 "SORT",
                 Material.CAULDRON,
@@ -129,7 +131,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
         ));
         set(controlSlot("SEARCH", 50), control(
                 "SEARCH",
-                Material.OAK_SIGN,
+                Material.SIGN,
                 "&fSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &e{search}",  "&8Left-click to search",  "&8Right-click to clear")),
                 "{search}", effective.search().trim().isEmpty()
@@ -149,7 +151,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
         set(controlSlot("NEXT", 53), renderedPage.hasNext()
                 ? control("NEXT", Material.ARROW, "&fNext page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(renderedPage.page() + 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
     }
 
     @Override
@@ -200,7 +202,7 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                 open(player, current.withSearch(""), true);
                 return;
             }
-            var signConfig = plugin.getConfigManager().getAuctionHouse()
+            ConfigurationSection signConfig = plugin.getConfigManager().getAuctionHouse()
                     .getConfigurationSection("GUI.BROWSE.SEARCH_SIGN");
             manager.startNavigating(player.getUniqueId());
             SignInputUtil.openFromConfig(plugin, player, signConfig, text -> {
@@ -234,8 +236,8 @@ public final class AuctionHouseBrowseMenu extends BaseMenu {
                         )));
                         SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                     } else {
-String;
-switch (result.reason()) {
+                        String key = null;
+                        switch (result.reason()) {
                             case DISABLED:
                                 key = "AUCTION_HOUSE.DISABLED";
                                 break;
@@ -305,6 +307,28 @@ switch (result.reason()) {
                 plugin,
                 "GUI.BROWSE.CONTROLS." + key,
                 material,
+                name,
+                lore,
+                replacements
+        );
+    }
+
+    /**
+     * 1.12.2 variant of the wrapper above: the fallback icon carries a legacy data value, so a
+     * coloured pane keeps its colour while every non-pane control keeps using the Material-based
+     * overload unchanged.
+     */
+    private ItemStack control(
+            String key,
+            LegacyMaterialSupport.Icon icon,
+            String name,
+            List<String> lore,
+            String... replacements
+    ) {
+        return AuctionHouseMenuSupport.control(
+                plugin,
+                "GUI.BROWSE.CONTROLS." + key,
+                icon,
                 name,
                 lore,
                 replacements

@@ -210,7 +210,7 @@ public class SpawnerInstance {
             return;
         }
         String key = "SLOT_" + slotIndex;
-        if (material == null || material.isAir() || amount <= 0L) {
+        if (material == null || material == Material.AIR || amount <= 0L) {
             storedLoot.remove(key);
             return;
         }

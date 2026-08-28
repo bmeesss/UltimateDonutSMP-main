@@ -33,7 +33,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         if (instance == null) {
             inventory = Bukkit.createInventory(this, 27, ColorUtils.toComponent("&8Spawner Missing"));
             clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
             set(13, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
             return;
         }
@@ -44,7 +44,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         inventory = Bukkit.createInventory(this, menuSize, ColorUtils.toComponent(titleStr));
 
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         String mobLabel = instance.getMobTypeKey().replace('_', ' ').toUpperCase();
         long totalItems = instance.getTotalStoredItems();
@@ -57,9 +57,9 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
 
         // 1. Cancel Button
         int cancelSlot = config.getInt("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.SLOT", 15);
-        String cancelMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.MATERIAL", "RED_STAINED_GLASS_PANE");
+        String cancelMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material cancelMat = Material.matchMaterial(cancelMatName);
-        if (cancelMat == null) cancelMat = Material.RED_STAINED_GLASS_PANE;
+        if (cancelMat == null) cancelMat = Material.STAINED_GLASS_PANE;
         String cancelTitle = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CANCEL-BUTTON.TITLE", "&cCancel");
         cancelTitle = replacePlaceholders(cancelTitle, formattedPrice, formattedMultiplier, formattedItemCount, mobLabel);
 
@@ -100,9 +100,9 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
 
         // 3. Confirm Button
         int confirmSlot = config.getInt("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.SLOT", 11);
-        String confirmMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.MATERIAL", "LIME_STAINED_GLASS_PANE");
+        String confirmMatName = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE");
         Material confirmMat = Material.matchMaterial(confirmMatName);
-        if (confirmMat == null) confirmMat = Material.LIME_STAINED_GLASS_PANE;
+        if (confirmMat == null) confirmMat = Material.STAINED_GLASS_PANE;
         String confirmTitle = config.getString("SPAWNER-MENUS.SELL-CONFIRM-MENU.CONFIRM-BUTTON.TITLE", "&aConfirm Sell");
         confirmTitle = replacePlaceholders(confirmTitle, formattedPrice, formattedMultiplier, formattedItemCount, mobLabel);
 
@@ -151,7 +151,7 @@ public class SpawnerSellConfirmMenu extends BaseMenu {
         }
 
         if (slot == confirmSlot) {
-            var sellResult = plugin.getSpawnerManager().sellAllLoot(player, instance);
+            SpawnerManager.SellLootResult sellResult = plugin.getSpawnerManager().sellAllLoot(player, instance);
             player.sendMessage(ColorUtils.toComponent(sellResult.message()));
             new SpawnerStorageMenu(plugin, spawnerId, returnPage).open(player);
             return;

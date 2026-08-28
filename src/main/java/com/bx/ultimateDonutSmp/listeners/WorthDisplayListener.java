@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.menus.BaseMenu;
 import com.bx.ultimateDonutSmp.menus.SellMenu;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -76,9 +77,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) {
+        if (!(event.getPlayer() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getPlayer();
 
         if (isPlayerInventoryView(event.getInventory())) {
             return;
@@ -103,9 +105,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (player.getGameMode() == GameMode.CREATIVE) {
             return;
@@ -125,8 +128,8 @@ public class WorthDisplayListener implements Listener {
         ItemStack cursor = event.getCursor();
         ItemStack current = event.getCurrentItem();
 
-        boolean isStacking = cursor != null && !cursor.getType().isAir()
-                && current != null && !current.getType().isAir()
+        boolean isStacking = cursor != null && cursor.getType() != Material.AIR
+                && current != null && current.getType() != Material.AIR
                 && plugin.getWorthManager().isSimilarIgnoringWorth(cursor, current);
 
         boolean strippedAny = false;
@@ -167,7 +170,7 @@ public class WorthDisplayListener implements Listener {
                     return;
                 }
             }
-        } else if (event.getClick().isShiftClick() && current != null && !current.getType().isAir()) {
+        } else if (event.getClick().isShiftClick() && current != null && current.getType() != Material.AIR) {
             if (plugin.getWorthManager().stripStorageWorthDisplayForNativePickup(player, current)) {
                 strippedAny = true;
             }
@@ -190,9 +193,10 @@ public class WorthDisplayListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         if (isAmethystItem(event.getOldCursor())) {
             return;
@@ -232,172 +236,7 @@ public class WorthDisplayListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
         if (event.getEntity() instanceof Player) {
-            Player player = (Player) event.getNewGameMode() == GameMode.CREATIVE) {
-            queueClear(event.getPlayer(), 1L);
-            return;
-        }
-
-        queueRefresh(event.getPlayer(), 2L);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) {
-            return;
-        }
-
-        if (isPlayerInventoryView(event.getInventory())) {
-            return;
-        }
-
-        if (plugin.getInvseeManager().isInvseeInventory(event.getInventory())) {
-            return;
-        }
-
-        if (!(event.getInventory().getHolder() instanceof SellMenu)
-                && !(event.getInventory().getHolder() instanceof BaseMenu)) {
-            plugin.getWorthManager().sanitizeInventory(event.getInventory());
-        }
-
-        if (isShulkerInventory(event.getInventory())) {
-            queueRefresh(player, 1L);
-            return;
-        }
-
-        queueRefresh(player, 1L);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
-            return;
-        }
-
-        if (player.getGameMode() == GameMode.CREATIVE) {
-            return;
-        }
-
-        if (isAmethystItem(event.getCurrentItem()) || isAmethystItem(event.getCursor())) {
-            return;
-        }
-
-        Inventory topInventory = event.getView().getTopInventory();
-        if (topInventory.getHolder() instanceof SellMenu
-                || topInventory.getHolder() instanceof BaseMenu
-                || plugin.getInvseeManager().isInvseeInventory(topInventory)) {
-            return;
-        }
-
-        ItemStack cursor = event.getCursor();
-        ItemStack current = event.getCurrentItem();
-
-        boolean isStacking = cursor != null && !cursor.getType().isAir()
-                && current != null && !current.getType().isAir()
-                && plugin.getWorthManager().isSimilarIgnoringWorth(cursor, current);
-
-        boolean strippedAny = false;
-
-        if (event.getClick() == ClickType.DOUBLE_CLICK) {
-            plugin.getWorthManager().mergeStorageStacksForNativeBehavior(player);
-            strippedAny = true;
-        } else if (isStacking) {
-            ClickType click = event.getClick();
-            if (click == ClickType.LEFT || click == ClickType.RIGHT) {
-                int maxStack = current.getMaxStackSize();
-                int currentAmount = current.getAmount();
-                if (currentAmount < maxStack) {
-                    event.setCancelled(true);
-
-                    int cursorAmount = cursor.getAmount();
-                    int transfer = (click == ClickType.LEFT)
-                            ? Math.min(cursorAmount, maxStack - currentAmount)
-                            : 1;
-
-                    ItemStack newCurrent = current.clone();
-                    newCurrent.setAmount(currentAmount + transfer);
-                    newCurrent = plugin.getWorthManager().stripWorthDisplay(newCurrent);
-
-                    ItemStack newCursor = cursor.clone();
-                    newCursor.setAmount(cursorAmount - transfer);
-                    if (newCursor.getAmount() <= 0) {
-                        newCursor = null;
-                    } else {
-                        newCursor = plugin.getWorthManager().stripWorthDisplay(newCursor);
-                    }
-
-                    event.getClickedInventory().setItem(event.getSlot(), newCurrent);
-                    player.setItemOnCursor(newCursor);
-
-                    plugin.getWorthManager().mergePlayerStorageStacks(player);
-                    queueRefresh(player, 1L, true);
-                    return;
-                }
-            }
-        } else if (event.getClick().isShiftClick() && current != null && !current.getType().isAir()) {
-            if (plugin.getWorthManager().stripStorageWorthDisplayForNativePickup(player, current)) {
-                strippedAny = true;
-            }
-
-            ItemStack strippedCurrent = plugin.getWorthManager().stripWorthDisplay(current);
-            if (strippedCurrent != current) {
-                event.setCurrentItem(strippedCurrent);
-                strippedAny = true;
-            }
-
-            plugin.getWorthManager().mergePlayerStorageStacks(player);
-        }
-
-        if (isShulkerInventory(topInventory)) {
-            plugin.getWorthManager().sanitizeInventory(topInventory);
-        }
-
-        queueRefresh(player, 1L, strippedAny);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
-            return;
-        }
-
-        if (isAmethystItem(event.getOldCursor())) {
-            return;
-        }
-
-        if (isShulkerInventory(event.getView().getTopInventory())) {
-            queueRefresh(player, 1L);
-            return;
-        }
-
-        queueRefresh(player, 1L);
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (isPlayerInventoryView(event.getInventory())) {
-            return;
-        }
-
-        if (plugin.getInvseeManager().isInvseeInventory(event.getInventory())) {
-            return;
-        }
-
-        if (!(event.getInventory().getHolder() instanceof SellMenu)
-                && !(event.getInventory().getHolder() instanceof BaseMenu)) {
-            plugin.getWorthManager().sanitizeInventory(event.getInventory());
-        }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    public void onDrop(PlayerDropItemEvent event) {
-        event.getItemDrop().setItemStack(
-                plugin.getWorthManager().stripWorthDisplay(event.getItemDrop().getItemStack())
-        );
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPickup(EntityPickupItemEvent event) {
-        if (event.getEntity();
+            Player player = (Player) event.getEntity();
             if (player.getGameMode() == GameMode.CREATIVE) {
                 return;
             }
@@ -582,7 +421,7 @@ public class WorthDisplayListener implements Listener {
     }
 
     private boolean isShulkerInventory(Inventory inventory) {
-        return inventory != null && inventory.getType() == InventoryType.SHULKER_BOX;
+        return inventory != null && inventory.getType() == InventoryType.ENDER_CHEST;
     }
 
     private boolean isAmethystItem(ItemStack item) {

@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,10 +24,11 @@ public class RenameCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION)) {
             player.sendMessage(ColorUtils.toComponent("&cYou do not have permission."));
@@ -39,7 +41,7 @@ public class RenameCommand implements CommandExecutor {
         }
 
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             player.sendMessage(ColorUtils.toComponent(
                     plugin.getConfigManager().getMessageOrDefault("RENAME.NO_ITEM", "&cYou must hold an item to rename it")
             ));

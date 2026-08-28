@@ -37,7 +37,7 @@ public class OrdersBrowseMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         OrdersManager manager = plugin.getOrdersManager();
         OrderUiState state = manager.getUiState(player.getUniqueId());
@@ -117,7 +117,7 @@ public class OrdersBrowseMenu extends BaseMenu {
         ));
         set(searchSlot, OrdersMenuSupport.button(
                 plugin, "GUI.MAIN.BUTTONS.SEARCH", "ORDERS.GUI.MAIN.SEARCH",
-                Material.OAK_SIGN, "&aSearch",
+                Material.SIGN, "&aSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &f{query}",  "",  "&eLeft-click &fto search",  "&eRight-click &fto clear")),
                 "{query}", query.trim().isEmpty() ? "none" : query
         ));

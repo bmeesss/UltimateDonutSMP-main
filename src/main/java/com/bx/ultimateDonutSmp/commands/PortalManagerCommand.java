@@ -434,11 +434,12 @@ public class PortalManagerCommand implements CommandExecutor {
             return;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sendMessage(sender, message("PORTALMANAGER.PLAYER-ONLY",
                     "&cOnly players can use this command."));
             return;
         }
+        Player player = (Player) sender;
 
         if (plugin.getPortalManager().getPortal(args[1]) == null) {
             sendMessage(sender, portalNotFound(args[1]));

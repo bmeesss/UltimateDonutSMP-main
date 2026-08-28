@@ -7,14 +7,12 @@ import com.bx.ultimateDonutSmp.models.PortalDefinition;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
-import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.entity.Display;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -33,6 +31,7 @@ public class PortalManager {
     private static final String DESTINATION_TYPE_RTP = "RTP";
     private static final String DESTINATION_TYPE_AFK = "AFK";
     private static final String HOLOGRAM_TAG = "uds_portal_hologram";
+    private static final String HOLOGRAM_METADATA_KEY = "uds_portal_hologram_id";
 
     private final UltimateDonutSmp plugin;
     private final Map<UUID, Long> entryDebounceUntil = new LinkedHashMap<>();
@@ -628,8 +627,8 @@ public class PortalManager {
             plugin.getSpigotScheduler().runRegion(baseLocation, () -> {
                 for (int i = 0; i < entityIds.size(); i++) {
                     Entity entity = Bukkit.getEntity(entityIds.get(i));
-                    if (entity instanceof TextDisplay display && entity.isValid()) {
-                        display.setText(ColorUtils.toComponent(lines.get(i)));
+                    if (entity instanceof ArmorStand && entity.isValid()) {
+                        ((ArmorStand) entity).setCustomName(ColorUtils.toComponent(lines.get(i)));
                     }
                 }
             });
@@ -652,17 +651,12 @@ public class PortalManager {
                 for (int i = 0; i < lines.size(); i++) {
                     String line = lines.get(i);
                     Location lineLocation = baseLocation.clone().subtract(0D, i * lineSpacing, 0D);
-                    TextDisplay display = baseLocation.getWorld().spawn(lineLocation, TextDisplay.class, textDisplay -> {
-                        textDisplay.setText(ColorUtils.toComponent(line));
-                        configureHologramDisplay(textDisplay);
-                        textDisplay.addScoreboardTag(HOLOGRAM_TAG);
-                        textDisplay.getPersistentDataContainer().set(
-                                plugin.getKey("portal_hologram"),
-                                PersistentDataType.STRING,
-                                portal.id()
-                        );
-                    });
-                    entityIds.add(display.getUniqueId());
+                    ArmorStand stand = baseLocation.getWorld().spawn(lineLocation, ArmorStand.class);
+                    stand.setCustomName(ColorUtils.toComponent(line));
+                    configureHologramDisplay(stand);
+                    stand.addScoreboardTag(HOLOGRAM_TAG);
+                    stand.setMetadata(HOLOGRAM_METADATA_KEY, new FixedMetadataValue(plugin, portal.id()));
+                    entityIds.add(stand.getUniqueId());
                 }
 
                 portalHolograms.put(portal.id(), entityIds);
@@ -683,7 +677,7 @@ public class PortalManager {
         for (int i = 0; i < trackedIds.size(); i++) {
             UUID entityId = trackedIds.get(i);
             Entity entity = Bukkit.getEntity(entityId);
-            if (!(entity instanceof TextDisplay)
+            if (!(entity instanceof ArmorStand)
                     || !entity.isValid()
                     || !entity.getScoreboardTags().contains(HOLOGRAM_TAG)) {
                 return false;
@@ -878,14 +872,17 @@ public class PortalManager {
         return plugin.getConfigManager().getNetwork().getString(path, fallback);
     }
 
-    private void configureHologramDisplay(TextDisplay textDisplay) {
-        textDisplay.setBillboard(Display.Billboard.CENTER);
-        textDisplay.setDefaultBackground(false);
-        textDisplay.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
-        textDisplay.setSeeThrough(true);
-        textDisplay.setShadowed(false);
-        textDisplay.setViewRange(1000.0F);
-        textDisplay.setPersistent(false);
+    private void configureHologramDisplay(ArmorStand armorStand) {
+        armorStand.setVisible(false);
+        armorStand.setCustomNameVisible(true);
+        armorStand.setGravity(false);
+        armorStand.setSmall(true);
+        armorStand.setMarker(true);
+        armorStand.setBasePlate(false);
+        armorStand.setArms(false);
+        armorStand.setCanPickupItems(false);
+        armorStand.setRemoveWhenFarAway(false);
+        armorStand.setInvulnerable(true);
     }
 
     private void removeLoadedPortalHologramOrphans(String portalId, Location baseLocation, int lineCount) {
@@ -902,7 +899,10 @@ public class PortalManager {
         plugin.getSpigotScheduler().runRegion(baseLocation, () -> {
             double radius = 2.0;
             double verticalRadius = Math.max(2.0, lineCount * getHologramLineSpacing() + 1.0);
-            for (Entity entity : baseLocation.getWorld().getNearbyEntities(baseLocation, radius, verticalRadius, radius, candidate -> candidate instanceof TextDisplay)) {
+            for (Entity entity : baseLocation.getWorld().getNearbyEntities(baseLocation, radius, verticalRadius, radius)) {
+                if (!(entity instanceof ArmorStand)) {
+                    continue;
+                }
                 if (!isManagedPortalHologram(entity) || tracked.contains(entity.getUniqueId())) {
                     continue;
                 }
@@ -915,8 +915,16 @@ public class PortalManager {
     }
 
     private boolean isAttachedToPortal(Entity entity, String portalId) {
-        String attachedPortalId = entity.getPersistentDataContainer()
-                .get(plugin.getKey("portal_hologram"), PersistentDataType.STRING);
+        String attachedPortalId = null;
+        if (entity.hasMetadata(HOLOGRAM_METADATA_KEY)) {
+            for (org.bukkit.metadata.MetadataValue metadataValue : entity.getMetadata(HOLOGRAM_METADATA_KEY)) {
+                if (metadataValue == null || metadataValue.getOwningPlugin() != plugin) {
+                    continue;
+                }
+                attachedPortalId = metadataValue.asString();
+                break;
+            }
+        }
         return attachedPortalId != null && attachedPortalId.equalsIgnoreCase(portalId);
     }
 
@@ -966,9 +974,11 @@ public class PortalManager {
 
         if (loc != null && loc.getWorld() != null) {
             String expected = portalId;
-            for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1.0, 3.0, 1.0, candidate -> candidate instanceof TextDisplay)) {
-                String attachedKey = entity.getPersistentDataContainer().get(plugin.getKey("portal_hologram"), PersistentDataType.STRING);
-                if (expected.equalsIgnoreCase(attachedKey)) {
+            for (Entity entity : loc.getWorld().getNearbyEntities(loc, 1.0, 3.0, 1.0)) {
+                if (!(entity instanceof ArmorStand)) {
+                    continue;
+                }
+                if (expected.equalsIgnoreCase(getAttachedPortalId(entity))) {
                     entity.remove();
                 }
             }
@@ -1027,7 +1037,7 @@ public class PortalManager {
         }
 
         for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntitiesByClass(TextDisplay.class)) {
+            for (Entity entity : world.getEntities()) {
                 if (isManagedPortalHologram(entity)) {
                     entity.remove();
                 }
@@ -1036,9 +1046,21 @@ public class PortalManager {
     }
 
     private boolean isManagedPortalHologram(Entity entity) {
-        return entity instanceof TextDisplay
+        return entity instanceof ArmorStand
                 && (entity.getScoreboardTags().contains(HOLOGRAM_TAG)
-                || entity.getPersistentDataContainer().has(plugin.getKey("portal_hologram"), PersistentDataType.STRING));
+                || getAttachedPortalId(entity) != null);
+    }
+
+    private String getAttachedPortalId(Entity entity) {
+        if (entity == null || !entity.hasMetadata(HOLOGRAM_METADATA_KEY)) {
+            return null;
+        }
+        for (org.bukkit.metadata.MetadataValue metadataValue : entity.getMetadata(HOLOGRAM_METADATA_KEY)) {
+            if (metadataValue != null && metadataValue.getOwningPlugin() == plugin) {
+                return metadataValue.asString();
+            }
+        }
+        return null;
     }
 
     private boolean isHologramEnabled() {

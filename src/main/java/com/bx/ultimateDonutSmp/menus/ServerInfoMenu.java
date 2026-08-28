@@ -9,6 +9,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -54,7 +55,7 @@ public class ServerInfoMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
         slotActions.clear();
         backSlot = -1;
         nextSlot = -1;
@@ -73,7 +74,7 @@ public class ServerInfoMenu extends BaseMenu {
                 continue;
             }
 
-            set(button.slot(), ItemUtils.createItem(button.material(), button.displayName(), button.lore()));
+            set(button.slot(), ItemUtils.createItem(button.material(), button.data(), button.displayName(), button.lore()));
             slotActions.put(button.slot(), button.action());
             renderedButtons++;
         }
@@ -315,7 +316,7 @@ public class ServerInfoMenu extends BaseMenu {
             case "RULES":
                 action = ButtonAction.command("rules");
                 break;
-            case "LEADERBOARDS":
+            case "LEASHERBOARDS":
                 action = ButtonAction.command("leaderboards");
                 break;
             case "SHARDS":
@@ -435,7 +436,7 @@ public class ServerInfoMenu extends BaseMenu {
             if (part.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -443,7 +444,7 @@ public class ServerInfoMenu extends BaseMenu {
                 builder.append(part.substring(1));
             }
         }
-        return builder.isEmpty() ? "Info" : builder.toString();
+        return builder.length() == 0 ? "Info" : builder.toString();
     }
 
     private enum ActionType {
@@ -462,13 +463,13 @@ public class ServerInfoMenu extends BaseMenu {
                                 10,
                                 Material.BOOK,
                                 "&#00A4FCStart here",
-                                List.of(
+                                Arrays.asList(
                                         "&f1. Use &b/rtp &fto leave spawn.",
                                         "&f2. Gather wood, food, and iron.",
                                         "&f3. Build a safe base.",
                                         "&f4. Save it with &b/sethome&f."
                                 ),
-                                ButtonAction.info(List.of(
+                                ButtonAction.info(Arrays.asList(
                                         "&7Start with &f/rtp &7to find land away from spawn.",
                                         "&7After building a base, save it with &f/sethome&7."
                                 ))
@@ -477,7 +478,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 11,
                                 Material.GOLD_INGOT,
                                 "&#00A4FCMake " + moneyPlural,
-                                List.of(
+                                Arrays.asList(
                                         "&fSell blocks, ores, and drops with",
                                         "&b/Sell &for list items in &b/auctionhouse&f.",
                                         "",
@@ -487,9 +488,9 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 12,
-                                Material.RED_BED,
+                                Material.BED,
                                 "&#00A4FCHomes",
-                                List.of(
+                                Arrays.asList(
                                         "&fUse &b/sethome <name> &fto save",
                                         "&fImportant places.",
                                         "",
@@ -501,7 +502,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 13,
                                 Material.IRON_HELMET,
                                 "&#00A4FCTeams",
-                                List.of(
+                                Arrays.asList(
                                         "&fPlay with friends, share a base,",
                                         "&fAnd manage team permissions.",
                                         "",
@@ -513,14 +514,14 @@ public class ServerInfoMenu extends BaseMenu {
                                 14,
                                 Material.DIAMOND_SWORD,
                                 "&#00A4FCCombat tips",
-                                List.of(
+                                Arrays.asList(
                                         "&fDying is punishing because",
                                         "&fKeepinventory is turned off.",
                                         "",
                                         "&#00A4FCTip: &favoid risky fights",
                                         "&fUntil you are geared."
                                 ),
-                                ButtonAction.info(List.of(
+                                ButtonAction.info(Arrays.asList(
                                         "&7You drop your items on death here, so gear up before taking big fights.",
                                         "&7Keep backup armor and food if you plan to PvP often."
                                 ))
@@ -529,7 +530,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 15,
                                 Material.COMPASS,
                                 "&#00A4FCSpawn",
-                                List.of(
+                                Arrays.asList(
                                         "&fReturn to spawn when you need",
                                         "&fShops, safety, or a reset.",
                                         "",
@@ -539,9 +540,9 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 16,
-                                Material.OAK_SAPLING,
+                                Material.SAPLING,
                                 "&#00A4FCRTP guide",
-                                List.of(
+                                Arrays.asList(
                                         "&fUse RTP when spawn feels crowded",
                                         "&fOr you need fresh land.",
                                         "",
@@ -564,7 +565,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 10,
                                 Material.EMERALD,
                                 "&#00A4FCShop",
-                                List.of(
+                                Arrays.asList(
                                         "&fBuy useful items, blocks,",
                                         "&fAnd starter gear.",
                                         "",
@@ -576,7 +577,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 11,
                                 Material.CHEST,
                                 "&#00A4FCSell",
-                                List.of(
+                                Arrays.asList(
                                         "&fTurn farmed or mined items",
                                         "&fInto quick " + moneyPlural + ".",
                                         "",
@@ -588,23 +589,23 @@ public class ServerInfoMenu extends BaseMenu {
                                 12,
                                 Material.ENDER_PEARL,
                                 "&#00A4FCTeleport requests",
-                                List.of(
+                                Arrays.asList(
                                         "&fUse &b/tpa <player> &for",
                                         "&b/tpahere <player>&f.",
                                         "",
                                         "&#00A4FCTip: &fonly teleport to",
                                         "&fPeople you trust."
                                 ),
-                                ButtonAction.info(List.of(
+                                ButtonAction.info(Arrays.asList(
                                         "&7Use &f/tpa <player> &7to request teleporting to them.",
                                         "&7Use &f/tpahere <player> &7if you want them to come to you."
                                 ))
                         ), 
                         new ButtonDefinition(
                                 13,
-                                Material.CLOCK,
+                                Material.WATCH,
                                 "&#00A4FCLeaderboards",
-                                List.of(
+                                Arrays.asList(
                                         "&fCheck who is leading in",
                                         "&f" + moneyPlural + ", kills, and more.",
                                         "",
@@ -614,9 +615,10 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 14,
-                                Material.GRAY_DYE,
+                                Material.INK_SACK,
+                                (short) 8,
                                 "&#00A4FCSettings",
-                                List.of(
+                                Arrays.asList(
                                         "&fToggle personal options like",
                                         "&fAlerts and menu preferences.",
                                         "",
@@ -628,7 +630,7 @@ public class ServerInfoMenu extends BaseMenu {
                                 15,
                                 Material.KNOWLEDGE_BOOK,
                                 "&#00A4FCRules",
-                                List.of(
+                                Arrays.asList(
                                         "&fRead the rules before grinding",
                                         "&fOr trading with players.",
                                         "",
@@ -638,9 +640,10 @@ public class ServerInfoMenu extends BaseMenu {
                         ), 
                         new ButtonDefinition(
                                 16,
-                                Material.PINK_DYE,
+                                Material.INK_SACK,
+                                (short) 9,
                                 "&#00A4FCSocial & media",
-                                List.of(
+                                Arrays.asList(
                                         "&fOpen server links and check",
                                         "&fMedia rank requirements.",
                                         "",
@@ -652,7 +655,7 @@ public class ServerInfoMenu extends BaseMenu {
         );
     }
 
-public final class PageDefinition {
+    public static final class PageDefinition {
     private final String key;
     private final String title;
     private final int size;
@@ -684,16 +687,22 @@ public final class PageDefinition {
     }
 }
 
-public final class ButtonDefinition {
+public static final class ButtonDefinition {
     private final int slot;
     private final Material material;
+    private final short data;
     private final String displayName;
     private final List<String> lore;
     private final ButtonAction action;
 
     public ButtonDefinition(int slot, Material material, String displayName, List<String> lore, ButtonAction action) {
+        this(slot, material, (short) 0, displayName, lore, action);
+    }
+
+    public ButtonDefinition(int slot, Material material, short data, String displayName, List<String> lore, ButtonAction action) {
         this.slot = slot;
         this.material = material;
+        this.data = data;
         this.displayName = displayName;
         this.lore = lore;
         this.action = action;
@@ -701,25 +710,26 @@ public final class ButtonDefinition {
 
     public int slot() { return slot; }
     public Material material() { return material; }
+    public short data() { return data; }
     public String displayName() { return displayName; }
     public List<String> lore() { return lore; }
     public ButtonAction action() { return action; }
 
     @Override public String toString() {
-        return "ButtonDefinition[slot=+slot, material=+material, displayName=+displayName, lore=+lore, action=+action]";
+        return "ButtonDefinition[slot=+slot, material=+material, data=+data, displayName=+displayName, lore=+lore, action=+action]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ButtonDefinition that = (ButtonDefinition) o;
-        return java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(material, that.material) && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(action, that.action);
+        return java.util.Objects.equals(slot, that.slot) && java.util.Objects.equals(material, that.material) && data == that.data && java.util.Objects.equals(displayName, that.displayName) && java.util.Objects.equals(lore, that.lore) && java.util.Objects.equals(action, that.action);
     }
     @Override public int hashCode() {
-        return java.util.Objects.hash(slot, material, displayName, lore, action);
+        return java.util.Objects.hash(slot, material, data, displayName, lore, action);
     }
 }
 
-public final class ButtonAction {
+public static final class ButtonAction {
     private final ActionType type;
     private final String command;
     private final List<String> messages;

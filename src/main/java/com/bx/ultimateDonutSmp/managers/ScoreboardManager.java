@@ -8,7 +8,6 @@ import com.bx.ultimateDonutSmp.utils.ScoreboardNumberHider;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
@@ -313,7 +312,8 @@ public class ScoreboardManager {
         clearCacheSpigot(player.getUniqueId());
 
         Scoreboard board = Bukkit.getScoreboardManager().getNewScoreboard();
-        Objective obj = board.registerNewObjective("sidebar", Criteria.DUMMY, getTitle(player, settings));
+        Objective obj = board.registerNewObjective("sidebar", "dummy");
+        obj.setDisplayName(getTitle(player, settings));
         obj.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         playerBoards.put(player.getUniqueId(), board);
@@ -651,7 +651,11 @@ public class ScoreboardManager {
         int iconWidth = minecraftTextWidth(icon);
         int missingWidth = Math.max(0, columnWidth - iconWidth);
         int spaces = Math.max(1, Math.round(missingWidth / 4F));
-        return icon + " ".repeat(spaces);
+        StringBuilder padding = new StringBuilder(spaces);
+        for (int i = 0; i < spaces; i++) {
+            padding.append(' ');
+        }
+        return icon + padding;
     }
 
     private String alignSidebarIconColumn(String text, SidebarSettings settings) {
@@ -692,7 +696,11 @@ public class ScoreboardManager {
         int iconWidth = minecraftTextWidth(iconText);
         int missingWidth = Math.max(0, columnWidth - iconWidth);
         int spaces = Math.max(1, Math.round(missingWidth / 4F));
-        return text.substring(0, spacesStart) + " ".repeat(spaces) + text.substring(cursor);
+        StringBuilder padding = new StringBuilder(spaces);
+        for (int i = 0; i < spaces; i++) {
+            padding.append(' ');
+        }
+        return text.substring(0, spacesStart) + padding + text.substring(cursor);
     }
 
     private int firstVisibleIndex(String text, int start) {
@@ -779,7 +787,6 @@ public class ScoreboardManager {
                 return 4;
             case '!':
             case '.':
-            case ': case ':
             case ':':
             case ';':
             case '|':

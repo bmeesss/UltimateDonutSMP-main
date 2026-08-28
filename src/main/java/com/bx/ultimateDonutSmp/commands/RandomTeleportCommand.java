@@ -17,10 +17,11 @@ public class RandomTeleportCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent("&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!plugin.getStaffModeManager().canUseRandomTeleport(player)) {
             player.sendMessage(ColorUtils.toComponent(

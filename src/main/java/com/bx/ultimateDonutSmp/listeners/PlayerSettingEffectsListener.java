@@ -21,7 +21,9 @@ public class PlayerSettingEffectsListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onTotemUse(EntityResurrectEvent event) {
-        if (!(event.getEntity() instanceof Player player)) return;
+        org.bukkit.entity.LivingEntity entity = event.getEntity();
+        if (!(entity instanceof Player)) return;
+        Player player = (Player) entity;
 
         if (NightVisionUtils.isEnabled(plugin, player)) {
             plugin.getSpigotScheduler().runEntityLater(
@@ -67,7 +69,7 @@ public class PlayerSettingEffectsListener implements Listener {
         Location base = player.getLocation().add(0, 1.0 + heightOffset, 0);
 
         world.spawnParticle(
-                Particle.TOTEM_OF_UNDYING,
+                Particle.FIREWORKS_SPARK,
                 base,
                 burstCount,
                 0.45 + radius,
@@ -76,7 +78,7 @@ public class PlayerSettingEffectsListener implements Listener {
                 0.04
         );
         world.spawnParticle(
-                Particle.GLOW,
+                Particle.SPELL_MOB,
                 base,
                 Math.max(20, burstCount / 3),
                 0.35 + radius,
@@ -91,9 +93,9 @@ public class PlayerSettingEffectsListener implements Listener {
             double z = base.getZ() + (Math.sin(angle) * radius);
             double y = base.getY() + (Math.sin(angle * 2) * 0.10);
 
-            world.spawnParticle(Particle.TOTEM_OF_UNDYING, x, y, z, 1, 0, 0, 0, 0);
+            world.spawnParticle(Particle.FIREWORKS_SPARK, x, y, z, 1, 0, 0, 0, 0);
             if (point % 2 == 0) {
-                world.spawnParticle(Particle.GLOW, x, y, z, 1, 0, 0, 0, 0);
+                world.spawnParticle(Particle.SPELL_MOB, x, y, z, 1, 0, 0, 0, 0);
             }
         }
     }

@@ -62,18 +62,18 @@ public class GodModeCommand extends Command implements CommandExecutor {
             return true;
         }
 
-        if (sender instanceof Player player && !PermissionUtils.has(player, PERMISSION)) {
-            send(player, "GOD.NO_PERMISSION", "&cYou do not have permission.");
+        if (sender instanceof Player && !PermissionUtils.has((Player) sender, PERMISSION)) {
+            send((Player) sender, "GOD.NO_PERMISSION", "&cYou do not have permission.");
             return true;
         }
 
         Player target;
         if (args.length == 0) {
-            if (!(sender instanceof Player player)) {
+            if (!(sender instanceof Player)) {
                 send(sender, "GOD.CONSOLE_USAGE", "&cUsage: /%label% <player>", "%label%", label);
                 return true;
             }
-            target = player;
+            target = (Player) sender;
         } else {
             target = findOnlinePlayer(args[0]);
             if (target == null) {
@@ -93,7 +93,7 @@ public class GodModeCommand extends Command implements CommandExecutor {
                 enabled ? "&aEnabled" : "&cDisabled"
         );
 
-        if (sender instanceof Player player && player.getUniqueId().equals(target.getUniqueId())) {
+        if (sender instanceof Player && ((Player) sender).getUniqueId().equals(target.getUniqueId())) {
             send(target,
                     enabled ? "GOD.ENABLED" : "GOD.DISABLED",
                     enabled ? "&aGod mode enabled." : "&cGod mode disabled.");
@@ -119,7 +119,7 @@ public class GodModeCommand extends Command implements CommandExecutor {
     }
 
     private String senderName(CommandSender sender) {
-        return sender instanceof Player player ? player.getName() : sender.getName();
+        return sender instanceof Player ? ((Player) sender).getName() : sender.getName();
     }
 
     private Player findOnlinePlayer(String input) {
@@ -145,13 +145,13 @@ public class GodModeCommand extends Command implements CommandExecutor {
         try {
             Method method = Bukkit.getServer().getClass().getMethod("getCommandMap");
             Object commandMap = method.invoke(Bukkit.getServer());
-            return commandMap instanceof CommandMap map ? map : null;
+            return commandMap instanceof CommandMap ? (CommandMap) commandMap : null;
         } catch (ReflectiveOperationException ignored) {
             try {
                 Field field = Bukkit.getServer().getClass().getDeclaredField("commandMap");
                 field.setAccessible(true);
                 Object commandMap = field.get(Bukkit.getServer());
-                return commandMap instanceof CommandMap map ? map : null;
+                return commandMap instanceof CommandMap ? (CommandMap) commandMap : null;
             } catch (ReflectiveOperationException ignoredAgain) {
                 return null;
             }

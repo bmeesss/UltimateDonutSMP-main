@@ -45,7 +45,7 @@ public class ChatLogsMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         totalItems = plugin.getDatabaseManager()
                 .getLogsByTypeCount(targetUuid, PlayerLogsManager.PUBLIC_CHAT_TYPE);
@@ -118,7 +118,7 @@ public class ChatLogsMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page " + page + ".")
             ));
         } else {
-            set(PREVIOUS_PAGE_SLOT, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(PREVIOUS_PAGE_SLOT, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         // Next Page Button
@@ -129,7 +129,7 @@ public class ChatLogsMenu extends BaseMenu {
                     java.util.Collections.singletonList("&7Go to page " + (page + 2) + ".")
             ));
         } else {
-            set(NEXT_PAGE_SLOT, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(NEXT_PAGE_SLOT, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
     }
 
@@ -161,7 +161,7 @@ public class ChatLogsMenu extends BaseMenu {
         }
 
         StringBuilder line = new StringBuilder();
-        for (String word : message.trim().split("\s+")) {
+        for (String word : message.trim().split("\\s+")) {
             while (word.length() > LORE_LINE_LENGTH) {
                 if (line.length() > 0) {
                     lines.add(line.toString());

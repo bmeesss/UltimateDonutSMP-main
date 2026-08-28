@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.listeners;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.SpawnerManager;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.block.Block;
@@ -57,7 +58,7 @@ public class SpawnerInteractListener implements Listener {
         }
 
         if (plugin.getSpawnerManager().isSpawnerItem(held)) {
-            var result = plugin.getSpawnerManager().stackSpawner(player, block, held);
+            SpawnerManager.ActionResult result = plugin.getSpawnerManager().stackSpawner(player, block, held);
             player.sendMessage(ColorUtils.toComponent(result.message()));
             if (result.success()) {
                 int consumed = result.consumedAmount() > 0 ? result.consumedAmount() : (player.isSneaking() ? held.getAmount() : 1);

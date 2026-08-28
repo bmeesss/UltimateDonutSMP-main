@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp.commands;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.CurrencyManager;
+import com.bx.ultimateDonutSmp.managers.EconomyManager;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,7 +19,8 @@ public class BalanceCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
 
         if (args.length == 0) {
             double balance = plugin.getEconomyManager().getBalance(player);
@@ -29,7 +31,7 @@ public class BalanceCommand implements CommandExecutor {
                     "{money_full}", fullMoney(balance));
             player.sendMessage(ColorUtils.toComponent(msg));
         } else {
-            var account = plugin.getEconomyManager().resolveAccount(args[0]);
+            EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(args[0]);
             if (account == null) {
                 player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("BALANCE.ADMIN.PLAYER-NOT-FOUND")));
                 return true;

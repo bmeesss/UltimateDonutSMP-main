@@ -39,7 +39,7 @@ public class SellHistoryMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         int maxItems = menus.getInt("SELL-HISTORY-MENU.MAX-ITEMS-PER-PAGE", 45);
@@ -177,7 +177,7 @@ public class SellHistoryMenu extends BaseMenu {
             if (word.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));

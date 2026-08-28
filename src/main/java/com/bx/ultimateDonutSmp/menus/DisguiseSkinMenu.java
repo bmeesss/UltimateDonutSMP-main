@@ -101,7 +101,7 @@ public class DisguiseSkinMenu extends BaseMenu {
 
     private void renderNavigation(int total) {
         for (int slot = 45; slot < 54; slot++) {
-            set(slot, ItemUtils.createItem(Material.BLACK_STAINED_GLASS_PANE, " ", java.util.Collections.emptyList()));
+            set(slot, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 15, " ", java.util.Collections.emptyList()));
         }
         if (page > 0) {
             set(45, ItemUtils.createItem(Material.ARROW, "&bPrevious page", java.util.Collections.emptyList()));

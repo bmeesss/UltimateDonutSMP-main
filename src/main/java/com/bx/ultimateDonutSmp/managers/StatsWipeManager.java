@@ -35,7 +35,7 @@ public class StatsWipeManager {
         WipeTarget(String configKey, String displayName, String... aliases) {
             this.configKey = configKey;
             this.displayName = displayName;
-            this.aliases = java.util.Collections.singleton(aliases);
+            this.aliases = new java.util.HashSet<String>(java.util.Arrays.asList(aliases));
         }
 
         public String getConfigKey() {
@@ -67,7 +67,7 @@ public class StatsWipeManager {
         }
     }
 
-public final class WipeResult {
+public static final class WipeResult {
     private final boolean success;
     private final boolean busy;
     private final Map<WipeTarget, Integer> affectedCounts;
@@ -139,13 +139,13 @@ public final class WipeResult {
                 return countEconomyTargets(true);
             case SHARDS:
                 return countEconomyTargets(false);
-            default:
-                return null;
         }
+        // WipeTarget is handled exhaustively above; report nothing for any future target.
+        return 0;
     }
 
     public WipeResult wipeTarget(WipeTarget target, String actorName) {
-        return wipeTargets(Enumjava.util.Collections.singleton(target), actorName);
+        return wipeTargets(EnumSet.of(target), actorName);
     }
 
     public WipeResult wipeTargets(Set<WipeTarget> targets, String actorName) {
@@ -190,9 +190,9 @@ public final class WipeResult {
                 return wipeMoney();
             case SHARDS:
                 return wipeShards();
-            default:
-                return null;
         }
+        // WipeTarget is handled exhaustively above; wipe nothing for any future target.
+        return 0;
     }
 
     private int wipePlayerStats() {

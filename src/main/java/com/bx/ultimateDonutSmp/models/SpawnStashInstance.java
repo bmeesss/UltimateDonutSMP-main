@@ -30,6 +30,23 @@ public final class SpawnStashInstance {
     private final Map<String, Long> alertCooldowns;
 
     public SpawnStashInstance(long id, String typeKey, String displayName, UUID creatorUuid, String creatorName, String worldName, int originX, int originY, int originZ, BlockFace facing, long createdAtMillis, long expiresAtMillis, double alertRadius, List<Location> blockLocations, Set<String> blockKeys, List<BlockState> snapshots, Map<String, Long> alertCooldowns) {
+        this.id = id;
+        this.typeKey = typeKey;
+        this.displayName = displayName;
+        this.creatorUuid = creatorUuid;
+        this.creatorName = creatorName;
+        this.worldName = worldName;
+        this.originX = originX;
+        this.originY = originY;
+        this.originZ = originZ;
+        this.facing = facing;
+        this.createdAtMillis = createdAtMillis;
+        this.expiresAtMillis = expiresAtMillis;
+        this.alertRadius = alertRadius;
+        this.blockLocations = blockLocations;
+        this.blockKeys = blockKeys;
+        this.snapshots = snapshots;
+        this.alertCooldowns = alertCooldowns == null ? new ConcurrentHashMap<String, Long>() : alertCooldowns;
     }
 
     public long id() { return id; }
@@ -49,11 +66,6 @@ public final class SpawnStashInstance {
     public Set<String> blockKeys() { return blockKeys; }
     public List<BlockState> snapshots() { return snapshots; }
     public Map<String, Long> alertCooldowns() { return alertCooldowns; }
-
-
-    public
-
-
     public Location originLocation() {
         return new Location(blockLocations.isEmpty() ? null : blockLocations.get(0).getWorld(),
                 originX + 0.5D, originY + 0.5D, originZ + 0.5D);

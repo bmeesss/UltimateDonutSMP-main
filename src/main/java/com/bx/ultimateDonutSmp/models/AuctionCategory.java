@@ -7,7 +7,7 @@ import java.util.Locale;
 
 public enum AuctionCategory {
     ALL("All", Material.COMPASS),
-    BLOCKS("Blocks", Material.GRASS_BLOCK),
+    BLOCKS("Blocks", Material.GRASS),
     TOOLS("Tools", Material.DIAMOND_PICKAXE),
     FOOD("Food", Material.GOLDEN_CARROT),
     COMBAT("Combat", Material.DIAMOND_SWORD),
@@ -85,8 +85,8 @@ public enum AuctionCategory {
                     || name.endsWith("_LEGGINGS")
                     || name.endsWith("_BOOTS")
                     || name.endsWith("_BOW")
-                    || type == Material.CROSSBOW
-                    || type == Material.TRIDENT
+                    || type == Material.BOW
+                    || type == Material.FISHING_ROD
                     || type == Material.SHIELD;
             case POTIONS:
                 return type == Material.POTION
@@ -95,41 +95,41 @@ public enum AuctionCategory {
                     || type == Material.TIPPED_ARROW;
             case BOOKS:
                 return type == Material.BOOK
-                    || type == Material.WRITABLE_BOOK
+                    || type == Material.BOOK_AND_QUILL
                     || type == Material.WRITTEN_BOOK
                     || type == Material.ENCHANTED_BOOK
                     || type == Material.KNOWLEDGE_BOOK;
             case INGREDIENTS:
                 return type == Material.BLAZE_POWDER
                     || type == Material.BLAZE_ROD
-                    || type == Material.GUNPOWDER
+                    || type == Material.SULPHUR
                     || type == Material.STRING
                     || type == Material.SPIDER_EYE
                     || type == Material.FERMENTED_SPIDER_EYE
-                    || type == Material.GLISTERING_MELON_SLICE
+                    || type == Material.SPECKLED_MELON
                     || type == Material.GHAST_TEAR
                     || type == Material.MAGMA_CREAM
                     || type == Material.RABBIT_FOOT
-                    || type == Material.PHANTOM_MEMBRANE
+                    || type == Material.LEATHER
                     || type == Material.SUGAR
                     || type == Material.REDSTONE
-                    || type == Material.GLOWSTONE_DUST
-                    || type == Material.NETHER_WART;
+                    || type == Material.REDSTONE
+                    || type == Material.NETHER_STALK;
             case UTILITIES:
                 return type == Material.ENDER_CHEST
                     || type == Material.CHEST
-                    || type == Material.BARREL
-                    || type == Material.SHULKER_BOX
-                    || name.endsWith("_SHULKER_BOX")
+                    || type == Material.CHEST
+                    || type == Material.ENDER_CHEST
+                    || name.endsWith("_ENDER_CHEST")
                     || type == Material.ELYTRA
-                    || type == Material.LEAD
+                    || type == Material.LEASH
                     || type == Material.NAME_TAG
                     || type == Material.COMPASS
-                    || type == Material.RECOVERY_COMPASS
-                    || type == Material.CLOCK;
-            default:
-                return null;
+                    || type == Material.COMPASS
+                    || type == Material.WATCH;
         }
+        // AuctionCategory is handled exhaustively above; treat any future category as non-matching.
+        return false;
     }
 
     public static AuctionCategory from(String raw) {

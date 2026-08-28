@@ -116,7 +116,8 @@ public class CrateGachaMenu extends BaseMenu {
                 return;
             }
 
-            if (!(player.getOpenInventory().getTopInventory().getHolder() instanceof CrateGachaMenu menu) || menu != this) {
+            org.bukkit.inventory.InventoryHolder holder = player.getOpenInventory().getTopInventory().getHolder();
+            if (!(holder instanceof CrateGachaMenu) || holder != this) {
                 if (allowClose || finished) {
                     cancelSpin();
                 }
@@ -258,7 +259,8 @@ public class CrateGachaMenu extends BaseMenu {
 
     private ItemStack createIndicatorItem(String arrow) {
         return ItemUtils.createItem(
-                Material.RED_STAINED_GLASS_PANE,
+                Material.STAINED_GLASS_PANE,
+                (short) 14,
                 arrow,
                 java.util.Collections.singletonList("&7Winning slot")
         );

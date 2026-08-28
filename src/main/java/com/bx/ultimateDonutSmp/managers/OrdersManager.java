@@ -31,6 +31,7 @@ import com.bx.ultimateDonutSmp.models.OrderUiState;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -85,7 +86,7 @@ public class OrdersManager {
     ));
     private static final List<ServerCatalogCategory> SERVER_CATALOG_CATEGORIES = new java.util.ArrayList<>(java.util.Arrays.asList(
             new ServerCatalogCategory("ALL", Material.COMPASS), 
-            new ServerCatalogCategory("BLOCKS", Material.GRASS_BLOCK), 
+            new ServerCatalogCategory("BLOCKS", resolveMaterial("GRASS_BLOCK", "GRASS")), 
             new ServerCatalogCategory("ITEMS", Material.CHEST), 
             new ServerCatalogCategory("FOOD", Material.APPLE), 
             new ServerCatalogCategory("TOOLS", Material.DIAMOND_PICKAXE), 
@@ -207,7 +208,7 @@ public class OrdersManager {
         DATABASE_ERROR
     }
 
-public final class OrderEditNavigation {
+    public static final class OrderEditNavigation {
     private final boolean backToMyOrders;
     private final int originPage;
     private final OrderSort sortMode;
@@ -226,7 +227,7 @@ public final class OrderEditNavigation {
     public String categoryFilter() { return categoryFilter; }
 
     @Override public String toString() {
-        return "OrderEditNavigation[backToMyOrders=+backToMyOrders, originPage=+originPage, sortMode=+sortMode, categoryFilter=+categoryFilter]";
+        return "OrderEditNavigation[backToMyOrders=" + backToMyOrders + ", originPage=" + originPage + ", sortMode=" + sortMode + ", categoryFilter=" + categoryFilter + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -239,7 +240,7 @@ public final class OrderEditNavigation {
     }
 }
 
-public final class PendingOrderCreationSnapshot {
+    public static final class PendingOrderCreationSnapshot {
     private final ItemStack requestedItem;
     private final String categoryKey;
     private final int quantity;
@@ -261,7 +262,7 @@ public final class PendingOrderCreationSnapshot {
     public double totalBudget() { return totalBudget; }
 
     @Override public String toString() {
-        return "PendingOrderCreationSnapshot[requestedItem=+requestedItem, categoryKey=+categoryKey, quantity=+quantity, priceEach=+priceEach, totalBudget=+totalBudget]";
+        return "PendingOrderCreationSnapshot[requestedItem=" + requestedItem + ", categoryKey=" + categoryKey + ", quantity=" + quantity + ", priceEach=" + priceEach + ", totalBudget=" + totalBudget + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -274,14 +275,23 @@ public final class PendingOrderCreationSnapshot {
     }
 }
 
-public final class CreateOrderResult {
+    public static final class CreateOrderResult {
     private final boolean success;
     private final CreateFailureReason reason;
     private final Order order;
     private final double creationFee;
     private final CrashProtectionManager.ValidationResult safetyResult;
 
+    public CreateOrderResult(boolean success, CreateFailureReason reason, Order order, double creationFee) {
+        this(success, reason, order, creationFee, null);
+    }
+
     public CreateOrderResult(boolean success, CreateFailureReason reason, Order order, double creationFee, CrashProtectionManager.ValidationResult safetyResult) {
+        this.success = success;
+        this.reason = reason;
+        this.order = order;
+        this.creationFee = creationFee;
+        this.safetyResult = safetyResult;
     }
 
     public boolean success() { return success; }
@@ -291,11 +301,9 @@ public final class CreateOrderResult {
     public CrashProtectionManager.ValidationResult safetyResult() { return safetyResult; }
 
 
-        public
-
 
     @Override public String toString() {
-        return "CreateOrderResult[success=+success, reason=+reason, order=+order, creationFee=+creationFee, safetyResult=+safetyResult]";
+        return "CreateOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", creationFee=" + creationFee + ", safetyResult=" + safetyResult + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -308,7 +316,7 @@ public final class CreateOrderResult {
     }
 }
 
-public final class DeliveryPreview {
+    public static final class DeliveryPreview {
     private final boolean success;
     private final DeliveryFailureReason reason;
     private final Order order;
@@ -330,7 +338,7 @@ public final class DeliveryPreview {
     public double payout() { return payout; }
 
     @Override public String toString() {
-        return "DeliveryPreview[success=+success, reason=+reason, order=+order, deliverQuantity=+deliverQuantity, payout=+payout]";
+        return "DeliveryPreview[success=" + success + ", reason=" + reason + ", order=" + order + ", deliverQuantity=" + deliverQuantity + ", payout=" + payout + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -343,7 +351,7 @@ public final class DeliveryPreview {
     }
 }
 
-public final class DeliverOrderResult {
+    public static final class DeliverOrderResult {
     private final boolean success;
     private final DeliveryFailureReason reason;
     private final Order order;
@@ -365,7 +373,7 @@ public final class DeliverOrderResult {
     public double payout() { return payout; }
 
     @Override public String toString() {
-        return "DeliverOrderResult[success=+success, reason=+reason, order=+order, deliveredQuantity=+deliveredQuantity, payout=+payout]";
+        return "DeliverOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", deliveredQuantity=" + deliveredQuantity + ", payout=" + payout + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -378,7 +386,7 @@ public final class DeliverOrderResult {
     }
 }
 
-public final class CancelOrderResult {
+    public static final class CancelOrderResult {
     private final boolean success;
     private final CancelFailureReason reason;
     private final Order order;
@@ -394,7 +402,7 @@ public final class CancelOrderResult {
     public Order order() { return order; }
 
     @Override public String toString() {
-        return "CancelOrderResult[success=+success, reason=+reason, order=+order]";
+        return "CancelOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -407,7 +415,7 @@ public final class CancelOrderResult {
     }
 }
 
-public final class ClaimResult {
+    public static final class ClaimResult {
     private final boolean success;
     private final ClaimFailureReason reason;
     private final OrderCollectionClaim claim;
@@ -423,7 +431,7 @@ public final class ClaimResult {
     public OrderCollectionClaim claim() { return claim; }
 
     @Override public String toString() {
-        return "ClaimResult[success=+success, reason=+reason, claim=+claim]";
+        return "ClaimResult[success=" + success + ", reason=" + reason + ", claim=" + claim + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -436,7 +444,7 @@ public final class ClaimResult {
     }
 }
 
-public final class EditOrderResult {
+    public static final class EditOrderResult {
     private final boolean success;
     private final EditFailureReason reason;
     private final Order order;
@@ -455,7 +463,7 @@ public final class EditOrderResult {
     public double balanceDelta() { return balanceDelta; }
 
     @Override public String toString() {
-        return "EditOrderResult[success=+success, reason=+reason, order=+order, balanceDelta=+balanceDelta]";
+        return "EditOrderResult[success=" + success + ", reason=" + reason + ", order=" + order + ", balanceDelta=" + balanceDelta + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -623,7 +631,7 @@ public final class EditOrderResult {
                                 plugin.getSpigotScheduler().runEntity(player, () -> {
                                     PlayerData ownerData = getPlayerData(player);
                                     if (ownerData != null) {
-                                        var depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
+                                        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
                                         if (depositResult.success()) {
                                             clearEscrowRemaining(claim.orderId());
                                             ownerData.setMoneySpent(Math.max(0D, ownerData.getMoneySpent() - claim.moneyAmount()));
@@ -922,7 +930,7 @@ public final class EditOrderResult {
     }
 
     public String resolveCategoryForMaterial(Material material) {
-        if (!isModernMaterial(material) || material.isAir()) {
+        if (!isModernMaterial(material) || isAir(material)) {
             return "ALL";
         }
 
@@ -1254,14 +1262,14 @@ public final class EditOrderResult {
             return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
         }
 
-        var escrowWithdraw = plugin.getEconomyManager().withdraw(player, totalBudget, EconomyReason.ORDER_CREATE_ESCROW);
+        EconomyTransactionResult escrowWithdraw = plugin.getEconomyManager().withdraw(player, totalBudget, EconomyReason.ORDER_CREATE_ESCROW);
         if (!escrowWithdraw.success()) {
             return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
         }
 
         boolean feeWithdrawn = false;
         if (creationFee > 0D) {
-            var feeResult = plugin.getEconomyManager().withdraw(player, creationFee, EconomyReason.ORDER_CREATE_FEE);
+            EconomyTransactionResult feeResult = plugin.getEconomyManager().withdraw(player, creationFee, EconomyReason.ORDER_CREATE_FEE);
             if (!feeResult.success()) {
                 plugin.getEconomyManager().deposit(player, totalBudget, EconomyReason.ORDER_REFUND);
                 return new CreateOrderResult(false, CreateFailureReason.NO_MONEY, null, creationFee);
@@ -1569,7 +1577,7 @@ public final class EditOrderResult {
     public List<Material> searchOrderMaterials(String rawQuery) {
         List<Material> catalogMatches = searchCatalogEntries(rawQuery).stream()
                 .map(OrderCatalogEntry::material)
-                .filter(material -> material != null && !material.isAir())
+                .filter(material -> material != null && !isAir(material))
                 .distinct()
                 .collect(java.util.stream.Collectors.toList());
         if (!catalogMatches.isEmpty()) {
@@ -1901,7 +1909,7 @@ public final class EditOrderResult {
             case WOOD:
                 return isWoodFamilyMaterial(material);
             default:
-                return null;
+                return false;
         }
     }
 
@@ -1912,7 +1920,13 @@ public final class EditOrderResult {
             if (!isOrderable(material) || !matchesServerCatalogCategory(material, normalizedCategory)) {
                 continue;
             }
-            entries.add(new OrderCatalogEntry(normalizedCategory, material));
+            ItemStack preview = new ItemStack(material);
+            entries.add(new OrderCatalogEntry(
+                    normalizedCategory,
+                    preview,
+                    describeMaterial(material),
+                    material.name() + " " + describeMaterial(material) + " " + normalizedCategory
+            ));
         }
         entries.sort(Comparator.comparing(entry -> entry.material().name()));
         return new java.util.ArrayList<>(entries);
@@ -1943,7 +1957,7 @@ public final class EditOrderResult {
     }
 
     private boolean matchesServerCatalogCategory(Material material, String categoryKey) {
-        if (!isModernMaterial(material) || material.isAir() || !material.isItem()) {
+        if (!isModernMaterial(material) || isAir(material) || !material.isItem()) {
             return false;
         }
 
@@ -1987,7 +2001,7 @@ public final class EditOrderResult {
                 || name.endsWith("_CHESTPLATE")
                 || name.endsWith("_LEGGINGS")
                 || name.endsWith("_BOOTS")
-                || material == Material.TURTLE_HELMET
+                || material.name().equals("TURTLE_HELMET")
                 || material == Material.ELYTRA;
     }
 
@@ -2004,10 +2018,10 @@ public final class EditOrderResult {
                 || material == Material.SHEARS
                 || material == Material.FLINT_AND_STEEL
                 || material == Material.FISHING_ROD
-                || material == Material.BRUSH
+                || material.name().equals("BRUSH")
                 || material == Material.COMPASS
-                || material == Material.CLOCK
-                || material == Material.LEAD
+                || material == resolveMaterial("WATCH", "WATCH")
+                || material == resolveMaterial("LEASH", "LEASH")
                 || material == Material.NAME_TAG;
     }
 
@@ -2022,9 +2036,9 @@ public final class EditOrderResult {
                 || name.contains("BOW")
                 || name.contains("ARROW")
                 || name.contains("SHIELD")
-                || material == Material.TRIDENT
-                || material == Material.MACE
-                || material == Material.TOTEM_OF_UNDYING;
+                || material.name().equals("TRIDENT")
+                || material.name().equals("MACE")
+                || material == resolveMaterial("FIREWORKS_SPARK", null);
     }
 
     private boolean isRedstoneMaterial(Material material) {
@@ -2047,10 +2061,10 @@ public final class EditOrderResult {
                 || name.contains("LEVER")
                 || name.contains("TRIPWIRE")
                 || name.contains("SCULK_SENSOR")
-                || material == Material.TARGET
+                || material.name().equals("TARGET")
                 || material == Material.NOTE_BLOCK
                 || material == Material.TNT
-                || material == Material.CRAFTER;
+                || material.name().equals("CRAFTER");
     }
 
     private boolean isWoodFamilyMaterial(Material material) {
@@ -2060,6 +2074,19 @@ public final class EditOrderResult {
                 || name.contains("PLANKS")
                 || name.contains("STEM")
                 || name.contains("HYPHAE");
+    }
+
+    private static Material resolveMaterial(String modernName, String legacyName) {
+        Material modern = modernName == null ? null : Material.matchMaterial(modernName);
+        if (modern != null) {
+            return modern;
+        }
+        Material legacy = legacyName == null ? null : Material.matchMaterial(legacyName);
+        return legacy == null ? Material.STONE : legacy;
+    }
+
+    private static boolean isAir(Material material) {
+        return material == null || material == Material.AIR;
     }
 
     private String normalizeSearchText(String rawText) {
@@ -2754,7 +2781,7 @@ public final class EditOrderResult {
                 return new ClaimResult(false, ClaimFailureReason.DATABASE_ERROR, claim);
             }
 
-            var depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
+            EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, claim.moneyAmount(), EconomyReason.ORDER_REFUND);
             if (!depositResult.success()) {
                 reopenClaim(claim.id());
                 return new ClaimResult(false, ClaimFailureReason.NO_PLAYER_DATA, claim);
@@ -2937,7 +2964,10 @@ public final class EditOrderResult {
         }
 
         if (catalogByCategory.isEmpty()) {
-            catalogByCategory.put("BLOCKS", java.util.Collections.singletonList(new OrderCatalogEntry("BLOCKS", Material.STONE)));
+            ItemStack fallbackItem = new ItemStack(Material.STONE);
+            catalogByCategory.put("BLOCKS", java.util.Collections.singletonList(
+                    new OrderCatalogEntry("BLOCKS", fallbackItem, describeMaterial(Material.STONE), "STONE BLOCKS")
+            ));
             categoryOrder.add("BLOCKS");
         }
     }
@@ -2990,13 +3020,15 @@ public final class EditOrderResult {
             for (Enchantment enchantment : Enchantment.values()) {
                 int maxLevel = Math.max(1, enchantment.getMaxLevel());
                 for (int level = 1; level <= maxLevel; level++) {
-                    ItemStack book = ItemKey.book(new java.util.LinkedHashMap(){{ put(enchantment,  level); }}).buildIcon();
+                    java.util.Map<Enchantment, Integer> bookEnchants = new java.util.LinkedHashMap<>();
+                    bookEnchants.put(enchantment, level);
+                    ItemStack book = ItemKey.book(bookEnchants).buildIcon();
                     String display = ItemKey.fromStack(book).displayName();
                     entries.add(new OrderCatalogEntry(
                             categoryKey,
                             book,
                             display,
-                            "enchanted book " + enchantment.getKey().getKey() + " " + level + " " + display
+                            "enchanted book " + enchantment.getName().toLowerCase(Locale.US) + " " + level + " " + display
                     ));
                 }
             }
@@ -3071,7 +3103,7 @@ public final class EditOrderResult {
     }
 
     private boolean isOrderable(Material material) {
-        if (!isModernMaterial(material) || material.isAir() || !material.isItem()) {
+        if (!isModernMaterial(material) || isAir(material) || !material.isItem()) {
             return false;
         }
 
@@ -3114,7 +3146,8 @@ public final class EditOrderResult {
         }
 
         try {
-            Material material = Material.valueOf(matPart);
+            LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(matPart);
+            Material material = resolved == null ? Material.valueOf(matPart) : resolved.material();
             return isModernMaterial(material) ? material : null;
         } catch (IllegalArgumentException exception) {
             return null;
@@ -3123,8 +3156,7 @@ public final class EditOrderResult {
 
     private boolean isModernMaterial(Material material) {
         return material != null
-                && !material.name().startsWith("LEGACY_")
-                && !material.isLegacy();
+                && !material.name().startsWith("LEGACY_");
     }
 
     private boolean isMissingItem(ItemStack item) {
@@ -3133,7 +3165,7 @@ public final class EditOrderResult {
         }
 
         Material material = item.getType();
-        return !isModernMaterial(material) || material.isAir();
+        return !isModernMaterial(material) || isAir(material);
     }
 
     private int countActiveOrders(UUID ownerUuid) {
@@ -3820,59 +3852,55 @@ public final class EditOrderResult {
     private void ensureTables() {
         schemaReady = false;
         try (Statement statement = connection().createStatement()) {
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS orders (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      owner_name TEXT NOT NULL,
-                      requested_item_data TEXT NOT NULL,
-                      requested_material_key TEXT NOT NULL,
-                      category_key TEXT NOT NULL,
-                      status TEXT NOT NULL,
-                      requested_quantity INTEGER NOT NULL,
-                      delivered_quantity INTEGER NOT NULL DEFAULT 0,
-                      collected_quantity INTEGER NOT NULL DEFAULT 0,
-                      price_each REAL NOT NULL,
-                      total_budget REAL NOT NULL,
-                      paid_amount REAL NOT NULL DEFAULT 0,
-                      escrow_remaining REAL NOT NULL,
-                      created_at INTEGER NOT NULL,
-                      expires_at INTEGER NOT NULL,
-                      closed_at INTEGER DEFAULT 0
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_deliveries (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      order_id INTEGER NOT NULL,
-                      deliverer_uuid TEXT NOT NULL,
-                      deliverer_name TEXT NOT NULL,
-                      quantity INTEGER NOT NULL,
-                      payout REAL NOT NULL,
-                      created_at INTEGER NOT NULL
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_claims (
-                      id INTEGER PRIMARY KEY AUTOINCREMENT,
-                      owner_uuid TEXT NOT NULL,
-                      order_id INTEGER NOT NULL,
-                      claim_type TEXT NOT NULL,
-                      item_data TEXT,
-                      money_amount REAL DEFAULT 0,
-                      created_at INTEGER NOT NULL,
-                      claimed_at INTEGER DEFAULT 0
-                    )
-                    """);
-            plugin.getDatabaseManager().executeSchema(statement, """
-                    CREATE TABLE IF NOT EXISTS order_ui_preferences (
-                      player_uuid TEXT PRIMARY KEY,
-                      main_sort TEXT NOT NULL,
-                      main_filter TEXT NOT NULL,
-                      item_sort TEXT NOT NULL,
-                      updated_at INTEGER NOT NULL
-                    )
-                    """);
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS orders (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  owner_uuid TEXT NOT NULL,\n"
+                    + "  owner_name TEXT NOT NULL,\n"
+                    + "  requested_item_data TEXT NOT NULL,\n"
+                    + "  requested_material_key TEXT NOT NULL,\n"
+                    + "  category_key TEXT NOT NULL,\n"
+                    + "  status TEXT NOT NULL,\n"
+                    + "  requested_quantity INTEGER NOT NULL,\n"
+                    + "  delivered_quantity INTEGER NOT NULL DEFAULT 0,\n"
+                    + "  collected_quantity INTEGER NOT NULL DEFAULT 0,\n"
+                    + "  price_each REAL NOT NULL,\n"
+                    + "  total_budget REAL NOT NULL,\n"
+                    + "  paid_amount REAL NOT NULL DEFAULT 0,\n"
+                    + "  escrow_remaining REAL NOT NULL,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  expires_at INTEGER NOT NULL,\n"
+                    + "  closed_at INTEGER DEFAULT 0\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_deliveries (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  order_id INTEGER NOT NULL,\n"
+                    + "  deliverer_uuid TEXT NOT NULL,\n"
+                    + "  deliverer_name TEXT NOT NULL,\n"
+                    + "  quantity INTEGER NOT NULL,\n"
+                    + "  payout REAL NOT NULL,\n"
+                    + "  created_at INTEGER NOT NULL\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_claims (\n"
+                    + "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    + "  owner_uuid TEXT NOT NULL,\n"
+                    + "  order_id INTEGER NOT NULL,\n"
+                    + "  claim_type TEXT NOT NULL,\n"
+                    + "  item_data TEXT,\n"
+                    + "  money_amount REAL DEFAULT 0,\n"
+                    + "  created_at INTEGER NOT NULL,\n"
+                    + "  claimed_at INTEGER DEFAULT 0\n"
+                    + ")\n");
+            plugin.getDatabaseManager().executeSchema(statement,
+                    "CREATE TABLE IF NOT EXISTS order_ui_preferences (\n"
+                    + "  player_uuid TEXT PRIMARY KEY,\n"
+                    + "  main_sort TEXT NOT NULL,\n"
+                    + "  main_filter TEXT NOT NULL,\n"
+                    + "  item_sort TEXT NOT NULL,\n"
+                    + "  updated_at INTEGER NOT NULL\n"
+                    + ")\n");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_orders_status_expires on orders(status, expires_at)");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_orders_owner_status on orders(owner_uuid, status)");
             plugin.getDatabaseManager().executeSchema(statement, "create index if not exists idx_order_claims_owner_claimed on order_claims(owner_uuid, claimed_at)");
@@ -3897,7 +3925,8 @@ public final class EditOrderResult {
             if (rawMaterial == null || rawMaterial.trim().isEmpty()) {
                 continue;
             }
-            if (parseMaterial(rawMaterial) == null) {
+            if (parseMaterial(rawMaterial) == null
+                    && !LegacyMaterialSupport.isUnsupportedOnLegacy(rawMaterial)) {
                 plugin.getLogger().warning("Invalid Orders blocked material: " + rawMaterial);
             }
         }
@@ -4046,15 +4075,21 @@ public final class EditOrderResult {
     ) {
         if (capacity <= 0
                 || containerItem == null
-                || !containerItem.getType().name().endsWith("SHULKER_BOX")
-                || !(containerItem.getItemMeta() instanceof BlockStateMeta blockStateMeta)) {
+                || !containerItem.getType().name().endsWith("ENDER_CHEST")) {
             return null;
         }
 
-        BlockState state = blockStateMeta.getBlockState();
-        if (!(state instanceof ShulkerBox shulkerBox)) {
+        ItemMeta containerMeta = containerItem.getItemMeta();
+        if (!(containerMeta instanceof BlockStateMeta)) {
             return null;
         }
+        BlockStateMeta blockStateMeta = (BlockStateMeta) containerMeta;
+
+        BlockState state = blockStateMeta.getBlockState();
+        if (!(state instanceof ShulkerBox)) {
+            return null;
+        }
+        ShulkerBox shulkerBox = (ShulkerBox) state;
 
         ItemStack[] contents = shulkerBox.getInventory().getContents();
         int remaining = capacity;
@@ -4099,7 +4134,7 @@ public final class EditOrderResult {
             return java.util.Collections.emptyList();
         }
         return items.stream()
-                .filter(item -> item != null && !item.getType().isAir())
+                .filter(item -> item != null && !isAir(item.getType()))
                 .map(ItemStack::clone)
                 .collect(java.util.stream.Collectors.toList());
     }
@@ -4130,7 +4165,7 @@ public final class EditOrderResult {
         FUZZY_CATEGORY
     }
 
-public final class SearchCandidate {
+    public static final class SearchCandidate {
     private final Material material;
     private final int score;
     private final SearchMatchTier tier;
@@ -4146,7 +4181,7 @@ public final class SearchCandidate {
     public SearchMatchTier tier() { return tier; }
 
     @Override public String toString() {
-        return "SearchCandidate[material=+material, score=+score, tier=+tier]";
+        return "SearchCandidate[material=" + material + ", score=" + score + ", tier=" + tier + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4159,7 +4194,7 @@ public final class SearchCandidate {
     }
 }
 
-public final class SearchCategoryMatch {
+    public static final class SearchCategoryMatch {
     private final SearchCategory category;
     private final int score;
     private final boolean exact;
@@ -4175,7 +4210,7 @@ public final class SearchCategoryMatch {
     public boolean exact() { return exact; }
 
     @Override public String toString() {
-        return "SearchCategoryMatch[category=+category, score=+score, exact=+exact]";
+        return "SearchCategoryMatch[category=" + category + ", score=" + score + ", exact=" + exact + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4188,7 +4223,7 @@ public final class SearchCategoryMatch {
     }
 }
 
-public final class DeserializedItem {
+    public static final class DeserializedItem {
     private final ItemStack item;
     private final boolean needsRepair;
     private final String failureReason;
@@ -4204,7 +4239,7 @@ public final class DeserializedItem {
     public String failureReason() { return failureReason; }
 
     @Override public String toString() {
-        return "DeserializedItem[item=+item, needsRepair=+needsRepair, failureReason=+failureReason]";
+        return "DeserializedItem[item=" + item + ", needsRepair=" + needsRepair + ", failureReason=" + failureReason + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4217,7 +4252,7 @@ public final class DeserializedItem {
     }
 }
 
-public final class RemovedOrderItems {
+    public static final class RemovedOrderItems {
     private final boolean success;
     private final ItemStack deliveredStack;
     private final int quantity;
@@ -4233,7 +4268,7 @@ public final class RemovedOrderItems {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "RemovedOrderItems[success=+success, deliveredStack=+deliveredStack, quantity=+quantity]";
+        return "RemovedOrderItems[success=" + success + ", deliveredStack=" + deliveredStack + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4246,7 +4281,7 @@ public final class RemovedOrderItems {
     }
 }
 
-public final class ServerCatalogCategory {
+    public static final class ServerCatalogCategory {
     private final String key;
     private final Material icon;
 
@@ -4259,7 +4294,7 @@ public final class ServerCatalogCategory {
     public Material icon() { return icon; }
 
     @Override public String toString() {
-        return "ServerCatalogCategory[key=+key, icon=+icon]";
+        return "ServerCatalogCategory[key=" + key + ", icon=" + icon + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4272,7 +4307,7 @@ public final class ServerCatalogCategory {
     }
 }
 
-public final class ExtractionResult {
+    public static final class ExtractionResult {
     private final List<ItemStack> accepted;
     private final List<ItemStack> returned;
     private final int quantity;
@@ -4288,7 +4323,7 @@ public final class ExtractionResult {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "ExtractionResult[accepted=+accepted, returned=+returned, quantity=+quantity]";
+        return "ExtractionResult[accepted=" + accepted + ", returned=" + returned + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4301,7 +4336,7 @@ public final class ExtractionResult {
     }
 }
 
-public final class NetworkOrderLock {
+    public static final class NetworkOrderLock {
     private final String key;
     private final String token;
     private final boolean acquired;
@@ -4317,7 +4352,7 @@ public final class NetworkOrderLock {
     public boolean acquired() { return acquired; }
 
     @Override public String toString() {
-        return "NetworkOrderLock[key=+key, token=+token, acquired=+acquired]";
+        return "NetworkOrderLock[key=" + key + ", token=" + token + ", acquired=" + acquired + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4330,7 +4365,7 @@ public final class NetworkOrderLock {
     }
 }
 
-public final class InventoryExtraction {
+    public static final class InventoryExtraction {
     private final List<ItemStack> accepted;
     private final ItemStack[] remainingContents;
     private final int quantity;
@@ -4346,7 +4381,7 @@ public final class InventoryExtraction {
     public int quantity() { return quantity; }
 
     @Override public String toString() {
-        return "InventoryExtraction[accepted=+accepted, remainingContents=+remainingContents, quantity=+quantity]";
+        return "InventoryExtraction[accepted=" + accepted + ", remainingContents=" + remainingContents + ", quantity=" + quantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4364,7 +4399,7 @@ public final class InventoryExtraction {
         PRICE
     }
 
-public final class PendingSearchInput {
+    public static final class PendingSearchInput {
     private final long editOrderId;
     private final OrderEditNavigation navigation;
 
@@ -4386,7 +4421,7 @@ public final class PendingSearchInput {
         }
 
     @Override public String toString() {
-        return "PendingSearchInput[editOrderId=+editOrderId, navigation=+navigation]";
+        return "PendingSearchInput[editOrderId=" + editOrderId + ", navigation=" + navigation + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4399,7 +4434,7 @@ public final class PendingSearchInput {
     }
 }
 
-public final class PendingOrderEdit {
+    public static final class PendingOrderEdit {
     private final long orderId;
     private final EditField field;
     private final OrderEditNavigation navigation;
@@ -4415,7 +4450,7 @@ public final class PendingOrderEdit {
     public OrderEditNavigation navigation() { return navigation; }
 
     @Override public String toString() {
-        return "PendingOrderEdit[orderId=+orderId, field=+field, navigation=+navigation]";
+        return "PendingOrderEdit[orderId=" + orderId + ", field=" + field + ", navigation=" + navigation + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -4487,4 +4522,3 @@ public final class PendingOrderEdit {
     }
 
     }
-}

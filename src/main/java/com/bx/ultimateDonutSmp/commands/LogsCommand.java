@@ -21,10 +21,11 @@ public class LogsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player viewer)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player viewer = (Player) sender;
 
         if (!viewer.hasPermission("ultimatedonutsmp.admin.logs")) {
             viewer.sendMessage(ColorUtils.toComponent("&cYou do not have permission to use this command."));

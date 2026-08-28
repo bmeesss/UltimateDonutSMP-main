@@ -42,7 +42,7 @@ public class OrdersSelectItemMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         OrderUiState state = plugin.getOrdersManager().getUiState(player.getUniqueId());
         state.itemPage(page - 1);
         List<OrderCatalogEntry> entries = entries(state);
@@ -69,21 +69,21 @@ public class OrdersSelectItemMenu extends BaseMenu {
         set(lastRow, ItemUtils.createItem(Material.COMPASS, "&bBack", java.util.Collections.singletonList("&7Return")));
         set(lastRow + 1, page > 1
                 ? ItemUtils.createItem(Material.ARROW, "&aPrevious page", java.util.Collections.singletonList("&7Page " + (page - 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
         set(lastRow + 2, ItemUtils.createItem(Material.CHEST,
                 "&bFilter: &f" + plugin.getOrdersManager().prettifyCategory(categoryFilter),
                 java.util.Collections.singletonList("&7Click to cycle category")));
         set(lastRow + 3, ItemUtils.createItem(Material.HOPPER,
                 "&eSort: &f" + state.itemSort().name().replace('_', '-'),
                 java.util.Collections.singletonList("&7Click to toggle a-z / z-a")));
-        set(lastRow + 4, ItemUtils.createItem(Material.SPYGLASS, "&bSearch",
+        set(lastRow + 4, ItemUtils.createItem(Material.COMPASS, "&bSearch",
                 java.util.Collections.singletonList("&7Search item names and categories")));
         set(lastRow + 5, ItemUtils.createItem(Material.BOOK,
                 "&ePage " + page + "&7/&e" + totalPages(entries.size(), itemsPerPage),
                 java.util.Collections.singletonList("&7Available items: &f" + entries.size())));
         set(lastRow + 7, page < totalPages(entries.size(), itemsPerPage)
                 ? ItemUtils.createItem(Material.ARROW, "&aNext page", java.util.Collections.singletonList("&7Page " + (page + 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
 
         if (entries.isEmpty()) {
             set(Math.min(itemsPerPage - 1, itemsPerPage / 2),

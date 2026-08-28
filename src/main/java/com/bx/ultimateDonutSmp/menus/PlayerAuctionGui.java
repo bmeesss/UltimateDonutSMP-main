@@ -1,10 +1,12 @@
 package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.models.AuctionBrowseRequest;
 import com.bx.ultimateDonutSmp.models.AuctionClaim;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.AuctionPlayerEntries;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
@@ -36,7 +38,7 @@ public final class PlayerAuctionGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         entriesBySlot.clear();
 
         List<Object> entries = AuctionPlayerEntries.combine(
@@ -53,9 +55,12 @@ public final class PlayerAuctionGui extends BaseMenu {
         for (int index = from; index < to; index++) {
             int slot = index - from;
             Object entry = entries.get(index);
-            ItemStack display = entry instanceof AuctionListing listing
-                    ? listingDisplay(listing)
-                    : claimDisplay((AuctionClaim) entry);
+            ItemStack display;
+            if (entry instanceof AuctionListing) {
+                display = listingDisplay((AuctionListing) entry);
+            } else {
+                display = claimDisplay((AuctionClaim) entry);
+            }
             set(slot, display);
             entriesBySlot.put(slot, entry);
         }
@@ -65,7 +70,7 @@ public final class PlayerAuctionGui extends BaseMenu {
         set(previousSlot, page > 1
                 ? control("PREVIOUS", Material.ARROW, "&fPrevious page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(page - 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
         set(BACK_SLOT, control(
                 "BACK",
                 Material.CHEST,
@@ -90,7 +95,7 @@ public final class PlayerAuctionGui extends BaseMenu {
         set(nextSlot, page < totalPages
                 ? control("NEXT", Material.ARROW, "&fNext page",
                 java.util.Collections.singletonList("&7Go to page &f{page}"), "{page}", String.valueOf(page + 1))
-                : control("FILLER", Material.BLACK_STAINED_GLASS_PANE, "&7 ", java.util.Collections.emptyList()));
+                : control("FILLER", LegacyMaterialSupport.pane("BLACK"), "&7 ", java.util.Collections.emptyList()));
     }
 
     @Override
@@ -101,7 +106,7 @@ public final class PlayerAuctionGui extends BaseMenu {
             return;
         }
         if (slot == BACK_SLOT) {
-            var request = plugin.getAuctionHouseManager().session(player.getUniqueId()).request();
+            AuctionBrowseRequest request = plugin.getAuctionHouseManager().session(player.getUniqueId()).request();
             navigate(player, () -> new AuctionHouseBrowseMenu(
                     plugin,
                     request.page(),
@@ -126,7 +131,8 @@ public final class PlayerAuctionGui extends BaseMenu {
         }
 
         Object entry = entriesBySlot.get(slot);
-        if (entry instanceof AuctionListing listing && listing.active()) {
+        if (entry instanceof AuctionListing && ((AuctionListing) entry).active()) {
+            AuctionListing listing = (AuctionListing) entry;
             plugin.getAuctionHouseManager().cancelListing(player, listing.id())
                     .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                         if (result.success()) {
@@ -137,8 +143,8 @@ public final class PlayerAuctionGui extends BaseMenu {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-String;
-switch (result.reason()) {
+                            String key = null;
+                            switch (result.reason()) {
                                 case DISABLED:
                                     key = "AUCTION_HOUSE.DISABLED";
                                     break;
@@ -167,7 +173,8 @@ switch (result.reason()) {
                     }));
             return;
         }
-        if (entry instanceof AuctionClaim claim && plugin.getAuctionHouseManager().isClaimsEnabled()) {
+        if (entry instanceof AuctionClaim && plugin.getAuctionHouseManager().isClaimsEnabled()) {
+            AuctionClaim claim = (AuctionClaim) entry;
             plugin.getAuctionHouseManager().claim(player, claim.id())
                     .thenAccept(result -> plugin.getSpigotScheduler().runEntity(player, () -> {
                         if (result.success()) {
@@ -182,8 +189,8 @@ switch (result.reason()) {
                             )));
                             SoundUtils.play(player, plugin.getConfigManager().getSound("AUCTION_HOUSE.SUCCESS"));
                         } else {
-String;
-switch (result.reason()) {
+                            String key = null;
+                            switch (result.reason()) {
                                 case DISABLED:
                                     key = "AUCTION_HOUSE.DISABLED";
                                     break;
@@ -290,6 +297,27 @@ switch (result.reason()) {
                 plugin,
                 "GUI.PLAYER_ITEMS.CONTROLS." + key,
                 material,
+                name,
+                lore,
+                replacements
+        );
+    }
+
+    /**
+     * 1.12.2 variant of the wrapper above for icons whose colour is a legacy data value; the
+     * Material-based overload stays in place for every non-pane control.
+     */
+    private ItemStack control(
+            String key,
+            LegacyMaterialSupport.Icon icon,
+            String name,
+            List<String> lore,
+            String... replacements
+    ) {
+        return AuctionHouseMenuSupport.control(
+                plugin,
+                "GUI.PLAYER_ITEMS.CONTROLS." + key,
+                icon,
                 name,
                 lore,
                 replacements

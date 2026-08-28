@@ -33,10 +33,11 @@ public class InvseeCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player viewer)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player viewer = (Player) sender;
 
         if (!plugin.getInvseeManager().isEnabled()) {
             viewer.sendMessage(ColorUtils.toComponent(

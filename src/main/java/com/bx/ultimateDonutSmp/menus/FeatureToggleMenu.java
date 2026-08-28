@@ -39,7 +39,7 @@ public class FeatureToggleMenu extends BaseMenu {
 
         FileConfiguration menus = menus();
         if (menus.getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
-            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "BLACK_STAINED_GLASS_PANE")));
+            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")));
         }
 
         List<Integer> contentSlots = contentSlots();

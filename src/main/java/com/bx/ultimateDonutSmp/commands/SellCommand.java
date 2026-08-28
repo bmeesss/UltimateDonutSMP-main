@@ -28,7 +28,8 @@ public class SellCommand implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
 
         if (label.equalsIgnoreCase("topsell") || label.equalsIgnoreCase("sellstats")) {
             return new SellStatsCommand(plugin).onCommand(sender, command, label, args);
@@ -47,75 +48,15 @@ public class SellCommand implements CommandExecutor, TabCompleter {
             case "sellprogress": {
                 SellCategory category = SellCategory.CROPS;
                 if (args.length > 0) {
-                                category = SellCategory.fromConfigKey(args[0]).orElse(SellCategory.CROPS);
-                            }
-                            new SellProgressMenu(plugin, category).open(player);
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    category = SellCategory.fromConfigKey(args[0]).orElse(SellCategory.CROPS);
+                }
+                new SellProgressMenu(plugin, category).open(player);
                 break;
             }
             case "sellhand": {
                 double total = plugin.getShopManager().sellInventory(player, true);
                 if (total <= 0) player.sendMessage(ColorUtils.toComponent(
-                                    plugin.getConfigManager().getMessage("WORTH.NO-SELLABLE")));
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                        plugin.getConfigManager().getMessage("WORTH.NO-SELLABLE")));
                 break;
             }
             case "sellall":
@@ -123,40 +64,10 @@ public class SellCommand implements CommandExecutor, TabCompleter {
                 break;
             case "sellhistory": {
                 if (args.length > 0 && args[0].equalsIgnoreCase("admin")) {
-                                new SellStatsAdminMenu(plugin).open(player);
-                            } else {
-                                new SellHistoryMenu(plugin).open(player);
-                            }
-                        break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
-                break;
+                    new SellStatsAdminMenu(plugin).open(player);
+                } else {
+                    new SellHistoryMenu(plugin).open(player);
+                }
                 break;
             }
         }

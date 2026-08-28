@@ -25,7 +25,7 @@ public class KeysMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
 
         List<CrateManager.CrateDefinition> crates = new ArrayList<>(plugin.getCrateManager().getCrates());
         if (crates.isEmpty()) {

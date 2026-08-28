@@ -17,8 +17,8 @@ import com.comphenix.protocol.wrappers.WrappedNumberFormat;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TextDisplay;
 
 import java.util.List;
 import java.util.Map;
@@ -167,7 +167,7 @@ public class MoneyNametagManager {
      */
     public void purgeOrphanedDisplays() {
         for (World world : Bukkit.getWorlds()) {
-            for (TextDisplay display : world.getEntitiesByClass(TextDisplay.class)) {
+            for (Entity display : world.getEntities()) {
                 if (display.getScoreboardTags().contains(LEGACY_DISPLAY_TAG)) {
                     display.remove();
                 }

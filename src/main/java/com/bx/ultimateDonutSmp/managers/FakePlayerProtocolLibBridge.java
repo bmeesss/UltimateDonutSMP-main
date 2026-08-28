@@ -1,5 +1,6 @@
 package com.bx.ultimateDonutSmp.managers;
 
+import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
@@ -35,6 +36,18 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
+
+    private static byte angle(float degrees) {
+        return (byte) (degrees * 256.0F / 360.0F);
+    }
+
+    private static void writeByte(PacketContainer packet, int index, byte value) {
+        if (packet.getBytes().size() > index) {
+            packet.getBytes().write(index, value);
+        } else {
+            packet.getModifier().write(index, value);
+        }
+    }
 
     private static final double VANILLA_KNOCKBACK_HORIZONTAL = 0.4D;
     private static final double VANILLA_KNOCKBACK_VERTICAL = 0.4D;
@@ -158,6 +171,44 @@ final class FakePlayerProtocolLibBridge implements FakePlayerPacketBridge {
             plugin.getLogger().log(Level.FINE, "Unable to create ProtocolLib fakeplayer profile with skin texture.", error);
         }
         return null;
+    }
+
+    private boolean applyNativeTextureToWrappedProfile(WrappedGameProfile profile, TablistManager.SkinTexture texture) {
+        if (texture == null || !texture.isValid()) return false;
+        profile.getProperties().put("textures", new WrappedSignedProperty("textures", texture.value(), texture.signature()));
+        return true;
+    }
+
+    private void send(Player viewer, PacketContainer packet) {
+        if (viewer != null && packet != null) protocolManager.sendServerPacket(viewer, packet);
+    }
+
+    private void sendNoGravityMetadata(Player viewer, FakePlayerSession fakePlayer) { send(viewer, createNoGravityMetadata(fakePlayer)); }
+    private void sendMetadata(Player viewer, FakePlayerSession fakePlayer) { send(viewer, createEntityMetadata(fakePlayer)); }
+    private void scheduleMetadataRefresh(Player viewer, FakePlayerSession fakePlayer) { }
+    private void sendOptionalSpawnPackets(Player viewer, FakePlayerSession fakePlayer) {
+        send(viewer, createEntityHeadRotation(fakePlayer));
+        send(viewer, createEntityLook(fakePlayer));
+    }
+    private boolean isAirPositionLockEnabled() {
+        return plugin.getConfigManager().getStaffMode().getBoolean("FAKE-PLAYER.AIR-POSITION-LOCK", false);
+    }
+    private boolean isPhysicsSimulationEnabled() {
+        return plugin.getConfigManager().getStaffMode().getBoolean("FAKE-PLAYER.PHYSICS-SIMULATION", true);
+    }
+    private void sendHardPositionLock(Player viewer, FakePlayerSession fakePlayer) { send(viewer, createEntityTeleport(fakePlayer)); }
+    private PacketContainer createEntityDestroy(FakePlayerSession fakePlayer) {
+        PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.ENTITY_DESTROY);
+        if (packet.getIntegerArrays().size() > 0) packet.getIntegerArrays().write(0, new int[] { fakePlayer.entityId() });
+        else if (packet.getIntegers().size() > 0) packet.getIntegers().write(0, fakePlayer.entityId());
+        return packet;
+    }
+    private void playHurtSound(Player viewer, FakePlayerSession fakePlayer) {
+        viewer.playSound(fakePlayer.visualLocation(), Sound.ENTITY_PLAYER_HURT, 1F, 1F);
+    }
+    private boolean isHideFromTablistEnabled() { return plugin.getConfigManager().getStaffMode().getBoolean("FAKE-PLAYER.HIDE-FROM-TABLIST", false); }
+    private void writePlayerInfoData(PacketContainer packet, List<PlayerInfoData> data) {
+        if (packet.getPlayerInfoDataLists().size() > 0) packet.getPlayerInfoDataLists().write(0, data);
     }
 
     @Override

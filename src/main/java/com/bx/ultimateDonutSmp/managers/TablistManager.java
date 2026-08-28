@@ -36,9 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -90,7 +88,20 @@ public class TablistManager {
         if (cached != null && cached.equals(key)) {
             return;
         }
-        player.setPlayerListHeaderFooter(parseTabText(headerText, player), parseTabText(footerText, player));
+        // Keep this compatible with the 1.12 API without linking newer overloads.
+        try {
+            player.getClass().getMethod("setPlayerListHeaderFooter", String.class, String.class)
+                    .invoke(player, parseTabText(headerText, player), parseTabText(footerText, player));
+        } catch (ReflectiveOperationException ignored) {
+            try {
+                player.getClass().getMethod("setPlayerListHeader", String.class)
+                        .invoke(player, parseTabText(headerText, player));
+                player.getClass().getMethod("setPlayerListFooter", String.class)
+                        .invoke(player, parseTabText(footerText, player));
+            } catch (ReflectiveOperationException ignoredToo) {
+                return;
+            }
+        }
         lastHeaderFooterCache.put(player.getUniqueId(), key);
     }
 
@@ -299,8 +310,7 @@ public class TablistManager {
             return namedSessionTexture;
         }
 
-        SkinTexture updatedProfileTexture = resolveUpdatedBukkitProfileTexture(playerId, playerName);
-        return updatedProfileTexture != null && updatedProfileTexture.isValid() ? updatedProfileTexture : null;
+        return null;
     }
 
     SkinTexture resolveLiveGameProfileSkinTexture(Player player) {
@@ -314,8 +324,8 @@ public class TablistManager {
 
     SkinTexture resolveSkinTextureForFakePlayer(UUID playerId, String playerName) {
         SkinTexture texture = !Bukkit.isPrimaryThread()
-                ? resolveGameProfileSkinTexture(playerId, playerName)
-                : resolveLiveGameProfileSkinTexture(playerId, playerName);
+                ? resolveOriginalGameProfileSkinTexture(playerId, playerName)
+                : resolveLiveGameProfileSkinTexture(Bukkit.getPlayer(playerId));
         if (texture != null && texture.isValid()) {
             return texture;
         }
@@ -806,9 +816,11 @@ public class TablistManager {
         }
 
         Object nodesObject = invokeNoArg(user, "getNodes", "nodes");
-        if (!(nodesObject instanceof Iterable<?> nodes)) {
+        if (!(nodesObject instanceof Iterable<?>)) {
             return Optional.empty();
         }
+
+        Iterable<?> nodes = (Iterable<?>) nodesObject;
 
         String normalized = PermissionUtils.normalizePermissionNode(permission);
         boolean matchedTrue = false;
@@ -824,7 +836,7 @@ public class TablistManager {
             }
 
             Object value = invokeNoArg(node, "getValue", "value");
-            boolean granted = !(value instanceof Boolean booleanValue) || booleanValue;
+            boolean granted = !(value instanceof Boolean) || (Boolean) value;
             if (!granted) {
                 return Optional.of(false);
             }
@@ -835,7 +847,7 @@ public class TablistManager {
 
     private boolean isLuckPermsNodeExpired(Object node) throws ReflectiveOperationException {
         Object expired = invokeNoArg(node, "hasExpired", "isExpired");
-        return expired instanceof Boolean value && value;
+        return expired instanceof Boolean && (Boolean) expired;
     }
 
     private Optional<Boolean> resolveLuckPermsPermissionData(Object permissionData, String permission)
@@ -896,7 +908,12 @@ public class TablistManager {
     private Optional<Boolean> resolveLuckPermsPermissionMap(Object permissionData, String normalizedPermission)
             throws ReflectiveOperationException {
         Object mapObject = invokeNoArg(permissionData, "getPermissionMap", "permissionMap");
-        if (!(mapObject instanceof Map<?, ?> permissions) || permissions.isEmpty()) {
+        if (!(mapObject instanceof Map<?, ?>)) {
+            return Optional.empty();
+        }
+
+        Map<?, ?> permissions = (Map<?, ?>) mapObject;
+        if (permissions.isEmpty()) {
             return Optional.empty();
         }
 
@@ -908,8 +925,8 @@ public class TablistManager {
             }
 
             Object rawValue = entry.getValue();
-            boolean value = rawValue instanceof Boolean booleanValue
-                    ? booleanValue
+            boolean value = rawValue instanceof Boolean
+                    ? (Boolean) rawValue
                     : Boolean.parseBoolean(String.valueOf(rawValue));
             if (!value) {
                 return Optional.of(false);
@@ -939,871 +956,12 @@ public class TablistManager {
         }
 
         if (value instanceof Boolean) {
-            Boolean booleanValue = (Boolean) !isEnabled() || player == null) {
-            return;
-        }
-
-        String headerText = applyInternalPlaceholders(getMultilineText("TABLIST.HEADER"), player);
-        String footerText = applyInternalPlaceholders(getMultilineText("TABLIST.FOOTER"), player);
-        String key = headerText + "\0" + footerText;
-        String cached = lastHeaderFooterCache.get(player.getUniqueId());
-        if (cached != null && cached.equals(key)) {
-            return;
-        }
-        player.setPlayerListHeaderFooter(parseTabText(headerText, player), parseTabText(footerText, player));
-        lastHeaderFooterCache.put(player.getUniqueId(), key);
-    }
-
-    public void updateAll() {
-        if (!isEnabled()) {
-            return;
-        }
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            update(player);
-        }
-    }
-
-    public void updateNamesAll() {
-        if (!isEnabled()) {
-            return;
-        }
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            updateTablistName(player);
-        }
-    }
-
-    public void updateTablistName(Player player) {
-        if (!isEnabled() || player == null) {
-            return;
-        }
-
-        String nameFormat = resolveNameFormat(player);
-        refreshSkinHeadTextureIfNeeded(player, nameFormat, false);
-        String cached = lastNameCache.get(player.getUniqueId());
-        if (cached != null && cached.equals(nameFormat)) {
-            return;
-        }
-
-        Component adventureComponent = parseTabComponent(nameFormat, player);
-        if (adventureComponent != null) {
-            if (componentUpdater.updateName(player, adventureComponent)) {
-                lastNameCache.put(player.getUniqueId(), nameFormat);
-                return;
-            }
-        }
-
-        player.setPlayerListName(parseTabText(nameFormat, player));
-        lastNameCache.put(player.getUniqueId(), nameFormat);
-    }
-
-    public void refreshSkinHeads(Player player) {
-        if (player == null || !player.isOnline() || !isEnabled()
-                || !config().getBoolean("TABLIST.REFRESH-SKIN-HEADS", true)) {
-            return;
-        }
-
-        UUID playerId = player.getUniqueId();
-        if (!refreshedSkinHeads.add(playerId)) {
-            return;
-        }
-
-        scheduleSkinHeadRefresh(player, playerId);
-    }
-
-    /**
-     * Forces a skin head refresh for the given player, bypassing the once-per-join
-     * deduplication guard. This should be used when a permission change or skin
-     * change is detected at runtime (e.g. via permission changes)
-     * so the tablist updates without requiring a rejoin.
-     */
-    public void forceRefreshSkinHeads(Player player) {
-        if (player == null || !player.isOnline() || !isEnabled()
-                || !config().getBoolean("TABLIST.REFRESH-SKIN-HEADS", true)) {
-            return;
-        }
-
-        UUID playerId = player.getUniqueId();
-        // Clear cached texture data so the refresh fetches fresh textures
-        removeCachedSkinTexture(playerId);
-        skinHeadTextureRefreshTimes.remove(playerId);
-        pendingSkinHeadTextureRefreshes.remove(playerId);
-        // Allow re-entry into the refresh logic
-        refreshedSkinHeads.add(playerId);
-
-        scheduleSkinHeadRefresh(player, playerId);
-    }
-
-    /**
-     * Invalidates the cached skin texture for the given player so the next
-     * refresh cycle re-fetches the texture from the game profile.
-     */
-    public void invalidateSkinCache(UUID playerId) {
-        removeCachedSkinTexture(playerId);
-        skinHeadTextureRefreshTimes.remove(playerId);
-        pendingSkinHeadTextureRefreshes.remove(playerId);
-        refreshedSkinHeads.remove(playerId);
-    }
-
-    /**
-     * Updates the cached skin texture for the given player and refreshes their tablist entry.
-     * This is typically called when a skin change is detected.
-     */
-    public void updateSkinTexture(UUID playerId, String value, String signature) {
-        if (playerId == null) {
-            return;
-        }
-
-        if (value == null || value.trim().isEmpty()) {
-            invalidateSkinCache(playerId);
-            return;
-        }
-
-        SkinTexture texture = new SkinTexture(value, signature);
-        cacheSkinTexture(playerId, texture);
-        skinHeadTextureRefreshTimes.put(playerId, System.currentTimeMillis());
-        refreshedSkinHeads.add(playerId);
-
-        if (!isEnabled()) {
-            return;
-        }
-
-        Player player = Bukkit.getPlayer(playerId);
-        if (player != null && player.isOnline()) {
-            applySkinTexture(player, texture);
-            refreshTablistAvatar(player);
-            updateTablistName(player);
-            update(player);
-        }
-    }
-
-    SkinTexture resolveCurrentSkinTexture(Player player) {
-        if (player == null || !player.isOnline()) {
-            return null;
-        }
-
-        SkinTexture cached = cachedSkinTexture(player.getUniqueId());
-        if (cached != null && cached.isValid()) {
-            return cached;
-        }
-
-        SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
-        if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            return paperAppliedTexture;
-        }
-
-        SkinTexture knownTexture = resolveKnownSkinTexture(player);
-        return knownTexture != null && knownTexture.isValid() ? knownTexture : null;
-    }
-
-    SkinTexture resolveKnownSkinTexture(Player player) {
-        if (player == null || !player.isOnline()) {
-            return null;
-        }
-
-        SkinTexture cached = cachedSkinTexture(player.getUniqueId());
-        if (cached != null && cached.isValid()) {
-            return cached;
-        }
-
-        SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
-        if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            return paperAppliedTexture;
-        }
-
-        SkinTexture profileTexture = resolveGameProfileTexture(player);
-        if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            return profileTexture;
-        }
-
-        return null;
-    }
-
-    SkinTexture resolveGameProfileSkinTexture(Player player) {
-        if (player == null || !player.isOnline()) {
-            return null;
-        }
-
-        SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
-        if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), paperAppliedTexture);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            return paperAppliedTexture;
-        }
-
-        SkinTexture profileTexture = resolveGameProfileTexture(player);
-        if (profileTexture != null && profileTexture.isValid()) {
-            cacheSkinTexture(player.getUniqueId(), profileTexture);
-            skinHeadTextureRefreshTimes.put(player.getUniqueId(), System.currentTimeMillis());
-            return profileTexture;
-        }
-
-        return null;
-    }
-
-    SkinTexture resolveOriginalGameProfileSkinTexture(UUID playerId, String playerName) {
-        SkinTexture sessionTexture = resolveMojangSessionSkinTexture(playerId);
-        if (sessionTexture != null && sessionTexture.isValid()) {
-            return sessionTexture;
-        }
-
-        SkinTexture namedSessionTexture = resolveMojangNamedSkinTexture(playerName);
-        if (namedSessionTexture != null && namedSessionTexture.isValid()) {
-            return namedSessionTexture;
-        }
-
-        SkinTexture updatedProfileTexture = resolveUpdatedBukkitProfileTexture(playerId, playerName);
-        return updatedProfileTexture != null && updatedProfileTexture.isValid() ? updatedProfileTexture : null;
-    }
-
-    SkinTexture resolveLiveGameProfileSkinTexture(Player player) {
-        if (player == null || !player.isOnline()) {
-            return null;
-        }
-
-        SkinTexture profileTexture = resolveGameProfileTexture(player);
-        return profileTexture != null && profileTexture.isValid() ? profileTexture : null;
-    }
-
-    SkinTexture resolveSkinTextureForFakePlayer(UUID playerId, String playerName) {
-        SkinTexture texture = !Bukkit.isPrimaryThread()
-                ? resolveGameProfileSkinTexture(playerId, playerName)
-                : resolveLiveGameProfileSkinTexture(playerId, playerName);
-        if (texture != null && texture.isValid()) {
-            return texture;
-        }
-
-        return null;
-    }
-
-    SkinTexture cachedSkinTexture(UUID playerId) {
-        if (playerId == null) {
-            return null;
-        }
-        SkinTexture cached = skinHeadTextures.get(playerId);
-        return cached != null && cached.isValid() ? cached : null;
-    }
-
-
-    public void refreshTablistEntry(Player player, boolean forceSkinTextureRefresh) {
-        if (player == null || !player.isOnline()) {
-            return;
-        }
-
-        if (!isEnabled()) {
-            return;
-        }
-
-        if (forceSkinTextureRefresh) {
-            refreshSkinHeadTextureIfNeeded(player, resolveNameFormat(player), true);
-        }
-
-        updateTablistName(player);
-        update(player);
-    }
-
-    public void forceRefreshPermissionTablistEntry(Player player) {
-        if (player == null || !player.isOnline()) {
-            return;
-        }
-
-        if (!isEnabled()) {
-            return;
-        }
-
-        String nameFormat = resolveNameFormat(player);
-        refreshSkinHeadTextureIfNeeded(player, nameFormat, false);
-        Component adventureComponent = parseTabComponent(nameFormat, player);
-        if (adventureComponent != null && componentUpdater.refreshEntry(player, adventureComponent)) {
-            update(player);
-            return;
-        }
-
-        updateTablistName(player);
-        update(player);
-        refreshTablistAvatar(player);
-        UUID playerId = player.getUniqueId();
-        for (long delayTicks : new java.util.ArrayList<>(java.util.Arrays.asList(8L,  20L))) {
-            plugin.getSpigotScheduler().runEntityLater(player, () -> {
-                Player online = Bukkit.getPlayer(playerId);
-                if (online != null && online.isOnline()) {
-                    updateTablistName(online);
-                    update(online);
-                }
-            }, delayTicks);
-        }
-    }
-
-    public void refreshStoredSkinTexture(Player player) {
-        if (player == null || !player.isOnline() || !isEnabled()
-                || !config().getBoolean("TABLIST.REFRESH-SKIN-HEADS", true)) {
-            return;
-        }
-
-        String nameFormat = resolveNameFormat(player);
-        if (!usesConfiguredSkinHead(nameFormat)) {
-            return;
-        }
-
-        UUID playerId = player.getUniqueId();
-
-        SkinTexture paperAppliedTexture = resolvePaperAppliedSkinTexture(player);
-        if (paperAppliedTexture != null && paperAppliedTexture.isValid()) {
-            boolean changed = cacheAndApplySkinTexture(player, paperAppliedTexture, false);
-            if (changed) {
-                updateTablistName(player);
-                update(player);
-            }
-            return;
-        }
-
-        SkinTexture profileTexture = resolveGameProfileTexture(player);
-        if (profileTexture == null || !profileTexture.isValid()) {
-            if (clearCachedSkinTexture(player, false)) {
-                updateTablistName(player);
-            }
-            return;
-        }
-
-        boolean changed = cacheAndApplySkinTexture(player, profileTexture, false);
-        if (changed) {
-            updateTablistName(player);
-            update(player);
-        }
-    }
-
-    private void scheduleSkinHeadRefresh(Player player, UUID playerId) {
-        for (long delayTicks : getSkinHeadRefreshDelays()) {
-            plugin.getSpigotScheduler().runEntityLater(player, () -> {
-                Player online = Bukkit.getPlayer(playerId);
-                if (online != null && online.isOnline() && isEnabled()) {
-                    refreshSkinHeadTextureIfNeeded(online, resolveNameFormat(online), true);
-                    updateTablistName(online);
-                } else {
-                    refreshedSkinHeads.remove(playerId);
-                }
-            }, delayTicks);
-        }
-    }
-
-    public void removePlayer(UUID playerId) {
-        refreshedSkinHeads.remove(playerId);
-        pendingSkinHeadTextureRefreshes.remove(playerId);
-        removeCachedSkinTexture(playerId);
-        skinHeadTextureRefreshTimes.remove(playerId);
-        luckPermsCommandOverrides.remove(playerId);
-        lastHeaderFooterCache.remove(playerId);
-        lastNameCache.remove(playerId);
-    }
-
-    public String createPermissionRefreshSnapshot(Player player) {
-        if (player == null || !player.isOnline() || !isEnabled()) {
-            return "";
-        }
-
-        return resolveNameFormat(player);
-    }
-
-    public void invalidateLuckPermsCachedData(Player player) {
-        if (player == null || !player.isOnline()) {
-            return;
-        }
-
-        try {
-            Object adapter = resolveLuckPermsPlayerAdapter();
-            Object user = invokeCompatible(adapter, "getUser", player);
-            invalidateLuckPermsCachedData(user);
-
-            Object permissionData = invokeCompatible(adapter, "getPermissionData", player);
-            invokeNoArgIfPresent(permissionData, "invalidateCache");
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
-        }
-    }
-
-    public void rememberLuckPermsPermissionOverride(UUID playerId, String permission, boolean value) {
-        if (playerId == null || permission == null || permission.trim().isEmpty()) {
-            return;
-        }
-
-        String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (normalized.trim().isEmpty()) {
-            return;
-        }
-
-        Map<String, PermissionOverride> overrides = luckPermsCommandOverrides
-                .computeIfAbsent(playerId, ignored -> new ConcurrentHashMap<>());
-        putPermissionOverride(overrides, normalized, value);
-
-        if (normalized.equals("rank.media")) {
-            putPermissionOverride(overrides, config().getString("TABLIST.MEDIA-BADGE-PERMISSION", "RANK.MEDIA"), value);
-        } else if (normalized.equals("rank.media.plus")) {
-            putPermissionOverride(overrides, config().getString("TABLIST.MEDIA-PLUS-PERMISSION", "RANK.MEDIA.PLUS"), value);
-        } else if (normalized.equals("rank.media.include")) {
-            putPermissionOverride(
-                    overrides,
-                    config().getString("TABLIST.MEDIA-BADGE-INCLUDE-PERMISSION", "RANK.MEDIA.INCLUDE"),
-                    value
-            );
-        }
-    }
-
-    private void putPermissionOverride(Map<String, PermissionOverride> overrides, String permission, boolean value) {
-        String normalized = PermissionUtils.normalizePermissionNode(permission);
-        if (!normalized.trim().isEmpty()) {
-            overrides.put(normalized, new PermissionOverride(value, System.currentTimeMillis() + 3_600_000L));
-        }
-    }
-
-    private String resolveNameFormat(Player player) {
-        String rawTeamName = plugin.getTeamManager().getTeamName(player);
-        boolean showTeam = config().getBoolean("TABLIST.SHOW-TEAM-NAME", true);
-        String teamName = showTeam ? rawTeamName : null;
-        String prefix = resolvePrefix(player);
-        String teamSuffix = "";
-        String iconMedia = config().getString("TABLIST.ICON-MEDIA", "");
-        String normalizedIconMedia = iconMedia == null ? "" : iconMedia;
-        boolean includeMediaBadge = hasMediaBadgeIncludePermission(player);
-        String mediaIconBadge = resolveMediaIconBadge(player, normalizedIconMedia, includeMediaBadge);
-        String mediaPlusBadge = resolveMediaPlusBadge(player, includeMediaBadge);
-        String mediaBadge = resolveMediaBadge(mediaIconBadge, mediaPlusBadge, normalizedIconMedia);
-        String nickname = resolveNickname(player);
-        String publicName = plugin.getHideManager() == null
-                ? player.getName()
-                : plugin.getHideManager().publicName(player);
-
-        if (showTeam && teamName != null && !teamName.trim().isEmpty()) {
-            teamSuffix = " &7[&b" + teamName.toUpperCase() + "&7]";
-        }
-
-        String configuredFormat = config().getString(
-                "TABLIST.NAME-FORMAT",
-                "%prefix%%player%%team_suffix%"
-        );
-        configuredFormat = normalizeTeamFormat(configuredFormat, showTeam);
-        if (showTeam && !containsTeamPlaceholder(configuredFormat)) {
-            configuredFormat = configuredFormat + "%team_suffix%";
-        }
-
-        return applyInternalPlaceholders(configuredFormat, player)
-                .replace("%prefix%", prefix)
-                .replace("%player%", publicName)
-                .replace("%nick%", nickname)
-                .replace("<player>", publicName)
-                .replace("<nick>", nickname)
-                .replace("<icon_media>", normalizedIconMedia)
-                .replace("%media_icon_badge%", mediaIconBadge)
-                .replace("<media_icon_badge>", mediaIconBadge)
-                .replace("%media_plus_badge%", mediaPlusBadge)
-                .replace("<media_plus_badge>", mediaPlusBadge)
-                .replace("%media_badge%", mediaBadge)
-                .replace("<media_badge>", mediaBadge)
-                .replace("<icon_media_plus>", mediaBadge)
-                .replace("%team%", teamName == null ? "" : teamName)
-                .replace("%team_name%", teamName == null ? "" : teamName.toUpperCase())
-                .replace("%team_suffix%", teamSuffix)
-                .replaceAll("\\s{2,}", " ")
-                .trim();
-    }
-
-    private String normalizeTeamFormat(String text, boolean showTeam) {
-        if (text == null || text.trim().isEmpty() || showTeam) {
-            return text;
-        }
-
-        return text
-                .replace(" &8[&d%team_name%&8]", "")
-                .replace(" &8[&b%team_name%&8]", "")
-                .replace(" &7[&b%team_name%&7]", "")
-                .replace(" [&d%team_name%]", "")
-                .replace(" [&b%team_name%]", "")
-                .replace("%team_suffix%", "")
-                .replace("%team_name%", "")
-                .replace("%team%", "");
-    }
-
-    private boolean containsTeamPlaceholder(String text) {
-        if (text == null || text.trim().isEmpty()) {
-            return false;
-        }
-
-        return text.contains("%team_suffix%")
-                || text.contains("%team_name%")
-                || text.contains("%team%");
-    }
-
-    private String resolvePrefix(Player player) {
-        String luckPermsPrefix = resolveLuckPermsPrefix(player);
-        if (luckPermsPrefix != null && !luckPermsPrefix.trim().isEmpty()) {
-            return luckPermsPrefix;
-        }
-
-        if (!ColorUtils.hasPAPI()) {
-            return "";
-        }
-
-        try {
-            String prefix = me.clip.placeholderapi.PlaceholderAPI
-                    .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.trim().isEmpty() || prefix.startsWith("%")) {
-                return "";
-            }
-            return prefix;
-        } catch (Exception ignored) {
-            return "";
-        }
-    }
-
-    private String getMultilineText(String path) {
-        if (config().isList(path)) {
-            List<String> lines = config().getStringList(path);
-            return String.join("\n", lines);
-        }
-
-        return config().getString(path, "");
-    }
-
-    private boolean hasMediaBadgeIncludePermission(Player player) {
-        String permission = config().getString(
-                "TABLIST.MEDIA-BADGE-INCLUDE-PERMISSION",
-                "RANK.MEDIA.INCLUDE"
-        );
-        return hasLivePermission(player, permission);
-    }
-
-    private String resolveMediaIconBadge(Player player, String iconMedia, boolean includeMediaBadge) {
-        String iconFormat = config().getString("TABLIST.MEDIA-ICON-FORMAT", "&d<icon_media>");
-        String permission = config().getString("TABLIST.MEDIA-BADGE-PERMISSION", "RANK.MEDIA");
-
-        if (iconFormat == null || iconFormat.trim().isEmpty() || iconMedia.trim().isEmpty()) {
-            return "";
-        }
-
-        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
-            return "";
-        }
-
-        return iconFormat.replace("<icon_media>", iconMedia);
-    }
-
-    private String resolveMediaPlusBadge(Player player, boolean includeMediaBadge) {
-        String plusFormat = config().getString("TABLIST.MEDIA-PLUS-FORMAT", "&#37BFF9+");
-        String permission = config().getString("TABLIST.MEDIA-PLUS-PERMISSION", "RANK.MEDIA.PLUS");
-
-        if (plusFormat == null || plusFormat.trim().isEmpty()) {
-            return "";
-        }
-
-        if (!includeMediaBadge && permission != null && !permission.trim().isEmpty() && !hasLivePermission(player, permission)) {
-            return "";
-        }
-
-        return plusFormat;
-    }
-
-    private String resolveMediaBadge(String mediaIconBadge, String mediaPlusBadge, String iconMedia) {
-        String badgeFormat = config().getString(
-                "TABLIST.MEDIA-BADGE-FORMAT",
-                "<media_icon_badge><media_plus_badge>"
-        );
-
-        if (badgeFormat == null || badgeFormat.trim().isEmpty()) {
-            return "";
-        }
-
-        if (!usesSplitMediaBadgePlaceholders(badgeFormat)) {
-            if (mediaIconBadge.trim().isEmpty() || iconMedia.trim().isEmpty()) {
-                return "";
-            }
-            return badgeFormat.replace("<icon_media>", iconMedia);
-        }
-
-        return badgeFormat
-                .replace("%media_icon_badge%", mediaIconBadge)
-                .replace("<media_icon_badge>", mediaIconBadge)
-                .replace("%media_plus_badge%", mediaPlusBadge)
-                .replace("<media_plus_badge>", mediaPlusBadge)
-                .replace("<icon_media>", mediaIconBadge.trim().isEmpty() ? "" : iconMedia);
-    }
-
-    private boolean usesSplitMediaBadgePlaceholders(String text) {
-        return text.contains("%media_icon_badge%")
-                || text.contains("<media_icon_badge>")
-                || text.contains("%media_plus_badge%")
-                || text.contains("<media_plus_badge>");
-    }
-
-    private boolean isMediaPermission(String permission) {
-        if (permission == null || permission.trim().isEmpty()) {
-            return false;
-        }
-        String normalized = PermissionUtils.normalizePermissionNode(permission);
-        String mediaBadgePerm = PermissionUtils.normalizePermissionNode(
-                config().getString("TABLIST.MEDIA-BADGE-PERMISSION", "RANK.MEDIA")
-        );
-        String mediaPlusPerm = PermissionUtils.normalizePermissionNode(
-                config().getString("TABLIST.MEDIA-PLUS-PERMISSION", "RANK.MEDIA.PLUS")
-        );
-        String mediaIncludePerm = PermissionUtils.normalizePermissionNode(
-                config().getString("TABLIST.MEDIA-BADGE-INCLUDE-PERMISSION", "RANK.MEDIA.INCLUDE")
-        );
-
-        return normalized.equals("rank.media")
-                || normalized.equals("rank.media.plus")
-                || normalized.equals("rank.media.include")
-                || normalized.equals(mediaBadgePerm)
-                || normalized.equals(mediaPlusPerm)
-                || normalized.equals(mediaIncludePerm);
-    }
-
-    private Optional<Boolean> resolveExplicitLuckPermsPermission(Player player, String permission) {
-        try {
-            Object adapter = resolveLuckPermsPlayerAdapter();
-            Object user = invokeCompatible(adapter, "getUser", player);
-            Optional<Boolean> directUserValue = resolveLuckPermsUserNodePermission(user, permission);
-            if (directUserValue.isPresent()) {
-                return directUserValue;
-            }
-
-            String normalized = PermissionUtils.normalizePermissionNode(permission);
-            Object permissionData = invokeCompatible(adapter, "getPermissionData", player);
-            if (permissionData != null) {
-                Optional<Boolean> mappedValue = resolveLuckPermsPermissionMap(permissionData, normalized);
-                if (mappedValue.isPresent()) {
-                    return mappedValue;
-                }
-            }
-
-            Object cachedData = invokeNoArg(user, "getCachedData", "cachedData");
-            Object cachedPermissionData = invokeNoArg(cachedData, "getPermissionData", "permissionData");
-            if (cachedPermissionData != null) {
-                Optional<Boolean> mappedValue = resolveLuckPermsPermissionMap(cachedPermissionData, normalized);
-                if (mappedValue.isPresent()) {
-                    return mappedValue;
-                }
-            }
-        } catch (Throwable ignored) {
-        }
-        return Optional.empty();
-    }
-
-    private boolean hasLivePermission(Player player, String permission) {
-        if (player == null || permission == null || permission.trim().isEmpty()) {
-            return false;
-        }
-
-        Optional<Boolean> commandOverride = resolveLuckPermsCommandOverride(player, permission);
-        if (commandOverride.isPresent()) {
-            return commandOverride.get();
-        }
-
-        if (isMediaPermission(permission)) {
-            Optional<Boolean> explicitLuckPerms = resolveExplicitLuckPermsPermission(player, permission);
-            if (explicitLuckPerms.isPresent()) {
-                return explicitLuckPerms.get();
-            }
-            return PermissionUtils.hasExact(player, permission);
-        }
-
-        Optional<Boolean> luckPermsValue = resolveLuckPermsPermission(player, permission);
-        if (luckPermsValue.isPresent()) {
-            return luckPermsValue.get();
-        }
-
-        return PermissionUtils.has(player, permission);
-    }
-
-    private Optional<Boolean> resolveLuckPermsPermission(Player player, String permission) {
-        try {
-            Object adapter = resolveLuckPermsPlayerAdapter();
-            Object user = invokeCompatible(adapter, "getUser", player);
-            Optional<Boolean> directUserValue = resolveLuckPermsUserNodePermission(user, permission);
-            if (directUserValue.isPresent()) {
-                return directUserValue;
-            }
-
-            Object permissionData = invokeCompatible(adapter, "getPermissionData", player);
-            Optional<Boolean> adapterValue = resolveLuckPermsPermissionData(permissionData, permission);
-            if (adapterValue.isPresent()) {
-                return adapterValue;
-            }
-
-            Object cachedData = invokeNoArg(user, "getCachedData", "cachedData");
-            Object cachedPermissionData = invokeNoArg(cachedData, "getPermissionData", "permissionData");
-            return resolveLuckPermsPermissionData(cachedPermissionData, permission);
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
-            return Optional.empty();
-        }
-    }
-
-    private Optional<Boolean> resolveLuckPermsCommandOverride(Player player, String permission) {
-        Map<String, PermissionOverride> overrides = luckPermsCommandOverrides.get(player.getUniqueId());
-        if (overrides == null || overrides.isEmpty()) {
-            return Optional.empty();
-        }
-
-        long now = System.currentTimeMillis();
-        overrides.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().expiresAt() <= now);
-        if (overrides.isEmpty()) {
-            luckPermsCommandOverrides.remove(player.getUniqueId(), overrides);
-            return Optional.empty();
-        }
-
-        PermissionOverride override = overrides.get(PermissionUtils.normalizePermissionNode(permission));
-        return override == null ? Optional.empty() : Optional.of(override.value());
-    }
-
-    private Optional<Boolean> resolveLuckPermsUserNodePermission(Object user, String permission)
-            throws ReflectiveOperationException {
-        if (user == null) {
-            return Optional.empty();
-        }
-
-        Object nodesObject = invokeNoArg(user, "getNodes", "nodes");
-        if (!(nodesObject instanceof Iterable<?> nodes)) {
-            return Optional.empty();
-        }
-
-        String normalized = PermissionUtils.normalizePermissionNode(permission);
-        boolean matchedTrue = false;
-        for (Object node : nodes) {
-            if (node == null || isLuckPermsNodeExpired(node)) {
-                continue;
-            }
-
-            String key = readStringNoArg(node, "getKey", "key", "getPermission", "permission");
-            String normalizedKey = PermissionUtils.normalizePermissionNode(key);
-            if (!permissionMatches(normalizedKey, normalized)) {
-                continue;
-            }
-
-            Object value = invokeNoArg(node, "getValue", "value");
-            boolean granted = !(value instanceof Boolean booleanValue) || booleanValue;
-            if (!granted) {
-                return Optional.of(false);
-            }
-            matchedTrue = true;
-        }
-        return matchedTrue ? Optional.of(true) : Optional.empty();
-    }
-
-    private boolean isLuckPermsNodeExpired(Object node) throws ReflectiveOperationException {
-        Object expired = invokeNoArg(node, "hasExpired", "isExpired");
-        return expired instanceof Boolean value && value;
-    }
-
-    private Optional<Boolean> resolveLuckPermsPermissionData(Object permissionData, String permission)
-            throws ReflectiveOperationException {
-        if (permissionData == null) {
-            return Optional.empty();
-        }
-
-        String normalized = PermissionUtils.normalizePermissionNode(permission);
-        boolean checked = false;
-        for (String candidate : new java.util.ArrayList<>(java.util.Arrays.asList(permission,  normalized))) {
-            if (candidate == null || candidate.trim().isEmpty()) {
-                continue;
-            }
-
-            Object queryResult = invokeCompatible(permissionData, "queryPermission", candidate);
-            Optional<Boolean> queriedValue = resolveLuckPermsQueryResult(queryResult);
-            if (queriedValue.orElse(false)) {
-                return Optional.of(true);
-            }
-            checked |= queriedValue.isPresent();
-
-            Object result = invokeCompatible(permissionData, "checkPermission", candidate);
-            Optional<Boolean> value = resolveLuckPermsTristate(result);
-            if (value.orElse(false)) {
-                return Optional.of(true);
-            }
-            checked |= value.isPresent();
-        }
-
-        Optional<Boolean> mappedValue = resolveLuckPermsPermissionMap(permissionData, normalized);
-        if (mappedValue.isPresent()) {
-            return mappedValue;
-        }
-        return checked ? Optional.of(false) : Optional.empty();
-    }
-
-    private Optional<Boolean> resolveLuckPermsQueryResult(Object value) throws ReflectiveOperationException {
-        if (value == null) {
-            return Optional.empty();
-        }
-
-        Optional<Boolean> direct = resolveLuckPermsTristate(value);
-        if (direct.isPresent()) {
-            return direct;
-        }
-
-        Object result = invokeNoArg(value, "result", "getResult");
-        Optional<Boolean> nested = resolveLuckPermsTristate(result);
-        if (nested.isPresent()) {
-            return nested;
-        }
-
-        result = invokeNoArg(value, "value", "getValue");
-        return resolveLuckPermsTristate(result);
-    }
-
-    private Optional<Boolean> resolveLuckPermsPermissionMap(Object permissionData, String normalizedPermission)
-            throws ReflectiveOperationException {
-        Object mapObject = invokeNoArg(permissionData, "getPermissionMap", "permissionMap");
-        if (!(mapObject instanceof Map<?, ?> permissions) || permissions.isEmpty()) {
-            return Optional.empty();
-        }
-
-        boolean matchedTrue = false;
-        for (Map.Entry<?, ?> entry : permissions.entrySet()) {
-            String granted = PermissionUtils.normalizePermissionNode(String.valueOf(entry.getKey()));
-            if (!permissionMatches(granted, normalizedPermission)) {
-                continue;
-            }
-
-            Object rawValue = entry.getValue();
-            boolean value = rawValue instanceof Boolean booleanValue
-                    ? booleanValue
-                    : Boolean.parseBoolean(String.valueOf(rawValue));
-            if (!value) {
-                return Optional.of(false);
-            }
-            matchedTrue = true;
-        }
-        return matchedTrue ? Optional.of(true) : Optional.empty();
-    }
-
-    private boolean permissionMatches(String granted, String requested) {
-        if (granted == null || requested == null || granted.trim().isEmpty() || requested.trim().isEmpty()) {
-            return false;
-        }
-        if (granted.equals(requested) || granted.equals("*")) {
-            return true;
-        }
-        if (!granted.endsWith(".*")) {
-            return false;
-        }
-        String prefix = granted.substring(0, granted.length() - 1);
-        return requested.startsWith(prefix);
-    }
-
-    private Optional<Boolean> resolveLuckPermsTristate(Object value) throws ReflectiveOperationException {
-        if (value == null) {
-            return Optional.empty();
-        }
-
-        if (value;
+            Boolean booleanValue = (Boolean) value;
             return Optional.of(booleanValue);
         }
 
-        String name = value instanceof Enum<?> enumValue
-                ? enumValue.name()
+        String name = value instanceof Enum<?>
+                ? ((Enum<?>) value).name()
                 : readStringNoArg(value, "name", "toString");
         if (name != null) {
             if (name.equalsIgnoreCase("TRUE")) {
@@ -1814,8 +972,8 @@ public class TablistManager {
             }
         }
 
-        Object booleanValue = invokeNoArg(value, "asBoolean", "asBooleanValue");
-        return booleanValue instanceof Boolean result ? Optional.of(result) : Optional.empty();
+        Object booleanResult = invokeNoArg(value, "asBoolean", "asBooleanValue");
+        return booleanResult instanceof Boolean ? Optional.of((Boolean) booleanResult) : Optional.empty();
     }
 
     private String resolveLuckPermsPrefix(Player player) {
@@ -2037,8 +1195,9 @@ public class TablistManager {
         }
 
 
+        SkinTexture profileTexture = resolveGameProfileTexture(player);
         if (profileTexture != null && profileTexture.isValid()) {
-            cacheAndApplySkinTexture(player, profileTexture, force, false);
+            cacheAndApplySkinTexture(player, profileTexture, force);
             pendingSkinHeadTextureRefreshes.remove(playerId);
             return;
         }
@@ -2062,7 +1221,7 @@ public class TablistManager {
             }
 
             if (skinTexture != null && skinTexture.isValid()) {
-                boolean changed = cacheAndApplySkinTexture(online, skinTexture, force, true);
+                boolean changed = cacheAndApplySkinTexture(online, skinTexture, force);
                 if (changed) {
                     updateTablistName(online);
                 }
@@ -2229,7 +1388,7 @@ public class TablistManager {
             }
 
             try (Reader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
-                JsonElement parsed = JsonParser.parseReader(reader);
+                JsonElement parsed = new JsonParser().parse(reader);
                 if (!parsed.isJsonObject()) {
                     return null;
                 }
@@ -2267,7 +1426,7 @@ public class TablistManager {
 
     private SkinTexture extractMojangSessionTexture(JsonObject root) throws ReflectiveOperationException {
         JsonArray properties = root.getAsJsonArray("properties");
-        if (properties == null || properties.isEmpty()) {
+        if (properties == null || properties.size() == 0) {
             return null;
         }
 
@@ -2291,40 +1450,8 @@ public class TablistManager {
         return null;
     }
 
-    private SkinTexture resolveUpdatedBukkitProfileTexture(UUID playerId, String playerName) {
-        if (playerId == null && (playerName == null || playerName.trim().isEmpty())) {
-            return null;
-        }
-
-        try {
-            Object profile = playerName != null && !playerName.trim().isEmpty()
-                    ? Bukkit.createPlayerProfile(playerName)
-                    : Bukkit.createPlayerProfile(playerId);
-            Object updateResult = invokeNoArg(profile, "update");
-            if (updateResult instanceof CompletableFuture<?> future) {
-                Object updatedProfile = future.get(4L, TimeUnit.SECONDS);
-                SkinTexture texture = resolveProfileTexture(updatedProfile);
-                if (texture != null && texture.isValid()) {
-                    return texture;
-                }
-            }
-            return resolveProfileTexture(profile);
-        } catch (ReflectiveOperationException
-                 | java.util.concurrent.ExecutionException
-                 | java.util.concurrent.TimeoutException
-                 | InterruptedException
-                 | RuntimeException
-                 | LinkageError ignored) {
-            if (ignored instanceof InterruptedException) {
-                Thread.currentThread().interrupt();
-            }
-            return null;
-        }
-    }
-
     private List<Object> resolveGameProfiles(Player player) throws ReflectiveOperationException {
         List<Object> profiles = new ArrayList<>();
-        addProfileCandidate(profiles, invokeNoArg(player, "getPlayerProfile"));
         addProfileCandidate(profiles, invokeNoArg(player, "getProfile", "getGameProfile"));
 
         Object handle = invokeNoArg(player, "getHandle");
@@ -2369,7 +1496,7 @@ public class TablistManager {
             return false;
         }
 
-        boolean changed = applyPaperPlayerProfileTexture(player, skinTexture);
+        boolean changed = false;
         try {
             for (Object profile : resolveGameProfiles(player)) {
                 changed |= applySkinTexture(profile, skinTexture);
@@ -2378,28 +1505,6 @@ public class TablistManager {
             return changed;
         }
         return changed;
-    }
-
-    private boolean applyPaperPlayerProfileTexture(Player player, SkinTexture skinTexture) {
-        try {
-            Object profile = invokeNoArg(player, "getPlayerProfile");
-            if (profile == null) {
-                return false;
-            }
-
-            SkinTexture current = resolveProfileTexture(profile);
-            if (skinTexture.equals(current)) {
-                return false;
-            }
-
-            Object property = createPaperProfileProperty(profile.getClass().getClassLoader(), skinTexture);
-            boolean removed = invokeCompatibleIfPresent(profile, "removeProperty", "textures");
-            boolean set = invokeCompatibleIfPresent(profile, "setProperty", property);
-            boolean applied = invokeCompatibleIfPresent(player, "setPlayerProfile", profile);
-            return removed || set || applied;
-        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
-            return false;
-        }
     }
 
     private boolean applySkinTexture(Object profile, SkinTexture skinTexture) throws ReflectiveOperationException {
@@ -2417,48 +1522,6 @@ public class TablistManager {
         boolean removed = invokeCompatibleIfPresent(propertyMap, "removeAll", "textures");
         boolean added = invokeCompatibleIfPresent(propertyMap, "put", "textures", property);
         return added || removed;
-    }
-
-    private Object createPaperProfileProperty(ClassLoader preferredLoader, SkinTexture skinTexture)
-            throws ReflectiveOperationException {
-        List<ClassLoader> loaders = new ArrayList<>();
-        if (preferredLoader != null) {
-            loaders.add(preferredLoader);
-        }
-        loaders.add(Bukkit.class.getClassLoader());
-        ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
-        if (contextLoader != null && !loaders.contains(contextLoader)) {
-            loaders.add(contextLoader);
-        }
-
-        ClassNotFoundException missing = null;
-        for (ClassLoader loader : loaders) {
-            try {
-                Class<?> propertyClass = Class.forName("com.destroystokyo.paper.profile.ProfileProperty", false, loader);
-                for (Constructor<?> constructor : propertyClass.getDeclaredConstructors()) {
-                    Class<?>[] parameters = constructor.getParameterTypes();
-                    if (parameters.length == 3
-                            && parameters[0] == String.class
-                            && parameters[1] == String.class
-                            && parameters[2] == String.class) {
-                        constructor.setAccessible(true);
-                        return constructor.newInstance("textures", skinTexture.value(), skinTexture.signature());
-                    }
-                    if (parameters.length == 2
-                            && parameters[0] == String.class
-                            && parameters[1] == String.class) {
-                        constructor.setAccessible(true);
-                        return constructor.newInstance("textures", skinTexture.value());
-                    }
-                }
-            } catch (ClassNotFoundException exception) {
-                missing = exception;
-            }
-        }
-
-        throw missing == null
-                ? new ClassNotFoundException("com.destroystokyo.paper.profile.ProfileProperty")
-                : missing;
     }
 
     private Object createProfileProperty(ClassLoader preferredLoader, SkinTexture skinTexture)
@@ -2523,7 +1586,8 @@ public class TablistManager {
             return null;
         }
 
-        if (textures instanceof Iterable<?> iterable) {
+        if (textures instanceof Iterable<?>) {
+            Iterable<?> iterable = (Iterable<?>) textures;
             for (Object property : iterable) {
                 SkinTexture texture = extractSkinTexture(property);
                 if (texture != null && texture.isValid()) {
@@ -2553,7 +1617,8 @@ public class TablistManager {
             return null;
         }
 
-        if (source instanceof Map<?, ?> map) {
+        if (source instanceof Map<?, ?>) {
+            Map<?, ?> map = (Map<?, ?>) source;
             SkinTexture texture = extractSkinTextureFromMap(map);
             if (texture != null && texture.isValid()) {
                 return texture;
@@ -2639,7 +1704,7 @@ public class TablistManager {
 
     private String stringValue(Object value) {
         value = unwrapOptional(value);
-        return value instanceof CharSequence sequence ? sequence.toString() : null;
+        return value instanceof CharSequence ? ((CharSequence) value).toString() : null;
     }
 
     private Object invokeStaticNoArg(Class<?> type, String methodName) throws ReflectiveOperationException {
@@ -2867,11 +1932,12 @@ public class TablistManager {
     private String readStringNoArg(Object target, String... methodNames) throws ReflectiveOperationException {
         Object value = invokeNoArg(target, methodNames);
         value = unwrapOptional(value);
-        return value instanceof String string ? string : null;
+        return value instanceof String ? (String) value : null;
     }
 
     private Object unwrapOptional(Object value) {
-        if (value instanceof Optional<?> optional) {
+        if (value instanceof Optional<?>) {
+            Optional<?> optional = (Optional<?>) value;
             return optional.orElse(null);
         }
         return value;
@@ -2997,7 +2063,7 @@ public class TablistManager {
         return plugin.getConfigManager().getConfig();
     }
 
-public final class SkinTexture {
+    public static final class SkinTexture {
     private final String value;
     private final String signature;
 
@@ -3016,7 +2082,7 @@ public final class SkinTexture {
 
 
     @Override public String toString() {
-        return "SkinTexture[value=+value, signature=+signature]";
+        return "SkinTexture[value=" + value + ", signature=" + signature + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -3029,7 +2095,7 @@ public final class SkinTexture {
     }
 }
 
-public final class PermissionOverride {
+    public static final class PermissionOverride {
     private final boolean value;
     private final long expiresAt;
 
@@ -3042,7 +2108,7 @@ public final class PermissionOverride {
     public long expiresAt() { return expiresAt; }
 
     @Override public String toString() {
-        return "PermissionOverride[value=+value, expiresAt=+expiresAt]";
+        return "PermissionOverride[value=" + value + ", expiresAt=" + expiresAt + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

@@ -41,7 +41,7 @@ public class TeamMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         slotMembers.clear();
 
         Team team = plugin.getTeamManager().getTeam(player);
@@ -224,7 +224,7 @@ public class TeamMenu extends BaseMenu {
         set(
                 menus().getInt(path + ".SLOT", 45),
                 ItemUtils.createItem(
-                        material(path + ".MATERIAL", Material.OAK_SIGN),
+                        material(path + ".MATERIAL", Material.SIGN),
                         menus().getString(path + ".TITLE", "&aSearch"),
                         lore
                 )
@@ -317,7 +317,7 @@ public class TeamMenu extends BaseMenu {
         set(
                 menus().getInt(path + ".SLOT", 52),
                 ItemUtils.createItem(
-                        material(path + ".MATERIAL", Material.WHITE_BANNER),
+                        material(path + ".MATERIAL", Material.BANNER),
                         menus().getString(path + ".TITLE", "&#6BF18DTeam home"),
                         java.util.Collections.singletonList(loreLine)
                 )

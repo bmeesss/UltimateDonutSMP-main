@@ -24,7 +24,7 @@ public class MediaMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
 
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         mediaButtonSlot = configuredSlot(plugin, inventory.getSize());
@@ -95,7 +95,7 @@ public class MediaMenu extends BaseMenu {
 
     private static Material configuredMaterial(UltimateDonutSmp plugin) {
         String rawMaterial = plugin.getConfigManager().getMenus()
-                .getString(BUTTON_PATH + ".MATERIAL", "PINK_DYE");
+                .getString(BUTTON_PATH + ".MATERIAL", "INK_SACK");
         Material material = rawMaterial == null ? null : Material.matchMaterial(rawMaterial.trim().toUpperCase());
         if (material != null) {
             return material;
@@ -103,6 +103,6 @@ public class MediaMenu extends BaseMenu {
 
         plugin.getLogger().warning("invalid " + BUTTON_PATH + ".MATERIAL value '" + rawMaterial
                 + "'. Falling back to pink_dye.");
-        return Material.PINK_DYE;
+        return Material.INK_SACK;
     }
 }

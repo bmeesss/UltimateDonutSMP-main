@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.utils;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.CurrencyManager;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransferResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import org.bukkit.entity.Player;
 
@@ -61,7 +62,7 @@ public final class PaymentUtils {
             return false;
         }
 
-        var transferResult = plugin.getEconomyManager().transfer(sender, target, amount, EconomyReason.PLAYER_PAY);
+        EconomyTransferResult transferResult = plugin.getEconomyManager().transfer(sender, target, amount, EconomyReason.PLAYER_PAY);
         if (!transferResult.success()) {
             sender.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessage("BALANCE.PAY.TRANSACTION-ERROR")));
             return false;

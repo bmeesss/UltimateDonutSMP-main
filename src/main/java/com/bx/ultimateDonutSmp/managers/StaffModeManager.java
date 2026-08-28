@@ -18,7 +18,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.MemoryConfiguration;
@@ -29,8 +28,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
@@ -48,6 +45,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class StaffModeManager {
+
+    private static final String STAFF_TOOL_META_MARKER = "\u00A70UDS_STAFF_TOOL";
+    private static final String STAFF_TOOL_META_PREFIX = "\u00A70UDS_STAFF:";
 
     private static final StaffToolType[] TOOL_ORDER = new StaffToolType[]{
             StaffToolType.VANISH,
@@ -162,11 +162,11 @@ public class StaffModeManager {
     }
 
     public boolean canUse(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getStaffPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getStaffPermission());
     }
 
     public boolean canAdmin(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getAdminPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getAdminPermission());
     }
 
     public boolean canUseVanish(Player player) {
@@ -186,9 +186,9 @@ public class StaffModeManager {
     }
 
     public boolean canManageOthers(CommandSender sender) {
-        return !(sender instanceof Player player)
-                || PermissionUtils.has(player, getOthersPermission())
-                || PermissionUtils.has(player, getAdminPermission());
+        return !(sender instanceof Player)
+                || PermissionUtils.has((Player) sender, getOthersPermission())
+                || PermissionUtils.has((Player) sender, getAdminPermission());
     }
 
     public boolean isInStaffMode(UUID uuid) {
@@ -463,7 +463,7 @@ public class StaffModeManager {
     }
 
     public StaffToolType resolveTool(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return null;
         }
 
@@ -472,8 +472,7 @@ public class StaffModeManager {
             return null;
         }
 
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        String raw = data.get(toolKey(), PersistentDataType.STRING);
+        String raw = getLoreMeta(meta, toolKey());
         return StaffToolType.fromPersistentId(raw);
     }
 
@@ -652,7 +651,7 @@ public class StaffModeManager {
     }
 
     public ItemStack createRefreshItem(String menuKey) {
-        return ItemUtils.createItem(Material.CLOCK, "&erefresh", java.util.Collections.singletonList("&7Click to refresh this view."));
+        return ItemUtils.createItem(Material.WATCH, "&erefresh", java.util.Collections.singletonList("&7Click to refresh this view."));
     }
 
     public ItemStack createMenuEmptyItem(String menuKey) {
@@ -717,652 +716,10 @@ public class StaffModeManager {
     public void notifyExternalToggle(CommandSender actor, Player target, boolean enabled) {
         String status = localizeStatus(enabled);
         String icon = localizeIcon(enabled);
-        String actorName = actor instanceof Player player ? player.getName() : actor.getName();
+        String actorName = actor instanceof Player ? ((Player) actor).getName() : actor.getName();
 
         if (actor instanceof Player) {
-            Player player = (Player) !shouldPersistOnRestart()) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (isInStaffMode(player.getUniqueId())) {
-                    disableSilently(player, true);
-                }
-            }
-        }
-
-        runtimeSessions.clear();
-    }
-
-    public boolean isEnabled() {
-        return plugin.getFeatureManager().isEnabled(FeatureManager.Feature.STAFF_MODE)
-                && getConfig().getBoolean("STAFF-MODE.ENABLED", true);
-    }
-
-    public boolean shouldPersistOnQuit() {
-        return getConfig().getBoolean("STAFF-MODE.PERSIST-ON-QUIT", true);
-    }
-
-    public boolean shouldPersistOnRestart() {
-        return getConfig().getBoolean("STAFF-MODE.PERSIST-ON-RESTART", true);
-    }
-
-    public boolean shouldAutoVanishOnEnable() {
-        return getConfig().getBoolean("STAFF-MODE.AUTO-VANISH-ON-ENABLE", true);
-    }
-
-    public boolean shouldLockTools() {
-        return getConfig().getBoolean("STAFF-MODE.LOCK-TOOLS", true);
-    }
-
-    public boolean shouldShowVanishActionBar() {
-        return getConfig().getBoolean("STAFF-MODE.VANISH-ACTIONBAR.ENABLED", true);
-    }
-
-    public boolean shouldRestoreInventoryOnDisable() {
-        return getConfig().getBoolean("STAFF-MODE.RESTORE-INVENTORY-ON-DISABLE", true);
-    }
-
-    public boolean shouldSendFakeLeaveOnVanish() {
-        return getConfig().getBoolean("STAFF-MODE.VANISH-FAKE-MESSAGES.FAKE-LEAVE-ON-VANISH", true);
-    }
-
-    public boolean shouldSendFakeJoinOnUnvanish() {
-        return getConfig().getBoolean("STAFF-MODE.VANISH-FAKE-MESSAGES.FAKE-JOIN-ON-UNVANISH", true);
-    }
-
-    public boolean shouldSendFakeMessagesOnlyToRegularPlayers() {
-        return getConfig().getBoolean("STAFF-MODE.VANISH-FAKE-MESSAGES.ONLY-TO-REGULAR-PLAYERS", true);
-    }
-
-    public String getStaffPermission() {
-        return getConfig().getString("STAFF-MODE.STAFF-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE");
-    }
-
-    public String getAdminPermission() {
-        return getConfig().getString("STAFF-MODE.ADMIN-PERMISSION", "ULTIMATEDONUTSMP.ADMIN.STAFFMODE");
-    }
-
-    public String getVanishPermission() {
-        return getConfig().getString("STAFF-MODE.VANISH-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.VANISH");
-    }
-
-    public String getBetterViewPermission() {
-        return getConfig().getString("STAFF-MODE.BETTER-VIEW-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.BETTERVIEW");
-    }
-
-    public String getStaffListPermission() {
-        return getConfig().getString("STAFF-MODE.STAFF-LIST-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.STAFFLIST");
-    }
-
-    public String getRandomTeleportPermission() {
-        return getConfig().getString("STAFF-MODE.RANDOM-TELEPORT-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.RANDOMTP");
-    }
-
-    public String getSeeVanishedPermission() {
-        return getConfig().getString("STAFF-MODE.SEE-VANISHED-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.SEEVANISHED");
-    }
-
-    public String getOthersPermission() {
-        return getConfig().getString("STAFF-MODE.OTHERS-PERMISSION", "ULTIMATEDONUTSMP.STAFF.MODE.OTHERS");
-    }
-
-    public boolean canUse(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getStaffPermission());
-    }
-
-    public boolean canAdmin(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getAdminPermission());
-    }
-
-    public boolean canUseVanish(Player player) {
-        return player != null && PermissionUtils.has(player, getVanishPermission());
-    }
-
-    public boolean canUseBetterView(Player player) {
-        return player != null && PermissionUtils.has(player, getBetterViewPermission());
-    }
-
-    public boolean canOpenStaffList(Player player) {
-        return player != null && PermissionUtils.has(player, getStaffListPermission());
-    }
-
-    public boolean canUseRandomTeleport(Player player) {
-        return player != null && PermissionUtils.has(player, getRandomTeleportPermission());
-    }
-
-    public boolean canManageOthers(CommandSender sender) {
-        return !(sender instanceof Player player)
-                || PermissionUtils.has(player, getOthersPermission())
-                || PermissionUtils.has(player, getAdminPermission());
-    }
-
-    public boolean isInStaffMode(UUID uuid) {
-        return isEnabled() && uuid != null && activeStates.containsKey(uuid);
-    }
-
-    public boolean isVanished(UUID uuid) {
-        StaffModeState state = getState(uuid);
-        return state != null && state.isVanishActive();
-    }
-
-    public boolean isBetterViewEnabled(UUID uuid) {
-        StaffModeState state = getState(uuid);
-        return state != null && state.isBetterViewActive();
-    }
-
-    public StaffModeState getState(UUID uuid) {
-        return uuid == null ? null : activeStates.get(uuid);
-    }
-
-    public String getMessage(String path, String fallback) {
-        return getConfig().getString("MESSAGES." + path, fallback);
-    }
-
-    public String getStaffMessage(String path, String fallback) {
-        return plugin.getConfigManager().getMessages().getString("STAFF." + path, fallback);
-    }
-
-    public String getRandomTeleportMessage(String path, String fallback) {
-        return plugin.getConfigManager().getMessages().getString("RANDOMTP." + path, fallback);
-    }
-
-    public String formatMessage(String path, String fallback, String... placeholders) {
-        String message = getMessage(path, fallback);
-        for (int index = 0; index + 1 < placeholders.length; index += 2) {
-            message = message.replace(placeholders[index], placeholders[index + 1]);
-        }
-        return message;
-    }
-
-    public StaffModeToggleResult toggle(Player player) {
-        if (player == null) {
-            return new StaffModeToggleResult(false, false, getMessage("PLAYER-ONLY", "&cOnly players can use this command."));
-        }
-
-        if (isInStaffMode(player.getUniqueId())) {
-            return disable(player);
-        }
-
-        return enable(player);
-    }
-
-    public StaffModeToggleResult enable(Player player) {
-        return enable(player, true);
-    }
-
-    public StaffModeToggleResult enable(Player player, boolean sendMessages) {
-        if (player == null) {
-            return new StaffModeToggleResult(false, false, getMessage("PLAYER-ONLY", "&cOnly players can use this command."));
-        }
-        if (!isEnabled()) {
-            return new StaffModeToggleResult(false, false, getMessage("FEATURE-DISABLED", "&cStaff mode is currently disabled."));
-        }
-        if (!canUse(player)) {
-            return new StaffModeToggleResult(false, false, getMessage("NO-PERMISSION", "&cYou do not have permission."));
-        }
-        if (isInStaffMode(player.getUniqueId())) {
-            return new StaffModeToggleResult(true, true, getMessage("ENABLED", "&aStaff mode enabled."));
-        }
-
-        player.closeInventory();
-        StaffInventorySnapshot snapshot = captureSnapshot(player);
-        if (!plugin.getDatabaseManager().saveStaffModeSnapshot(player.getUniqueId(), snapshot)) {
-            return new StaffModeToggleResult(false, false, getMessage("RESTORE-FAILED", "&cStaff mode restore failed. Contact an admin."));
-        }
-
-        StaffModeState state = new StaffModeState(
-                player.getUniqueId(),
-                player.getName(),
-                System.currentTimeMillis(),
-                resolveSourceServer(),
-                false,
-                false,
-                true,
-                player.getAllowFlight(),
-                player.isFlying(),
-                player.getInventory().getHeldItemSlot(),
-                false,
-                player.getGameMode()
-        );
-        activeStates.put(player.getUniqueId(), state);
-        plugin.getDatabaseManager().saveStaffModeState(state);
-        runtimeSessions.put(player.getUniqueId(), new StaffModeSession(player.getUniqueId()));
-        restartRecoveryOnly.remove(player.getUniqueId());
-
-        if (plugin.getLuckPermsStaffModeContextBridge() != null) {
-            plugin.getLuckPermsStaffModeContextBridge().signalContextUpdate(player);
-        }
-
-        player.setGameMode(GameMode.CREATIVE);
-        player.setAllowFlight(true);
-        rebuildTools(player);
-        if (shouldAutoVanishOnEnable() && canUseVanish(player)) {
-            setVanish(player, true, false);
-        } else {
-            refreshViewerVisibility(player);
-        }
-
-        if (sendMessages) {
-            sendSelfToggleMessages(player, true);
-        }
-        return new StaffModeToggleResult(true, true, localizeStatus(true));
-    }
-
-    public StaffModeToggleResult disable(Player player) {
-        return disable(player, true);
-    }
-
-    public StaffModeToggleResult disable(Player player, boolean sendMessages) {
-        if (player == null) {
-            return new StaffModeToggleResult(false, false, getMessage("PLAYER-ONLY", "&cOnly players can use this command."));
-        }
-
-        boolean restored = disableSilently(player, true);
-        if (!restored) {
-            return new StaffModeToggleResult(false, false, getMessage("RESTORE-FAILED", "&cStaff mode restore failed. Contact an admin."));
-        }
-
-        if (sendMessages) {
-            sendSelfToggleMessages(player, false);
-        }
-        return new StaffModeToggleResult(true, false, localizeStatus(false));
-    }
-
-    public boolean toggleVanish(Player player) {
-        if (player == null || !isInStaffMode(player.getUniqueId()) || !canUseVanish(player)) {
-            return false;
-        }
-
-        return setVanish(player, !isVanished(player.getUniqueId()), true);
-    }
-
-    public boolean toggleBetterView(Player player) {
-        if (player == null || !isInStaffMode(player.getUniqueId()) || !canUseBetterView(player)) {
-            return false;
-        }
-
-        StaffModeState state = getState(player.getUniqueId());
-        if (state == null) {
-            return false;
-        }
-
-        boolean nextActive = !state.isBetterViewActive();
-        if (nextActive) {
-            boolean nightVisionOwned = false;
-            if (isBetterViewNightVisionEnabled() && !player.hasPotionEffect(PotionEffectType.NIGHT_VISION)) {
-                player.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, Integer.MAX_VALUE, 0, false, false));
-                nightVisionOwned = true;
-            }
-            if (isBetterViewFlightEnabled() && isBetterViewAutoFlyEnabled()) {
-                player.setFlying(true);
-            }
-
-            StaffModeState updated = state.withBetterView(true, nightVisionOwned);
-            activeStates.put(player.getUniqueId(), updated);
-            plugin.getDatabaseManager().saveStaffModeState(updated);
-            refreshTool(player, StaffToolType.BETTER_VIEW);
-            player.sendMessage(ColorUtils.toComponent(getMessage("BETTER-VIEW-ON", "&aBetter view enabled."), player));
-            PlayerSettingUtils.sendActionBar(plugin, player, getMessage("BETTER-VIEW-ON", "&aBetter view enabled."));
-            return true;
-        }
-
-        clearBetterView(player, state);
-        StaffModeState updated = state.withBetterView(false, false);
-        activeStates.put(player.getUniqueId(), updated);
-        plugin.getDatabaseManager().saveStaffModeState(updated);
-        refreshTool(player, StaffToolType.BETTER_VIEW);
-        player.sendMessage(ColorUtils.toComponent(getMessage("BETTER-VIEW-OFF", "&cBetter view disabled."), player));
-        PlayerSettingUtils.sendActionBar(plugin, player, getMessage("BETTER-VIEW-OFF", "&cBetter view disabled."));
-        return true;
-    }
-
-    public Player teleportToRandomPlayer(Player viewer) {
-        Player target = findRandomTeleportTarget(viewer);
-        if (viewer == null || target == null) {
-            return null;
-        }
-
-        StaffModeSession session = runtimeSessions.computeIfAbsent(viewer.getUniqueId(), StaffModeSession::new);
-        session.setLastRandomTeleportTarget(target.getUniqueId());
-        String message = formatLegacyMessage(
-                getRandomTeleportMessage("SUCCESS", "&8[&dRTP&8] &7you were teleported to &e%player%"),
-                target.getName(),
-                null,
-                null,
-                target.getName(),
-                null
-        );
-        String viewerName = viewer.getName();
-        plugin.getSpigotScheduler().teleport(viewer, target.getLocation()).thenAccept(success -> {
-            if (!Boolean.TRUE.equals(success)) {
-                return;
-            }
-            plugin.getSpigotScheduler().runEntity(viewer, () -> {
-                if (viewer.isOnline()) {
-                    viewer.sendMessage(ColorUtils.toComponent(message, viewer));
-                    PlayerSettingUtils.sendActionBar(plugin, viewer, message);
-                }
-            });
-            if (isRandomTeleportNotifyTargetEnabled()) {
-                plugin.getSpigotScheduler().runEntity(target, () -> {
-                    if (target.isOnline()) {
-                        target.sendMessage(ColorUtils.toComponent(
-                                formatLegacyMessage(
-                                        getRandomTeleportMessage("NOTIFY", "&8[&dRTP&8] &e%player% &7appeared near you!"),
-                                        viewerName,
-                                        null,
-                                        null,
-                                        viewerName,
-                                        null
-                                ),
-                                target
-                        ));
-                    }
-                });
-            }
-        });
-        return target;
-    }
-
-    public Player findRandomTeleportTarget(Player viewer) {
-        if (viewer == null) {
-            return null;
-        }
-
-        List<Player> candidates = new ArrayList<>();
-        for (Player target : Bukkit.getOnlinePlayers()) {
-            if (isEligibleRandomTeleportTarget(viewer, target)) {
-                candidates.add(target);
-            }
-        }
-
-        if (candidates.isEmpty()) {
-            return null;
-        }
-
-        StaffModeSession session = runtimeSessions.get(viewer.getUniqueId());
-        UUID previousTarget = session == null ? null : session.getLastRandomTeleportTarget();
-        if (previousTarget != null && candidates.size() > 1) {
-            candidates.removeIf(player -> previousTarget.equals(player.getUniqueId()));
-        }
-
-        return candidates.get(ThreadLocalRandom.current().nextInt(candidates.size()));
-    }
-
-    public void openStaffList(Player viewer) {
-        if (viewer == null) {
-            return;
-        }
-        new StaffListMenu(plugin).open(viewer);
-    }
-
-    public void openFrozenPlayers(Player viewer) {
-        if (viewer == null) {
-            return;
-        }
-        new FrozenPlayersMenu(plugin).open(viewer);
-    }
-
-    public boolean isStaffTool(ItemStack item) {
-        return resolveTool(item) != null;
-    }
-
-    public StaffToolType resolveTool(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
-            return null;
-        }
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) {
-            return null;
-        }
-
-        PersistentDataContainer data = meta.getPersistentDataContainer();
-        String raw = data.get(toolKey(), PersistentDataType.STRING);
-        return StaffToolType.fromPersistentId(raw);
-    }
-
-    public void sendToolLockedMessage(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        player.sendMessage(ColorUtils.toComponent(getMessage("TOOL-LOCKED", "&cYour staff tools are locked while staff mode is active."), player));
-    }
-
-    public void handleJoin(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        StaffModeState state = activeStates.get(player.getUniqueId());
-        if (state == null) {
-            refreshViewerVisibility(player);
-            return;
-        }
-
-        if (!player.getName().equals(state.getStaffNameSnapshot())) {
-            state = state.withStaffNameSnapshot(player.getName());
-            activeStates.put(player.getUniqueId(), state);
-            plugin.getDatabaseManager().saveStaffModeState(state);
-        }
-
-        if (restartRecoveryOnly.remove(player.getUniqueId())) {
-            if (disableSilently(player, true)) {
-                player.sendMessage(ColorUtils.toComponent(getMessage(
-                        "RECOVERED-AFTER-RESTART",
-                        "&eStaff mode was disabled because the server restarted. Your inventory was restored."
-                ), player));
-            } else {
-                player.sendMessage(ColorUtils.toComponent(getMessage("RESTORE-FAILED", "&cStaff mode restore failed. Contact an admin."), player));
-            }
-            refreshViewerVisibility(player);
-            return;
-        }
-
-        runtimeSessions.put(player.getUniqueId(), new StaffModeSession(player.getUniqueId()));
-        player.setGameMode(GameMode.CREATIVE);
-        player.setAllowFlight(true);
-        rebuildTools(player);
-
-        if (state.isBetterViewActive()) {
-            reapplyBetterView(player, state);
-        }
-
-        refreshViewerVisibility(player);
-        if (state.isVanishActive()) {
-            applyVanish(player, true);
-        }
-
-        if (plugin.getLuckPermsStaffModeContextBridge() != null) {
-            plugin.getLuckPermsStaffModeContextBridge().signalContextUpdate(player);
-        }
-    }
-
-    public void handleQuit(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        if (!isInStaffMode(player.getUniqueId())) {
-            runtimeSessions.remove(player.getUniqueId());
-            return;
-        }
-
-        if (!shouldPersistOnQuit()) {
-            disableSilently(player, true);
-            return;
-        }
-
-        runtimeSessions.remove(player.getUniqueId());
-    }
-
-    public void handleRespawn(Player player) {
-        if (player == null || !isInStaffMode(player.getUniqueId())) {
-            return;
-        }
-
-        plugin.getSpigotScheduler().runEntityLater(player, () -> {
-            if (!player.isOnline() || !isInStaffMode(player.getUniqueId())) {
-                return;
-            }
-            player.setGameMode(GameMode.CREATIVE);
-            player.setAllowFlight(true);
-            rebuildTools(player);
-            StaffModeState state = getState(player.getUniqueId());
-            if (state != null && state.isBetterViewActive()) {
-                reapplyBetterView(player, state);
-            }
-            refreshViewerVisibility(player);
-            if (state != null && state.isVanishActive()) {
-                refreshTargetVisibility(player);
-            }
-        }, 2L);
-    }
-
-    public void handleDeath(PlayerDeathEvent event) {
-        if (event == null || !isInStaffMode(event.getEntity().getUniqueId())) {
-            return;
-        }
-
-        event.setKeepInventory(true);
-        event.getDrops().clear();
-    }
-
-    public List<Player> getOnlineStaffMembers() {
-        List<Player> staffMembers = new ArrayList<>();
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (isStaffMember(player)) {
-                staffMembers.add(player);
-            }
-        }
-        staffMembers.sort(Comparator.comparing(Player::getName, String.CASE_INSENSITIVE_ORDER));
-        return staffMembers;
-    }
-
-    public List<FreezeState> getFrozenStates() {
-        return plugin.getFreezeManager().getActiveStates();
-    }
-
-    public String getLocalServerDisplayName() {
-        return plugin.getConfigManager().getNetwork().getString("NETWORK-STATUS.LOCAL-DISPLAY-NAME", "local");
-    }
-
-    public String getPlayerStatusSummary(Player player) {
-        if (player == null) {
-            return "offline";
-        }
-        if (plugin.getAFKManager().isAfk(player.getUniqueId())) {
-            return "online (afk)";
-        }
-        return "online";
-    }
-
-    public int getMenuRefreshSlot(String menuKey) {
-        return menuSection(menuKey).getInt("REFRESH-SLOT", 49);
-    }
-
-    public int getMenuSize(String menuKey) {
-        int configured = menuSection(menuKey).getInt("SIZE", 54);
-        if (configured < 9 || configured > 54 || configured % 9 != 0) {
-            return 54;
-        }
-        return configured;
-    }
-
-    public String getMenuTitle(String menuKey, String fallback) {
-        return menuSection(menuKey).getString("TITLE", fallback);
-    }
-
-    public Material getMenuPlaceholderMaterial(String menuKey, Material fallback) {
-        return parseMaterial(menuSection(menuKey).getString("PLACEHOLDER-MATERIAL", fallback.name()), fallback);
-    }
-
-    public List<Integer> getMenuContentSlots(String menuKey, int inventorySize) {
-        List<Integer> configured = menuSection(menuKey).getIntegerList("CONTENT-SLOTS");
-        List<Integer> slots = new ArrayList<>();
-        for (int slot : configured) {
-            if (slot >= 0 && slot < inventorySize) {
-                slots.add(slot);
-            }
-        }
-        if (!slots.isEmpty()) {
-            return slots;
-        }
-
-        for (int slot = 0; slot < inventorySize; slot++) {
-            slots.add(slot);
-        }
-        return slots;
-    }
-
-    public ItemStack createRefreshItem(String menuKey) {
-        return ItemUtils.createItem(Material.CLOCK, "&erefresh", java.util.Collections.singletonList("&7Click to refresh this view."));
-    }
-
-    public ItemStack createMenuEmptyItem(String menuKey) {
-        ConfigurationSection section = menuSection(menuKey);
-        return ItemUtils.createItem(
-                parseMaterial(section.getString("EMPTY-MATERIAL", "BARRIER"), Material.BARRIER),
-                section.getString("EMPTY-NAME", "&cnothing here"),
-                section.getStringList("EMPTY-LORE")
-        );
-    }
-
-    public String localizeState(boolean active) {
-        return getStaffMessage(active ? "STATE_ACTIVE" : "STATE_INACTIVE", active ? "&aActive" : "&cInactive");
-    }
-
-    private String localizeStatus(boolean enabled) {
-        return getStaffMessage(enabled ? "STATUS_ENABLED" : "STATUS_DISABLED", enabled ? "&aEnabled" : "&cDisabled");
-    }
-
-    private String localizeIcon(boolean enabled) {
-        return getStaffMessage(enabled ? "ICON_ENABLED" : "ICON_DISABLED", enabled ? "&a✓" : "&c✗");
-    }
-
-    private void sendSelfToggleMessages(Player player, boolean enabled) {
-        String status = localizeStatus(enabled);
-        String icon = localizeIcon(enabled);
-
-        player.sendMessage(ColorUtils.toComponent(
-                formatLegacyMessage(
-                        getStaffMessage("SELF_TOGGLE", "&6&lStaff mode &7» %status%&7!"),
-                        player.getName(),
-                        player.getName(),
-                        status,
-                        null,
-                        icon
-                ),
-                player
-        ));
-        player.sendMessage(ColorUtils.toComponent(
-                formatLegacyMessage(
-                        getStaffMessage("SELF_STATUS", "&7Status: %icon% %status%"),
-                        player.getName(),
-                        player.getName(),
-                        status,
-                        null,
-                        icon
-                ),
-                player
-        ));
-        PlayerSettingUtils.sendActionBar(plugin, player, status);
-
-        if (!enabled) {
-            return;
-        }
-
-        List<String> lines = plugin.getConfigManager().getMessages().getStringList("STAFF.ACTIVATION_MESSAGES");
-        for (String line : lines) {
-            player.sendMessage(ColorUtils.toComponent(line, player));
-        }
-    }
-
-    public void notifyExternalToggle(CommandSender actor, Player target, boolean enabled) {
-        String status = localizeStatus(enabled);
-        String icon = localizeIcon(enabled);
-        String actorName = actor instanceof Player player ? player.getName() : actor.getName();
-
-        if (actor;
+            Player player = (Player) actor;
             player.sendMessage(ColorUtils.toComponent(
                     formatLegacyMessage(
                             getStaffMessage("OTHER_TOGGLE", "&6&lStaff mode &7» %status% &7staff mode for &e%target%&7!"),
@@ -1396,7 +753,7 @@ public class StaffModeManager {
                 target.getName(),
                 icon
         );
-        UUID actorUuid = actor instanceof Player player ? player.getUniqueId() : null;
+        UUID actorUuid = actor instanceof Player ? ((Player) actor).getUniqueId() : null;
         broadcastToStaff(broadcast, actorUuid, target.getUniqueId());
     }
 
@@ -1832,7 +1189,7 @@ public class StaffModeManager {
         if (toolType == StaffToolType.VANISH) {
             String statePath = isVanished(player.getUniqueId()) ? "ENABLED" : "DISABLED";
             path = path + "." + statePath;
-            material = parseMaterial(getConfig().getString(path + ".MATERIAL", "GRAY_DYE"), Material.GRAY_DYE);
+            material = parseMaterial(getConfig().getString(path + ".MATERIAL", "INK_SACK"), Material.INK_SACK);
             displayName = getConfig().getString(path + ".NAME", "&7Unvanished");
             lore = getConfig().getStringList(path + ".LORE");
         } else {
@@ -1841,7 +1198,7 @@ public class StaffModeManager {
             lore = getConfig().getStringList(path + ".LORE");
         }
 
-        ItemStack item = material == Material.PLAYER_HEAD
+        ItemStack item = material == Material.SKULL_ITEM
                 ? ItemUtils.createPlayerHead(player, displayName, lore)
                 : ItemUtils.createItem(material, displayName, lore);
         tagToolItem(item, toolType);
@@ -1859,7 +1216,7 @@ public class StaffModeManager {
         }
 
         meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        meta.getPersistentDataContainer().set(toolKey(), PersistentDataType.STRING, toolType.name());
+        setLoreMeta(meta, toolKey(), toolType.name());
         item.setItemMeta(meta);
     }
 
@@ -1895,7 +1252,7 @@ public class StaffModeManager {
     }
 
     public StaffCustomItem resolveCustomItem(ItemStack item) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return null;
         }
 
@@ -1904,7 +1261,7 @@ public class StaffModeManager {
             return null;
         }
 
-        String id = meta.getPersistentDataContainer().get(customItemKey(), PersistentDataType.STRING);
+        String id = getLoreMeta(meta, customItemKey());
         return id == null ? null : customItems.get(id.trim().toUpperCase(Locale.ROOT));
     }
 
@@ -1976,7 +1333,7 @@ public class StaffModeManager {
     }
 
     private ItemStack buildCustomItem(Player player, StaffCustomItem customItem) {
-        ItemStack item = customItem.material() == Material.PLAYER_HEAD
+        ItemStack item = customItem.material() == Material.SKULL_ITEM
                 ? ItemUtils.createPlayerHead(player, customItem.name(), customItem.lore())
                 : ItemUtils.createItem(customItem.material(), customItem.name(), customItem.lore());
 
@@ -1984,7 +1341,7 @@ public class StaffModeManager {
 
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.getPersistentDataContainer().set(customItemKey(), PersistentDataType.STRING, customItem.id());
+            setLoreMeta(meta, customItemKey(), customItem.id());
             item.setItemMeta(meta);
         }
         return item;
@@ -2066,19 +1423,49 @@ public class StaffModeManager {
             case BETTER_VIEW:
                 return 7;
             case RANDOM_TELEPORT:
-                return 8; break;
-            // Custom items carry their own SLOT, so this branch only exists to keep the switch exhaustive.        case CUSTOM: 0; break;
+                return 8;
+            case CUSTOM:
+                return 0;
             default:
-                return null;
+                return 0;
         }
     }
 
-    private NamespacedKey toolKey() {
-        return plugin.getKey("staff_tool_type");
+    private String toolKey() {
+        return "staff_tool_type";
     }
 
-    private NamespacedKey customItemKey() {
-        return plugin.getKey("staff_custom_item");
+    private String customItemKey() {
+        return "staff_custom_item";
+    }
+
+    private String getLoreMeta(ItemMeta meta, String key) {
+        if (meta == null || key == null || !meta.hasLore() || meta.getLore() == null) {
+            return null;
+        }
+        String prefix = STAFF_TOOL_META_PREFIX + key + "=";
+        for (String line : meta.getLore()) {
+            if (line != null && line.startsWith(prefix)) {
+                return line.substring(prefix.length());
+            }
+        }
+        return null;
+    }
+
+    private void setLoreMeta(ItemMeta meta, String key, String value) {
+        if (meta == null || key == null || value == null) {
+            return;
+        }
+        List<String> lore = meta.hasLore() && meta.getLore() != null
+                ? new ArrayList<>(meta.getLore())
+                : new ArrayList<>();
+        String prefix = STAFF_TOOL_META_PREFIX + key + "=";
+        lore.removeIf(line -> line != null && line.startsWith(prefix));
+        if (!lore.contains(STAFF_TOOL_META_MARKER)) {
+            lore.add(STAFF_TOOL_META_MARKER);
+        }
+        lore.add(prefix + value);
+        meta.setLore(lore);
     }
 
     private String resolveSourceServer() {
@@ -2100,7 +1487,7 @@ public class StaffModeManager {
         return plugin.getConfigManager().getStaffMode();
     }
 
-public final class StaffModeToggleResult {
+    public static final class StaffModeToggleResult {
     private final boolean success;
     private final boolean active;
     private final String message;
@@ -2116,7 +1503,7 @@ public final class StaffModeToggleResult {
     public String message() { return message; }
 
     @Override public String toString() {
-        return "StaffModeToggleResult[success=+success, active=+active, message=+message]";
+        return "StaffModeToggleResult[success=" + success + ", active=" + active + ", message=" + message + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;

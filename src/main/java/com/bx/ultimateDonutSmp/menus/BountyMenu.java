@@ -55,7 +55,7 @@ public class BountyMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         displayedBounties.clear();
 
         FileConfiguration menus = plugin.getConfigManager().getMenus();
@@ -196,10 +196,10 @@ public class BountyMenu extends BaseMenu {
                 .collect(java.util.stream.Collectors.toList());
 
         Material material = ItemUtils.parseMaterial(
-                menus.getString("BOUNTIES-MENU.BOUNTY-BUTTON.MATERIAL", "PLAYER_HEAD")
+                menus.getString("BOUNTIES-MENU.BOUNTY-BUTTON.MATERIAL", "SKULL_ITEM")
         );
 
-        if (material != Material.PLAYER_HEAD) {
+        if (material != Material.SKULL_ITEM) {
             return ItemUtils.createItem(material, displayName, lore);
         }
 
@@ -216,7 +216,7 @@ public class BountyMenu extends BaseMenu {
 
     private void buildRefreshButton(FileConfiguration menus) {
         String path = "BOUNTIES-MENU.REFRESH-BUTTON";
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SKELETON_SKULL"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SKULL_ITEM"));
         String name = menus.getString(path + ".NAME", "&#6BF18DBounties");
         List<String> lore = menus.getStringList(path + ".LORE");
         set(menus.getInt(path + ".SLOT", 49), ItemUtils.createItem(material, name, lore));
@@ -233,7 +233,7 @@ public class BountyMenu extends BaseMenu {
 
     private void buildSearchButton(FileConfiguration menus) {
         String path = "BOUNTIES-MENU.SEARCH-BUTTON";
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "OAK_SIGN"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "SIGN"));
         String name = menus.getString(path + ".NAME", "&aSearch");
         List<String> rawLore = menus.getStringList(path + ".LORE");
         if (rawLore.isEmpty()) {

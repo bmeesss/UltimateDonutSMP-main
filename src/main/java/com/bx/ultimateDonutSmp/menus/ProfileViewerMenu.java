@@ -45,7 +45,7 @@ public class ProfileViewerMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         slotActions.clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         snapshot = plugin.getProfileViewerManager().resolveProfile(targetUuid).orElse(null);
         if (snapshot == null) {
@@ -78,7 +78,7 @@ public class ProfileViewerMenu extends BaseMenu {
 
     private void buildSummary() {
         int slot = menus().getInt(MENU_PATH + ".BUTTONS.SUMMARY.SLOT", 4);
-        Material material = ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.SUMMARY.MATERIAL", "PLAYER_HEAD"));
+        Material material = ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.SUMMARY.MATERIAL", "SKULL_ITEM"));
 
         List<String> lore = replacePlaceholders(
                 menus().getStringList(MENU_PATH + ".BUTTONS.SUMMARY.LORE"),
@@ -152,7 +152,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.HOMES.MATERIAL", "RED_BED")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.HOMES.MATERIAL", "WOOL")),
                 replacePlaceholders(menus().getString(MENU_PATH + ".BUTTONS.HOMES.DISPLAY-NAME", "&bHomes"), snapshot),
                 lore
         ));
@@ -228,7 +228,7 @@ public class ProfileViewerMenu extends BaseMenu {
         }
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "CLOCK")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH")),
                 replacePlaceholders(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.DISPLAY-NAME", "&bRefresh"), snapshot),
                 lore
         ));
@@ -285,15 +285,16 @@ public class ProfileViewerMenu extends BaseMenu {
     }
 
     private ItemStack createPlayerItem(Material material, String displayName, List<String> lore, UUID uuid) {
-        if (material != Material.PLAYER_HEAD) {
+        if (material != Material.SKULL_ITEM) {
             return ItemUtils.createItem(material, displayName, lore);
         }
 
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = new ItemStack(Material.SKULL_ITEM);
         ItemMeta itemMeta = item.getItemMeta();
-        if (!(itemMeta instanceof SkullMeta meta)) {
-            return ItemUtils.createItem(Material.PLAYER_HEAD, displayName, lore);
+        if (!(itemMeta instanceof SkullMeta)) {
+            return ItemUtils.createItem(Material.SKULL_ITEM, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
         meta.setOwningPlayer(offlinePlayer);

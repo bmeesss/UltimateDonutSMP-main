@@ -10,6 +10,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketContainer;
 import com.comphenix.protocol.events.PacketEvent;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -101,7 +102,7 @@ public class WorthPacketDisplay implements Listener {
             }
         }
         ItemStack cursor = event.getCursor();
-        if (cursor != null && !cursor.getType().isAir()) {
+        if (cursor != null && cursor.getType() != Material.AIR) {
             ItemStack stripped = plugin.getWorthManager().stripWorthDisplay(cursor);
             if (stripped != cursor) {
                 event.setCursor(stripped);
@@ -112,9 +113,9 @@ public class WorthPacketDisplay implements Listener {
         }
         Player player = (Player) event.getWhoClicked();
         openInventories.add(player.getUniqueId());
-        if (cursor != null && !cursor.getType().isAir()) {
+        if (cursor != null && cursor.getType() != Material.AIR) {
             suppressedMaterials.put(player.getUniqueId(), cursor.getType());
-        } else if (current != null && !current.getType().isAir()) {
+        } else if (current != null && current.getType() != Material.AIR) {
             suppressedMaterials.put(player.getUniqueId(), current.getType());
         }
         scheduleCursorEval(player);
@@ -310,7 +311,7 @@ public class WorthPacketDisplay implements Listener {
                 return;
             }
             ItemStack onCursor = player.getItemOnCursor();
-            if (onCursor != null && !onCursor.getType().isAir()) {
+            if (onCursor != null && onCursor.getType() != Material.AIR) {
                 suppressedMaterials.put(uuid, onCursor.getType());
             } else {
                 suppressedMaterials.remove(uuid);

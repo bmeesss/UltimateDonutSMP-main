@@ -129,13 +129,12 @@ public final class ShopPreferenceRepository {
 
     private void ensureTables() throws SQLException {
         try (Statement statement = connection().createStatement()) {
-            statement.execute(schemaAdapter.apply("""
-                    CREATE TABLE IF NOT EXISTS shop_favorites (
-                      player_uuid VARCHAR(191) NOT NULL,
-                      favorite_id VARCHAR(191) NOT NULL,
-                      PRIMARY KEY (player_uuid, favorite_id)
-                    )
-                    """));
+            statement.execute(schemaAdapter.apply(
+                    "CREATE TABLE IF NOT EXISTS shop_favorites (\n"
+                    + "  player_uuid VARCHAR(191) NOT NULL,\n"
+                    + "  favorite_id VARCHAR(191) NOT NULL,\n"
+                    + "  PRIMARY KEY (player_uuid, favorite_id)\n"
+                    + ")\n"));
         }
     }
 
@@ -167,7 +166,9 @@ public final class ShopPreferenceRepository {
 
     private <T> CompletableFuture<T> submit(Callable<T> task) {
         if (closed) {
-            return CompletableFuture.failedFuture(new IllegalStateException("Shop preference repository is closed"));
+            CompletableFuture<T> failed = new CompletableFuture<T>();
+            failed.completeExceptionally(new IllegalStateException("Shop preference repository is closed"));
+            return failed;
         }
         return CompletableFuture.supplyAsync(() -> {
             for (int attempt = 0; ; attempt++) {

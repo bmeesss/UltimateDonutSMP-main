@@ -965,17 +965,6 @@ public final class PlayerWipeResult {
             ")"
         );
         execute(
-            "  uuid VARCHAR(36) NOT NULL PRIMARY KEY," +
-            "  world_name VARCHAR(128) NOT NULL," +
-            "  x DOUBLE NOT NULL," +
-            "  y DOUBLE NOT NULL," +
-            "  z DOUBLE NOT NULL," +
-            "  yaw FLOAT NOT NULL," +
-            "  pitch FLOAT NOT NULL," +
-            "  timestamp BIGINT NOT NULL" +
-            ")"
-        );
-        execute(
             "CREATE TABLE IF NOT EXISTS player_logs (" +
             "  id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "  player_uuid TEXT NOT NULL," +
@@ -1911,24 +1900,22 @@ public final class PlayerWipeResult {
             uuidByUsernameCache.put(data.getUsername().toLowerCase(Locale.ROOT), data.getUuid());
         }
 
-        String sql = """
-                REPLACE INTO players
-                (uuid, username, money, shards, kills, deaths, playtime_seconds, blocks_placed, blocks_broken, mobs_killed,
-                 kill_streak, highest_kill_streak, money_spent, money_made, tpauto, phantom_enabled, payments_enabled,
-                 scoreboard_visible, pay_alerts_enabled, hotbar_messages_enabled, worth_display_enabled,
-                 money_nametags_enabled,
-                 clear_entities_messages_enabled, bounty_alerts_enabled, tpa_confirm_menu_enabled,
-                 chainmail_on_respawn_enabled, lunar_teammates_enabled, tpa_requests_enabled, auto_tpahere_enabled,
-                 tpahere_requests_enabled, team_invites_enabled, mob_spawn_enabled, pay_confirm_menu_enabled,
-                 totem_particles_enabled, fast_crystals_enabled, amethyst_break_messages_enabled,
-                 public_chat_enabled, server_broadcasts_enabled, auction_notifications_enabled,
-                 explosion_particles_enabled, hide_all_players_enabled, notification_sounds_enabled,
-                 rtp_coordinates_enabled, order_notifications_enabled, team_chat_visible,
-                    shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until, destroy_pearl_on_death, randomized_coords, death_messages_choice,
-                    advancement_messages_choice, join_leave_messages_choice, teleport_alerts_enabled,
-                    follow_alerts_enabled, explosion_sounds_enabled, display_donutplus_enabled)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                """;
+        String sql = "REPLACE INTO players\n"
+                + "(uuid, username, money, shards, kills, deaths, playtime_seconds, blocks_placed, blocks_broken, mobs_killed,\n"
+                + " kill_streak, highest_kill_streak, money_spent, money_made, tpauto, phantom_enabled, payments_enabled,\n"
+                + " scoreboard_visible, pay_alerts_enabled, hotbar_messages_enabled, worth_display_enabled,\n"
+                + " money_nametags_enabled,\n"
+                + " clear_entities_messages_enabled, bounty_alerts_enabled, tpa_confirm_menu_enabled,\n"
+                + " chainmail_on_respawn_enabled, lunar_teammates_enabled, tpa_requests_enabled, auto_tpahere_enabled,\n"
+                + " tpahere_requests_enabled, team_invites_enabled, mob_spawn_enabled, pay_confirm_menu_enabled,\n"
+                + " totem_particles_enabled, fast_crystals_enabled, amethyst_break_messages_enabled,\n"
+                + " public_chat_enabled, server_broadcasts_enabled, auction_notifications_enabled,\n"
+                + " explosion_particles_enabled, hide_all_players_enabled, notification_sounds_enabled,\n"
+                + " rtp_coordinates_enabled, order_notifications_enabled, team_chat_visible,\n"
+                + "    shard_booster_expiry, mob_spawn_disabled_until, phantom_disabled_until, destroy_pearl_on_death, randomized_coords, death_messages_choice,\n"
+                + "    advancement_messages_choice, join_leave_messages_choice, teleport_alerts_enabled,\n"
+                + "    follow_alerts_enabled, explosion_sounds_enabled, display_donutplus_enabled)\n"
+                + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)\n";
 
         if (hikariDataSource != null && !hikariDataSource.isClosed()) {
             try (Connection conn = hikariDataSource.getConnection();
@@ -2020,36 +2007,32 @@ public final class PlayerWipeResult {
     }
 
     public int countPlayersWithTrackedStats() {
-        String sql = """
-                SELECT COUNT(*) FROM players
-                WHERE kills != 0
-                   OR deaths != 0
-                   OR playtime_seconds != 0
-                   OR blocks_placed != 0
-                   OR blocks_broken != 0
-                   OR mobs_killed != 0
-                   OR kill_streak != 0
-                   OR highest_kill_streak != 0
-                   OR money_spent != 0
-                   OR money_made != 0
-                """;
+        String sql = "SELECT COUNT(*) FROM players\n"
+                + "WHERE kills != 0\n"
+                + "   OR deaths != 0\n"
+                + "   OR playtime_seconds != 0\n"
+                + "   OR blocks_placed != 0\n"
+                + "   OR blocks_broken != 0\n"
+                + "   OR mobs_killed != 0\n"
+                + "   OR kill_streak != 0\n"
+                + "   OR highest_kill_streak != 0\n"
+                + "   OR money_spent != 0\n"
+                + "   OR money_made != 0\n";
         return countQuery(sql);
     }
 
     public int resetPlayerStats() {
-        String sql = """
-                UPDATE players SET
-                    kills = 0,
-                    deaths = 0,
-                    playtime_seconds = 0,
-                    blocks_placed = 0,
-                    blocks_broken = 0,
-                    mobs_killed = 0,
-                    kill_streak = 0,
-                    highest_kill_streak = 0,
-                    money_spent = 0,
-                    money_made = 0
-                """;
+        String sql = "UPDATE players SET\n"
+                + "    kills = 0,\n"
+                + "    deaths = 0,\n"
+                + "    playtime_seconds = 0,\n"
+                + "    blocks_placed = 0,\n"
+                + "    blocks_broken = 0,\n"
+                + "    mobs_killed = 0,\n"
+                + "    kill_streak = 0,\n"
+                + "    highest_kill_streak = 0,\n"
+                + "    money_spent = 0,\n"
+                + "    money_made = 0\n";
         return executeUpdate(sql);
     }
 
@@ -2136,7 +2119,7 @@ public final class PlayerWipeResult {
                     }
 
                     ItemStack item = deserializeItemStack(rs.getString("item_data"));
-                    if (item == null || item.getType().isAir()) {
+                    if (item == null || item.getType() == Material.AIR) {
                         continue;
                     }
 
@@ -2417,7 +2400,7 @@ public final class CrateBlockData {
                     "INSERT INTO ender_chest_items (player_uuid, slot, item_data) VALUES (?,?,?)")) {
                 for (int slot = 0; slot < contents.length; slot++) {
                     ItemStack item = contents[slot];
-                    if (item == null || item.getType().isAir()) {
+                    if (item == null || item.getType() == Material.AIR) {
                         continue;
                     }
 
@@ -2492,7 +2475,8 @@ public final class CrateBlockData {
             Location l = home.getLocation();
             String worldName = null;
             if (l != null) {
-                if (l instanceof LazyLocation lazy) {
+                if (l instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) l;
                     worldName = lazy.getWorldName();
                 } else if (l.getWorld() != null) {
                     worldName = l.getWorld().getName();
@@ -2600,7 +2584,8 @@ public final class CrateBlockData {
             Location h = team.getHome();
             String worldName = null;
             if (h != null) {
-                if (h instanceof LazyLocation lazy) {
+                if (h instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) h;
                     worldName = lazy.getWorldName();
                 } else if (h.getWorld() != null) {
                     worldName = h.getWorld().getName();
@@ -2743,7 +2728,8 @@ public final class CrateBlockData {
             ps.setString(1, name.toLowerCase());
             String worldName = null;
             if (loc != null) {
-                if (loc instanceof LazyLocation lazy) {
+                if (loc instanceof LazyLocation) {
+                    LazyLocation lazy = (LazyLocation) loc;
                     worldName = lazy.getWorldName();
                 } else if (loc.getWorld() != null) {
                     worldName = loc.getWorld().getName();
@@ -2904,6 +2890,12 @@ public final class PlayerLogRecord {
     private final long timestamp;
 
     public PlayerLogRecord(UUID uuid, String name, String category, String type, String details, long timestamp) {
+        this.uuid = uuid;
+        this.name = name;
+        this.category = category;
+        this.type = type;
+        this.details = details;
+        this.timestamp = timestamp;
     }
 
     public UUID uuid() { return uuid; }
@@ -2912,11 +2904,6 @@ public final class PlayerLogRecord {
     public String type() { return type; }
     public String details() { return details; }
     public long timestamp() { return timestamp; }
-
-
-        public
-
-
     @Override public String toString() {
         return "PlayerLogRecord[uuid=+uuid, name=+name, category=+category, type=+type, details=+details, timestamp=+timestamp]";
     }
@@ -3102,6 +3089,11 @@ public final class SellHistoryRecord {
     private final long timestamp;
 
     public SellHistoryRecord(UUID uuid, String itemName, int amount, double price, long timestamp) {
+        this.uuid = uuid;
+        this.itemName = itemName;
+        this.amount = amount;
+        this.price = price;
+        this.timestamp = timestamp;
     }
 
     public UUID uuid() { return uuid; }
@@ -3109,11 +3101,6 @@ public final class SellHistoryRecord {
     public int amount() { return amount; }
     public double price() { return price; }
     public long timestamp() { return timestamp; }
-
-
-        public
-
-
     @Override public String toString() {
         return "SellHistoryRecord[uuid=+uuid, itemName=+itemName, amount=+amount, price=+price, timestamp=+timestamp]";
     }
@@ -4386,7 +4373,7 @@ public final class CuboidData {
                 );
                 String disabledKeysRaw = rs.getString("disabled_loot_keys");
                 if (disabledKeysRaw != null && !disabledKeysRaw.trim().isEmpty()) {
-                    instance.setDisabledLootKeys(java.util.Collections.singletonList(disabledKeysRaw.split(",")));
+                    instance.setDisabledLootKeys(java.util.Arrays.asList(disabledKeysRaw.split(",")));
                 }
                 spawners.add(instance);
             }
@@ -4710,7 +4697,7 @@ public final class CuboidData {
                                     String section,
                                     int slot,
                                     ItemStack item) throws SQLException {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || item.getType() == Material.AIR) {
             return;
         }
 
@@ -4848,7 +4835,8 @@ public final class CuboidData {
             int parameterIndex = index + 1;
             if (value == null) {
                 ps.setObject(parameterIndex, null);
-            } else if (value instanceof Boolean booleanValue) {
+            } else if (value instanceof String) {
+                String stringValue = (String) value;
                 ps.setString(parameterIndex, stringValue);
             } else if (value instanceof Integer) {
             Integer integerValue = (Integer) value;
@@ -4983,25 +4971,24 @@ public final class CuboidData {
             connection.setAutoCommit(false);
             autoCommitDisabled = true;
             if (serverWipeTableExists("players")) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        UPDATE players SET
-                            money = ?,
-                            shards = 0,
-                            kills = 0,
-                            deaths = 0,
-                            playtime_seconds = 0,
-                            blocks_placed = 0,
-                            blocks_broken = 0,
-                            mobs_killed = 0,
-                            kill_streak = 0,
-                            highest_kill_streak = 0,
-                            money_spent = 0,
-                            money_made = 0,
-                            keyall_remaining_seconds = -1,
-                            shard_booster_expiry = 0,
-                            mob_spawn_disabled_until = 0,
-                            phantom_disabled_until = 0
-                        """)) {
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE players SET\n"
+                        + "    money = ?,\n"
+                        + "    shards = 0,\n"
+                        + "    kills = 0,\n"
+                        + "    deaths = 0,\n"
+                        + "    playtime_seconds = 0,\n"
+                        + "    blocks_placed = 0,\n"
+                        + "    blocks_broken = 0,\n"
+                        + "    mobs_killed = 0,\n"
+                        + "    kill_streak = 0,\n"
+                        + "    highest_kill_streak = 0,\n"
+                        + "    money_spent = 0,\n"
+                        + "    money_made = 0,\n"
+                        + "    keyall_remaining_seconds = -1,\n"
+                        + "    shard_booster_expiry = 0,\n"
+                        + "    mob_spawn_disabled_until = 0,\n"
+                        + "    phantom_disabled_until = 0\n")) {
                     statement.setDouble(1, Math.max(0D, startingMoney));
                     affected.put("players", statement.executeUpdate());
                 }
@@ -5179,26 +5166,25 @@ public final class CuboidData {
             autoCommitDisabled = true;
 
             if (serverWipeTableExists("players")) {
-                try (PreparedStatement statement = connection.prepareStatement("""
-                        UPDATE players SET
-                            money = ?,
-                            shards = 0,
-                            kills = 0,
-                            deaths = 0,
-                            playtime_seconds = 0,
-                            blocks_placed = 0,
-                            blocks_broken = 0,
-                            mobs_killed = 0,
-                            kill_streak = 0,
-                            highest_kill_streak = 0,
-                            money_spent = 0,
-                            money_made = 0,
-                            keyall_remaining_seconds = -1,
-                            shard_booster_expiry = 0,
-                            mob_spawn_disabled_until = 0,
-                            phantom_disabled_until = 0
-                        WHERE uuid = ?
-                        """)) {
+                try (PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE players SET\n"
+                        + "    money = ?,\n"
+                        + "    shards = 0,\n"
+                        + "    kills = 0,\n"
+                        + "    deaths = 0,\n"
+                        + "    playtime_seconds = 0,\n"
+                        + "    blocks_placed = 0,\n"
+                        + "    blocks_broken = 0,\n"
+                        + "    mobs_killed = 0,\n"
+                        + "    kill_streak = 0,\n"
+                        + "    highest_kill_streak = 0,\n"
+                        + "    money_spent = 0,\n"
+                        + "    money_made = 0,\n"
+                        + "    keyall_remaining_seconds = -1,\n"
+                        + "    shard_booster_expiry = 0,\n"
+                        + "    mob_spawn_disabled_until = 0,\n"
+                        + "    phantom_disabled_until = 0\n"
+                        + "WHERE uuid = ?\n")) {
                     statement.setDouble(1, Math.max(0D, startingMoney));
                     statement.setString(2, uuid);
                     affected.put("stats", statement.executeUpdate());
@@ -5417,7 +5403,8 @@ public final class CuboidData {
         if (value instanceof Number) {
             return value.toString();
         }
-        if (value instanceof Boolean booleanValue) {
+        if (value instanceof Boolean) {
+            Boolean booleanValue = (Boolean) value;
             return booleanValue ? "1" : "0";
         }
         if (value instanceof byte[]) {
@@ -5547,7 +5534,8 @@ public final class CuboidData {
                 try (PreparedStatement ps = connection.prepareStatement(sql)) {
                     for (int index = 0; index < presentColumns.size(); index++) {
                         Object value = document.get(presentColumns.get(index));
-                        if (value instanceof Boolean booleanValue) {
+                        if (value instanceof Boolean) {
+                            Boolean booleanValue = (Boolean) value;
                             ps.setInt(index + 1, booleanValue ? 1 : 0);
                         } else {
                             ps.setObject(index + 1, value);

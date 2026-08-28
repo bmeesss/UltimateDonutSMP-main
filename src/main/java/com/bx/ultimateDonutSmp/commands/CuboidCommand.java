@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.listeners.CuboidWandListener;
+import com.bx.ultimateDonutSmp.managers.CuboidManager;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import org.bukkit.Location;
@@ -17,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class CuboidCommand implements CommandExecutor {
@@ -45,10 +47,11 @@ public class CuboidCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         switch (sub) {
             case "wand":
@@ -79,7 +82,7 @@ public class CuboidCommand implements CommandExecutor {
         plugin.getCuboidManager().clearSelection(player.getUniqueId());
 
         ItemStack wand = ItemUtils.createItem(
-                Material.GOLDEN_SHOVEL,
+                Material.GOLD_SPADE,
                 CuboidWandListener.getWandName(),
                 new java.util.ArrayList<>(java.util.Arrays.asList(
                         "&7Step 1: left click a block to set &aposition 1", 
@@ -91,7 +94,7 @@ public class CuboidCommand implements CommandExecutor {
 
         CuboidWandListener.markAsCuboidWand(plugin, wand);
 
-        var leftovers = player.getInventory().addItem(wand);
+        Map<Integer, ItemStack> leftovers = player.getInventory().addItem(wand);
         if (!leftovers.isEmpty()) {
             leftovers.values().forEach(item -> player.getWorld().dropItemNaturally(player.getLocation(), item));
         }
@@ -148,7 +151,7 @@ public class CuboidCommand implements CommandExecutor {
         }
 
         String cuboidName = args[1].toLowerCase();
-        var cuboid = plugin.getCuboidManager().getCuboid(cuboidName);
+        CuboidManager.Cuboid cuboid = plugin.getCuboidManager().getCuboid(cuboidName);
         if (cuboid == null) {
             player.sendMessage(ColorUtils.toComponent("&cCuboid not found: &f" + args[1]));
             return;
@@ -177,7 +180,6 @@ public class CuboidCommand implements CommandExecutor {
                 List<String> spawnBinds = config.getStringList("CUBOID-BINDS.SPAWN");
                 config.set("AFK-SYSTEM.SPAWN-CUBOID-NAME", spawnBinds.isEmpty() ? "" : spawnBinds.get(0));
                 break;
-                break;
             }
             case "shard": {
                 config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", enabled);
@@ -185,21 +187,20 @@ public class CuboidCommand implements CommandExecutor {
                 updateBindList(config, "CUBOID-BINDS.AFK", cuboidName, enabled);
                 List<String> afkBinds = config.getStringList("CUBOID-BINDS.AFK");
                 if (enabled) {
-                                config.set("SHARDS.CUBOIDS.REGIONS.spawn.CUBOID", cuboidName);
-                                config.set("SHARDS.CUBOIDS.REGIONS.spawn.WORLD", cuboid.world());
-                            } else {
-                                config.set("SHARDS.CUBOIDS.REGIONS.spawn.CUBOID", "");
-                                config.set("SHARDS.CUBOIDS.REGIONS.spawn.WORLD", "");
-                                if (isBlank(config.getString("SHARDS.CUBOIDS.REGIONS.spawn.LOCATION"))) {
-                                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", false);
-                                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", false);
-                                } else {
-                                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", true);
-                                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", false);
-                                }
-                            }
-                            config.set("AFK-SYSTEM.AFK-CUBOID-NAME", afkBinds.isEmpty() ? "" : afkBinds.get(0));
-                break;
+                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.CUBOID", cuboidName);
+                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.WORLD", cuboid.world());
+                } else {
+                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.CUBOID", "");
+                    config.set("SHARDS.CUBOIDS.REGIONS.spawn.WORLD", "");
+                    if (isBlank(config.getString("SHARDS.CUBOIDS.REGIONS.spawn.LOCATION"))) {
+                        config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", false);
+                        config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", false);
+                    } else {
+                        config.set("SHARDS.CUBOIDS.REGIONS.spawn.ENABLED", true);
+                        config.set("SHARDS.CUBOIDS.REGIONS.spawn.BOUND", false);
+                    }
+                }
+                config.set("AFK-SYSTEM.AFK-CUBOID-NAME", afkBinds.isEmpty() ? "" : afkBinds.get(0));
                 break;
             }
             case "rtp-zone":
@@ -208,8 +209,6 @@ public class CuboidCommand implements CommandExecutor {
             default: {
                 player.sendMessage(ColorUtils.toComponent("&cUnknown role."));
                 return;
-                break;
-                break;
             }
         }
 

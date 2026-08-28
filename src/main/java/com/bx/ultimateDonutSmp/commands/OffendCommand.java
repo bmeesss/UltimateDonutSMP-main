@@ -306,279 +306,7 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
 
     private Actor resolveActor(CommandSender sender) {
         if (sender instanceof Player) {
-            Player player = (Player) !PermissionUtils.has(sender, OFFEND_PERMISSION) && !PermissionUtils.has(sender, CREATE_PERMISSION)) {
-            sendMessage(sender, plugin.getConfigManager().getMessageOrDefault(
-                    "PUNISHMENTS.NO-CREATE-PERMISSION",
-                    "&cYou do not have permission to create punishments."
-            ));
-            return true;
-        }
-
-        if (args.length < 2) {
-            sendMessage(sender, "&cUsage: /offend <player> <reason> [time]");
-            return true;
-        }
-
-        String targetInput = args[0];
-        String reasonKeyInput = args[1].toLowerCase(Locale.ROOT);
-
-        // Resolve Target Player
-        ResolvedTarget target = resolveTarget(targetInput);
-        if (target == null || target.uuid() == null) {
-            sendMessage(sender, plugin.getConfigManager().getMessageOrDefault("PUNISHMENTS.NOT-FOUND", "&cPlayer not found."));
-            return true;
-        }
-
-        Player onlineTarget = Bukkit.getPlayer(target.uuid());
-        OffenseManager offenseManager = plugin.getOffenseManager();
-        Optional<OffenseManager.OffenseRule> ruleOpt = offenseManager.getOffenseRule(reasonKeyInput);
-
-        PunishmentType type = PunishmentType.BAN;
-        String reasonDisplay = args[1];
-        String durationStr = null;
-
-        if (args.length >= 3) {
-            durationStr = args[2];
-        }
-
-        if (ruleOpt.isPresent()) {
-            OffenseManager.OffenseRule rule = ruleOpt.get();
-            type = rule.type();
-            reasonDisplay = rule.name() + " (" + rule.key() + ")";
-
-            if (durationStr == null) {
-                // Calculate tier based on previous infractions for this player
-                int previousInfractions = plugin.getPunishmentManager().countHistory(
-                        target.uuid(),
-                        target.name(),
-                        new PunishmentQuery(null, null, null)
-                );
-                durationStr = rule.getDurationForTier(previousInfractions);
-            }
-        }
-
-        Long durationMillis = OffenseManager.parseDurationToMillis(durationStr);
-        Long expiresAt = durationMillis != null && durationMillis > 0L ? System.currentTimeMillis() + durationMillis : null;
-
-        if (durationMillis != null && durationMillis == 0L && type != PunishmentType.WARN) {
-            type = PunishmentType.WARN;
-        }
-
-        Actor actor = resolveActor(sender);
-        PunishmentRecord record = plugin.getPunishmentManager().createRecord(new PunishmentManager.PunishmentCreateRequest(
-                target.uuid(),
-                target.name(),
-                type,
-                reasonDisplay,
-                actor.uuid(),
-                actor.name(),
-                System.currentTimeMillis(),
-                expiresAt,
-                "local",
-                PunishmentScope.SERVER
-        ));
-
-        if (record == null) {
-            sendMessage(sender, plugin.getConfigManager().getMessageOrDefault(
-                    "PUNISHMENTS.CREATE-FAILED",
-                    "&cFailed to create punishment record."
-            ));
-            return true;
-        }
-
-        applyRuntimeEffect(type, onlineTarget, record);
-
-        String durationDisplay = expiresAt == null ? "Permanent" : NumberUtils.formatCountdown(Math.max(0L, (expiresAt - System.currentTimeMillis()) / 1000L));
-        sendMessage(sender, "&aSuccessfully issued &f" + type.name() + " &apunishment to &b" + target.name() + "&a! [Duration: &f" + durationDisplay + "&a, Reason: &f" + reasonDisplay + "&a]");
-        return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (args.length == 1) {
-            String partial = args[0].toLowerCase(Locale.ROOT);
-            return Bukkit.getOnlinePlayers().stream()
-                    .map(Player::getName)
-                    .filter(name -> name.toLowerCase(Locale.ROOT).startsWith(partial))
-                    .collect(Collectors.toList());
-        }
-
-        if (args.length == 2) {
-            String partial = args[1].toLowerCase(Locale.ROOT);
-            return plugin.getOffenseManager().getOffenseKeys().stream()
-                    .filter(key -> key.toLowerCase(Locale.ROOT).startsWith(partial))
-                    .sorted()
-                    .collect(Collectors.toList());
-        }
-
-        if (args.length == 3) {
-            String partial = args[2].toLowerCase(Locale.ROOT);
-            List<String> durations = new java.util.ArrayList<>(java.util.Arrays.asList("24h",  "3d",  "7d",  "14d",  "30d",  "60d",  "180d",  "360d",  "perm"));
-            return durations.stream()
-                    .filter(d -> d.startsWith(partial))
-                    .collect(Collectors.toList());
-        }
-
-        return Collections.emptyList();
-    }
-
-    private void applyRuntimeEffect(PunishmentType type, Player onlineTarget, PunishmentRecord record) {
-        if (onlineTarget == null) {
-            return;
-        }
-
-        switch (type) {
-            case BAN:
-            case BLACKLIST:
-            case KICK:
-                onlineTarget.kickPlayer(ColorUtils.toComponent(buildPunishmentMessage(record)));
-                break;
-            case WARN:
-                onlineTarget.sendMessage(ColorUtils.toComponent(
-                    plugin.getConfigManager().getMessageOrDefault(
-                            "PUNISHMENTS.WARN-RECEIVED",
-                            "&cWarning: &f{reason}",
-                            "{reason}", record.getReason()
-                    )
-            ));
-                break;
-            case MUTE:
-                onlineTarget.sendMessage(ColorUtils.toComponent(buildPunishmentMessage(record)));
-                break;
-        }
-    }
-
-    private String buildPunishmentMessage(PunishmentRecord record) {
-        return plugin.getConfigManager().getMessageOrDefault(
-                punishmentMessagePath(record.getType()),
-                defaultPunishmentMessage(record.getType()),
-                punishmentPlaceholders(record)
-        );
-    }
-
-    private String punishmentMessagePath(PunishmentType type) {
-        switch (type) {
-            case BAN:
-                return "PUNISHMENTS.BAN";
-            case KICK:
-                return "PUNISHMENTS.KICK";
-            case MUTE:
-                return "PUNISHMENTS.MUTE";
-            case BLACKLIST:
-                return "PUNISHMENTS.BLACKLIST";
-            case WARN:
-                return "PUNISHMENTS.WARN-RECEIVED";
-            default:
-                return null;
-        }
-    }
-
-    private String defaultPunishmentMessage(PunishmentType type) {
-        switch (type) {
-            case BAN:
-                return "&c&lyou have been banned!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7banned by: &f%issuer%\n&8&m----------------------------";
-            case KICK:
-                return "&c&lyou have been kicked!\n&8&m----------------------------\n&7reason: &f%reason%\n&7kicked by: &f%issuer%\n&8&m----------------------------";
-            case MUTE:
-                return "&c&lyou have been muted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7expires: &f%nicest_expiration%\n&7muted by: &f%issuer%\n&8&m----------------------------";
-            case BLACKLIST:
-                return "&4&lyou have been blacklisted!\n&8&m----------------------------\n&7reason: &f%reason%\n&7blacklisted by: &f%issuer%\n&8&m----------------------------";
-            case WARN:
-                return "&cwarning: &f{reason}";
-            default:
-                return null;
-        }
-    }
-
-    private String[] punishmentPlaceholders(PunishmentRecord record) {
-        String expires = formatExpires(record);
-        String issuer = formatIssuer(record);
-        String reason = record == null || record.getReason() == null ? "" : record.getReason();
-        String player = record == null || record.getTargetNameSnapshot() == null ? "" : record.getTargetNameSnapshot();
-        String id = record == null ? "" : String.valueOf(record.getId());
-        String type = record == null || record.getType() == null ? "" : record.getType().name();
-
-        return new String[]{
-                "%reason%", reason,
-                "{reason}", reason,
-
-                "%nicest_expiration%", expires,
-                "{nicest_expiration}", expires,
-                "%expires%", expires,
-                "{expires}", expires,
-                "%expires_at%", expires,
-                "{expires_at}", expires,
-                "%expiration%", expires,
-                "{expiration}", expires,
-                "%expiry%", expires,
-                "{expiry}", expires,
-                "%duration%", expires,
-                "{duration}", expires,
-
-                "%issuer%", issuer,
-                "{issuer}", issuer,
-                "%staff%", issuer,
-                "{staff}", issuer,
-                "%by%", issuer,
-                "{by}", issuer,
-
-                "%player%", player,
-                "{player}", player,
-                "%target%", player,
-                "{target}", player,
-
-                "%id%", id,
-                "{id}", id,
-
-                "%type%", type,
-                "{type}", type
-        };
-    }
-
-    private String formatExpires(PunishmentRecord record) {
-        if (record == null || record.getExpiresAt() == null) {
-            return "Permanent";
-        }
-        long remainingSeconds = Math.max(0L, (record.getExpiresAt() - System.currentTimeMillis()) / 1000L);
-        if (remainingSeconds <= 0L) {
-            return "Expired";
-        }
-        if (plugin != null && plugin.getLanguageManager() != null) {
-            return plugin.getLanguageManager().formatDuration(remainingSeconds, true);
-        }
-        return NumberUtils.formatCountdown(remainingSeconds);
-    }
-
-    private String formatIssuer(PunishmentRecord record) {
-        if (record == null) return "unknown";
-        String issuer = record.getIssuerNameSnapshot();
-        return issuer == null || issuer.trim().isEmpty() ? "unknown" : issuer;
-    }
-
-    private ResolvedTarget resolveTarget(String input) {
-        Player online = Bukkit.getPlayerExact(input);
-        if (online == null) {
-            for (Player player : Bukkit.getOnlinePlayers()) {
-                if (player.getName().equalsIgnoreCase(input)) {
-                    online = player;
-                    break;
-                }
-            }
-        }
-
-        if (online != null) {
-            return new ResolvedTarget(online.getUniqueId(), online.getName());
-        }
-
-        UUID knownUuid = plugin.getPunishmentManager().resolveTargetUuid(input, true).orElse(null);
-        if (knownUuid != null) {
-            return new ResolvedTarget(knownUuid, plugin.getPunishmentManager().resolveTargetName(knownUuid, input));
-        }
-        return null;
-    }
-
-    private Actor resolveActor(CommandSender sender) {
-        if (sender;
+            Player player = (Player) sender;
             return new Actor(player.getUniqueId(), player.getName());
         }
         return new Actor(null, "console");
@@ -590,54 +318,55 @@ public class OffendCommand implements CommandExecutor, TabCompleter {
         }
     }
 
-public final class ResolvedTarget {
-    private final UUID uuid;
-    private final String name;
+    public static final class ResolvedTarget {
+        private final UUID uuid;
+        private final String name;
 
-    public ResolvedTarget(UUID uuid, String name) {
-        this.uuid = uuid;
-        this.name = name;
-    }
+        public ResolvedTarget(UUID uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
 
-    public UUID uuid() { return uuid; }
-    public String name() { return name; }
+        public UUID uuid() { return uuid; }
+        public String name() { return name; }
 
-    @Override public String toString() {
-        return "ResolvedTarget[uuid=+uuid, name=+name]";
-    }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ResolvedTarget that = (ResolvedTarget) o;
-        return java.util.Objects.equals(uuid, that.uuid) && java.util.Objects.equals(name, that.name);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(uuid, name);
-    }
-}
-public final class Actor {
-    private final UUID uuid;
-    private final String name;
-
-    public Actor(UUID uuid, String name) {
-        this.uuid = uuid;
-        this.name = name;
+        @Override public String toString() {
+            return "ResolvedTarget[uuid=" + uuid + ", name=" + name + "]";
+        }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            ResolvedTarget that = (ResolvedTarget) o;
+            return java.util.Objects.equals(uuid, that.uuid) && java.util.Objects.equals(name, that.name);
+        }
+        @Override public int hashCode() {
+            return java.util.Objects.hash(uuid, name);
+        }
     }
 
-    public UUID uuid() { return uuid; }
-    public String name() { return name; }
+    public static final class Actor {
+        private final UUID uuid;
+        private final String name;
 
-    @Override public String toString() {
-        return "Actor[uuid=+uuid, name=+name]";
+        public Actor(UUID uuid, String name) {
+            this.uuid = uuid;
+            this.name = name;
+        }
+
+        public UUID uuid() { return uuid; }
+        public String name() { return name; }
+
+        @Override public String toString() {
+            return "Actor[uuid=" + uuid + ", name=" + name + "]";
+        }
+        @Override public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Actor that = (Actor) o;
+            return java.util.Objects.equals(uuid, that.uuid) && java.util.Objects.equals(name, that.name);
+        }
+        @Override public int hashCode() {
+            return java.util.Objects.hash(uuid, name);
+        }
     }
-    @Override public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Actor that = (Actor) o;
-        return java.util.Objects.equals(uuid, that.uuid) && java.util.Objects.equals(name, that.name);
-    }
-    @Override public int hashCode() {
-        return java.util.Objects.hash(uuid, name);
-    }
-}
 }

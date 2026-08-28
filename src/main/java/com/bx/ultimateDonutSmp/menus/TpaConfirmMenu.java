@@ -32,12 +32,12 @@ public class TpaConfirmMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
-        set(11, ItemUtils.createItem(Material.RED_STAINED_GLASS_PANE, "&cCancel",
+        set(11, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 14, "&cCancel",
                 java.util.Collections.singletonList("&7Deny this teleport request.")));
 
-        set(15, ItemUtils.createItem(Material.LIME_STAINED_GLASS_PANE, "&aConfirm",
+        set(15, ItemUtils.createItem(Material.STAINED_GLASS_PANE, (short) 5, "&aConfirm",
                 java.util.Collections.singletonList("&7Accept this teleport request.")));
 
         String requestText = tpaHere
@@ -62,7 +62,7 @@ public class TpaConfirmMenu extends BaseMenu {
     }
 
     private ItemStack createRequesterItem(List<String> lore) {
-        ItemStack item = ItemUtils.createItem(Material.PLAYER_HEAD, "&a" + requesterName, lore);
+        ItemStack item = ItemUtils.createItem(Material.SKULL_ITEM, "&a" + requesterName, lore);
         if (!(item.getItemMeta() instanceof SkullMeta)) {
             return item;
         }

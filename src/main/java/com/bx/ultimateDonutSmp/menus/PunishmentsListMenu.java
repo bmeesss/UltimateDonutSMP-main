@@ -97,7 +97,7 @@ public class PunishmentsListMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         visibleRecords.clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         if (loading) {
             buildLoadingState();
@@ -117,7 +117,7 @@ public class PunishmentsListMenu extends BaseMenu {
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &f{state_filter}",  "&aClick to change")));
         buildButton(FILTER_TYPE_SLOT, "FILTER-TYPE", "BOOK", "&dType filter",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &f{type_filter}",  "&aClick to change")));
-        buildButton(REFRESH_SLOT, "REFRESH", "CLOCK", "&dRefresh",
+        buildButton(REFRESH_SLOT, "REFRESH", "WATCH", "&dRefresh",
                 java.util.Collections.singletonList("&7Reload the punishment list."));
         buildButton(SEARCH_SLOT, "SEARCH", "NAME_TAG", "&dSearch",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Current: &f{search}",  "&aLeft-click to search a player",  "&cRight-click to clear")));
@@ -267,7 +267,7 @@ public class PunishmentsListMenu extends BaseMenu {
 
     private void buildLoadingState() {
         set(inventory.getSize() / 2, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".LOADING-BUTTON.MATERIAL", "CLOCK")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".LOADING-BUTTON.MATERIAL", "WATCH")),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".LOADING-BUTTON.DISPLAY-NAME", "&eLoading punishments")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".LOADING-BUTTON.LORE"),

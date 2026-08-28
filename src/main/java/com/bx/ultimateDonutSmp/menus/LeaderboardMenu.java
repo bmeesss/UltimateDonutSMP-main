@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class LeaderboardMenu extends BaseMenu {
 
-    private static final String MENU_PATH = "LEADERBOARDS-MENU";
+    private static final String MENU_PATH = "LEASHERBOARDS-MENU";
 
     private final Map<Integer, LeaderboardManager.LeaderboardType> clickableTypes = new HashMap<>();
 
@@ -30,7 +30,7 @@ public class LeaderboardMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         clickableTypes.clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         ConfigurationSection buttons = plugin.getConfigManager().getMenus().getConfigurationSection(MENU_PATH + ".BUTTONS");
         if (buttons == null) {

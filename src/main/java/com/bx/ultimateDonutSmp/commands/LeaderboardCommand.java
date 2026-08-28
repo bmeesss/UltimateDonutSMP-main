@@ -24,7 +24,7 @@ public class LeaderboardCommand implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
         Player player = (Player) sender;
-        if (!plugin.getConfigManager().isCommandEnabled("LEADERBOARDS")) {
+        if (!plugin.getConfigManager().isCommandEnabled("LEASHERBOARDS")) {
             player.sendMessage(ColorUtils.toComponent("&cLeaderboards are currently disabled."));
             return true;
         }

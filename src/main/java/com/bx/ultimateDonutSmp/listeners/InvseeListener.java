@@ -37,9 +37,11 @@ public class InvseeListener implements Listener {
 
     @EventHandler
     public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player player)) {
+        org.bukkit.entity.HumanEntity closer = event.getPlayer();
+        if (!(closer instanceof Player)) {
             return;
         }
+        Player player = (Player) closer;
 
         plugin.getInvseeManager().handleViewerClose(player, event.getInventory());
     }

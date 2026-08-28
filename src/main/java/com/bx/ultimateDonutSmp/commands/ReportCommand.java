@@ -24,7 +24,7 @@ public class ReportCommand implements TabExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player reporter)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                     "REPORT.PLAYER_ONLY",
                     "&cOnly players can use report."
@@ -32,6 +32,7 @@ public class ReportCommand implements TabExecutor {
             return true;
         }
 
+        Player reporter = (Player) sender;
         if (!PermissionUtils.has(reporter, PERMISSION)) {
             reporter.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
                     "REPORT.NO_PERMISSION",
@@ -91,7 +92,7 @@ public class ReportCommand implements TabExecutor {
         for (String name : plugin.getHideManager().onlineNames(sender)) {
             Player player = plugin.getHideManager().findOnlinePlayer(sender, name);
             if (player == null
-                    || sender instanceof Player reporter && reporter.getUniqueId().equals(player.getUniqueId())) {
+                    || sender instanceof Player && ((Player) sender).getUniqueId().equals(player.getUniqueId())) {
                 continue;
             }
             if (name.toLowerCase().startsWith(input)) {
@@ -104,7 +105,7 @@ public class ReportCommand implements TabExecutor {
     private String joinArgs(String[] args, int startIndex) {
         StringBuilder builder = new StringBuilder();
         for (int i = startIndex; i < args.length; i++) {
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(args[i]);

@@ -37,7 +37,7 @@ public class RulesMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
         slotButtons.clear();
 
         int renderedButtons = 0;
@@ -175,7 +175,7 @@ public class RulesMenu extends BaseMenu {
             if (part.isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -183,10 +183,10 @@ public class RulesMenu extends BaseMenu {
                 builder.append(part.substring(1));
             }
         }
-        return builder.isEmpty() ? "Rules" : builder.toString();
+        return builder.length() == 0 ? "Rules" : builder.toString();
     }
 
-public final class RulesButton {
+    public static final class RulesButton {
     private final String key;
     private final int slot;
     private final Material material;

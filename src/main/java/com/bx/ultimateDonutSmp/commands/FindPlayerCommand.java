@@ -30,7 +30,8 @@ public class FindPlayerCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         if (args.length == 0) { player.sendMessage(ColorUtils.toComponent("&cUsage: /findplayer <player>")); return true; }
 
         Player target = plugin.getHideManager().findOnlinePlayer(player, args[0]);
@@ -71,10 +72,8 @@ public class FindPlayerCommand implements CommandExecutor {
                 return new LocationMessage("FINDPLAYER.NETHER", DEFAULT_NETHER);
             case THE_END:
                 return new LocationMessage("FINDPLAYER.THE_END", DEFAULT_THE_END);
-            case CUSTOM:
-                return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
             default:
-                return null;
+                return new LocationMessage("FINDPLAYER.UNKNOWN", DEFAULT_UNKNOWN);
         }
     }
 
@@ -90,10 +89,8 @@ public class FindPlayerCommand implements CommandExecutor {
                 return "nether";
             case THE_END:
                 return "the end";
-            case CUSTOM:
-                return formatIdentifier(world.getName());
             default:
-                return null;
+                return formatIdentifier(world.getName());
         }
     }
 
@@ -107,7 +104,7 @@ public class FindPlayerCommand implements CommandExecutor {
             return "unknown";
         }
 
-        return formatIdentifier(biome.getKey().getKey());
+        return formatIdentifier(biome.name());
     }
 
     private String formatIdentifier(String value) {
@@ -128,7 +125,7 @@ public class FindPlayerCommand implements CommandExecutor {
             if (part.trim().isEmpty()) {
                 continue;
             }
-            if (!builder.isEmpty()) {
+            if (builder.length() != 0) {
                 builder.append(' ');
             }
             builder.append(Character.toUpperCase(part.charAt(0)));
@@ -137,7 +134,7 @@ public class FindPlayerCommand implements CommandExecutor {
             }
         }
 
-        return builder.isEmpty() ? "unknown" : builder.toString();
+        return builder.length() == 0 ? "unknown" : builder.toString();
     }
 
 public final class LocationMessage {

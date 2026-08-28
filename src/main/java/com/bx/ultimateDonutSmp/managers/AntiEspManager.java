@@ -4,18 +4,18 @@ import com.bx.ultimateDonutSmp.utils.PermissionUtils;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
-import org.bukkit.FluidCollisionMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +39,7 @@ public class AntiEspManager {
     }
 
     public void reload() {
-        var config = plugin.getConfigManager().getSpawners();
+        FileConfiguration config = plugin.getConfigManager().getSpawners();
         enabled = config.getBoolean("ANTI_ESP.ENABLED", true);
         revealRadius = Math.max(1, config.getInt("ANTI_ESP.REVEAL_RADIUS", 7));
         ownerRevealRadius = Math.max(revealRadius, config.getInt("ANTI_ESP.OWNER_SEE_RADIUS", revealRadius));
@@ -56,7 +56,7 @@ public class AntiEspManager {
             return;
         }
 
-        var allSpawners = plugin.getSpawnerManager().getSpawnersInWorld(player.getWorld().getName());
+        List<SpawnerInstance> allSpawners = plugin.getSpawnerManager().getSpawnersInWorld(player.getWorld().getName());
         if (allSpawners.isEmpty()) {
             clearPlayer(player.getUniqueId());
             return;
@@ -179,18 +179,11 @@ public class AntiEspManager {
             return true;
         }
 
-        RayTraceResult rayTrace = world.rayTraceBlocks(
-                eye,
-                direction.normalize(),
-                distance,
-                FluidCollisionMode.NEVER,
-                true
-        );
-        if (rayTrace == null || rayTrace.getHitBlock() == null) {
+        java.util.List<Block> sight = player.getLineOfSight(null, (int) Math.ceil(distance));
+        if (sight.isEmpty()) {
             return true;
         }
-
-        Block hitBlock = rayTrace.getHitBlock();
+        Block hitBlock = sight.get(sight.size() - 1);
         return hitBlock.getX() == target.getBlockX()
                 && hitBlock.getY() == target.getBlockY()
                 && hitBlock.getZ() == target.getBlockZ();
@@ -213,22 +206,23 @@ public class AntiEspManager {
         Material camouflage = resolveCamouflageMaterial(world);
         player.sendBlockChange(
                 new Location(world, instance.getX(), instance.getY(), instance.getZ()),
-                camouflage.createBlockData()
+                camouflage,
+                (byte) 0
         );
     }
 
     private Material resolveCamouflageMaterial(World world) {
         if (world == null) {
-            return Material.DEEPSLATE;
+            return Material.STONE;
         }
 
         switch (world.getEnvironment()) {
             case NETHER:
                 return fallback(netherCamouflage, Material.NETHERRACK);
             case THE_END:
-                return fallback(endCamouflage, Material.END_STONE);
+                return fallback(endCamouflage, Material.ENDER_STONE);
             default:
-                return fallback(overworldCamouflage, Material.DEEPSLATE);
+                return fallback(overworldCamouflage, Material.STONE);
         }
     }
 

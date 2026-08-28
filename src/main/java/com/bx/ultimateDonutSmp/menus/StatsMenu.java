@@ -2,6 +2,7 @@ package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.PlayerData;
+import com.bx.ultimateDonutSmp.models.Team;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
@@ -40,7 +41,7 @@ public class StatsMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         PlayerData data = plugin.getPlayerDataManager().get(targetUuid);
         if (data == null) {
@@ -97,15 +98,16 @@ public class StatsMenu extends BaseMenu {
     }
 
     private ItemStack createItem(Material material, String displayName, List<String> lore) {
-        if (material != Material.PLAYER_HEAD) {
+        if (material != Material.SKULL_ITEM) {
             return ItemUtils.createItem(material, displayName, lore);
         }
 
-        ItemStack item = new ItemStack(Material.PLAYER_HEAD);
+        ItemStack item = new ItemStack(Material.SKULL_ITEM);
         ItemMeta itemMeta = item.getItemMeta();
-        if (!(itemMeta instanceof SkullMeta meta)) {
-            return ItemUtils.createItem(Material.PLAYER_HEAD, displayName, lore);
+        if (!(itemMeta instanceof SkullMeta)) {
+            return ItemUtils.createItem(Material.SKULL_ITEM, displayName, lore);
         }
+        SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(targetUuid);
         meta.setOwningPlayer(offlinePlayer);
@@ -146,9 +148,8 @@ public class StatsMenu extends BaseMenu {
             case "MONEY_MADE":
                 return plugin.getCurrencyManager().formatMoneyCompact(data.getMoneyMade());
             case "TEAM": {
-                var team = plugin.getTeamManager().getTeam(data.getUuid());
-                team != null ? team.getName().toUpperCase() : "None";
-                return break;
+                Team team = plugin.getTeamManager().getTeam(data.getUuid());
+                return team != null ? team.getName().toUpperCase() : "None";
             }
             default:
                 return "0";

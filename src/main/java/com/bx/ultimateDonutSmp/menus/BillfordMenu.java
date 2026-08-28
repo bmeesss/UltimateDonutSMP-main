@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.menus;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.managers.BillfordManager;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
@@ -47,7 +48,7 @@ public class BillfordMenu extends BaseMenu {
         clockSlot = config.getInt("GUI.COUNTDOWN_SLOT", 13);
         infoSlot = config.getInt("GUI.INFO_SLOT", 22);
         confirmSlot = config.getInt("GUI.CONFIRM_SLOT", 26);
-        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "GRAY_STAINED_GLASS_PANE"));
+        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "STAINED_GLASS_PANE"));
         closeOnSuccess = config.getBoolean("SETTINGS.CLOSE_MENU_ON_SUCCESS", true);
         reopenOnTradeChange = config.getBoolean("SETTINGS.REOPEN_ON_TRADE_CHANGE", true);
         allowedClickTypes = resolveAllowedClickTypes(config.getStringList("SETTINGS.ALLOWED_CLICK_TYPES"));
@@ -71,7 +72,7 @@ public class BillfordMenu extends BaseMenu {
     }
 
     private Set<ClickType> resolveAllowedClickTypes(List<String> configured) {
-        Set<ClickType> defaults = Enumnew java.util.LinkedHashSet<>(java.util.Arrays.asList(ClickType.LEFT,  ClickType.RIGHT));
+        Set<ClickType> defaults = new java.util.LinkedHashSet<>(java.util.Arrays.asList(ClickType.LEFT, ClickType.RIGHT));
         if (configured == null || configured.isEmpty()) {
             return defaults;
         }
@@ -187,7 +188,7 @@ public class BillfordMenu extends BaseMenu {
         timerPlaceholders.put("{trade_id}", String.valueOf(manager.getCurrentTradeId()));
         timerPlaceholders.put("{trade_count}", String.valueOf(manager.getTradeCount()));
         set(clockSlot, ItemUtils.createItem(
-                Material.CLOCK,
+                Material.WATCH,
                 replacePlaceholders(getConfigString("GUI.COUNTDOWN_NAME", "&e{trade_name}"), timerPlaceholders),
                 replaceLore(
                         getConfigStringList(
@@ -373,7 +374,7 @@ public class BillfordMenu extends BaseMenu {
                 if (data == null) {
                     data = plugin.getPlayerDataManager().loadOrCreate(player);
                 }
-                var depositResult = plugin.getEconomyManager().deposit(player, liveTrade.moneyBonus(), EconomyReason.BILLFORD_REWARD);
+                EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, liveTrade.moneyBonus(), EconomyReason.BILLFORD_REWARD);
                 if (!depositResult.success()) {
                     plugin.getLogger().warning("Billford money deposit failed for " + player.getName());
                 }
@@ -433,7 +434,7 @@ public class BillfordMenu extends BaseMenu {
         int maxStack = reward.getMaxStackSize();
 
         for (ItemStack item : player.getInventory().getStorageContents()) {
-            if (item == null || item.getType().isAir()) {
+            if (item == null || item.getType() == Material.AIR) {
                 remaining -= maxStack;
             } else if (item.isSimilar(reward)) {
                 remaining -= Math.max(0, maxStack - item.getAmount());
@@ -486,7 +487,7 @@ public class BillfordMenu extends BaseMenu {
             return;
         }
 
-        String particleName = config.getString("FEEDBACK.SUCCESS_PARTICLE.TYPE", "TOTEM_OF_UNDYING");
+        String particleName = config.getString("FEEDBACK.SUCCESS_PARTICLE.TYPE", "FIREWORKS_SPARK");
         int count = Math.max(1, config.getInt("FEEDBACK.SUCCESS_PARTICLE.COUNT", 24));
 
         try {

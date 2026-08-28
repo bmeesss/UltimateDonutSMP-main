@@ -27,16 +27,18 @@ public class HomeDeleteConfirmMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         slotActions.clear();
-        fill(Material.LIGHT_GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 8);
 
         if (home == null) return;
 
         // Confirm Delete - Slot 11
-        set(11, ItemUtils.createItem(
-                Material.LIME_TERRACOTTA,
+        org.bukkit.inventory.ItemStack confirm = ItemUtils.createItem(
+                Material.STAINED_CLAY,
                 "&aConfirm Delete",
                 java.util.Collections.singletonList("&7Permanently delete home &f" + home.getName())
-        ));
+        );
+        confirm.setDurability((short) 5);
+        set(11, confirm);
         slotActions.put(11, () -> {
             boolean removed = plugin.getHomeManager().deleteHome(player.getUniqueId(), home.getName());
             player.sendMessage(ColorUtils.toComponent(removed
@@ -46,11 +48,13 @@ public class HomeDeleteConfirmMenu extends BaseMenu {
         });
 
         // Cancel - Slot 15
-        set(15, ItemUtils.createItem(
-                Material.RED_TERRACOTTA,
+        org.bukkit.inventory.ItemStack cancel = ItemUtils.createItem(
+                Material.STAINED_CLAY,
                 "&cCancel",
                 java.util.Collections.singletonList("&7Do not delete this home")
-        ));
+        );
+        cancel.setDurability((short) 14);
+        set(15, cancel);
         slotActions.put(15, () -> new HomeMenu(plugin).open(player));
     }
 

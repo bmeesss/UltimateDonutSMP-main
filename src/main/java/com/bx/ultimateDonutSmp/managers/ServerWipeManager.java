@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -43,7 +44,7 @@ public class ServerWipeManager {
         SHUTDOWN_PENDING
     }
 
-public final class OperationResult {
+public static final class OperationResult {
     private final boolean success;
     private final String message;
     private final String token;
@@ -542,7 +543,7 @@ public final class MovedPath {
         }
 
         if (!Bukkit.getWorlds().isEmpty()) {
-            String primary = Bukkit.getWorlds().getFirst().getName();
+            String primary = Bukkit.getWorlds().get(0).getName();
             addWorldName(protectedWorlds, primary);
             addWorldName(protectedWorlds, primary + "_nether");
             addWorldName(protectedWorlds, primary + "_the_end");
@@ -602,7 +603,7 @@ public final class MovedPath {
 
     private Path createBackupDirectory() throws IOException {
         String configured = config().getString("BACKUP-DIRECTORY", "server-wipe-backups");
-        Path root = Path.of(configured == null || configured.trim().isEmpty() ? "server-wipe-backups" : configured);
+        Path root = Paths.get(configured == null || configured.trim().isEmpty() ? "server-wipe-backups" : configured);
         if (!root.isAbsolute()) {
             root = plugin.getDataFolder().toPath().resolve(root);
         }
@@ -738,7 +739,7 @@ public final class MovedPath {
             }
         }
         for (String relativeValue : pending.getStringList("PLAYERDATA-PATHS")) {
-            Path relative = Path.of(relativeValue).normalize();
+            Path relative = Paths.get(relativeValue).normalize();
             Path original = worldContainer.resolve(relative).normalize();
             Path backup = backupDirectory.resolve("playerdata").resolve(relative).normalize();
             if (original.startsWith(worldContainer) && Files.isDirectory(backup)) {
@@ -802,7 +803,7 @@ public final class MovedPath {
             return null;
         }
         try {
-            return Path.of(value).toAbsolutePath().normalize();
+            return Paths.get(value).toAbsolutePath().normalize();
         } catch (RuntimeException ignored) {
             return null;
         }

@@ -28,10 +28,11 @@ public class TeamCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sender.sendMessage("Player only.");
             return true;
         }
+        Player player = (Player) sender;
 
         if (args.length == 0) {
             new TeamMenu(plugin).open(player);
@@ -113,7 +114,7 @@ public class TeamCommand implements CommandExecutor {
             return;
         }
         if (!team.isLeader(player.getUniqueId())) {
-            send(player, plugin.getConfigManager().getMessage("TEAM.NOT-LEADER"));
+            send(player, plugin.getConfigManager().getMessage("TEAM.NOT-LEASHER"));
             return;
         }
 

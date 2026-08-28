@@ -53,9 +53,9 @@ public final class PlayerSettingUtils {
                 return data.isOrderNotificationsEnabled();
             case TEAM_CHAT:
                 return data.isTeamChatVisible();
-            default:
-                return null;
         }
+        // NotificationChannel is handled exhaustively above; keep notifications enabled by default.
+        return true;
     }
 
     public static boolean soundEnabled(UltimateDonutSmp plugin, Player player, SoundChannel channel) {
@@ -72,9 +72,9 @@ public final class PlayerSettingUtils {
                 return data.isNotificationSoundsEnabled();
             case GAMEPLAY:
                 return true;
-            default:
-                return null;
         }
+        // SoundChannel is handled exhaustively above; keep sounds enabled by default.
+        return true;
     }
 
     public static boolean rtpCoordinatesEnabled(UltimateDonutSmp plugin, Player player) {

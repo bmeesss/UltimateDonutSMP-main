@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.menus;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.Order;
 import com.bx.ultimateDonutSmp.models.OrderSort;
+import com.bx.ultimateDonutSmp.models.OrderUiState;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
@@ -74,7 +75,7 @@ public class OrdersMyOrdersMenu extends BaseMenu {
         int newSlot = OrdersMenuSupport.slot(plugin, "GUI.MY_ORDERS.BUTTONS.NEW.SLOT", 26);
         if (slot == backSlot) {
             click(player);
-            var state = plugin.getOrdersManager().getUiState(player.getUniqueId());
+            OrderUiState state = plugin.getOrdersManager().getUiState(player.getUniqueId());
             new OrdersBrowseMenu(plugin, state.page() + 1, state.sort(), state.filter(), state.search()).open(player);
             return;
         }

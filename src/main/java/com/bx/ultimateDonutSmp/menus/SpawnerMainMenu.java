@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.menus;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.SpawnerManager;
 import com.bx.ultimateDonutSmp.models.SpawnerInstance;
 import com.bx.ultimateDonutSmp.models.SpawnerLootEntry;
 import com.bx.ultimateDonutSmp.models.SpawnerTypeDefinition;
@@ -34,7 +35,7 @@ public class SpawnerMainMenu extends BaseMenu {
         if (instance == null) {
             inventory = Bukkit.createInventory(this, 27, ColorUtils.toComponent("&8Spawner Missing"));
             clear();
-            fill(Material.GRAY_STAINED_GLASS_PANE);
+            fill(Material.STAINED_GLASS_PANE, (short) 7);
             set(13, ItemUtils.createItem(Material.BARRIER, "&cSpawner Not Found"));
             return;
         }
@@ -44,9 +45,9 @@ public class SpawnerMainMenu extends BaseMenu {
         inventory = Bukkit.createInventory(this, plugin.getSpawnerManager().getMainMenuSize(), ColorUtils.toComponent(titleStr));
 
         clear();
-        String fillerMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.FILLER-MATERIAL", "GRAY_STAINED_GLASS_PANE");
+        String fillerMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.FILLER-MATERIAL", "STAINED_GLASS_PANE");
         Material fillerMat = Material.matchMaterial(fillerMatName);
-        if (fillerMat == null) fillerMat = Material.GRAY_STAINED_GLASS_PANE;
+        if (fillerMat == null) fillerMat = Material.STAINED_GLASS_PANE;
         fill(fillerMat);
 
         // 1. Spawner Storage Button
@@ -145,7 +146,7 @@ public class SpawnerMainMenu extends BaseMenu {
             int xpSlot = config.getInt("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.SLOT", 15);
             String xpMatName = config.getString("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.MATERIAL", "EXPERIENCE_BOTTLE");
             Material xpMat = Material.matchMaterial(xpMatName);
-            if (xpMat == null) xpMat = Material.EXPERIENCE_BOTTLE;
+            if (xpMat == null) xpMat = Material.EXP_BOTTLE;
 
             String xpTitle = config.getString("SPAWNER-MENUS.MAIN-MENU.COLLECT-XP-BUTTON.TITLE", "&aCollect XP");
             double storedXp = instance.getStoredXp();
@@ -188,7 +189,7 @@ public class SpawnerMainMenu extends BaseMenu {
 
         if (slot == headSlot) {
             // Sell items & Collect XP in one click
-            var result = plugin.getSpawnerManager().sellAndCollectXp(player, instance);
+            SpawnerManager.ActionResult result = plugin.getSpawnerManager().sellAndCollectXp(player, instance);
             player.sendMessage(ColorUtils.toComponent(result.message()));
             new SpawnerMainMenu(plugin, spawnerId).open(player);
             return;
@@ -196,7 +197,7 @@ public class SpawnerMainMenu extends BaseMenu {
 
         if (xpButtonEnabled && slot == xpSlot) {
             // Collect XP
-            var result = plugin.getSpawnerManager().collectXp(player, instance);
+            SpawnerManager.ActionResult result = plugin.getSpawnerManager().collectXp(player, instance);
             player.sendMessage(ColorUtils.toComponent(result.message()));
             new SpawnerMainMenu(plugin, spawnerId).open(player);
             return;

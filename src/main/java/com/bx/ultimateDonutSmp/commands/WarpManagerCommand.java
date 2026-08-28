@@ -85,10 +85,11 @@ public class WarpManagerCommand implements CommandExecutor {
             return;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             sendMessage(sender, message("WARPMANAGER.CREATE-PLAYER-ONLY", "&cOnly players can create warps."));
             return;
         }
+        Player player = (Player) sender;
 
         if (args.length != 2) {
             sendMessage(sender, managerCommand

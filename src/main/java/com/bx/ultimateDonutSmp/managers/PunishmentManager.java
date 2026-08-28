@@ -30,6 +30,18 @@ public class PunishmentManager {
         this.plugin = plugin;
     }
 
+    public PunishmentCreateRequest createRequest(UUID targetUuid, String targetName, PunishmentType type,
+                                                  String reason, UUID issuerUuid, String issuerName,
+                                                  long issuedAt, Long expiresAt, String sourceServer,
+                                                  PunishmentScope scope) {
+        return new PunishmentCreateRequest(targetUuid, targetName, type, reason, issuerUuid, issuerName,
+                issuedAt, expiresAt, sourceServer, scope);
+    }
+
+    public PunishmentRemovalRequest removalRequest(UUID uuid, String name, long at, String reason) {
+        return new PunishmentRemovalRequest(uuid, name, at, reason);
+    }
+
     public boolean canView(Player viewer) {
         return viewer != null && PermissionUtils.has(viewer, VIEW_PERMISSION);
     }
@@ -440,7 +452,7 @@ public final class PunishmentPage {
     }
 }
 
-public final class PunishmentCreateRequest {
+    public static final class PunishmentCreateRequest {
     private final UUID targetUuid;
     private final String targetNameSnapshot;
     private final PunishmentType type;

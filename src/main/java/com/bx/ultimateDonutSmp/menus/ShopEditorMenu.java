@@ -49,7 +49,8 @@ public class ShopEditorMenu extends BaseMenu {
                 continue;
             }
             set(reserved, ItemUtils.createItem(
-                    Material.GRAY_STAINED_GLASS_PANE,
+                    Material.STAINED_GLASS_PANE,
+                    (short) 7,
                     "&7Menu button slot",
                     java.util.Collections.singletonList("&7The shop uses this slot for its own buttons.")
             ));
@@ -73,9 +74,10 @@ public class ShopEditorMenu extends BaseMenu {
     }
 
     public void handleInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
+        Player player = (Player) event.getWhoClicked();
 
         int rawSlot = event.getRawSlot();
         if (rawSlot >= 0 && rawSlot < inventory.getSize()) {
@@ -105,7 +107,7 @@ public class ShopEditorMenu extends BaseMenu {
             }
 
             ItemStack current = inventory.getItem(rawSlot);
-            if (current == null || current.getType().isAir()) {
+            if (current == null || current.getType() == Material.AIR) {
                 player.sendMessage(ColorUtils.toComponent("&cSelect an item from your inventory first."));
                 return;
             }
@@ -120,7 +122,7 @@ public class ShopEditorMenu extends BaseMenu {
         }
 
         event.setCancelled(true);
-        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType().isAir()) {
+        if (event.getClickedInventory() == null || event.getCurrentItem() == null || event.getCurrentItem().getType() == Material.AIR) {
             return;
         }
 

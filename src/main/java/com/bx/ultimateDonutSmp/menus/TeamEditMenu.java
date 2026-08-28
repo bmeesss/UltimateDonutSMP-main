@@ -43,7 +43,7 @@ public class TeamEditMenu extends BaseMenu {
         clear();
 
         if (menus().getBoolean(MENU_PATH + ".PLACEHOLDER", false)) {
-            fill(material(MENU_PATH + ".PLACEHOLDER-MATERIAL", Material.BLACK_STAINED_GLASS_PANE));
+            fill(material(MENU_PATH + ".PLACEHOLDER-MATERIAL", Material.STAINED_GLASS_PANE));
         }
 
         Team team = plugin.getTeamManager().getTeam(player);
@@ -62,7 +62,7 @@ public class TeamEditMenu extends BaseMenu {
 
         renderToggleButton(
                 "EDIT-HOME-BUTTON",
-                Material.WHITE_BANNER,
+                Material.WOOL,
                 targetName,
                 member.canEditHome()
         );
@@ -95,7 +95,7 @@ public class TeamEditMenu extends BaseMenu {
         set(
                 menus().getInt(kickPath + ".SLOT", 11),
                 ItemUtils.createItem(
-                        material(kickPath + ".MATERIAL", Material.OAK_DOOR),
+                        material(kickPath + ".MATERIAL", Material.WOODEN_DOOR),
                         replace(menus().getString(kickPath + ".TITLE", "&cKick"), new java.util.LinkedHashMap(){{ put("player",  targetName); }}),
                         replace(menus().getStringList(kickPath + ".LORE"), new java.util.LinkedHashMap(){{ put("player",  targetName); }})
                 )
@@ -105,7 +105,7 @@ public class TeamEditMenu extends BaseMenu {
         set(
                 menus().getInt(backPath + ".SLOT", 18),
                 ItemUtils.createItem(
-                        material(backPath + ".MATERIAL", Material.RED_STAINED_GLASS_PANE),
+                        material(backPath + ".MATERIAL", Material.STAINED_GLASS_PANE),
                         menus().getString(backPath + ".TITLE", "&cBack"),
                         menus().getStringList(backPath + ".LORE")
                 )

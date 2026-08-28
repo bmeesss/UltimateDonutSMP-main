@@ -7,13 +7,13 @@ import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
 import com.bx.ultimateDonutSmp.utils.ShulkerBoxSupport;
 import org.bukkit.block.Block;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -36,6 +36,14 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 
 public class CrateManager {
+
+    private static final Material MONEY_REWARD_MATERIAL = resolveMaterial("GOLD_INGOT", Material.DOUBLE_PLANT);
+    private static final Material SHARDS_REWARD_MATERIAL = resolveMaterial("AMETHYST_SHARD", Material.PRISMARINE_CRYSTALS);
+    private static final Material CHEST_MATERIAL = resolveMaterial("CHEST", Material.CHEST);
+    private static final Material GRAY_PANE_MATERIAL = Material.STAINED_GLASS_PANE;
+    private static final Material LIME_PANE_MATERIAL = Material.STAINED_GLASS_PANE;
+    private static final Material RED_PANE_MATERIAL = Material.STAINED_GLASS_PANE;
+    private static final Material BLACK_PANE_MATERIAL = Material.STAINED_GLASS_PANE;
 
     private final UltimateDonutSmp plugin;
     private final Map<String, CrateDefinition> crates = new LinkedHashMap<>();
@@ -113,7 +121,9 @@ public class CrateManager {
         cratesConfig.set(path + ".MENU.OPEN-TITLE", "&8" + prettifyId(normalized) + " crate");
         cratesConfig.set(path + ".MENU.CONFIRM-TITLE", "&8Confirm Reward");
         cratesConfig.set(path + ".MENU.SIZE", 27);
-        cratesConfig.set(path + ".MENU.FILLER", Material.BLACK_STAINED_GLASS_PANE.name());
+        // Flattened 1.13+ pane name via the compatibility layer; the modern
+        // Material.STAINED_GLASS_PANE constant does not exist on 1.12.2.
+        cratesConfig.set(path + ".MENU.FILLER", LegacyMaterialSupport.pane("BLACK").configuredName());
         cratesConfig.set(path + ".MENU.BACK-SLOT", 26);
         cratesConfig.set(path + ".MENU.BACK-BUTTON.MATERIAL", Material.BARRIER.name());
         cratesConfig.set(path + ".MENU.BACK-BUTTON.DISPLAY-NAME", "&cBack");
@@ -330,7 +340,7 @@ public class CrateManager {
 
     private void writeMoneyReward(FileConfiguration cratesConfig, String basePath, int slot, double amount) {
         cratesConfig.set(basePath + ".SLOT", slot);
-        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.SUNFLOWER.name());
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", MONEY_REWARD_MATERIAL.name());
         cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fMoney reward");
         cratesConfig.set(basePath + ".DISPLAY.LORE", java.util.Collections.singletonList("&7Money reward"));
         cratesConfig.set(basePath + ".DISPLAY.AMOUNT", 1);
@@ -377,7 +387,7 @@ public class CrateManager {
 
     private void writeShardsReward(FileConfiguration cratesConfig, String basePath, int slot, long amount) {
         cratesConfig.set(basePath + ".SLOT", slot);
-        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", Material.AMETHYST_SHARD.name());
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", SHARDS_REWARD_MATERIAL.name());
         cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", "&fShards reward");
         cratesConfig.set(basePath + ".DISPLAY.LORE", java.util.Collections.singletonList("&7Shards reward"));
         cratesConfig.set(basePath + ".DISPLAY.AMOUNT", 1);
@@ -391,9 +401,9 @@ public class CrateManager {
     public boolean isBindableBlock(Material material) {
         return material == Material.CHEST
                 || material == Material.TRAPPED_CHEST
-                || material == Material.BARREL
+                || material == CHEST_MATERIAL
                 || material == Material.ENDER_CHEST
-                || Tag.SHULKER_BOXES.isTagged(material);
+                || isLegacyShulkerBox(material);
     }
 
     public void startPendingBind(UUID uuid, String crateId) {
@@ -688,7 +698,7 @@ public class CrateManager {
         if (reward.grant().type() == GrantType.ITEM) {
             preparedItem = createGrantItem(player, crate, reward);
             ItemStack rewardItem = preparedItem;
-            if (rewardItem == null || rewardItem.getType().isAir()) {
+            if (isAir(rewardItem)) {
                 return new ClaimResult(false, FailureReason.INVALID_REWARD,
                         "&cthat reward is no longer valid.", crate, reward, getKeyBalance(player, crate.id()));
             }
@@ -989,7 +999,7 @@ public class CrateManager {
     }
 
     private boolean grantItemReward(Player player, GrantDefinition grant, ItemStack rewardItem) {
-        if (rewardItem == null || rewardItem.getType().isAir()) {
+        if (isAir(rewardItem)) {
             return false;
         }
 
@@ -1056,12 +1066,12 @@ public class CrateManager {
     private ItemStack createGrantItem(Player player, CrateDefinition crate, CrateReward reward) {
         GrantDefinition grant = reward.grant();
         DisplayItem item = grant.item();
-        if (item == null || item.material() == null || item.material().isAir()) {
+        if (item == null || item.material() == null || item.material() == Material.AIR) {
             return null;
         }
 
         ItemStack grantedItem = deserializeGrantItem(grant.serializedItemData(), crate, reward);
-        if (grantedItem == null || grantedItem.getType().isAir()) {
+        if (isAir(grantedItem)) {
             grantedItem = createDisplayItem(item, item.amount());
         }
         stripPreviewLore(grantedItem);
@@ -1121,7 +1131,7 @@ public class CrateManager {
         probe.setAmount(1);
 
         for (ItemStack current : storage) {
-            if (current == null || current.getType().isAir()) {
+            if (current == null || current.getType() == Material.AIR) {
                 remaining -= item.getMaxStackSize();
             } else if (current.isSimilar(probe) && current.getAmount() < current.getMaxStackSize()) {
                 remaining -= Math.max(0, current.getMaxStackSize() - current.getAmount());
@@ -1156,7 +1166,7 @@ public class CrateManager {
     }
 
     private ActionResult saveItemReward(CrateDefinition crate, int slot, ItemStack item, boolean editing) {
-        if (item == null || item.getType().isAir()) {
+        if (isAir(item)) {
             return new ActionResult(false, "&chold the item you want to save in your main hand first.");
         }
 
@@ -1240,14 +1250,17 @@ public class CrateManager {
         ItemMeta meta = clonedItem.getItemMeta();
 
         cratesConfig.set(basePath + ".SLOT", slot);
-        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", clonedItem.getType().name());
+        // configName keeps a coloured pane's legacy data value in the written Material name,
+        // exactly as the flattened 1.13+ build wrote it; every other item still stores
+        // getType().name().
+        cratesConfig.set(basePath + ".DISPLAY.MATERIAL", LegacyMaterialSupport.configName(clonedItem));
         cratesConfig.set(basePath + ".DISPLAY.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
         cratesConfig.set(basePath + ".DISPLAY.LORE", serializeDisplayLore(meta));
         cratesConfig.set(basePath + ".DISPLAY.AMOUNT", Math.max(1, clonedItem.getAmount()));
         cratesConfig.set(basePath + ".DISPLAY.ENCHANTMENTS", serializeEnchantments(clonedItem));
 
         cratesConfig.set(basePath + ".GRANT.TYPE", "ITEM");
-        cratesConfig.set(basePath + ".GRANT.MATERIAL", clonedItem.getType().name());
+        cratesConfig.set(basePath + ".GRANT.MATERIAL", LegacyMaterialSupport.configName(clonedItem));
         cratesConfig.set(basePath + ".GRANT.DISPLAY-NAME", serializeDisplayName(meta, clonedItem.getType()));
         cratesConfig.set(basePath + ".GRANT.LORE", serializeGrantLore(meta));
         cratesConfig.set(basePath + ".GRANT.AMOUNT", Math.max(1, clonedItem.getAmount()));
@@ -1315,7 +1328,7 @@ public class CrateManager {
 
         List<String> enchantments = new ArrayList<>();
         for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-            enchantments.add(entry.getKey().getKey().getKey() + ":" + entry.getValue());
+            enchantments.add(entry.getKey().getName().toLowerCase(Locale.US) + ":" + entry.getValue());
         }
         return enchantments;
     }
@@ -1511,7 +1524,7 @@ public class CrateManager {
             case MONEY:
                 return new GrantDefinition(
                         type,
-                        new DisplayItem(Material.SUNFLOWER,
+                        new DisplayItem(MONEY_REWARD_MATERIAL,
                                 plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.MONEY)
                                         + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.MONEY)
                                         + " reward",
@@ -1526,7 +1539,7 @@ public class CrateManager {
             case SHARDS:
                 return new GrantDefinition(
                         type,
-                        new DisplayItem(Material.AMETHYST_SHARD,
+                        new DisplayItem(SHARDS_REWARD_MATERIAL,
                                 plugin.getCurrencyManager().color(CurrencyManager.CurrencyType.SHARDS)
                                         + plugin.getCurrencyManager().singular(CurrencyManager.CurrencyType.SHARDS)
                                         + " reward",
@@ -1581,7 +1594,7 @@ public class CrateManager {
         return new ListMenuSettings(
                 section.getString("TITLE", "&8crates"),
                 sanitizeSize(section.getInt("SIZE", 27), 27),
-                parseMaterial(section.getString("FILLER"), Material.GRAY_STAINED_GLASS_PANE, "crate list filler"),
+                parseMaterial(section.getString("FILLER"), GRAY_PANE_MATERIAL, "crate list filler"),
                 contentSlots,
                 section.getInt("EMPTY-SLOT", 13),
                 parseDisplayItem(section.getConfigurationSection("EMPTY"), "empty crate list button", Material.BARRIER),
@@ -1598,12 +1611,12 @@ public class CrateManager {
 
         return new ConfirmMenuSettings(
                 sanitizeSize(section.getInt("SIZE", 27), 27),
-                parseMaterial(section.getString("FILLER"), Material.GRAY_STAINED_GLASS_PANE, "crate confirm filler"),
+                parseMaterial(section.getString("FILLER"), GRAY_PANE_MATERIAL, "crate confirm filler"),
                 section.getInt("PREVIEW-SLOT", 13),
                 section.getInt("CONFIRM-SLOT", 15),
-                parseDisplayItem(section.getConfigurationSection("CONFIRM-BUTTON"), "crate confirm button", Material.LIME_STAINED_GLASS_PANE),
+                parseDisplayItem(section.getConfigurationSection("CONFIRM-BUTTON"), "crate confirm button", LIME_PANE_MATERIAL),
                 section.getInt("CANCEL-SLOT", 11),
-                parseDisplayItem(section.getConfigurationSection("CANCEL-BUTTON"), "crate cancel button", Material.RED_STAINED_GLASS_PANE)
+                parseDisplayItem(section.getConfigurationSection("CANCEL-BUTTON"), "crate cancel button", RED_PANE_MATERIAL)
         );
     }
 
@@ -1620,7 +1633,7 @@ public class CrateManager {
 
         return new GachaSettings(
                 section.getString("TITLE", "&8rolling reward"),
-                parseMaterial(section.getString("FILLER"), Material.BLACK_STAINED_GLASS_PANE, "crate gacha filler"),
+                parseMaterial(section.getString("FILLER"), BLACK_PANE_MATERIAL, "crate gacha filler"),
                 previewSlots,
                 section.getInt("POINTER-SLOT", 13),
                 Math.max(12, section.getInt("TOTAL-STEPS", 38)),
@@ -1639,7 +1652,7 @@ public class CrateManager {
                 section.getString("OPEN-TITLE", "&8choose 1 reward"),
                 section.getString("CONFIRM-TITLE", "&8confirm reward"),
                 size,
-                parseMaterial(section.getString("FILLER"), Material.BLACK_STAINED_GLASS_PANE, "crate menu filler"),
+                parseMaterial(section.getString("FILLER"), BLACK_PANE_MATERIAL, "crate menu filler"),
                 section.getInt("BACK-SLOT", size - 1),
                 parseDisplayItem(section.getConfigurationSection("BACK-BUTTON"), "crate back button", Material.BARRIER)
         );
@@ -1686,6 +1699,11 @@ public class CrateManager {
             return fallback;
         }
 
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(rawName);
+        if (resolved != null) {
+            return resolved.material();
+        }
+
         try {
             return Material.valueOf(rawName.trim().toUpperCase(Locale.US));
         } catch (IllegalArgumentException exception) {
@@ -1693,6 +1711,19 @@ public class CrateManager {
                     + ". Falling back to " + fallback + ".");
             return fallback;
         }
+    }
+
+    private static Material resolveMaterial(String modernName, Material fallback) {
+        Material resolved = Material.matchMaterial(modernName);
+        return resolved != null ? resolved : fallback;
+    }
+
+    private static boolean isLegacyShulkerBox(Material material) {
+        return material != null && material.name().endsWith("ENDER_CHEST");
+    }
+
+    private static boolean isAir(ItemStack item) {
+        return item == null || item.getType() == null || item.getType() == Material.AIR;
     }
 
     private OpenType parseOpenType(String rawValue) {
@@ -2161,7 +2192,7 @@ public static final class ListMenuSettings {
             return new ListMenuSettings(
                     "&8crates",
                     27,
-                    Material.GRAY_STAINED_GLASS_PANE,
+                    GRAY_PANE_MATERIAL,
                     new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16)),
                     13,
                     new DisplayItem(Material.BARRIER, "&cNo crates", java.util.Collections.singletonList("&7no crates are available right now."), 1, java.util.Collections.emptyList()),
@@ -2215,12 +2246,12 @@ public static final class ConfirmMenuSettings {
         public static ConfirmMenuSettings defaults() {
             return new ConfirmMenuSettings(
                     27,
-                    Material.GRAY_STAINED_GLASS_PANE,
+                    GRAY_PANE_MATERIAL,
                     13,
                     15,
-                    new DisplayItem(Material.LIME_STAINED_GLASS_PANE, "&aconfirm", java.util.Collections.singletonList("&7Click to claim {reward}."), 1, java.util.Collections.emptyList()),
+                    new DisplayItem(LIME_PANE_MATERIAL, "&aconfirm", java.util.Collections.singletonList("&7Click to claim {reward}."), 1, java.util.Collections.emptyList()),
                     11,
-                    new DisplayItem(Material.RED_STAINED_GLASS_PANE, "&ccancel", java.util.Collections.singletonList("&7Return to the reward list."), 1, java.util.Collections.emptyList())
+                    new DisplayItem(RED_PANE_MATERIAL, "&ccancel", java.util.Collections.singletonList("&7Return to the reward list."), 1, java.util.Collections.emptyList())
             );
         }
 
@@ -2268,7 +2299,7 @@ public static final class CrateMenuSettings {
                     "&8choose 1 reward",
                     "&8confirm reward",
                     27,
-                    Material.BLACK_STAINED_GLASS_PANE,
+                    BLACK_PANE_MATERIAL,
                     26,
                     new DisplayItem(Material.BARRIER, "&cback", java.util.Collections.singletonList("&7Return to the crate list."), 1, java.util.Collections.emptyList())
             );
@@ -2319,7 +2350,7 @@ public static final class GachaSettings {
         public static GachaSettings defaults() {
             return new GachaSettings(
                     "&8rolling reward",
-                    Material.BLACK_STAINED_GLASS_PANE,
+                    BLACK_PANE_MATERIAL,
                     new java.util.ArrayList<>(java.util.Arrays.asList(10,  11,  12,  13,  14,  15,  16)),
                     13,
                     38,

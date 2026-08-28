@@ -40,7 +40,7 @@ public class SpawnerPanelMenu extends BaseMenu {
         clear();
 
         for (int r = inventory.getSize() - 9; r < inventory.getSize(); r++) {
-            set(r, ItemUtils.createPlaceholder(Material.GRAY_STAINED_GLASS_PANE));
+            set(r, ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 7));
         }
 
         int startIndex = (safePage - 1) * ITEMS_PER_PAGE;
@@ -72,11 +72,11 @@ public class SpawnerPanelMenu extends BaseMenu {
         ))));
         set(lastRow + 1, safePage > 1
                 ? ItemUtils.createItem(Material.ARROW, "&aPrevious Page", java.util.Collections.singletonList("&7Go to page &f" + (safePage - 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
         set(lastRow + 7, safePage < totalPages
                 ? ItemUtils.createItem(Material.ARROW, "&aNext Page", java.util.Collections.singletonList("&7Go to page &f" + (safePage + 1)))
-                : ItemUtils.createPlaceholder(Material.BLACK_STAINED_GLASS_PANE));
-        set(lastRow + 8, ItemUtils.createItem(Material.OAK_DOOR, "&cBack", java.util.Collections.singletonList("&7Return to world list.")));
+                : ItemUtils.createPlaceholder(Material.STAINED_GLASS_PANE, (short) 15));
+        set(lastRow + 8, ItemUtils.createItem(Material.WOODEN_DOOR, "&cBack", java.util.Collections.singletonList("&7Return to world list.")));
     }
 
     @Override

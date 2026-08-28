@@ -51,7 +51,7 @@ public class TpaQueueMenu extends BaseMenu {
 
         FileConfiguration menus = menus();
         if (menus.getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
-            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "GRAY_STAINED_GLASS_PANE")));
+            fill(ItemUtils.parseMaterial(menus.getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")));
         }
 
         List<Integer> contentSlots = contentSlots();
@@ -162,20 +162,22 @@ public class TpaQueueMenu extends BaseMenu {
 
     private void buildButton(String key, boolean active, Map<String, String> placeholders) {
         String path = MENU_PATH + ".BUTTONS." + key;
-        int slot = menus().getInt(path + ".SLOT", switch (key) {
+        int defaultSlot;
+        switch (key) {
             case "PREVIOUS":
-                45;
+                defaultSlot = 45;
                 break;
             case "RANDOM":
-                49;
+                defaultSlot = 49;
                 break;
             case "NEXT":
-                53;
+                defaultSlot = 53;
                 break;
             default:
-                -1;
+                defaultSlot = -1;
                 break;
-        });
+        }
+        int slot = menus().getInt(path + ".SLOT", defaultSlot);
         if (slot < 0 || slot >= inventory.getSize()) {
             return;
         }

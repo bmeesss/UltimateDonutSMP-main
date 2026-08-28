@@ -56,7 +56,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
     public void build(Player player) {
         clear();
         visibleRecordIds.clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
 
         int maxItems = Math.max(1, Math.min(45, menus().getInt(MENU_PATH + ".MAX-ITEMS-PER-PAGE", 45)));
         totalItems = plugin.getPunishmentManager().countHistory(targetUuid, query);
@@ -224,7 +224,7 @@ public class PunishmentHistoryMenu extends BaseMenu {
 
     private void buildRefreshButton() {
         set(REFRESH_SLOT, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "CLOCK")),
+                ItemUtils.parseMaterial(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.MATERIAL", "WATCH")),
                 replaceMenuPlaceholders(menus().getString(MENU_PATH + ".BUTTONS.REFRESH.DISPLAY-NAME", "&dRefresh")),
                 replaceMenuPlaceholders(defaultIfEmpty(
                         menus().getStringList(MENU_PATH + ".BUTTONS.REFRESH.LORE"),

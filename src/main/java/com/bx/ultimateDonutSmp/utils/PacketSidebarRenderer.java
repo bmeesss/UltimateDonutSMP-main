@@ -451,8 +451,8 @@ public final class PacketSidebarRenderer {
         if (getPlayers != null) {
             getPlayers.setAccessible(true);
             Object players = getPlayers.invoke(team);
-            if (players instanceof java.util.Collection<?> collection) {
-                ((java.util.Collection<String>) collection).add(entry);
+            if (players instanceof java.util.Collection<?>) {
+                ((java.util.Collection<String>) players).add(entry);
             }
         }
 
@@ -621,7 +621,7 @@ public final class PacketSidebarRenderer {
         }
 
         for (Object constant : enumType.getEnumConstants()) {
-            if (constant instanceof Enum<?> enumConstant && enumConstant.name().equalsIgnoreCase(name)) {
+            if (constant instanceof Enum<?> && ((Enum<?>) constant).name().equalsIgnoreCase(name)) {
                 return constant;
             }
         }

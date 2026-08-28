@@ -21,6 +21,20 @@ public final class AuctionListing {
     private final String category;
 
     public AuctionListing(long id, UUID sellerUuid, String sellerName, UUID buyerUuid, Status status, double price, double tax, ItemStack item, long createdAt, long expiresAt, long soldAt, long cancelledAt, long expiredAt, String category) {
+        this.id = id;
+        this.sellerUuid = sellerUuid;
+        this.sellerName = sellerName;
+        this.buyerUuid = buyerUuid;
+        this.status = status;
+        this.price = price;
+        this.tax = tax;
+        this.item = item;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.soldAt = soldAt;
+        this.cancelledAt = cancelledAt;
+        this.expiredAt = expiredAt;
+        this.category = category;
     }
 
     public long id() { return id; }
@@ -37,12 +51,6 @@ public final class AuctionListing {
     public long cancelledAt() { return cancelledAt; }
     public long expiredAt() { return expiredAt; }
     public String category() { return category; }
-
-
-
-    public
-
-
     public enum Status {
         ACTIVE,
         SOLD,

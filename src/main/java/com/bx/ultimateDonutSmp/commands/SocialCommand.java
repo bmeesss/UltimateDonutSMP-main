@@ -20,7 +20,8 @@ public class SocialCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player player)) { sender.sendMessage("Player only."); return true; }
+        if (!(sender instanceof Player)) { sender.sendMessage("Player only."); return true; }
+        Player player = (Player) sender;
         if (!plugin.getConfigManager().isCommandEnabled("SOCIAL")) {
             player.sendMessage(ColorUtils.toComponent("&cSocial commands are currently disabled."));
             return true;
@@ -32,8 +33,8 @@ public class SocialCommand implements CommandExecutor {
             return true;
         }
 
-String;
-switch (normalizedLabel) {
+        String key;
+        switch (normalizedLabel) {
             case "twitter":
                 key = "SOCIAL.TWITTER";
                 break;

@@ -6,6 +6,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.amethyst.AmethystToolType;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import com.bx.ultimateDonutSmp.models.PlayerData;
 import com.bx.ultimateDonutSmp.models.SellCategory;
 import com.bx.ultimateDonutSmp.models.ShopPreference;
@@ -13,6 +14,7 @@ import com.bx.ultimateDonutSmp.storage.ShopPreferenceRepository;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
 import com.bx.ultimateDonutSmp.utils.ItemSerializationUtils;
 import com.bx.ultimateDonutSmp.utils.ItemUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.PlayerSettingUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
@@ -20,6 +22,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -27,6 +30,7 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
+import org.bukkit.potion.PotionData;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,44 +66,44 @@ public class ShopManager {
             "ITEMS-PER-PAGE", 
             "ITEMS"
     ));
-    private static final Set<Material> FISH_CATEGORY_OVERRIDES = new java.util.LinkedHashSet<>(java.util.Arrays.asList(
-            Material.COD, 
-            Material.COOKED_COD, 
-            Material.SALMON, 
-            Material.COOKED_SALMON, 
-            Material.TROPICAL_FISH, 
-            Material.PUFFERFISH, 
-            Material.COD_BUCKET, 
-            Material.SALMON_BUCKET, 
-            Material.TROPICAL_FISH_BUCKET, 
-            Material.PUFFERFISH_BUCKET, 
-            Material.AXOLOTL_BUCKET, 
-            Material.TADPOLE_BUCKET, 
-            Material.FISHING_ROD, 
-            Material.NAME_TAG, 
-            Material.NAUTILUS_SHELL, 
-            Material.LILY_PAD, 
-            Material.HEART_OF_THE_SEA
-    ));
-    private static final Set<Material> POTION_CATEGORY_OVERRIDES = new java.util.LinkedHashSet<>(java.util.Arrays.asList(
-            Material.POTION, 
-            Material.SPLASH_POTION, 
-            Material.LINGERING_POTION, 
-            Material.TIPPED_ARROW, 
-            Material.BREWING_STAND, 
-            Material.BLAZE_POWDER, 
-            Material.BLAZE_ROD, 
-            Material.FERMENTED_SPIDER_EYE, 
-            Material.GLASS_BOTTLE, 
-            Material.GLISTERING_MELON_SLICE, 
-            Material.GHAST_TEAR, 
-            Material.MAGMA_CREAM, 
-            Material.RABBIT_FOOT, 
-            Material.SPIDER_EYE, 
-            Material.SUGAR, 
-            Material.GOLDEN_CARROT, 
-            Material.PHANTOM_MEMBRANE
-    ));
+    private static final Set<Material> FISH_CATEGORY_OVERRIDES = resolveMaterials(new String[][]{
+            {"COD", "RAW_FISH"},
+            {"COOKED_COD", "COOKED_FISH"},
+            {"SALMON", "RAW_FISH"},
+            {"COOKED_SALMON", "COOKED_FISH"},
+            {"TROPICAL_FISH", "RAW_FISH"},
+            {"PUFFERFISH", "RAW_FISH"},
+            {"COD_BUCKET", null},
+            {"SALMON_BUCKET", null},
+            {"TROPICAL_FISH_BUCKET", null},
+            {"PUFFERFISH_BUCKET", null},
+            {"AXOLOTL_BUCKET", null},
+            {"TADPOLE_BUCKET", null},
+            {"FISHING_ROD", "FISHING_ROD"},
+            {"NAME_TAG", "NAME_TAG"},
+            {"NAUTILUS_SHELL", null},
+            {"LILY_PAD", "WATER_LILY"},
+            {"HEART_OF_THE_SEA", null}
+    });
+    private static final Set<Material> POTION_CATEGORY_OVERRIDES = resolveMaterials(new String[][]{
+            {"POTION", "POTION"},
+            {"SPLASH_POTION", "SPLASH_POTION"},
+            {"LINGERING_POTION", "LINGERING_POTION"},
+            {"TIPPED_ARROW", "TIPPED_ARROW"},
+            {"BREWING_STAND", "BREWING_STAND_ITEM"},
+            {"BLAZE_POWDER", "BLAZE_POWDER"},
+            {"BLAZE_ROD", "BLAZE_ROD"},
+            {"FERMENTED_SPIDER_EYE", "FERMENTED_SPIDER_EYE"},
+            {"GLASS_BOTTLE", "GLASS_BOTTLE"},
+            {"GLISTERING_MELON_SLICE", "SPECKLED_MELON"},
+            {"GHAST_TEAR", "GHAST_TEAR"},
+            {"MAGMA_CREAM", "MAGMA_CREAM"},
+            {"RABBIT_FOOT", "RABBIT_FOOT"},
+            {"SPIDER_EYE", "SPIDER_EYE"},
+            {"SUGAR", "SUGAR"},
+            {"GOLDEN_CARROT", "GOLDEN_CARROT"},
+            {"PHANTOM_MEMBRANE", null}
+    });
     private static final int MAX_MULTIPLIER_BAR_SEGMENTS = 10;
 
     public enum Currency { MONEY, SHARD }
@@ -381,7 +385,7 @@ public final class PurchaseResult {
     }
 }
 
-public final class ManagedSpawnerReward {
+public static final class ManagedSpawnerReward {
     private final String typeKey;
 
     public ManagedSpawnerReward(String typeKey) {
@@ -404,7 +408,7 @@ public final class ManagedSpawnerReward {
     }
 }
 
-public final class RewardDeliveryResult {
+public static final class RewardDeliveryResult {
     private final boolean success;
     private final String message;
     private final Throwable throwable;
@@ -469,6 +473,26 @@ public final class ShopItem {
     private final String serializedItemData;
 
     public ShopItem(String key, String menuSection, Material material, String displayName, List<String> lore, int slot, double pricePerUnit, Currency currency, String command, boolean giveItem, String permission, int minQuantity, int maxQuantity, int defaultQuantity, Boolean hideQuantityButtons, AmethystToolType amethystToolType, long amethystDurationSeconds, List<String> enchantments, Boolean glint, String serializedItemData) {
+        this.key = key;
+        this.menuSection = menuSection;
+        this.material = material;
+        this.displayName = displayName;
+        this.lore = lore;
+        this.slot = slot;
+        this.pricePerUnit = pricePerUnit;
+        this.currency = currency;
+        this.command = command;
+        this.giveItem = giveItem;
+        this.permission = permission;
+        this.minQuantity = minQuantity;
+        this.maxQuantity = maxQuantity;
+        this.defaultQuantity = defaultQuantity;
+        this.hideQuantityButtons = hideQuantityButtons;
+        this.amethystToolType = amethystToolType;
+        this.amethystDurationSeconds = amethystDurationSeconds;
+        this.enchantments = enchantments;
+        this.glint = glint;
+        this.serializedItemData = serializedItemData;
     }
 
     public String key() { return key; }
@@ -491,11 +515,6 @@ public final class ShopItem {
     public List<String> enchantments() { return enchantments; }
     public Boolean glint() { return glint; }
     public String serializedItemData() { return serializedItemData; }
-
-
-        public
-
-
         /** Kept so callers that predate custom item data keep compiling. */
         public ShopItem(
                 String key,
@@ -548,7 +567,7 @@ public final class ShopItem {
     }
 }
 
-public final class AuctionQuote {
+public static final class AuctionQuote {
     private final AuctionListing listing;
     private final double unitPrice;
 
@@ -733,10 +752,28 @@ public final class AuctionQuote {
     }
 
     private static boolean isAir(Material material) {
-        return material == null
-                || material == Material.AIR
-                || material == Material.CAVE_AIR
-                || material == Material.VOID_AIR;
+        return material == null || material == Material.AIR;
+    }
+
+    private static Set<Material> resolveMaterials(String[][] mappings) {
+        Set<Material> resolved = new java.util.LinkedHashSet<>();
+        for (String[] mapping : mappings) {
+            String modern = mapping[0];
+            String legacy = mapping[1];
+            Material material = resolveMaterial(modern, legacy);
+            if (material != null) {
+                resolved.add(material);
+            }
+        }
+        return resolved;
+    }
+
+    private static Material resolveMaterial(String modernName, String legacyName) {
+        Material modern = modernName == null ? null : Material.matchMaterial(modernName);
+        if (modern != null) {
+            return modern;
+        }
+        return legacyName == null ? null : Material.matchMaterial(legacyName);
     }
 
     public boolean isAuctionPriceEnabled() {
@@ -911,7 +948,10 @@ public final class AuctionQuote {
                     shopSection.getInt("DEFAULT-QUANTITY", 1),
                     shopSection.getBoolean("HIDE-QUANTITY-BUTTONS", true),
                     type,
-                    duration
+                    duration,
+                    java.util.Collections.<String>emptyList(),
+                    null,
+                    null
             ));
         }
         return items;
@@ -988,7 +1028,7 @@ public final class AuctionQuote {
                 return failPurchase(item, amount, preview.totalPrice(), PurchaseFailureReason.NO_SHARDS);
             }
         } else {
-            var withdrawResult = plugin.getEconomyManager().withdraw(player, preview.totalPrice(), EconomyReason.SHOP_PURCHASE);
+            EconomyTransactionResult withdrawResult = plugin.getEconomyManager().withdraw(player, preview.totalPrice(), EconomyReason.SHOP_PURCHASE);
             if (!withdrawResult.success()) {
                 return failPurchase(item, amount, preview.totalPrice(), PurchaseFailureReason.NO_MONEY);
             }
@@ -1078,7 +1118,7 @@ public final class AuctionQuote {
         ManagedSpawnerReward spawnerReward = parseManagedSpawnerReward(item.command());
         if (spawnerReward != null) {
             try {
-                var result = plugin.getSpawnerManager().giveSpawner(player, spawnerReward.typeKey(), quantity);
+                SpawnerManager.ActionResult result = plugin.getSpawnerManager().giveSpawner(player, spawnerReward.typeKey(), quantity);
                 return result.success()
                         ? RewardDeliveryResult.ok()
                         : RewardDeliveryResult.failure(result.message());
@@ -1155,7 +1195,7 @@ public final class AuctionQuote {
             return;
         }
 
-        var refundResult = plugin.getEconomyManager().deposit(player, purchase.totalPrice(), EconomyReason.SHOP_REFUND);
+        EconomyTransactionResult refundResult = plugin.getEconomyManager().deposit(player, purchase.totalPrice(), EconomyReason.SHOP_REFUND);
         if (!refundResult.success()) {
             plugin.getLogger().warning("[ShopManager] Failed to refund shop purchase for "
                     + player.getName() + " after reward delivery failed.");
@@ -1287,7 +1327,7 @@ public final class AuctionQuote {
 
         try {
             ItemStack stored = ItemSerializationUtils.deserialize(item.serializedItemData());
-            if (stored == null || stored.getType().isAir()) {
+            if (stored == null || isAir(stored.getType())) {
                 return null;
             }
             customItemCache.put(item.serializedItemData(), stored.clone());
@@ -1480,7 +1520,7 @@ public final class PricedItem {
      * round trip, with MATERIAL and friends written alongside so the entry stays readable in shop.yml.
      */
     public EditResult upsertMenuItem(String menuSection, int slot, ItemStack item, Double price) {
-        if (item == null || item.getType().isAir()) {
+        if (item == null || isAir(item.getType())) {
             return new EditResult(false, "&cSelect an item from your inventory first.");
         }
 
@@ -1544,7 +1584,10 @@ public final class PricedItem {
         ItemMeta meta = storedItem.getItemMeta();
         String displayName = editorDisplayName(meta, storedItem.getType());
 
-        shopConfig.set(path + ".MATERIAL", storedItem.getType().name());
+        // configName preserves a coloured pane's legacy data value in the written Material name
+        // (the flattened 1.13+ spelling a modern build wrote); non-pane items still store
+        // getType().name(), and the authoritative round trip stays ITEM-DATA.
+        shopConfig.set(path + ".MATERIAL", LegacyMaterialSupport.configName(storedItem));
         shopConfig.set(path + ".DISPLAY-NAME", displayName);
         shopConfig.set(path + ".SLOT", slot);
         shopConfig.set(path + ".PRICE-PER-UNIT", resolvedPrice);
@@ -1634,7 +1677,7 @@ public final class PricedItem {
 
         List<String> enchantments = new ArrayList<>();
         for (Map.Entry<org.bukkit.enchantments.Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-            enchantments.add(entry.getKey().getKey().getKey() + ":" + entry.getValue());
+            enchantments.add(entry.getKey().getName().toLowerCase(Locale.US) + ":" + entry.getValue());
         }
         return enchantments;
     }
@@ -1643,7 +1686,7 @@ public final class PricedItem {
         if (item.isAmethystToolReward()) {
             int emptySlots = 0;
             for (ItemStack current : player.getInventory().getStorageContents()) {
-                if (current == null || current.getType().isAir()) {
+                if (current == null || isAir(current.getType())) {
                     emptySlots++;
                 }
             }
@@ -1657,7 +1700,7 @@ public final class PricedItem {
         singleItem.setAmount(1);
 
         for (ItemStack current : storage) {
-            if (current == null || current.getType().isAir()) {
+            if (current == null || isAir(current.getType())) {
                 remaining -= simulated.getMaxStackSize();
             } else if (canStack(plugin.getWorthManager().stripWorthDisplay(current), singleItem)) {
                 remaining -= Math.max(0, current.getMaxStackSize() - current.getAmount());
@@ -1778,7 +1821,7 @@ public final class PricedItem {
     }
 
     private double findWorthRecursively(ConfigurationSection section, ItemStack item) {
-        if (section == null || item == null || item.getType().isAir()) {
+        if (section == null || item == null || isAir(item.getType())) {
             return -1;
         }
 
@@ -1818,7 +1861,9 @@ public final class PricedItem {
             return resolveEnchantedBookWorth(section, item);
         }
 
-        if (item.getItemMeta() instanceof PotionMeta meta) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (itemMeta instanceof PotionMeta) {
+            PotionMeta meta = (PotionMeta) itemMeta;
             return resolvePotionWorth(section, item.getType(), meta);
         }
 
@@ -1826,14 +1871,20 @@ public final class PricedItem {
     }
 
     private double resolveEnchantedBookWorth(ConfigurationSection section, ItemStack item) {
-        if (!(item.getItemMeta() instanceof EnchantmentStorageMeta meta) || meta.getStoredEnchants().isEmpty()) {
+        ItemMeta itemMeta = item.getItemMeta();
+        if (!(itemMeta instanceof EnchantmentStorageMeta)) {
+            return -1;
+        }
+
+        EnchantmentStorageMeta meta = (EnchantmentStorageMeta) itemMeta;
+        if (meta.getStoredEnchants().isEmpty()) {
             return -1;
         }
 
         double total = 0;
         boolean matched = false;
-        for (var enchantmentEntry : meta.getStoredEnchants().entrySet()) {
-            String enchantmentKey = enchantmentEntry.getKey().getKey().getKey()
+        for (Map.Entry<Enchantment, Integer> enchantmentEntry : meta.getStoredEnchants().entrySet()) {
+            String enchantmentKey = enchantmentEntry.getKey().getName()
                     .toUpperCase(Locale.US)
                     .replace('-', '_');
             String worthKey = item.getType().name() + ":" + enchantmentKey + ":" + enchantmentEntry.getValue();
@@ -1847,7 +1898,8 @@ public final class PricedItem {
     }
 
     private double resolvePotionWorth(ConfigurationSection section, Material material, PotionMeta meta) {
-        PotionType potionType = meta.getBasePotionType();
+        PotionData potionData = meta.getBasePotionData();
+        PotionType potionType = potionData == null ? null : potionData.getType();
         if (potionType == null) {
             return -1;
         }
@@ -1947,7 +1999,7 @@ public final class PricedItem {
 
         for (int slot = firstSlot; slot < lastSlot; slot++) {
             ItemStack item = inventory.getItem(slot);
-            if (item == null || item.getType().isAir()) {
+            if (item == null || isAir(item.getType())) {
                 continue;
             }
 
@@ -1993,7 +2045,7 @@ public final class PricedItem {
         }
 
         EconomyReason resolvedReason = reason == null ? EconomyReason.SELL_PAYOUT : reason;
-        var depositResult = plugin.getEconomyManager().deposit(player, sale.totalPayout, resolvedReason);
+        EconomyTransactionResult depositResult = plugin.getEconomyManager().deposit(player, sale.totalPayout, resolvedReason);
         if (!depositResult.success()) {
             return failedSale();
         }
@@ -2010,7 +2062,7 @@ public final class PricedItem {
 
         for (int i = 0; i < contents.length; i++) {
             ItemStack item = contents[i];
-            if (item == null || item.getType().isAir()) {
+            if (item == null || isAir(item.getType())) {
                 continue;
             }
 
@@ -2064,7 +2116,7 @@ public final class PricedItem {
         long now = System.currentTimeMillis();
 
         for (PendingSellHistory historyEntry : sale.history) {
-            historyBatch.add(new DatabaseManager.SellHistoryRecord(
+            historyBatch.add(plugin.getDatabaseManager().new SellHistoryRecord(
                     player.getUniqueId(),
                     historyEntry.material().name(),
                     historyEntry.amount(),
@@ -2072,7 +2124,7 @@ public final class PricedItem {
                     now
             ));
             String prettyName = plugin.getWorthManager().prettifyMaterial(historyEntry.material());
-            logBatch.add(new DatabaseManager.PlayerLogRecord(
+            logBatch.add(plugin.getDatabaseManager().new PlayerLogRecord(
                     player.getUniqueId(),
                     player.getName(),
                     "Shop",
@@ -2083,7 +2135,7 @@ public final class PricedItem {
         }
 
         Map<SellCategory, Double> earnedCopy = new EnumMap<>(sale.earnedByCategory);
-        for (var entry : sale.earnedByCategory.entrySet()) {
+        for (Map.Entry<SellCategory, Double> entry : sale.earnedByCategory.entrySet()) {
             SellCategory category = entry.getKey();
             double before = sale.currentProgress.getOrDefault(category, 0D);
             double after = before + entry.getValue();
@@ -2098,7 +2150,7 @@ public final class PricedItem {
         plugin.getDatabaseManager().executeAsync(() -> {
             plugin.getDatabaseManager().addSellHistoryBatch(historyBatch);
             plugin.getDatabaseManager().addPlayerLogBatch(logBatch);
-            for (var entry : earnedCopy.entrySet()) {
+            for (Map.Entry<SellCategory, Double> entry : earnedCopy.entrySet()) {
                 plugin.getDatabaseManager().addSellProgress(player.getUniqueId(), entry.getKey(), entry.getValue());
             }
         });

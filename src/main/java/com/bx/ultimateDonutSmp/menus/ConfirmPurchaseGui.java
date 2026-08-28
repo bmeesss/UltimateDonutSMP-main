@@ -4,6 +4,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.models.AuctionBrowseRequest;
 import com.bx.ultimateDonutSmp.models.AuctionListing;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import com.bx.ultimateDonutSmp.utils.NumberUtils;
 import com.bx.ultimateDonutSmp.utils.SoundUtils;
 import org.bukkit.Material;
@@ -55,7 +56,7 @@ public final class ConfirmPurchaseGui extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.GRAY_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 7);
         set(AuctionHouseMenuSupport.slot(plugin, "GUI.CONFIRM_PURCHASE.ITEM", 11),
                 AuctionHouseMenuSupport.createListingDisplay(
                         plugin,
@@ -67,7 +68,7 @@ public final class ConfirmPurchaseGui extends BaseMenu {
                 AuctionHouseMenuSupport.control(
                         plugin,
                         "GUI.CONFIRM_PURCHASE.CONFIRM",
-                        Material.LIME_STAINED_GLASS_PANE,
+                        LegacyMaterialSupport.pane("LIME"),
                         "&aConfirm purchase",
                         new java.util.ArrayList<>(java.util.Arrays.asList("&7Price: {price}",  "&eClick to purchase")),
                         "{price}", plugin.getCurrencyManager().formatMoney(listing.price())
@@ -76,7 +77,7 @@ public final class ConfirmPurchaseGui extends BaseMenu {
                 AuctionHouseMenuSupport.control(
                         plugin,
                         "GUI.CONFIRM_PURCHASE.CANCEL",
-                        Material.RED_STAINED_GLASS_PANE,
+                        LegacyMaterialSupport.pane("RED"),
                         "&cCancel",
                         java.util.Collections.singletonList("&7Return to auction house")
                 ));

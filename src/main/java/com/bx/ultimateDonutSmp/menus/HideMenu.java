@@ -25,7 +25,7 @@ public class HideMenu extends BaseMenu {
     @Override
     public void build(Player player) {
         clear();
-        fill(Material.BLACK_STAINED_GLASS_PANE);
+        fill(Material.STAINED_GLASS_PANE, (short) 15);
         HideManager manager = plugin.getHideManager();
         HideState state = manager.getState(player.getUniqueId());
 
@@ -41,23 +41,25 @@ public class HideMenu extends BaseMenu {
                         ))
         ));
         set(11, ItemUtils.createItem(
-                Material.ENDER_EYE,
+                Material.EYE_OF_ENDER,
                 "&bScramble",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Generate a stable random identity.",  "",  "&eClick to activate."))
         ));
         set(13, ItemUtils.createItem(
-                Material.PLAYER_HEAD,
+                Material.SKULL_ITEM,
                 "&dDisguise",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Choose a configured name and skin.",  "",  "&eClick to select."))
         ));
-        set(15, ItemUtils.createItem(
-                Material.RED_DYE,
+        org.bukkit.inventory.ItemStack removeHideItem = ItemUtils.createItem(
+                Material.INK_SACK,
                 "&cRemove hide",
                 new java.util.ArrayList<>(java.util.Arrays.asList("&7Restore your real identity.",  "",  "&eClick to remove."))
-        ));
+        );
+        removeHideItem.setDurability((short) 1);
+        set(15, removeHideItem);
         if (PermissionUtils.has(player, HideManager.ADMIN_PERMISSION)) {
             set(22, ItemUtils.createItem(
-                    Material.SPYGLASS,
+                    Material.COMPASS,
                     "&cHidden players",
                     new java.util.ArrayList<>(java.util.Arrays.asList("&7Inspect and manage active hide states.",  "",  "&eClick to open."))
             ));

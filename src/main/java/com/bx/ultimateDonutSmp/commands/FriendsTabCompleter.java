@@ -23,9 +23,10 @@ public class FriendsTabCompleter implements TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             return Collections.emptyList();
         }
+        Player player = (Player) sender;
 
         if (args.length == 1) {
             List<String> subcommands = new ArrayList<>();

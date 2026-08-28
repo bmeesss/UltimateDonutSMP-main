@@ -144,7 +144,7 @@ public final class SkinOption {
     }
 }
 
-public final class HeadTexture {
+    public static final class HeadTexture {
     private final String value;
     private final String signature;
 
@@ -1001,7 +1001,7 @@ public final class HeadTexture {
         if (player == null || texture == null || !texture.isValid()) {
             return;
         }
-        boolean applied = applyWithSkinsRestorer(player, texture.value(), texture.signature());
+        boolean applied = false;
         if (!applied) {
             try {
                 NativeGameProfileFactory.applyTexture(

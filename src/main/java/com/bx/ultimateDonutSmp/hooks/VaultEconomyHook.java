@@ -1,7 +1,9 @@
 package com.bx.ultimateDonutSmp.hooks;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.managers.EconomyManager;
 import com.bx.ultimateDonutSmp.models.EconomyReason;
+import com.bx.ultimateDonutSmp.models.EconomyTransactionResult;
 import net.milkbowl.vault.economy.AbstractEconomy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
@@ -74,7 +76,7 @@ public class VaultEconomyHook extends AbstractEconomy {
 
     @Override
     public double getBalance(String playerName) {
-        var account = plugin.getEconomyManager().resolveAccount(playerName);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(playerName);
         return account == null ? 0D : plugin.getEconomyManager().getBalance(account.uuid());
     }
 
@@ -95,7 +97,7 @@ public class VaultEconomyHook extends AbstractEconomy {
 
     @Override
     public boolean has(String playerName, double amount) {
-        var account = plugin.getEconomyManager().resolveAccount(playerName);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(playerName);
         return account != null && plugin.getEconomyManager().has(account.uuid(), amount);
     }
 
@@ -116,12 +118,12 @@ public class VaultEconomyHook extends AbstractEconomy {
 
     @Override
     public EconomyResponse withdrawPlayer(String playerName, double amount) {
-        var account = plugin.getEconomyManager().resolveAccount(playerName);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(playerName);
         if (account == null) {
             return failureResponse(amount, 0D, "Player account not found.");
         }
 
-        var result = plugin.getEconomyManager().withdraw(account, amount, EconomyReason.AUCTION_PURCHASE);
+        EconomyTransactionResult result = plugin.getEconomyManager().withdraw(account, amount, EconomyReason.AUCTION_PURCHASE);
         return toResponse(result);
     }
 
@@ -142,12 +144,12 @@ public class VaultEconomyHook extends AbstractEconomy {
 
     @Override
     public EconomyResponse depositPlayer(String playerName, double amount) {
-        var account = plugin.getEconomyManager().resolveAccount(playerName);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(playerName);
         if (account == null) {
             return failureResponse(amount, 0D, "Player account not found.");
         }
 
-        var result = plugin.getEconomyManager().deposit(account, amount, EconomyReason.SELL_PAYOUT);
+        EconomyTransactionResult result = plugin.getEconomyManager().deposit(account, amount, EconomyReason.SELL_PAYOUT);
         return toResponse(result);
     }
 
@@ -228,7 +230,7 @@ public class VaultEconomyHook extends AbstractEconomy {
 
     @Override
     public boolean createPlayerAccount(String playerName) {
-        var account = plugin.getEconomyManager().resolveAccount(playerName);
+        EconomyManager.AccountReference account = plugin.getEconomyManager().resolveAccount(playerName);
         return account != null || plugin.getEconomyManager().createPlayerAccount(Bukkit.getOfflinePlayer(playerName));
     }
 

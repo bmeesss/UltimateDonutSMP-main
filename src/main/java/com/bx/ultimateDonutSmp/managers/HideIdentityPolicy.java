@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.random.RandomGenerator;
+import java.util.Random;
 
 final class HideIdentityPolicy {
 
@@ -32,10 +32,10 @@ final class HideIdentityPolicy {
                 valid.append(character);
             }
         }
-        return valid.isEmpty() ? DEFAULT_CHARACTERS : valid.toString();
+        return valid.length() == 0 ? DEFAULT_CHARACTERS : valid.toString();
     }
 
-    static String generateAlias(RandomGenerator random, String characters, int length, int maxLength) {
+    static String generateAlias(Random random, String characters, int length, int maxLength) {
         String alphabet = validCharacters(characters);
         int safeMax = Math.max(1, Math.min(16, maxLength));
         int safeLength = Math.max(3, Math.min(safeMax, length));

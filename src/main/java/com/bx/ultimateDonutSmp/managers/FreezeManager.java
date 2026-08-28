@@ -104,16 +104,16 @@ public class FreezeManager {
     }
 
     public boolean canUse(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getStaffPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getStaffPermission());
     }
 
     public boolean canAdmin(CommandSender sender) {
-        return !(sender instanceof Player player) || PermissionUtils.has(player, getAdminPermission());
+        return !(sender instanceof Player) || PermissionUtils.has((Player) sender, getAdminPermission());
     }
 
     public boolean isSelfTarget(CommandSender sender, Player target) {
-        return sender instanceof Player player && target != null
-                && player.getUniqueId().equals(target.getUniqueId());
+        return sender instanceof Player && target != null
+                && ((Player) sender).getUniqueId().equals(target.getUniqueId());
     }
 
     public boolean canFreeze(CommandSender sender, Player target) {
@@ -195,8 +195,8 @@ public class FreezeManager {
         FreezeState state = new FreezeState(
                 target.getUniqueId(),
                 target.getName(),
-                actor instanceof Player player ? player.getUniqueId() : null,
-                actor instanceof Player player ? player.getName() : "console",
+                actor instanceof Player ? ((Player) actor).getUniqueId() : null,
+                actor instanceof Player ? ((Player) actor).getName() : "console",
                 System.currentTimeMillis(),
                 getServerName()
         );
@@ -235,7 +235,7 @@ public class FreezeManager {
         }
 
         if (shouldLogUsage()) {
-            String actorName = actor instanceof Player player ? player.getName() : "console";
+            String actorName = actor instanceof Player ? ((Player) actor).getName() : "console";
             plugin.getLogger().info("Freeze disabled: target=" + removed.getTargetNameSnapshot() + " actor=" + actorName);
         }
 

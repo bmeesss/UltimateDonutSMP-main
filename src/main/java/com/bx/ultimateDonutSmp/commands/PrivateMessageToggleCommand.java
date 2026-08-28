@@ -28,10 +28,11 @@ public class PrivateMessageToggleCommand implements CommandExecutor {
             return true;
         }
 
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             send(sender, message("MESSAGES.PLAYER_ONLY", null, "&cOnly players can use this command."));
             return true;
         }
+        Player player = (Player) sender;
 
         if (!PermissionUtils.has(player, PERMISSION)) {
             send(player, message("MESSAGES.NO_PERMISSION", "PRIVATE-MESSAGE.NO-PERMISSION",
@@ -58,42 +59,7 @@ public class PrivateMessageToggleCommand implements CommandExecutor {
 
     private void send(CommandSender sender, String message) {
         if (sender instanceof Player) {
-            Player player = (Player) !plugin.getConfigManager().isCommandEnabled("MESSAGE")) {
-            send(sender, message("MESSAGES.DISABLED", "PRIVATE-MESSAGE.DISABLED",
-                    "&cPrivate messages are currently disabled."));
-            return true;
-        }
-
-        if (!(sender instanceof Player player)) {
-            send(sender, message("MESSAGES.PLAYER_ONLY", null, "&cOnly players can use this command."));
-            return true;
-        }
-
-        if (!PermissionUtils.has(player, PERMISSION)) {
-            send(player, message("MESSAGES.NO_PERMISSION", "PRIVATE-MESSAGE.NO-PERMISSION",
-                    "&cYou do not have permission."));
-            return true;
-        }
-
-        PlayerData data = plugin.getPlayerDataManager().get(player);
-        if (data == null) {
-            data = plugin.getPlayerDataManager().loadOrCreate(player);
-        }
-
-        boolean enabled = !data.isPrivateMessagesEnabled();
-        data.setPrivateMessagesEnabled(enabled);
-        plugin.getDatabaseManager().savePlayer(data);
-
-        send(player, message(
-                enabled ? "PRIVATE_MESSAGES.PM_ENABLED" : "PRIVATE_MESSAGES.PM_DISABLED",
-                enabled ? "PRIVATE-MESSAGE.PM-ENABLED" : "PRIVATE-MESSAGE.PM-DISABLED",
-                enabled ? "&aPrivate messages are now enabled" : "&cPrivate messages are now disabled"
-        ));
-        return true;
-    }
-
-    private void send(CommandSender sender, String message) {
-        if (sender;
+            Player player = (Player) sender;
             player.sendMessage(ColorUtils.toComponent(message, player));
             return;
         }
