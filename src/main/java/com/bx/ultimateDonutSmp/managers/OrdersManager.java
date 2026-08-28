@@ -2038,7 +2038,7 @@ public class OrdersManager {
                 || name.contains("SHIELD")
                 || material.name().equals("TRIDENT")
                 || material.name().equals("MACE")
-                || material == resolveMaterial("FIREWORKS_SPARK", null);
+                || material == resolveMaterial("FIREWORK_ROCKET", "FIREWORK");
     }
 
     private boolean isRedstoneMaterial(Material material) {
@@ -2077,12 +2077,23 @@ public class OrdersManager {
     }
 
     private static Material resolveMaterial(String modernName, String legacyName) {
-        Material modern = modernName == null ? null : Material.matchMaterial(modernName);
-        if (modern != null) {
-            return modern;
+        // Resolve through the central 1.12.2 compatibility layer first: filter.yml and orders.yml
+        // are written against modern material names, and Material.matchMaterial alone silently
+        // fails for every one of them. Unresolvable names stay null ("unsupported") instead of
+        // degrading to STONE, which used to classify unrelated materials into wrong categories.
+        if (modernName != null) {
+            LegacyMaterialSupport.Icon modern = LegacyMaterialSupport.resolve(modernName);
+            if (modern != null) {
+                return modern.material();
+            }
         }
-        Material legacy = legacyName == null ? null : Material.matchMaterial(legacyName);
-        return legacy == null ? Material.STONE : legacy;
+        if (legacyName != null) {
+            LegacyMaterialSupport.Icon legacy = LegacyMaterialSupport.resolve(legacyName);
+            if (legacy != null) {
+                return legacy.material();
+            }
+        }
+        return null;
     }
 
     private static boolean isAir(Material material) {

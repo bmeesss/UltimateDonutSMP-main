@@ -5,7 +5,6 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
-import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.potion.PotionType;
 
 import java.util.*;
@@ -133,12 +132,10 @@ public final class ItemKey {
             }
         }
 
-        // Damage check: items must not be damaged!
-        if (meta instanceof Damageable) {
-            Damageable damageable = (Damageable) meta;
-            if (damageable.hasDamage() && damageable.getDamage() > 0) {
-                return false;
-            }
+        // Damage check: items must not be damaged! On 1.12.2 an item's damage IS its durability
+        // value, so check the stack directly instead of the ItemMeta Damageable view (a 1.13+ API).
+        if (item.getType().getMaxDurability() > 0 && item.getDurability() > 0) {
+            return false;
         }
 
         return true;

@@ -139,16 +139,16 @@ public class SpawnerBlockListener implements Listener {
         if (tool == null || tool.getType() == Material.AIR) {
             return;
         }
-        org.bukkit.inventory.meta.ItemMeta meta = tool.getItemMeta();
-        if (meta instanceof org.bukkit.inventory.meta.Damageable) {
-            org.bukkit.inventory.meta.Damageable damageable = (org.bukkit.inventory.meta.Damageable) meta;
+        // 1.12.2 tracks tool wear as the stack's durability; the ItemMeta Damageable view of it
+        // is a 1.13+ API and does not exist on this server.
+        if (tool.getType().getMaxDurability() > 0) {
             int unbreakingLevel = tool.getEnchantmentLevel(org.bukkit.enchantments.Enchantment.DURABILITY);
             if (unbreakingLevel > 0) {
                 if (java.util.concurrent.ThreadLocalRandom.current().nextInt(unbreakingLevel + 1) != 0) {
                     return;
                 }
             }
-            int currentDamage = damageable.getDamage();
+            int currentDamage = tool.getDurability();
             int maxDurability = tool.getType().getMaxDurability();
             if (maxDurability > 0) {
                 int newDamage = currentDamage + 1;
@@ -156,8 +156,7 @@ public class SpawnerBlockListener implements Listener {
                     player.getInventory().setItemInMainHand(null);
                     player.playSound(player.getLocation(), org.bukkit.Sound.ENTITY_ITEM_BREAK, 1.0f, 1.0f);
                 } else {
-                    damageable.setDamage(newDamage);
-                    tool.setItemMeta(meta);
+                    tool.setDurability((short) newDamage);
                 }
             }
         }

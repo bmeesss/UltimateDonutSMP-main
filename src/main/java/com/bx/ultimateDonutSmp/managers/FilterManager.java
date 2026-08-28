@@ -1,6 +1,7 @@
 package com.bx.ultimateDonutSmp.managers;
 
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
@@ -26,9 +27,14 @@ public class FilterManager {
             if (matNames == null) continue;
             Set<Material> materials = new LinkedHashSet<>();
             for (String name : matNames) {
-                Material mat = Material.matchMaterial(name);
-                if (mat != null) {
-                    materials.add(mat);
+                // filter.yml is written against modern (1.13+) material names; on 1.12.2 a bare
+                // Material.matchMaterial silently drops most of them, which starves the Orders
+                // catalog. Resolve through the central compatibility layer instead: legacy names
+                // resolve natively, supported flattened names map to their 1.12.2 equivalent and
+                // genuinely unsupported materials are skipped explicitly.
+                LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(name);
+                if (resolved != null) {
+                    materials.add(resolved.material());
                 }
             }
             categories.put(key, materials);

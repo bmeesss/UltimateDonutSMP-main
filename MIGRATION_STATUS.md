@@ -1295,3 +1295,49 @@ Worth · Crates · Homes · RTP · Hide · all remaining core managers and menus
 
 > **Build not verified — Maven/JDK unavailable.** All validation is tree-sitter + static scans only.
 > Java 8 compatibility is statically complete; real javac/Maven verification remains.
+
+## Runtime bug-fix batch (1.12.2 server log findings)
+
+Fixed against the real 61,664-line Spigot 1.12.2 server log, building on commit 6e325df:
+
+1. **Scoreboard spam (`Display name ... longer than the limit of 32 characters`).**
+   New `utils/LegacyScoreboardText` converts modern RGB/hex markup (`§x§R§R§G§G§B§B`,
+   `&#RRGGBB`, `{#…}`, `<#…>`, bare `#…`) to the nearest legacy `ChatColor` (perceptual
+   redmean distance), collapses redundant codes, and token-safely truncates (never splits a
+   colour code or surrogate pair). Applied to both objective display-name paths in
+   `ScoreboardManager` (32-char limit) and the `TablistManager` legacy fallback
+   (`setPlayerListName`, 16-char limit). `applyLineSpigot` now splits team lines at the real
+   1.12.2 prefix/suffix limit (16 each, not 64) and re-opens the colour state in the suffix.
+2. **SQLite `64 values for 57 columns`.** `savePlayer` wrote 57 columns with 64 placeholders and
+   bindings that skipped indexes 39/49 and were shifted past them. The statement is now the full
+   62-column schema order with 62 placeholders and sequential bindings; `loadPlayer`/`mapPlayerRow`
+   were already correct and stay untouched. `ensurePlayerColumns` additionally migrates the three
+   pre-`blocks_*` columns it never covered (`tpauto`, `phantom_enabled`, `payments_enabled`), so a
+   database last written by an older build is saveable too. Verified against a real SQLite engine
+   (fresh schema round-trip, REPLACE semantics, legacy-table migration, column/order parity), and
+   the stale `duel_music_enabled` leftovers were removed from `DatabaseManagerPlayerSettingsTest`.
+3. **`PlayerJoinEvent EventException: null`.** Root causes were the unhandled exceptions above
+   inside the join flow (scoreboard setup throws first, tab-list fallback next). Both fixed at
+   the source; no suppression added.
+4. **Orders material lookup.** `filter.yml` is written in modern names and `FilterManager` used a
+   bare `Material.matchMaterial`, silently starving the catalog on 1.12.2; it now resolves through
+   `LegacyMaterialSupport`, which gained the flattened colour/wood/stone families, tool/food/door
+   renames and disc/music-cart renames the shipped configs use. `OrdersManager.resolveMaterial`
+   no longer degrades unresolvable names to STONE (STONE was being misclassified as combat); the
+   firework comparison uses the real `FIREWORK_ROCKET`/`FIREWORK` pair. `/order` registered as an
+   alias of `/orders`. Unsupported materials stay unsupported (null) by design.
+5. **Post-1.12.2 API in touched classes.** `ItemKey` and `SpawnerBlockListener` referenced
+   `org.bukkit.inventory.meta.Damageable` (1.13+); replaced with the 1.12.2-native durability
+   check/write (`getMaxDurability() > 0 && getDurability() > 0` / `setDurability`), preserving
+   semantics. `Material.isItem()` was verified present in 1.12.2-R0.1 and kept.
+
+Validation in this environment (Maven/JDK repos unreachable): Janino-compiled execution of
+`LegacyScoreboardText` (31 checks) and `LegacyMaterialSupport` against a stub Material enum that
+contains only the genuine 1.12.2 constants (88 checks, incl. "all 300 filter.yml/orders.yml names
+resolve" and "no STONE fallback"), the `applyLineSpigot` split guarantees (6 checks), a real
+SQLite validation of the exact extracted SQL (13 checks), and a Janino parse of every edited
+file. Repo-side JUnit coverage: `LegacyScoreboardTextTest`, `LegacyMaterialSupportTest`, updated
+`ScoreboardLineSplitTest`, repaired `DatabaseManagerPlayerSettingsTest` (round-trips every
+persisted player field). `mvn -q -DskipTests compile` / `mvn clean package -Dmaven.test.skip=true`
+must still be run where Maven and the Spigot 1.12.2 API are reachable; no real 1.12.2 server JAR
+was available here for a live test.
