@@ -169,6 +169,9 @@ public class WorthManager {
     private final Map<WorthCacheKey, java.util.Optional<SellCategory>> sellCategoryCache = new java.util.concurrent.ConcurrentHashMap<WorthCacheKey, java.util.Optional<SellCategory>>();
     private final Set<Material> blockedMaterialsCache = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private boolean blockedMaterialsLoaded = false;
+    /** Reverse index: "MATERIAL:durability" -&gt; worth.yml keys that name the same item in 1.13+ spelling. */
+    private final Map<String, List<String>> worthKeyAliases = new HashMap<String, List<String>>();
+    private boolean worthKeyAliasesLoaded = false;
     private volatile boolean packetDisplayActive = false;
 
     private static final DirectWorthData NULL_DIRECT_WORTH = new DirectWorthData(-1.0, "", "", "");
@@ -185,6 +188,8 @@ public class WorthManager {
         sellCategoryCache.clear();
         blockedMaterialsCache.clear();
         blockedMaterialsLoaded = false;
+        worthKeyAliases.clear();
+        worthKeyAliasesLoaded = false;
     }
 
     public void setPacketDisplayActive(boolean active) {
@@ -1022,7 +1027,68 @@ public class WorthManager {
         if (section.contains(materialKey) && !section.isConfigurationSection(materialKey)) {
             return new DirectWorthData(section.getDouble(materialKey, -1), materialKey, categoryKey, "DIRECT");
         }
+
+        // worth.yml is written with 1.13+ flattened names (OAK_PLANKS, COBBLESTONE_SLAB, ...).
+        // On 1.12.2 item.getType().name() is the shared legacy name (WOOD, STEP, ...), so a direct
+        // key lookup silently misses and the item ends up with no worth at all. Resolve the modern
+        // spellings back onto the legacy material + durability before giving up.
+        for (String alias : aliasKeysFor(item.getType(), item.getDurability())) {
+            if (section.contains(alias) && !section.isConfigurationSection(alias)) {
+                return new DirectWorthData(section.getDouble(alias, -1), alias, categoryKey, "DIRECT");
+            }
+        }
         return null;
+    }
+
+    private List<String> aliasKeysFor(Material material, short durability) {
+        if (material == null) {
+            return Collections.emptyList();
+        }
+        loadWorthKeyAliases();
+        List<String> keys = worthKeyAliases.get(material.name() + ":" + durability);
+        return keys == null ? Collections.<String>emptyList() : keys;
+    }
+
+    private void loadWorthKeyAliases() {
+        if (worthKeyAliasesLoaded) {
+            return;
+        }
+        worthKeyAliasesLoaded = true;
+
+        FileConfiguration worthConfig = plugin.getConfigManager().getWorth();
+        if (worthConfig == null) {
+            return;
+        }
+        collectWorthKeyAliases(worthConfig, new HashSet<String>());
+    }
+
+    private void collectWorthKeyAliases(ConfigurationSection section, Set<String> visitedKeys) {
+        for (String key : section.getKeys(false)) {
+            if (key.contains(":") || key.indexOf('.') >= 0) {
+                continue;
+            }
+            if (section.isConfigurationSection(key)) {
+                collectWorthKeyAliases(section.getConfigurationSection(key), visitedKeys);
+                continue;
+            }
+            if (!visitedKeys.add(key)) {
+                continue;
+            }
+            com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.Icon icon =
+                    com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.resolve(key);
+            if (icon == null || icon.material() == null) {
+                continue;
+            }
+            String aliasTarget = icon.material().name() + ":" + icon.data();
+            List<String> keys = worthKeyAliases.get(aliasTarget);
+            if (keys == null) {
+                keys = new ArrayList<String>();
+                worthKeyAliases.put(aliasTarget, keys);
+            }
+            if (!keys.contains(key)) {
+                keys.add(key);
+            }
+        }
     }
 
     private DirectWorthData resolveSpecificItemWorth(ConfigurationSection section, ItemStack item, String categoryKey) {
@@ -1209,6 +1275,16 @@ public class WorthManager {
         if ("GREEN_DYE".equals(normalized)) return Material.matchMaterial("CACTUS_GREEN");
         if ("LAPIS_LAZULI".equals(normalized)) return Material.matchMaterial("INK_SACK");
         if ("COCOA_BEANS".equals(normalized)) return Material.matchMaterial("INK_SACK");
+
+        // 1.13+ flattened names never match the 1.12.2 enum directly, so the worth browser used to
+        // drop those catalog entries in silence. Resolve them through the compatibility layer. Data
+        // carrying spellings (SPRUCE_PLANKS, ...) are skipped: the browser keys on a Material only
+        // and would render the wrong variant.
+        com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.Icon resolved =
+                com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.resolve(normalized);
+        if (resolved != null && resolved.material() != null && resolved.data() == 0) {
+            return resolved.material();
+        }
 
         return null;
     }

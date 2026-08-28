@@ -1420,3 +1420,26 @@ returns 403 for workflow permissions), so the packaged JAR could not be produced
 here. The repo-side JUnit suites (LegacyScoreboardTextTest, LegacyMaterialSupportTest,
 ScoreboardLineSplitTest, DatabaseManagerPlayerSettingsTest, PlayerSettingUtilsTest) are ready to
 run unchanged under `mvn clean test` wherever Maven and the Spigot 1.12.2 API are reachable.
+
+---
+
+## Batch 38 — 1.12.2 runtime/gameplay audit (this checkpoint)
+
+Scope: runtime compatibility audit + fixes for Spigot 1.12.2 and Eaglercraft (EaglerXServer), not a
+Java-8 syntax pass. Full evidence and per-bug tracing: `docs/1.12.2_RUNTIME_AUDIT.md`.
+Test matrix: `docs/1.12.2_TEST_MATRIX.md`. Build/validation notes: `docs/1.12.2_VALIDATION.md`.
+
+| # | Fix | Files |
+|---|---|---|
+| 1 | ProtocolLib `WrappedEnumEntityUseAction` static-init crash — read the use-action field generically instead | `managers/FakePlayerProtocolLibBridge.java` |
+| 2 | `Material.SIGN` is a sign **item** on 1.12.2, never a block → sign GUIs could not open | `utils/SignInputUtil.java` |
+| 3 | `Player#openSign(Sign, Side)` is 1.20+; pre-1.20 servers now use the shared **chat input** transport (orders price/amount, /ah search, /orders search) | `utils/SignInputUtil.java`, `listeners/ChatListener.java` |
+| 4 | Tablist: NMS `PacketPlayOutPlayerInfo` / `IChatBaseComponent` now resolve through the relocated `net.minecraft.server.v1_12_R1` package; 16-char fallback keeps the player name instead of the badge | `utils/NmsSupport.java` (new), `utils/TablistComponentUpdater.java`, `utils/LegacyScoreboardText.java`, `managers/TablistManager.java` |
+| 5 | `SkullMeta#setOwningPlayer` (1.13+) → shared `ItemUtils#applyOwnerToSkullMeta` | `utils/ItemUtils.java` + 7 menus |
+| 6 | Worth catalog: 1.13+ `worth.yml` keys now resolve onto 1.12.2 material + durability | `managers/WorthManager.java` |
+| 7 | `LeaderboardManager.@Nullable LeaderboardEntry` type annotation → ordinary parameter annotation | `api/LeaderboardPlaceholderResolver.java` |
+
+**Still not verified: compilation.** No JDK and no Maven, and every Maven repository is unreachable
+from this environment — see `docs/1.12.2_VALIDATION.md` for the exact commands and for the static
+checks that were run instead (424/424 files parse; 0 missing Bukkit classes, event types, Material /
+Sound / Particle / GameMode / InventoryType constants against a real 1.12.2 API surface).

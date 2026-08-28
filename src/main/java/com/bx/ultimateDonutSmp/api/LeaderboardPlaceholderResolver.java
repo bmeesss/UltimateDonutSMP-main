@@ -86,7 +86,7 @@ public class LeaderboardPlaceholderResolver {
         return result;
     }
 
-    private String resolveEntryName(LeaderboardManager.@Nullable LeaderboardEntry entry) {
+    private String resolveEntryName(@Nullable LeaderboardManager.LeaderboardEntry entry) {
         if (entry == null || entry.playerData() == null) {
             return "none";
         }

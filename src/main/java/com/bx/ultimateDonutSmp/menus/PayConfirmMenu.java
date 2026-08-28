@@ -98,7 +98,7 @@ public class PayConfirmMenu extends BaseMenu {
         SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
-        meta.setOwningPlayer(target);
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, target);
         item.setItemMeta(meta);
         return item;
     }

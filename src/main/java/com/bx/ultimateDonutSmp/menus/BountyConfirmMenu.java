@@ -110,7 +110,7 @@ public class BountyConfirmMenu extends BaseMenu {
         SkullMeta meta = (SkullMeta) itemMeta;
 
         OfflinePlayer target = Bukkit.getOfflinePlayer(targetUuid);
-        meta.setOwningPlayer(target);
+        com.bx.ultimateDonutSmp.utils.ItemUtils.applyOwnerToSkullMeta(meta, target);
         item.setItemMeta(meta);
         return item;
     }

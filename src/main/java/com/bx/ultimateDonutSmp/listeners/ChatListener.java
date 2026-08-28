@@ -53,6 +53,17 @@ public class ChatListener implements Listener {
             return;
         }
 
+        // Menu text input (search / price / amount). On 1.12.2 the sign editor transport has no
+        // Bukkit API, so SignInputUtil collects the answer through chat instead. This check runs
+        // inside the chat listener on purpose: at EventPriority.NORMAL it is ahead of the chat
+        // pipeline, so cancelling here stops the answer being broadcast to the server.
+        if (com.bx.ultimateDonutSmp.utils.SignInputUtil.hasPendingInput(player.getUniqueId())) {
+            event.setCancelled(true);
+            plugin.getSpigotScheduler().runEntity(player, () ->
+                    com.bx.ultimateDonutSmp.utils.SignInputUtil.handlePendingInput(player, rawMessage));
+            return;
+        }
+
 
 
         PunishmentRecord activeMute = plugin.getPunishmentManager()

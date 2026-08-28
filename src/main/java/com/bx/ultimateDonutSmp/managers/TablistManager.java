@@ -146,10 +146,16 @@ public class TablistManager {
             }
         }
 
-        // The component route needs modern server internals; on 1.12.2 it disables itself and
-        // this legacy fallback runs instead. A 1.12.2 player list name may be at most 16 raw
-        // characters, and its client cannot render §x hex sequences, so sanitise before setting.
-        player.setPlayerListName(LegacyScoreboardText.sanitizePlayerListName(parseTabText(nameFormat, player)));
+        // The component route needs server internals that are resolved reflectively; if it cannot
+        // be initialised on this build this legacy fallback runs instead. A 1.12.2 player list
+        // name may be at most 16 raw characters and its client cannot render §x hex sequences, so
+        // sanitise before setting. sanitizePlayerListNameKeeping() trims the badge/prefix side
+        // rather than the tail, so the player's own name is never the part that gets cut off.
+        String publicName = plugin.getHideManager() == null
+                ? player.getName()
+                : plugin.getHideManager().publicName(player);
+        player.setPlayerListName(LegacyScoreboardText.sanitizePlayerListNameKeeping(
+                parseTabText(nameFormat, player), publicName));
         lastNameCache.put(player.getUniqueId(), nameFormat);
     }
 
