@@ -1393,3 +1393,30 @@ compiler runs of LegacyScoreboardText (42), LegacyMaterialSupport against a fait
 enum stub (92), applyLineSpigot split guarantees (6), Orders search end-to-end against the
 shipped filter.yml (15), real-SQLite schema/migration/round-trip (13), and the mechanized
 savePlayer binding proof (7). Janino parse of all 16 touched files: 0 failures.
+
+## Continuation 2: real-file compiles caught a missing import
+
+Compiling the real `ItemKey.java` (not a copy) against 1.12.2-faithful stubs caught that the new
+`resolveStoredMaterial` used the simple name `LegacyMaterialSupport.Icon` without importing it -
+a genuine `mvn` build breaker. Fixed by importing `com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport`
+in ItemKey. The same compile pass runs the real `deserialize` on legacy keys (STONE), modern keys
+(OAK_DOOR -> WOOD_DOOR, GRASS_BLOCK -> GRASS), potion/enchanted keys, book keys and junk
+(junk -> AIR, never STONE): 10/10 checks green. Janino cannot compile lambda expressions, so the
+ItemKey compile uses a mechanically transformed copy in which the four baseline lambda-stream
+blocks become equivalent loops (`validation/make_itemkey_copy.py` verifies every region changed
+by this bug-fix batch is byte-identical in the compiled copy). `FilterManager`'s changed resolve
+loop also compiles as the real file; its baseline `getOrDefault` line trips Janino's weaker
+generics inference only (javac-legal, left untouched). A handful of javac-identical explicit
+casts were added in ItemKey where Janino erases `Map.Entry` generics.
+
+Full validation state: 7 suites, 185 checks, all green (LegacyScoreboardText 42,
+LegacyMaterialSupport 92, applyLineSpigot 6, Orders search 15, ItemKey 10, SQLite SQL/migration
+13, binding alignment 7); Janino parse of all touched files: 0 failures. What could NOT run
+anywhere I control: `mvn -q -DskipTests compile`, `mvn clean package -Dmaven.test.skip=true`,
+`mvn clean test` and a real 1.12.2 server boot - this sandbox has no Maven/JDK distribution and
+no route to Maven repositories (only PyPI is reachable), and GitHub Actions on the repository is
+not enabled for the bot token (workflow files exist on master but are not registered; the API
+returns 403 for workflow permissions), so the packaged JAR could not be produced or inspected
+here. The repo-side JUnit suites (LegacyScoreboardTextTest, LegacyMaterialSupportTest,
+ScoreboardLineSplitTest, DatabaseManagerPlayerSettingsTest, PlayerSettingUtilsTest) are ready to
+run unchanged under `mvn clean test` wherever Maven and the Spigot 1.12.2 API are reachable.

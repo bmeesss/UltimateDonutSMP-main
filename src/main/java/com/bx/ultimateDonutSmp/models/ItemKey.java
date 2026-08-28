@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.PotionType;
+import com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ public final class ItemKey {
         Map<String, Integer> stringEnchants = new LinkedHashMap<>();
         if (enchants != null) {
             for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
-                stringEnchants.put(keyOf(entry.getKey()), entry.getValue());
+                stringEnchants.put(keyOf((Enchantment) entry.getKey()), (Integer) entry.getValue());
             }
         }
         return new ItemKey(Material.ENCHANTED_BOOK, null, stringEnchants);
@@ -52,7 +53,7 @@ public final class ItemKey {
                 org.bukkit.inventory.meta.EnchantmentStorageMeta storageMeta =
                         (org.bukkit.inventory.meta.EnchantmentStorageMeta) meta;
                 for (Map.Entry<Enchantment, Integer> entry : storageMeta.getStoredEnchants().entrySet()) {
-                    enchants.put(keyOf(entry.getKey()), entry.getValue());
+                    enchants.put(keyOf((Enchantment) entry.getKey()), (Integer) entry.getValue());
                 }
             }
             return new ItemKey(mat, null, enchants);
@@ -70,7 +71,7 @@ public final class ItemKey {
         Map<String, Integer> enchants = new LinkedHashMap<>();
         if (meta != null && meta.hasEnchants()) {
             for (Map.Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet()) {
-                enchants.put(keyOf(entry.getKey()), entry.getValue());
+                enchants.put(keyOf((Enchantment) entry.getKey()), (Integer) entry.getValue());
             }
         }
         return new ItemKey(mat, null, enchants);
@@ -92,11 +93,11 @@ public final class ItemKey {
             Map<Enchantment, Integer> itemEnchants = storageMeta.getStoredEnchants();
             // Verify that all required enchantments match exactly
             for (Map.Entry<String, Integer> reqEntry : enchants.entrySet()) {
-                Enchantment reqEnch = findByKey(reqEntry.getKey());
+                Enchantment reqEnch = findByKey((String) reqEntry.getKey());
                 if (reqEnch == null) {
                     return false;
                 }
-                Integer itemLvl = itemEnchants.get(reqEnch);
+                Integer itemLvl = (Integer) itemEnchants.get(reqEnch);
                 if (itemLvl == null || !itemLvl.equals(reqEntry.getValue())) {
                     return false;
                 }
@@ -121,11 +122,11 @@ public final class ItemKey {
             }
             Map<Enchantment, Integer> itemEnchants = meta.getEnchants();
             for (Map.Entry<String, Integer> reqEntry : enchants.entrySet()) {
-                Enchantment reqEnch = findByKey(reqEntry.getKey());
+                Enchantment reqEnch = findByKey((String) reqEntry.getKey());
                 if (reqEnch == null) {
                     return false;
                 }
-                Integer itemLvl = itemEnchants.get(reqEnch);
+                Integer itemLvl = (Integer) itemEnchants.get(reqEnch);
                 if (itemLvl == null || !itemLvl.equals(reqEntry.getValue())) {
                     return false;
                 }
@@ -162,9 +163,9 @@ public final class ItemKey {
         if (material == Material.ENCHANTED_BOOK) {
             org.bukkit.inventory.meta.EnchantmentStorageMeta esm = (org.bukkit.inventory.meta.EnchantmentStorageMeta) meta;
             for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
-                Enchantment ench = findByKey(entry.getKey());
+                Enchantment ench = findByKey((String) entry.getKey());
                 if (ench != null) {
-                    esm.addStoredEnchant(ench, entry.getValue(), true);
+                    esm.addStoredEnchant(ench, ((Integer) entry.getValue()).intValue(), true);
                 }
             }
         } else if (isPotionLike(material) && potionType != null) {
@@ -172,9 +173,9 @@ public final class ItemKey {
             pm.setBasePotionData(new org.bukkit.potion.PotionData(potionType));
         } else {
             for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
-                Enchantment ench = findByKey(entry.getKey());
+                Enchantment ench = findByKey((String) entry.getKey());
                 if (ench != null) {
-                    meta.addEnchant(ench, entry.getValue(), true);
+                    meta.addEnchant(ench, ((Integer) entry.getValue()).intValue(), true);
                 }
             }
         }
@@ -186,12 +187,12 @@ public final class ItemKey {
     public String displayName() {
         if (material == Material.ENCHANTED_BOOK && !enchants.isEmpty()) {
             if (enchants.size() == 1) {
-                Map.Entry<String, Integer> entry = enchants.entrySet().iterator().next();
-                return bookEnchantLabel(entry.getKey(), entry.getValue());
+                Map.Entry<String, Integer> entry = uncheckedEntry(enchants.entrySet().iterator().next());
+                return bookEnchantLabel((String) entry.getKey(), ((Integer) entry.getValue()).intValue());
             } else {
                 String label = enchants.entrySet().stream()
                         .limit(3)
-                        .map(entry -> bookEnchantLabel(entry.getKey(), entry.getValue()))
+                        .map(entry -> bookEnchantLabel(entry.getKey(), ((Integer) entry.getValue()).intValue()))
                         .collect(Collectors.joining(", "));
                 if (enchants.size() > 3) {
                     label += ", ...";
@@ -242,11 +243,16 @@ public final class ItemKey {
         }
         List<String> lines = new ArrayList<>();
         for (Map.Entry<String, Integer> entry : enchants.entrySet()) {
-            Enchantment ench = findByKey(entry.getKey());
-            String name = ench != null ? title(ench.getName().replace('_', ' ')) : title(entry.getKey().replace('_', ' '));
-            lines.add(highlightPrefix + name + " " + roman(entry.getValue()));
+            Enchantment ench = findByKey((String) entry.getKey());
+            String name = ench != null ? title(ench.getName().replace('_', ' ')) : title(((String) entry.getKey()).replace('_', ' '));
+            lines.add(highlightPrefix + name + " " + roman(((Integer) entry.getValue()).intValue()));
         }
         return lines;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map.Entry<String, Integer> uncheckedEntry(Object entry) {
+        return (Map.Entry<String, Integer>) entry;
     }
 
     private static String bookEnchantLabel(String name, int level) {
@@ -402,7 +408,7 @@ public final class ItemKey {
         if (raw == null || raw.trim().isEmpty()) {
             return null;
         }
-        LegacyMaterialSupport.Icon resolved = com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.resolve(raw.trim());
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(raw.trim());
         return resolved == null ? null : resolved.material();
     }
 
