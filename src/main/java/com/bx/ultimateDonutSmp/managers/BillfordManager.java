@@ -91,7 +91,7 @@ public final class BillfordTrade {
     public int rewardQuantity() { return rewardQuantity; }
 
     @Override public String toString() {
-        return "BillfordTrade[id=+id, displayName=+displayName, tradeLimit=+tradeLimit, shardBonus=+shardBonus, moneyBonus=+moneyBonus, requiredItems=+requiredItems, rewardMaterial=+rewardMaterial, rewardQuantity=+rewardQuantity]";
+        return "BillfordTrade[id=" + id + ", displayName=" + displayName + ", tradeLimit=" + tradeLimit + ", shardBonus=" + shardBonus + ", moneyBonus=" + moneyBonus + ", requiredItems=" + requiredItems + ", rewardMaterial=" + rewardMaterial + ", rewardQuantity=" + rewardQuantity + "]";
     }
     @Override public boolean equals(Object o) {
         if (this == o) return true;
@@ -298,10 +298,20 @@ public final class BillfordTrade {
         );
 
         List<BillfordSlot> requiredItems = readRequiredItems(section);
-        Material rewardMaterial = rewardSection != null
-                ? ItemUtils.parseMaterial(rewardSection.getString("MATERIAL",
-                rewardSection.getString("ITEM", "STONE")))
-                : Material.STONE;
+        Material rewardMaterial;
+        if (rewardSection != null) {
+            String configuredReward = rewardSection.getString("MATERIAL",
+                    rewardSection.getString("ITEM", "STONE"));
+            rewardMaterial = ItemUtils.parseMaterial(configuredReward);
+            if (rewardMaterial == null) {
+                // A trade whose reward item cannot be produced must not silently hand out stone.
+                plugin.getLogger().warning("Billford trade " + id + " has an unresolvable REWARD.MATERIAL '"
+                        + configuredReward + "'; the trade is not offered.");
+                return null;
+            }
+        } else {
+            rewardMaterial = Material.STONE;
+        }
         int rewardQuantity = rewardSection != null
                 ? Math.max(1, rewardSection.getInt("QUANTITY", rewardSection.getInt("AMOUNT", 1)))
                 : 1;
@@ -357,7 +367,14 @@ public final class BillfordTrade {
             List<BillfordSlot> slots
     ) {
         int slot = Math.max(1, Math.min(54, itemSection.getInt("SLOT", fallbackSlot)));
-        Material material = ItemUtils.parseMaterial(itemSection.getString("MATERIAL", "STONE"));
+        String configuredMaterial = itemSection.getString("MATERIAL", "STONE");
+        Material material = ItemUtils.parseMaterial(configuredMaterial);
+        if (material == null) {
+            // An unresolvable input MATERIAL must not turn into a stone requirement.
+            plugin.getLogger().warning("Billford trade input '" + itemSection.getName()
+                    + "' has an unresolvable MATERIAL '" + configuredMaterial + "'; the requirement was skipped.");
+            return;
+        }
         int quantity = Math.max(1, itemSection.getInt("QUANTITY", itemSection.getInt("AMOUNT", 1)));
         slots.add(new BillfordSlot(slot, material, quantity));
     }

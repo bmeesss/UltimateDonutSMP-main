@@ -1315,6 +1315,7 @@ MENUS:
         LORE:
         - "&7Actuel : &f{search}"
         - "&aClic gauche pour rechercher un joueur"
+        - "&cClic droit pour effacer"
       REFRESH:
         DISPLAY-NAME: "&#6BF18DActualiser"
         LORE:
@@ -2170,6 +2171,7 @@ MESSAGES:
     - "&f/chat Muet &7- to mute global chat."
     - "&f/chat Réactiver le son &7- to unmute global chat."
     - "&f/chat Délai (temps) &7- to add delay to global chat."
+    - "&f/chat Vider &7- to clear global chat."
     - ''
     MUTED: "&aGlobal chat is now muted."
     UNMUTED: "&aGlobal chat is now unmuted."
@@ -2855,7 +2857,7 @@ BUILTIN:
   f611e51641ed6ebf3061: Open <crate> &7- open a crate directly
   e969f79d7e1f42d238e2: Type <crate> <choose_one|gacha> &7- set crate type
   fef567638f22cb64901b: Take <player> <crate> <amount> &7- remove keys
-  115620d253b205d50f22: With &f/sell &7and trade better gear through 
+  115620d253b205d50f22: 'With &f/sell &7and trade better gear through &f/auctionhouse&7.'
   76a96b56c02df387cfec: ${price}X &lshards
   7ffe6140f6316a2a89ae: '&#00A4FCRtp guide'
   925060ac7d172cff446c: '&#00A4FCRules'
@@ -3891,4 +3893,4 @@ BUILTIN:
   356276dd7b506bb02ec5: "You received %amount_formatted% &7(total : %total_formatted%&7)"
   23d6007c51d950a18c48: "You received %amount_formatted% &8[partout] &7(total : %total_formatted%&7)"
   56d883250427ad469055: Mb&8/&f
-  d8b9a7616dfdf1cbb574: usessl=false&allowpublickeyretrieval=true 
+  d8b9a7616dfdf1cbb574: 'usessl=false&allowpublickeyretrieval=true&servertimezone=utc&characterencoding=utf8'

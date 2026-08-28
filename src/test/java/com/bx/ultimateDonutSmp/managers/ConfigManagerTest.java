@@ -245,7 +245,7 @@ class ConfigManagerTest {
     void atomicTextWritePreservesExistingLineEndingAndTrailingNewline() throws Exception {
         Path file = Files.createTempFile("uds-config-sync-", ".yml");
         try {
-            Files.writeString(file, "FIRST: 1\r\nSECOND: 2\r\n", StandardCharsets.UTF_8);
+            Files.write(file, "FIRST: 1\r\nSECOND: 2\r\n".getBytes(StandardCharsets.UTF_8));
             ConfigManager manager = new ConfigManager(null);
             Method read = ConfigManager.class.getDeclaredMethod("readTextFile", File.class);
             read.setAccessible(true);
@@ -267,7 +267,7 @@ class ConfigManagerTest {
 
             assertEquals(
                     "FIRST: 1\r\nSECOND: 2\r\nTHIRD: 3\r\n",
-                    Files.readString(file, StandardCharsets.UTF_8)
+                    new String(Files.readAllBytes(file), StandardCharsets.UTF_8)
             );
         } finally {
             Files.deleteIfExists(file);
@@ -355,15 +355,14 @@ class ConfigManagerTest {
 
     @Test
     void bundledYamlResourcesExceptPluginParse() throws Exception {
-        Path resources = Path.of("src/main/resources");
+        Path resources = java.nio.file.Paths.get("src/main/resources");
         try (Stream<Path> paths = Files.list(resources)) {
             for (Path path : paths
                     .filter(ConfigManagerTest::isYamlResource)
                     .filter(candidate -> !candidate.getFileName().toString().equals("plugin.yml"))
                     .collect(java.util.stream.Collectors.toList())) {
                 YamlConfiguration configuration = new YamlConfiguration();
-                configuration.options().parseComments(true);
-                configuration.load(path.toFile());
+                        configuration.load(path.toFile());
             }
         }
     }
@@ -450,12 +449,11 @@ class ConfigManagerTest {
     }
 
     private static List<String> lines(String... lines) {
-        return new ArrayList<>(java.util.Collections.singletonList(lines));
+        return new ArrayList<>(java.util.Arrays.asList(lines));
     }
 
     private static YamlConfiguration yaml(List<String> lines) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
         configuration.loadFromString(String.join("\n", lines) + "\n");
         return configuration;
     }

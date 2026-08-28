@@ -204,7 +204,7 @@ public class TeamEditMenu extends BaseMenu {
     }
 
     private Material material(String path, Material fallback) {
-        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()));
+        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()), fallback);
     }
 
     private String replace(String value, Map<String, String> placeholders) {

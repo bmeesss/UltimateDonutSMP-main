@@ -73,7 +73,7 @@ public class StatsMenu extends BaseMenu {
                 continue;
             }
 
-            Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
+            Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"), Material.STONE);
             String rawName = section.getString("DISPLAY-NAME", "&b" + key);
             String displayName = replacePlaceholders(rawName, data);
 

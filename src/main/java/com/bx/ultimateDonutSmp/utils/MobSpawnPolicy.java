@@ -33,10 +33,13 @@ public final class MobSpawnPolicy {
         if (type == null) {
             return false;
         }
-        switch (type) {
-            case WITHER:
-            case ENDER_DRAGON:
-            case ELDER_GUARDIAN:
+        // Name based so bosses added after 1.12.2 (the warden) are recognised on newer servers
+        // while the switch still compiles against the 1.12.2 enum.
+        switch (type.name()) {
+            case "WITHER":
+            case "ENDER_DRAGON":
+            case "ELDER_GUARDIAN":
+            case "WARDEN":
                 return true;
             default:
                 return false;
@@ -59,11 +62,26 @@ public final class MobSpawnPolicy {
         if (reason == null) {
             return false;
         }
-        switch (reason) {
-            case CUSTOM:
-            case SPAWNER_EGG:
-            case BUILD_WITHER:
-            case BREEDING:
+        return isPreventableSpawnReason(reason.name(), trialSpawnersBlocked);
+    }
+
+    /**
+     * Name-based companion of {@link #isPreventableSpawnReason(CreatureSpawnEvent.SpawnReason, boolean)}.
+     * The trial-spawner switch is name driven so it compiles and works on 1.12.2, where
+     * {@code SpawnReason.TRIAL_SPAWNER} does not exist and the branch is simply never taken.
+     */
+    static boolean isPreventableSpawnReason(String reasonName, boolean trialSpawnersBlocked) {
+        if (reasonName == null) {
+            return false;
+        }
+        if ("TRIAL_SPAWNER".equals(reasonName)) {
+            return trialSpawnersBlocked;
+        }
+        switch (reasonName) {
+            case "CUSTOM":
+            case "SPAWNER_EGG":
+            case "BUILD_WITHER":
+            case "BREEDING":
                 return false;
             default:
                 return true;

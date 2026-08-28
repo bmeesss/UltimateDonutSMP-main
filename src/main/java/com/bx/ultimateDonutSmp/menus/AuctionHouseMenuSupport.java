@@ -146,9 +146,11 @@ final class AuctionHouseMenuSupport {
         Material material = fallbackMaterial;
         String configuredMaterial = config.getString(path + ".MATERIAL", fallbackMaterial.name());
         if (configuredMaterial != null) {
-            try {
-                material = Material.valueOf(configuredMaterial.trim().toUpperCase());
-            } catch (IllegalArgumentException ignored) {
+            // Central resolution so flattened 1.13+ names in auction-house.yml still find their
+            // 1.12.2 material; unresolvable values keep the caller's explicit fallback.
+            Material resolved = ItemUtils.parseMaterial(configuredMaterial);
+            if (resolved != null) {
+                material = resolved;
             }
         }
         return ItemUtils.createItem(

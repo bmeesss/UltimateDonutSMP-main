@@ -27,7 +27,9 @@ final class OrdersMenuSupport {
 
     static Material material(UltimateDonutSmp plugin, String path, Material fallback) {
         String raw = plugin.getConfigManager().getOrders().getString(path, fallback.name());
-        Material material = raw == null ? null : Material.matchMaterial(raw);
+        // Central resolution so flattened 1.13+ names in orders.yml still find their 1.12.2
+        // material; the caller's explicit fallback covers anything unresolvable.
+        Material material = raw == null ? null : ItemUtils.parseMaterial(raw);
         return material == null ? fallback : material;
     }
 

@@ -86,7 +86,7 @@ class ShopManagerTest {
         ShopManager.ShopItem managedSpawner = new ShopManager.ShopItem(
                 "PIG-SPAWNER-ITEM",
                 "SHARD-MENU",
-                Material.SPAWNER,
+                Material.MOB_SPAWNER,
                 "Pig Spawner",
                 java.util.Collections.emptyList(),
                 9,
@@ -100,7 +100,10 @@ class ShopManagerTest {
                 1,
                 false,
                 null,
-                -1L
+                -1L,
+                java.util.Collections.emptyList(),
+                null,
+                null
         );
 
         assertFalse(ShopManager.shouldDeliverConfiguredItem(managedSpawner));

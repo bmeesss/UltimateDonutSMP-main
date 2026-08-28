@@ -973,6 +973,10 @@ public class OrdersManager {
         // text carries the 1.12.2 material name, so "oak_door" would otherwise only ever match
         // "darkoakdoor" by substring. Resolving the query once fixes that centrally.
         Material searchMaterial = resolveSearchMaterial(search);
+        // When the query resolves to exactly one material, that material equality is the whole
+        // match: keeping substring ORs alongside it would drag in unrelated entries whose text
+        // merely contains the query ("oak_door" -> "darkoakdoor", "stone" -> "redstone").
+        boolean materialEqualityOnly = searchMaterial != null;
         Comparator<OrderCatalogEntry> comparator = Comparator
                 .comparing(entry -> entry.displayName().toLowerCase(Locale.ROOT));
         if (alphaSort == OrderAlphaSort.Z_A) {
@@ -980,9 +984,10 @@ public class OrdersManager {
         }
         return getCatalogEntries(categoryKey).stream()
                 .filter(entry -> normalizedSearch.trim().isEmpty()
-                        || (searchMaterial != null && entry.material() == searchMaterial)
-                        || normalizeSearchText(entry.searchText()).contains(normalizedSearch)
-                        || normalizeSearchText(entry.displayName()).contains(normalizedSearch))
+                        || (materialEqualityOnly && entry.material() == searchMaterial)
+                        || (!materialEqualityOnly
+                        && (normalizeSearchText(entry.searchText()).contains(normalizedSearch)
+                        || normalizeSearchText(entry.displayName()).contains(normalizedSearch))))
                 .sorted(comparator)
                 .collect(java.util.stream.Collectors.toList());
     }
@@ -1155,23 +1160,6 @@ public class OrdersManager {
         });
     }
 
-    public boolean hasPendingInput(UUID uuid) {
-        if (pendingSearchInputs.containsKey(uuid)) {
-            return true;
-        }
-
-        if (pendingEdits.containsKey(uuid)) {
-            return true;
-        }
-
-        Player player = org.bukkit.Bukkit.getPlayer(uuid);
-        if (player != null && player.hasMetadata(SignInputUtil.META_SIGN_INPUT)) {
-            return true;
-        }
-
-        return false;
-    }
-
     public PendingOrderCreationSnapshot getPendingCreation(UUID uuid) {
         NewOrderSession pending = pendingCreations.get(uuid);
         if (pending == null || pending.getChosenItem() == null) {
@@ -1207,24 +1195,6 @@ public class OrdersManager {
 
     public void openNewOrderMenu(Player player) {
         new OrdersNewMenu(plugin).open(player);
-    }
-
-    public void handlePendingInput(Player player, String rawInput) {
-        if (player == null) {
-            return;
-        }
-
-        String input = rawInput == null ? "" : rawInput.trim();
-        if (pendingSearchInputs.containsKey(player.getUniqueId())) {
-            handleSearchInput(player, input);
-            return;
-        }
-
-        PendingOrderEdit pendingEdit = pendingEdits.get(player.getUniqueId());
-        if (pendingEdit != null) {
-            handleEditInput(player, pendingEdit, input);
-            return;
-        }
     }
 
     public synchronized CreateOrderResult createOrder(Player player) {
@@ -1676,27 +1646,6 @@ public class OrdersManager {
             new OrdersSearchItemMenu(plugin, input, 1, pendingSearch.editOrderId(), pendingSearch.navigation()).open(player);
         } else {
             new OrdersSearchItemMenu(plugin, input, 1).open(player);
-        }
-    }
-
-    private void handleEditInput(Player player, PendingOrderEdit pendingEdit, String input) {
-        if (input.equalsIgnoreCase("cancel")) {
-            pendingEdits.remove(player.getUniqueId());
-            player.sendMessage(ColorUtils.toComponent(plugin.getConfigManager().getMessageOrDefault(
-                    "ORDERS.EDIT_CANCELLED",
-                    "&7Order edit cancelled."
-            )));
-            openEditOrderMenu(player, pendingEdit.orderId(), pendingEdit.navigation());
-            return;
-        }
-
-        if (pendingEdit.field() == EditField.QUANTITY) {
-            handleEditQuantityInput(player, pendingEdit, input);
-            return;
-        }
-
-        if (pendingEdit.field() == EditField.PRICE) {
-            handleEditPriceInput(player, pendingEdit, input);
         }
     }
 

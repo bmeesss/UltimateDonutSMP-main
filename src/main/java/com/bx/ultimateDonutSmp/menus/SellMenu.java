@@ -63,7 +63,7 @@ public class SellMenu extends BaseMenu {
     private void buildConfirmSellGUI(Player player) {
         FileConfiguration menus = plugin.getConfigManager().getMenus();
         
-        Material material = ItemUtils.parseMaterial(menus.getString("SELL-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE"));
+        Material material = ItemUtils.parseMaterial(menus.getString("SELL-MENU.CONFIRM-BUTTON.MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
         String title = menus.getString("SELL-MENU.CONFIRM-BUTTON.TITLE", "&a&lConfirm sell");
         List<String> lore = menus.getStringList("SELL-MENU.CONFIRM-BUTTON.LORE");
         if (lore.isEmpty()) {
@@ -198,7 +198,7 @@ public class SellMenu extends BaseMenu {
             ShopManager.SellProgressInfo info = plugin.getShopManager().getSellProgressInfo(progress, category);
             String path = "SELL-MENU." + category.getSellMenuButtonKey();
 
-            Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "STONE"));
+            Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "STONE"), Material.STONE);
             String title = menus.getString(path + ".TITLE", "&f" + category.name());
             List<String> lore = applyProgressPlaceholders(menus.getStringList(path + ".LORE"), info);
 

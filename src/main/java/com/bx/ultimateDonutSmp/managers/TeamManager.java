@@ -298,6 +298,7 @@ public class TeamManager {
     public void promptTeamSearch(Player player, int currentPage, TeamMenu.SortMode sortMode) {
         if (player == null) return;
 
+        com.bx.ultimateDonutSmp.utils.SignInputUtil.cancel(player);
         pendingSearchInputs.put(player.getUniqueId(), new PendingTeamSearch(currentPage, sortMode));
         player.closeInventory();
 
@@ -354,6 +355,16 @@ public class TeamManager {
     public String getActiveSearchQuery(UUID uuid) {
         String query = activeSearchQueries.get(uuid);
         return query == null || query.trim().isEmpty() ? null : query;
+    }
+
+    /**
+     * Drops a pending team-search prompt without consuming anything and without touching the
+     * active search query, so a newer prompt from another input feature can take over.
+     */
+    public void cancelPendingSearch(Player player) {
+        if (player != null) {
+            pendingSearchInputs.remove(player.getUniqueId());
+        }
     }
 
     public void clearSearchState(UUID uuid) {

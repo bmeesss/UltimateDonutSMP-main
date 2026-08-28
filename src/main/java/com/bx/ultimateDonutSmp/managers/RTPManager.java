@@ -208,7 +208,7 @@ public final class LocationAttempt {
     }
 }
 
-public final class CachedLocation {
+public static final class CachedLocation {
     private final Location location;
     private final long cachedAtMillis;
 
@@ -2207,7 +2207,7 @@ public final class RTPQueueEntry {
             loaded.add(new RTPDestination(
                     key,
                     button.getInt("SLOT", -1),
-                    ItemUtils.parseMaterial(button.getString("MATERIAL", "GRASS_BLOCK")),
+                    ItemUtils.parseMaterial(button.getString("MATERIAL", "GRASS_BLOCK"), Material.GRASS),
                     button.getString("DISPLAY-NAME", key),
                     button.getStringList("LORE"),
                     normalizeConfiguredWorldName(worldName),

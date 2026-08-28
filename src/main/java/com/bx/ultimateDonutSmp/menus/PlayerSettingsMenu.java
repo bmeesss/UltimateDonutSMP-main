@@ -377,7 +377,7 @@ public final class PlayerSettingsMenu extends BaseMenu {
         for (String line : section.getStringList("LORE")) {
             lore.add(ColorUtils.colorize(line.replace("{status}", state.status()), player));
         }
-        Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"));
+        Material material = ItemUtils.parseMaterial(section.getString("MATERIAL", "STONE"), Material.STONE);
         String displayName = ColorUtils.colorize(section.getString("DISPLAY-NAME", "&fSetting"), player);
         ItemStack item = ItemUtils.createItem(
                 material,

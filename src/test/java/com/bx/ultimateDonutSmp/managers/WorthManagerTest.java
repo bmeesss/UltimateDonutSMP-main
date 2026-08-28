@@ -54,7 +54,7 @@ class WorthManagerTest {
         WorthManager worthManager = new WorthManager(plugin);
 
         org.bukkit.inventory.ItemStack sword = new org.bukkit.inventory.ItemStack(org.bukkit.Material.DIAMOND_SWORD);
-        org.bukkit.enchantments.Enchantment sharpness = new TestEnchantment(org.bukkit.NamespacedKey.minecraft("sharpness"));
+        org.bukkit.enchantments.Enchantment sharpness = new TestEnchantment("sharpness");
         sword.addUnsafeEnchantment(sharpness, 5);
 
 
@@ -72,8 +72,10 @@ class WorthManagerTest {
         UltimateDonutSmp plugin = createMockPlugin(worthConfig);
         WorthManager worthManager = new WorthManager(plugin);
 
-        assertEquals(org.bukkit.Material.ACACIA_PRESSURE_PLATE, worthManager.findMaterial("acacia_pressure_plate"));
-        assertEquals(org.bukkit.Material.ACACIA_PRESSURE_PLATE, worthManager.findMaterial("Acacia Pressure Plate"));
+        // 1.12.2-correct expectations: the flattened "acacia_pressure_plate" spelling resolves
+        // through LegacyMaterialSupport to the shared wooden pressure plate of that era.
+        assertEquals(org.bukkit.Material.WOOD_PLATE, worthManager.findMaterial("acacia_pressure_plate"));
+        assertEquals(org.bukkit.Material.WOOD_PLATE, worthManager.findMaterial("Acacia Pressure Plate"));
         assertEquals(org.bukkit.Material.DRAGON_EGG, worthManager.findMaterial("dragon_egg"));
         assertEquals(org.bukkit.Material.DRAGON_EGG, worthManager.findMaterial("Dragon Egg"));
     }
@@ -126,11 +128,9 @@ class WorthManagerTest {
 
         assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.ENCHANTING));
         assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.ANVIL));
-        assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.GRINDSTONE));
-        assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.SMITHING));
-        assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.STONECUTTER));
-        assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.LOOM));
-        assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.CARTOGRAPHY));
+        // GRINDSTONE, SMITHING, STONECUTTER, LOOM and CARTOGRAPHY are matched by name in
+        // WorthManager.holdsClientState for newer servers; those enum constants do not exist on
+        // 1.12.2, so only the screens that exist here can be asserted.
         assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.MERCHANT));
         assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.BEACON));
         assertTrue(WorthManager.holdsClientState(org.bukkit.event.inventory.InventoryType.WORKBENCH));
@@ -164,10 +164,29 @@ class WorthManagerTest {
                 new Class<?>[]{org.bukkit.inventory.Inventory.class},
                 (proxy, method, args) -> method.getName().equals("getType") ? type : defaultValue(method));
 
-        org.bukkit.inventory.InventoryView view = (org.bukkit.inventory.InventoryView) java.lang.reflect.Proxy.newProxyInstance(
-                org.bukkit.inventory.InventoryView.class.getClassLoader(),
-                new Class<?>[]{org.bukkit.inventory.InventoryView.class},
-                (proxy, method, args) -> method.getName().equals("getTopInventory") ? topInventory : defaultValue(method));
+        // InventoryView is an abstract class on 1.12.2 (only an interface from 1.21 on),
+        // so a small concrete subclass stands in for the proxy used elsewhere.
+        org.bukkit.inventory.InventoryView view = new org.bukkit.inventory.InventoryView() {
+            @Override
+            public org.bukkit.inventory.Inventory getTopInventory() {
+                return topInventory;
+            }
+
+            @Override
+            public org.bukkit.inventory.Inventory getBottomInventory() {
+                return topInventory;
+            }
+
+            @Override
+            public org.bukkit.entity.HumanEntity getPlayer() {
+                return null;
+            }
+
+            @Override
+            public org.bukkit.event.inventory.InventoryType getType() {
+                return type;
+            }
+        };
 
         return (org.bukkit.entity.Player) java.lang.reflect.Proxy.newProxyInstance(
                 org.bukkit.entity.Player.class.getClassLoader(),
@@ -216,7 +235,7 @@ class WorthManagerTest {
                                         (rProxy, rMethod, rArgs) -> {
                                             if (rMethod.getName().equals("get")) {
                                                 org.bukkit.NamespacedKey key = (org.bukkit.NamespacedKey) rArgs[0];
-                                                return new TestEnchantment(key);
+                                                return new TestEnchantment(key.getKey());
                                             }
                                             return null;
                                         }
@@ -235,7 +254,7 @@ class WorthManagerTest {
                             java.util.Map<org.bukkit.enchantments.Enchantment, Integer> enchantsMap = new java.util.HashMap<>();
                             org.bukkit.inventory.meta.ItemMeta mockMeta = (org.bukkit.inventory.meta.ItemMeta) java.lang.reflect.Proxy.newProxyInstance(
                                     org.bukkit.inventory.meta.ItemMeta.class.getClassLoader(),
-                                    new Class<?>[]{org.bukkit.inventory.meta.ItemMeta.class, org.bukkit.inventory.meta.Damageable.class},
+                                    new Class<?>[]{org.bukkit.inventory.meta.ItemMeta.class},
                                     (mProxy, mMethod, mArgs) -> {
                                         if (mMethod.getName().equals("addEnchant") || mMethod.getName().equals("addStoredEnchant")) {
                                             enchantsMap.put((org.bukkit.enchantments.Enchantment) mArgs[0], (Integer) mArgs[1]);
@@ -341,20 +360,16 @@ class WorthManagerTest {
     }
 
     private static class TestEnchantment extends org.bukkit.enchantments.Enchantment {
-        private final org.bukkit.NamespacedKey key;
+        private final String name;
 
-        public TestEnchantment(org.bukkit.NamespacedKey key) {
-            this.key = key;
-        }
-
-        @Override
-        public org.bukkit.NamespacedKey getKey() {
-            return key;
+        public TestEnchantment(String name) {
+            super(name.hashCode());
+            this.name = name;
         }
 
         @Override
         public String getName() {
-            return key.getKey().toUpperCase(java.util.Locale.US);
+            return name.toUpperCase(java.util.Locale.US);
         }
 
         @Override
@@ -390,26 +405,6 @@ class WorthManagerTest {
         @Override
         public boolean canEnchantItem(org.bukkit.inventory.ItemStack item) {
             return true;
-        }
-
-        @Override
-        public String getTranslationKey() {
-            return key.getKey();
-        }
-
-        @Override
-        public boolean isRegistered() {
-            return false;
-        }
-
-        @Override
-        public org.bukkit.NamespacedKey getKeyOrNull() {
-            return key;
-        }
-
-        @Override
-        public org.bukkit.NamespacedKey getKeyOrThrow() {
-            return key;
         }
     }
 }

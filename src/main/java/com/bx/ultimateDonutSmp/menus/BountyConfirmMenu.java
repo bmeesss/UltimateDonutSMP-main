@@ -87,7 +87,7 @@ public class BountyConfirmMenu extends BaseMenu {
             String path,
             String... placeholders
     ) {
-        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "STONE"));
+        Material material = ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "STONE"), Material.STONE);
         String name = applyPlaceholders(menus.getString(path + ".NAME", ""), placeholders);
         List<String> lore = menus.getStringList(path + ".LORE").stream()
                 .map(line -> applyPlaceholders(line, placeholders))

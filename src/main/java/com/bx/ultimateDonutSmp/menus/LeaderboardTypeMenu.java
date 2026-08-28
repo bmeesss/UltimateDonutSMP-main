@@ -137,7 +137,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
         placeholders.put("value", value);
         placeholders.put("position", String.valueOf(entry.position()));
 
-        Material material = ItemUtils.parseMaterial(valueOrDefault(buttonSection, "MATERIAL", "SKULL_ITEM"));
+        Material material = ItemUtils.parseMaterial(valueOrDefault(buttonSection, "MATERIAL", "SKULL_ITEM"), Material.SKULL_ITEM);
         ItemStack item = ItemUtils.createItem(
                 material,
                 applyPlaceholders(valueOrDefault(buttonSection, "DISPLAY-NAME", "&b{player}"), placeholders),
@@ -199,7 +199,7 @@ public class LeaderboardTypeMenu extends BaseMenu {
                     .parseType(section.getString("TYPE"))
                     .orElse(null);
             if (configuredType == type) {
-                return ItemUtils.parseMaterial(section.getString("MATERIAL", "NETHER_STAR"));
+                return ItemUtils.parseMaterial(section.getString("MATERIAL", "NETHER_STAR"), Material.NETHER_STAR);
             }
         }
         return Material.NETHER_STAR;

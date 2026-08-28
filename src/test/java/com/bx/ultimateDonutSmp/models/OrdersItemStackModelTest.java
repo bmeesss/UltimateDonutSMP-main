@@ -23,7 +23,7 @@ class OrdersItemStackModelTest {
 
         source.setAmount(1);
         ItemStack preview = entry.createPreviewItem();
-        ItemStack delivered = draft.acceptedItems().getFirst();
+        ItemStack delivered = draft.acceptedItems().get(0);
 
         assertEquals(1, preview.getAmount());
         assertEquals(32, delivered.getAmount());

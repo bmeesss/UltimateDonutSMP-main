@@ -445,10 +445,29 @@ public class ItemUtils {
         return createPlaceholder(material);
     }
 
+    /**
+     * Resolves a configured material name to its 1.12.2 material.
+     *
+     * <p>Returns {@code null} when the name cannot be resolved — a failed lookup stays failed
+     * and must never degrade to {@code Material.STONE}: a kit or reward item that silently turns
+     * into stone is a gameplay-visible bug, not a fallback. Callers that merely need an icon and
+     * must render something should use {@link #parseMaterial(String, Material)} with an explicit
+     * fallback instead.</p>
+     */
     public static Material parseMaterial(String name) {
-        if (name == null || name.isEmpty()) return Material.STONE;
+        if (name == null || name.isEmpty()) return null;
         LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(name);
-        return resolved == null ? Material.STONE : resolved.material();
+        return resolved == null ? null : resolved.material();
+    }
+
+    /**
+     * Same resolution as {@link #parseMaterial(String)}, but with an explicit, caller-chosen
+     * fallback so GUI code can always render an item. The fallback is visible at the call site —
+     * unlike a hidden STONE substitution it cannot surprise anyone.
+     */
+    public static Material parseMaterial(String name, Material fallback) {
+        Material material = parseMaterial(name);
+        return material != null ? material : fallback;
     }
 
     public static ItemStack addEnchantments(ItemStack item, List<String> enchantmentStrings) {

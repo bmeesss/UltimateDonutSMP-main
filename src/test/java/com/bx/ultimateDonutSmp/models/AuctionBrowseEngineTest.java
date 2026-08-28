@@ -20,7 +20,7 @@ class AuctionBrowseEngineTest {
     @Test
     void sortsFiltersSearchesAndPaginatesActiveListings() {
         AuctionListing sword = listing(1, Material.DIAMOND_SWORD, 300D, NOW - 100, NOW + 5_000);
-        AuctionListing block = listing(2, Material.GRASS_BLOCK, 100D, NOW - 300, NOW + 3_000);
+        AuctionListing block = listing(2, Material.GRASS, 100D, NOW - 300, NOW + 3_000);
         AuctionListing food = listing(3, Material.GOLDEN_CARROT, 200D, NOW - 200, NOW + 4_000);
         AuctionListing expired = listing(4, Material.DIAMOND_PICKAXE, 50D, NOW - 400, NOW - 1);
         List<AuctionListing> source = new java.util.ArrayList<>(java.util.Arrays.asList(sword,  block,  food,  expired));

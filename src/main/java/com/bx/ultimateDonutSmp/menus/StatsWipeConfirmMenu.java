@@ -31,8 +31,7 @@ public class StatsWipeConfirmMenu extends BaseMenu {
         clear();
 
         Material placeholderMaterial = ItemUtils.parseMaterial(
-                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE")
-        );
+                menus().getString(MENU_PATH + ".PLACEHOLDER-MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
         if (menus().getBoolean(MENU_PATH + ".PLACEHOLDER", true)) {
             fill(placeholderMaterial);
         }
@@ -42,21 +41,21 @@ public class StatsWipeConfirmMenu extends BaseMenu {
 
         String infoPath = MENU_PATH + ".buttons.target";
         set(menus().getInt(infoPath + ".SLOT", 13), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(infoPath + ".MATERIAL", "PAPER")),
+                ItemUtils.parseMaterial(menus().getString(infoPath + ".MATERIAL", "PAPER"), Material.PAPER),
                 replace(menus().getString(infoPath + ".DISPLAY-NAME", "&cConfirm {target}"), placeholders),
                 replace(menus().getStringList(infoPath + ".LORE"), placeholders)
         ));
 
         String cancelPath = MENU_PATH + ".buttons.cancel";
         set(menus().getInt(cancelPath + ".SLOT", 11), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(cancelPath + ".MATERIAL", "STAINED_GLASS_PANE")),
+                ItemUtils.parseMaterial(menus().getString(cancelPath + ".MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                 replace(menus().getString(cancelPath + ".DISPLAY-NAME", "&cCancel"), placeholders),
                 replace(menus().getStringList(cancelPath + ".LORE"), placeholders)
         ));
 
         String confirmPath = MENU_PATH + ".buttons.confirm";
         set(menus().getInt(confirmPath + ".SLOT", 15), ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus().getString(confirmPath + ".MATERIAL", "STAINED_GLASS_PANE")),
+                ItemUtils.parseMaterial(menus().getString(confirmPath + ".MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                 replace(menus().getString(confirmPath + ".DISPLAY-NAME", "&aConfirm"), placeholders),
                 replace(menus().getStringList(confirmPath + ".LORE"), placeholders)
         ));

@@ -7,6 +7,7 @@ import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import com.bx.ultimateDonutSmp.menus.HomeMenu;
 import com.bx.ultimateDonutSmp.models.Home;
 import com.bx.ultimateDonutSmp.utils.ColorUtils;
+import com.bx.ultimateDonutSmp.utils.SignInputUtil;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -187,6 +188,7 @@ public class HomeManager {
     }
 
     public void promptCreateHome(Player player, Location location, String suggestedName) {
+        SignInputUtil.cancel(player);
         pendingInputs.put(player.getUniqueId(), PendingHomeInput.create(location, suggestedName));
         player.closeInventory();
         player.sendMessage(ColorUtils.toComponent(
@@ -194,6 +196,7 @@ public class HomeManager {
     }
 
     public void promptRenameHome(Player player, String oldName) {
+        SignInputUtil.cancel(player);
         pendingInputs.put(player.getUniqueId(), PendingHomeInput.rename(oldName));
         player.closeInventory();
         player.sendMessage(ColorUtils.toComponent(
@@ -202,6 +205,16 @@ public class HomeManager {
 
     public boolean hasPendingInput(UUID uuid) {
         return pendingInputs.containsKey(uuid);
+    }
+
+    /**
+     * Drops a pending home-name prompt without consuming anything, so a newer prompt from another
+     * input feature can take over. Silent on purpose: the newer prompt is what the player sees.
+     */
+    public void cancelPendingInput(Player player) {
+        if (player != null) {
+            pendingInputs.remove(player.getUniqueId());
+        }
     }
 
     public void handlePendingInput(Player player, String rawInput) {

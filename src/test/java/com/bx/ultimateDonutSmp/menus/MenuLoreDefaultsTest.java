@@ -104,8 +104,7 @@ class MenuLoreDefaultsTest {
 
     private static YamlConfiguration load(String name) throws Exception {
         YamlConfiguration configuration = new YamlConfiguration();
-        configuration.options().parseComments(true);
-        configuration.load(Path.of("src/main/resources", name).toFile());
+                configuration.load(java.nio.file.Paths.get("src/main/resources", name).toFile());
         return configuration;
     }
 }

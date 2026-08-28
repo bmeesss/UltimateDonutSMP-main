@@ -151,7 +151,7 @@ public abstract class TeleportAreaMenu extends BaseMenu {
         randomEnabled = true;
 
         set(slot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "COMPASS")),
+                ItemUtils.parseMaterial(menus.getString(path + ".MATERIAL", "COMPASS"), Material.COMPASS),
                 replaceGlobalPlaceholders(menus.getString(path + ".DISPLAY-NAME", "&fRandom"), areaCount),
                 replaceGlobalPlaceholders(menus.getStringList(path + ".LORE"), areaCount)
         ));

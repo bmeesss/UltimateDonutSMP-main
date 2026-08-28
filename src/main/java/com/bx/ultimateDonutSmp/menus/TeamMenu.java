@@ -370,7 +370,7 @@ public class TeamMenu extends BaseMenu {
     }
 
     private Material material(String path, Material fallback) {
-        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()));
+        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()), fallback);
     }
 
     private String message(String suffix, String fallback) {

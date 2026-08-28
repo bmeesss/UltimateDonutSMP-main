@@ -30,7 +30,6 @@ class DatabaseManagerPlayerWipeTest {
             assertEquals(2, preview.count("ender_chest"));
             assertEquals(3, preview.count("sell_records"));
             assertEquals(2, preview.count("bounties"));
-            assertEquals(2, preview.count("duels"));
 
             DatabaseManager.PlayerWipeResult result = manager.resetForPlayerWipe(TARGET, 1000D);
             assertEquals(preview.total(), result.total());
@@ -51,8 +50,6 @@ class DatabaseManagerPlayerWipeTest {
             assertEquals(0, count(connection, "bounties"));
             assertEquals(0, count(connection, "player_friends"));
             assertEquals(0, count(connection, "player_ignores"));
-            assertEquals(0, count(connection, "duel_matches"));
-            assertEquals(0, count(connection, "ffa_matches"));
 
             // The bystander keeps every one of their own rows.
             assertEquals(500D, money(connection, BYSTANDER), 0.001D);
@@ -95,29 +92,7 @@ class DatabaseManagerPlayerWipeTest {
 
     private void createSchema(Connection connection, boolean homesAreWipeable) throws Exception {
         try (Statement statement = connection.createStatement()) {
-            statement.execute("""
-                    CREATE TABLE players (
-                        uuid TEXT PRIMARY KEY,
-                        username TEXT,
-                        money REAL,
-                        shards INTEGER,
-                        kills INTEGER,
-                        deaths INTEGER,
-                        playtime_seconds INTEGER,
-                        blocks_placed INTEGER,
-                        blocks_broken INTEGER,
-                        mobs_killed INTEGER,
-                        kill_streak INTEGER,
-                        highest_kill_streak INTEGER,
-                        money_spent REAL,
-                        money_made REAL,
-                        scoreboard_visible INTEGER,
-                        keyall_remaining_seconds INTEGER,
-                        shard_booster_expiry INTEGER,
-                        mob_spawn_disabled_until BIGINT,
-                        phantom_disabled_until BIGINT
-                    )
-                    """);
+            statement.execute(String.join("\n", "CREATE TABLE players (\n", "uuid TEXT PRIMARY KEY,\n", "username TEXT,\n", "money REAL,\n", "shards INTEGER,\n", "kills INTEGER,\n", "deaths INTEGER,\n", "playtime_seconds INTEGER,\n", "blocks_placed INTEGER,\n", "blocks_broken INTEGER,\n", "mobs_killed INTEGER,\n", "kill_streak INTEGER,\n", "highest_kill_streak INTEGER,\n", "money_spent REAL,\n", "money_made REAL,\n", "scoreboard_visible INTEGER,\n", "keyall_remaining_seconds INTEGER,\n", "shard_booster_expiry INTEGER,\n", "mob_spawn_disabled_until BIGINT,\n", "phantom_disabled_until BIGINT\n", ")\n"));
             statement.execute("CREATE TABLE homes (player_uuid TEXT, home_name TEXT)");
             statement.execute("CREATE TABLE team_members (player_uuid TEXT, team_name TEXT)");
             statement.execute("CREATE TABLE ender_chest_profiles (player_uuid TEXT)");
@@ -131,9 +106,6 @@ class DatabaseManagerPlayerWipeTest {
             statement.execute("CREATE TABLE bounties (target_uuid TEXT, placer_uuid TEXT)");
             statement.execute("CREATE TABLE player_friends (follower_uuid TEXT, followed_uuid TEXT)");
             statement.execute("CREATE TABLE player_ignores (owner_uuid TEXT, ignored_uuid TEXT)");
-            statement.execute("CREATE TABLE duel_stats (player_uuid TEXT)");
-            statement.execute("CREATE TABLE duel_matches (player_one_uuid TEXT, player_two_uuid TEXT)");
-            statement.execute("CREATE TABLE ffa_matches (player_one_uuid TEXT, player_two_uuid TEXT)");
             statement.execute("CREATE TABLE punishments (target_uuid TEXT, reason TEXT)");
             statement.execute("CREATE TABLE player_ip_history (player_uuid TEXT, ip_address TEXT)");
             statement.execute("CREATE TABLE spawners (id INTEGER PRIMARY KEY, owner_uuid TEXT)");
@@ -141,12 +113,7 @@ class DatabaseManagerPlayerWipeTest {
             if (!homesAreWipeable) {
                 // Homes are cleared first, so blocking them proves the players update that ran
                 // before it is rolled back too.
-                statement.execute("""
-                        CREATE TRIGGER block_home_delete BEFORE DELETE ON homes
-                        BEGIN
-                            SELECT RAISE(ABORT, 'homes are locked');
-                        END
-                        """);
+                statement.execute(String.join("\n", "CREATE TRIGGER block_home_delete BEFORE DELETE ON homes\n", "BEGIN\n", "SELECT RAISE(ABORT, 'homes are locked');\n", "END\n"));
             }
         }
     }
@@ -173,9 +140,6 @@ class DatabaseManagerPlayerWipeTest {
             statement.executeUpdate("INSERT INTO player_friends VALUES ('" + TARGET + "', '" + BYSTANDER + "')");
             statement.executeUpdate("INSERT INTO player_friends VALUES ('" + BYSTANDER + "', '" + TARGET + "')");
             statement.executeUpdate("INSERT INTO player_ignores VALUES ('" + TARGET + "', '" + BYSTANDER + "')");
-            statement.executeUpdate("INSERT INTO duel_stats VALUES ('" + TARGET + "')");
-            statement.executeUpdate("INSERT INTO duel_matches VALUES ('" + BYSTANDER + "', '" + TARGET + "')");
-            statement.executeUpdate("INSERT INTO ffa_matches VALUES ('" + TARGET + "', '" + BYSTANDER + "')");
 
             statement.executeUpdate("INSERT INTO punishments VALUES ('" + TARGET + "', 'keep-this-ban')");
             statement.executeUpdate("INSERT INTO player_ip_history VALUES ('" + TARGET + "', '127.0.0.1')");

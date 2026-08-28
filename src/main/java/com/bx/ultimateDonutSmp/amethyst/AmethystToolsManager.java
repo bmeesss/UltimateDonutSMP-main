@@ -66,6 +66,13 @@ public class AmethystToolsManager {
         }
 
         Material material = ItemUtils.parseMaterial(cfg.getString("MATERIAL", "IRON_PICKAXE"));
+        if (material == null) {
+            // A MATERIAL the compatibility layer cannot resolve means the config is broken; a
+            // stone pickaxe with amethyst lore would be a worse failure than no tool at all.
+            plugin.getLogger().warning("Amethyst tool " + type.name() + " has an unresolvable MATERIAL '"
+                    + cfg.getString("MATERIAL") + "'; no tool item was created.");
+            return null;
+        }
         long duration = durationSeconds > 0 ? durationSeconds : cfg.getLong("DURATION", 86400L);
         long expiryEpoch = (System.currentTimeMillis() / 1000L) + duration;
 
@@ -149,7 +156,9 @@ public class AmethystToolsManager {
         }
 
         Material expected = ItemUtils.parseMaterial(cfg.getString("MATERIAL", item.getType().name()));
-        return item.getType() == expected;
+        // An unresolvable configured MATERIAL can never match a real item, so it must count as
+        // a mismatch rather than silently comparing against STONE.
+        return expected != null && item.getType() == expected;
     }
 
     public AmethystToolType getToolType(ItemStack item) {

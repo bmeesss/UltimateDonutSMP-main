@@ -188,7 +188,7 @@ ORDERS:
       FAILED: 'Lieferung fehlgeschlagen: {reason}'
     ORDER:
       TITLE: 'Bestellung #{id}'
-      BUTTON: "#{id} {item} X{remaining}\n{price} Pro stück - {owner}"
+      BUTTON: "#{id} {item} X{remaining}"
     CANCEL:
       TITLE: Bestellung stornieren
       CONTENT: "Bestellung #{id} stornieren? das restguthaben wird rückerstattet."
@@ -2964,8 +2964,8 @@ BUILTIN:
   6c0bdec14d249552d44b: Erstelle <crate> &7- create a crate
   e9cad36f99dc562a7f9f: "Löschen <crate> &7- delete a crate"
   d17732f9b82f2fd3b583: Hat &a
-  84fff984ba917d96f1b2: Hat &atpa-auto-akzeptanz&7 aktiviert. ihre 
-  c7ebbfbf5e8b3f862aef: Hat &atpahere automatische annahme&7 aktiviert. ihre 
+  84fff984ba917d96f1b2: 'Hat &atpa-auto-akzeptanz&7 aktiviert. Ihre &b/tpa&7-Anfrage wird verarbeitet.'
+  c7ebbfbf5e8b3f862aef: 'Hat &atpahere automatische annahme&7 aktiviert. Ihre &b/tpahere&7-Anfrage wird verarbeitet.'
   6f85bea4f47bba24cba1: Liste &7- list active/configured stashes
   ce95f5f513d28c2b721d: '&7- Reload spawn-stash.yml neu laden'
   436821e7b47185f696d0: Entfernen <id|nearest|all> &7- rollback stashes
@@ -2991,7 +2991,7 @@ BUILTIN:
   f611e51641ed6ebf3061: Open <crate> &7- open a crate directly
   e969f79d7e1f42d238e2: Type <crate> <choose_one|gacha> &7- set crate type
   fef567638f22cb64901b: Take <player> <crate> <amount> &7- remove keys
-  115620d253b205d50f22: With &f/sell &7and trade better gear through 
+  115620d253b205d50f22: 'With &f/sell &7and trade better gear through &f/auctionhouse&7.'
   76a96b56c02df387cfec: ${price}X &lshards
   7ffe6140f6316a2a89ae: '&#00A4FCRtp guide'
   925060ac7d172cff446c: '&#00A4FCRules'
@@ -3042,7 +3042,6 @@ BUILTIN:
   5bb503360e7210800b8a: '&6Inventory of &f'
   e806d52703527d49b1e9: '&6Deaths: &f%deaths%'
   aa6b8af173757ad9b9b8: '&6Performance: %performance%'
-  e1dda02e3a02571bbd20: '&6Info &7for &f'
   216103560b1af1d60e89: '&7 - &f'
   1007024b5a8dbf864980: '&7 Aktiviert. ihr &b'
   e1adbd6ecc6847700c2e: '&7 Anfrage von &f'
@@ -3520,7 +3519,6 @@ BUILTIN:
   2c4476331f005f9d2489: '&cNo results'
   48439a416eacbc3033c0: '&cNo ready queue arenas are configured yet.'
   9f9dda01f053e9452eef: '&cNo ready arena'
-  297b8c638b5bc3dbdb27: '&c.'
   de381b7cc581d8325b89: '&cNo reward was found in slot &f'
   8c4c1f38b55e7b787900: '&cNo rtp destinations'
   255acbf22b25fa7d997b: '&cNo billford trade configured'
@@ -3554,7 +3552,6 @@ BUILTIN:
   e4828dcea34ad987e1a4: '&cRules command is currently disabled.'
   b6feccaa2aa36324f553: '&cYou no longer have a key for'
   37e703765813433ed471: '&cYou are not part of the team.'
-  09c8165bfc5bfe09848e: '&c. Session.'
   c4b15bd483c2bbed5da7: '&cYou are already in the queue.'
   8323a38cc0758213867f: '&cYou are afk. move to resume shard gain'
   d063a95395d51eae7c2f: '&cYou can only stack the same spawner type onto this block.'
@@ -3567,8 +3564,6 @@ BUILTIN:
   08f1e754cb5edb7176c9: '&cYou cannot rtp in this world.'
   3ac4113a9c6dda85021c: '&cYou cannot create another home right now.'
   ca9a4d85f94dc2591269: '&cYou cannot edit the team home.'
-  c10505da9c5e13f51c11: '&c. Pending.'
-  b0ae6c0a417c2f3aa6bf: '&c.'
   3b1376795333aa9fe711: '&c.'
   4eb58795897d3708685a: '&cYou cannot visit the team home.'
   d445630ea2c37114f8d6: '&cYou do not have any'
@@ -3687,13 +3682,10 @@ BUILTIN:
   804309b62cb16a1bfc41: '&c.'
   f0e82a76eb13bd0e0ce9: '&cCould not set pos 1 for that arena.'
   cc5de9e94bcdd122b4e7: '&cCould not set pos 2 for that arena.'
-  1c5ed4bebd0fe0c53c84: '&c.'
   8008949ca119f6ba9e3c: '&cCould not claim that loot right now.'
   cdcea1a5b2c84b6a2c71: '&cCould not delete this'
   7b20b7d73252addc42c7: '&cCould not update queue status for that arena.'
   546002c68bad63d23488: '&cCould not update that arena display name.'
-  8b2f242c901a64635c07: '&c.'
-  07f9fffbea32e93f030a: '&c. Name.'
   5d041d38c59c3a029ac1: '&c.'
   d6801acaa15cce77b172: '&cCould not find a safe location after %attempts% attempts.'
   d8f4458c56c1cf44d0fe: '&cCuboid not found: &f'
@@ -3757,11 +3749,6 @@ BUILTIN:
   330cfaea8da18efb3c5b: '&cThis crate chest is bound to an invalid crate.'
   9da2819f2b5df11a9d78: '&cThis destination is currently disabled.'
   9a11f70a86cbd3e90b69: '&cThis menu button is missing a command.'
-  4766dd0bb0ab1337d43d: '&c. Combat spot.'
-  ab46792527d8f184ff4b: '&c. Spots and has been disabled.'
-  97d86ab13cacd5da9b94: '&c. Spots.'
-  b2d79b995f7daa2dc55b: '&cThis norrectly and has been disabled.'
-  5f7e22aad3f683eb77af: '&c. Spot and has been disabled.'
   4bc6aab85a0be01e3e83: '&cThat is not a managed spawner item.'
   187b736b8711efe4881e: '&cThat is not a managed spawner.'
   a74fab976402ec041c83: '&cThat reward is no longer valid.'
@@ -3880,7 +3867,6 @@ BUILTIN:
   546af6ae8a5d82937b13: '&cFailed to unbind that crate chest.'
   68ef0324bc05ec38afb4: '&cFailed to update {feature}.'
   ee0bbbedf13e705ad17f: '&cFalse'
-  4e9244002a46b6acf7a5: '&cIs currently disabled.'
   aed96afb3e552f728e76: '&d'
   60f0e2c9546b4fd15360: '&d%player% &7Is now in &e%mode% mode'
   29536a93ba89a6627f39: '&d%sender% &7Restored your health'
@@ -3981,7 +3967,6 @@ BUILTIN:
   b5ac33a4a9bc9b2ad746: '&eTeleported to staff member &f'
   8ad8da9fc489590c49cf: '&eTeleported to frozen player &f'
   b2b6182618e4685d1a2a: '&eWarning'
-  c57cfe06a14842f4bdce: '&e. Gunakan &f/'
   a7f0cc7f731458387738: '&f'
   52abc957f603e8b3b316: '&f#'
   a1bd318b0b7b43f8b238: '&f%prefix%%player%&7: &f%message%'
@@ -4048,4 +4033,4 @@ BUILTIN:
   356276dd7b506bb02ec5: 'You received %amount_formatted% &7(total: %total_formatted%&7)'
   23d6007c51d950a18c48: "You received %amount_formatted% &8[überall] &7(total: %total_formatted%&7)"
   56d883250427ad469055: Mb&8/&f
-  d8b9a7616dfdf1cbb574: usessl=false&allowpublickeyretrieval=true 
+  d8b9a7616dfdf1cbb574: 'usessl=false&allowpublickeyretrieval=true&servertimezone=utc&characterencoding=utf8'

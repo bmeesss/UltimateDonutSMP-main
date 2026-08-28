@@ -208,7 +208,7 @@ public class SellStatsAdminMenu extends BaseMenu {
     }
 
     private ItemStack createTopItemByRevenueStack(DatabaseManager.TopSoldItemEntry entry, int rank, double grandTotalRevenue) {
-        Material mat = ItemUtils.parseMaterial(entry.itemName());
+        Material mat = ItemUtils.parseMaterial(entry.itemName(), Material.BARRIER);
         String displayName = "&e#" + rank + " &f" + prettifyMaterial(entry.itemName());
         double percent = grandTotalRevenue > 0 ? (entry.totalRevenue() / grandTotalRevenue) * 100.0 : 0.0;
         double avgPricePerUnit = entry.totalAmount() > 0 ? entry.totalRevenue() / entry.totalAmount() : 0.0;
@@ -232,7 +232,7 @@ public class SellStatsAdminMenu extends BaseMenu {
     }
 
     private ItemStack createTopItemByVolumeStack(DatabaseManager.TopSoldItemEntry entry, int rank, long grandTotalVolume) {
-        Material mat = ItemUtils.parseMaterial(entry.itemName());
+        Material mat = ItemUtils.parseMaterial(entry.itemName(), Material.BARRIER);
         String displayName = "&e#" + rank + " &f" + prettifyMaterial(entry.itemName());
         double percent = grandTotalVolume > 0 ? (entry.totalAmount() / (double) grandTotalVolume) * 100.0 : 0.0;
 
@@ -270,7 +270,7 @@ public class SellStatsAdminMenu extends BaseMenu {
     }
 
     private ItemStack createGlobalLogStack(DatabaseManager.GlobalSellHistoryEntry entry) {
-        Material mat = ItemUtils.parseMaterial(entry.itemName());
+        Material mat = ItemUtils.parseMaterial(entry.itemName(), Material.BARRIER);
         String displayName = "&f" + entry.playerName() + " &7sold &f" + prettifyMaterial(entry.itemName());
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String dateStr = sdf.format(new Date(entry.timestamp()));

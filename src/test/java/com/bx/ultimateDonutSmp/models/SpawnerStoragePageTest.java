@@ -20,7 +20,7 @@ class SpawnerStoragePageTest {
                 slot(44, Material.BONE, 32),
                 slot(45, Material.ARROW, 16),
                 slot(89, Material.STRING, 8),
-                slot(90, Material.GUNPOWDER, 4)
+                slot(90, Material.SULPHUR, 4)
         );
 
         assertEquals(new java.util.ArrayList<>(java.util.Arrays.asList("SLOT_0",  "SLOT_44")), keys(instance.getPageLootEntries(1, ITEMS_PER_PAGE)));
@@ -44,7 +44,7 @@ class SpawnerStoragePageTest {
         SpawnerInstance instance = spawnerWith(
                 slot(0, Material.ROTTEN_FLESH, 64),
                 slot(45, Material.ARROW, 16),
-                slot(90, Material.GUNPOWDER, 4)
+                slot(90, Material.SULPHUR, 4)
         );
 
         for (SpawnerLootEntry entry : instance.getPageLootEntries(2, ITEMS_PER_PAGE)) {
@@ -104,7 +104,7 @@ class SpawnerStoragePageTest {
                 0L,
                 0L
         );
-        instance.setStoredLootEntries(java.util.Collections.singletonList(entries));
+        instance.setStoredLootEntries(java.util.Arrays.asList(entries));
         return instance;
     }
 }

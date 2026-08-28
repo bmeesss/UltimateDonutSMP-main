@@ -32,7 +32,7 @@ public class SellAllConfirmMenu extends BaseMenu {
         set(
                 menus.getInt(cancelPath + ".SLOT", 11),
                 ItemUtils.createItem(
-                        ItemUtils.parseMaterial(menus.getString(cancelPath + ".MATERIAL", "STAINED_GLASS_PANE")),
+                        ItemUtils.parseMaterial(menus.getString(cancelPath + ".MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                         menus.getString(cancelPath + ".TITLE", "&cCancel"),
                         menus.getStringList(cancelPath + ".LORE")
                 )
@@ -42,7 +42,7 @@ public class SellAllConfirmMenu extends BaseMenu {
         set(
                 menus.getInt(infoPath + ".SLOT", 13),
                 ItemUtils.createItem(
-                        ItemUtils.parseMaterial(menus.getString(infoPath + ".MATERIAL", "CHEST")),
+                        ItemUtils.parseMaterial(menus.getString(infoPath + ".MATERIAL", "CHEST"), Material.CHEST),
                         menus.getString(infoPath + ".TITLE", "&eSell all items"),
                         menus.getStringList(infoPath + ".LORE")
                 )
@@ -52,7 +52,7 @@ public class SellAllConfirmMenu extends BaseMenu {
         set(
                 menus.getInt(confirmPath + ".SLOT", 15),
                 ItemUtils.createItem(
-                        ItemUtils.parseMaterial(menus.getString(confirmPath + ".MATERIAL", "STAINED_GLASS_PANE")),
+                        ItemUtils.parseMaterial(menus.getString(confirmPath + ".MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE),
                         menus.getString(confirmPath + ".TITLE", "&aConfirm"),
                         menus.getStringList(confirmPath + ".LORE")
                 )

@@ -9,7 +9,6 @@ public class MissingKeyFinder {
     public void testMissingKey() throws Exception {
         File file = new File("src/main/resources/languages/en_US.yml");
         YamlConfiguration config = new YamlConfiguration();
-        config.options().parseComments(true);
         config.load(file);
         
         Method m = LanguageManagerTest.class.getDeclaredMethod("mergeCurrentResourceText", YamlConfiguration.class);

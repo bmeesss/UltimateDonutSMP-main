@@ -109,6 +109,7 @@ public final class LegacyMaterialSupport {
         // 1.13+ renames of items/blocks that exist unchanged (bar the name) on 1.12.2.
         renames.put("GRASS_BLOCK", "GRASS");
         renames.put("DIRT_PATH", "GRASS_PATH");
+        renames.put("IRON_BARS", "IRON_FENCE");
         renames.put("PISTON", "PISTON_BASE");
         renames.put("STICKY_PISTON", "PISTON_STICKY_BASE");
         renames.put("COBBLESTONE_WALL", "COBBLE_WALL");
@@ -356,6 +357,16 @@ public final class LegacyMaterialSupport {
         if (doorItem != null) {
             return doorItem;
         }
+        // Explicit aliases must win over the raw enum lookup: BREWING_STAND and CAULDRON exist
+        // as block-only 1.12.2 materials, but configs referencing them always mean the usable
+        // *_ITEM form the renames already declare.
+        String renamed = (String) RENAMES.get(name);
+        if (renamed != null) {
+            Material renamedMaterial = Material.matchMaterial(renamed);
+            if (renamedMaterial != null) {
+                return new Icon(renamedMaterial, (short) 0, name);
+            }
+        }
         Material material;
         try {
             material = Material.valueOf(name);
@@ -455,13 +466,6 @@ public final class LegacyMaterialSupport {
         family = resolveStoneFamily(name);
         if (family != null) {
             return family;
-        }
-        String renamed = (String) RENAMES.get(name);
-        if (renamed != null) {
-            Material renamedMaterial = Material.matchMaterial(renamed);
-            if (renamedMaterial != null) {
-                return new Icon(renamedMaterial, (short) 0, name);
-            }
         }
         // These blocks were introduced after 1.12.2 and have no safe equivalent.
         if ("LIGHT".equals(name) || "JIGSAW".equals(name)) return null;
@@ -599,7 +603,11 @@ public final class LegacyMaterialSupport {
             return "OAK".equals(wood) ? of(Material.FENCE_GATE) : null;
         }
         if ("TRAPDOOR".equals(suffix) || "BUTTON".equals(suffix) || "PRESSURE_PLATE".equals(suffix)) {
-            return null; // single wood-only items on 1.12.2; renames cover the oak spellings
+            // Every wood species shares one wooden trapdoor/button/plate on 1.12.2 (no data
+            // variants), so any species spelling maps to the shared material unambiguously.
+            if ("TRAPDOOR".equals(suffix)) return of(Material.TRAP_DOOR);
+            if ("BUTTON".equals(suffix)) return of(Material.WOOD_BUTTON);
+            return of(Material.WOOD_PLATE);
         }
         return null;
     }
@@ -726,6 +734,28 @@ public final class LegacyMaterialSupport {
         if (raw == null) {
             return "";
         }
-        return raw.trim().toUpperCase(Locale.ROOT);
+        String trimmed = raw.trim();
+        if (trimmed.isEmpty()) {
+            return "";
+        }
+        // Material names use underscores; human input ("oak door") and prose config values
+        // ("Oak Door") use spaces. Folding whitespace runs into underscores — the same thing
+        // modern Material.matchMaterial does — lets both spellings resolve, and 1.12.2
+        // matchMaterial itself does not do this.
+        StringBuilder normalized = new StringBuilder(trimmed.length());
+        boolean pendingSeparator = false;
+        for (int i = 0; i < trimmed.length(); i++) {
+            char character = trimmed.charAt(i);
+            if (Character.isWhitespace(character)) {
+                pendingSeparator = normalized.length() > 0;
+                continue;
+            }
+            if (pendingSeparator) {
+                normalized.append('_');
+                pendingSeparator = false;
+            }
+            normalized.append(Character.toUpperCase(character));
+        }
+        return normalized.toString();
     }
 }

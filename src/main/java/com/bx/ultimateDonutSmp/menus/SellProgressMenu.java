@@ -65,8 +65,7 @@ public class SellProgressMenu extends BaseMenu {
     private void buildTypeButton(FileConfiguration menus) {
         String path = "PROGRESS-MENU.TYPE-BUTTON";
         Material material = ItemUtils.parseMaterial(
-                menus.getString(path + ".MATERIAL." + category.getConfigKey(), "STONE")
-        );
+                menus.getString(path + ".MATERIAL." + category.getConfigKey(), "STONE"), Material.STONE);
         String title = menus.getString(path + ".TITLE." + category.getConfigKey(), "&f" + category.name());
         List<String> lore = menus.getStringList(path + ".LORE." + category.getConfigKey());
         if (lore.isEmpty() || lore.stream().noneMatch(line -> line.toLowerCase(Locale.US).contains("click") || line.contains("►"))) {
@@ -90,8 +89,7 @@ public class SellProgressMenu extends BaseMenu {
             if (index < info.completedLevels()) {
                 String title = menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.TITLE", "&aCompleted");
                 Material material = ItemUtils.parseMaterial(
-                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "STAINED_GLASS_PANE")
-                );
+                        menus.getString("PROGRESS-MENU.COMPLETED-BUTTON.MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
                 List<String> lore = applyProgressPlaceholders(
                         menus.getStringList("PROGRESS-MENU.COMPLETED-BUTTON.LORE"),
                         getTierMultiplier(index),
@@ -107,8 +105,7 @@ public class SellProgressMenu extends BaseMenu {
             if (index == info.completedLevels() && !info.maxed()) {
                 String title = menus.getString("PROGRESS-MENU.WORKING-BUTTON.TITLE", "&eWorking");
                 Material material = ItemUtils.parseMaterial(
-                        menus.getString("PROGRESS-MENU.WORKING-BUTTON.MATERIAL", "YELLOW_STAINED_GLASS_PANE")
-                );
+                        menus.getString("PROGRESS-MENU.WORKING-BUTTON.MATERIAL", "YELLOW_STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
                 List<String> lore = applyProgressPlaceholders(
                         menus.getStringList("PROGRESS-MENU.WORKING-BUTTON.LORE"),
                         info.nextMultiplierDisplay(),
@@ -125,7 +122,8 @@ public class SellProgressMenu extends BaseMenu {
     private void buildBackButton(FileConfiguration menus) {
         Material material = ItemUtils.parseMaterial(
                 menus.getString("PROGRESS-MENU.BACK-BUTTON.MATERIAL",
-                menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "BARRIER"))
+                menus.getString("GLOBAL.PAGE-MENU.MATERIAL", "BARRIER")),
+                Material.BARRIER
         );
         String title = menus.getString("GLOBAL.PAGE-MENU.BACK-BUTTON", "&cBack");
         List<String> lore = menus.getStringList("GLOBAL.PAGE-MENU.BACK-LORE");

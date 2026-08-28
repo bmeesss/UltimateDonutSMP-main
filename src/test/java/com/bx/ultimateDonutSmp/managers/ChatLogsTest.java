@@ -85,7 +85,7 @@ class ChatLogsTest {
     @Test
     void chatLoggingShipsOnForBothPublicAndPrivateMessages() throws Exception {
         YamlConfiguration config = new YamlConfiguration();
-        config.load(Path.of("src/main/resources", "config.yml").toFile());
+        config.load(java.nio.file.Paths.get("src/main/resources", "config.yml").toFile());
         ConfigurationSection logging = config.getConfigurationSection("CHAT.LOGGING");
 
         assertNotNull(logging, "config.yml has no CHAT.LOGGING section");
@@ -96,7 +96,7 @@ class ChatLogsTest {
 
     private static Connection openLogTable() throws Exception {
         Connection connection = DriverManager.getConnection("jdbc:sqlite::memory:");
-        try (var statement = connection.createStatement()) {
+        try (java.sql.Statement statement = connection.createStatement()) {
             statement.execute("CREATE TABLE player_logs ("
                     + "id INTEGER PRIMARY KEY AUTOINCREMENT, player_uuid TEXT NOT NULL, "
                     + "player_name TEXT NOT NULL, category TEXT NOT NULL, log_type TEXT NOT NULL, "

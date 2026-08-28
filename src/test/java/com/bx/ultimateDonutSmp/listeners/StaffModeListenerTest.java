@@ -276,9 +276,11 @@ class StaffModeListenerTest {
         listener.onInventoryClick(emptyHotbarSwap);
         assertFalse(emptyHotbarSwap.isCancelled(), "A number key aimed at a normal slot should be allowed");
 
+        // On 1.12.2 the off-hand swap arrives as NUMBER_KEY with hotbar button 40
+        // (ClickType.SWAP_OFFHAND only exists from 1.16 onwards).
         InventoryClickEvent offhandSwap = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.SWAP_OFFHAND,
-                InventoryAction.HOTBAR_SWAP, -1);
+                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.NUMBER_KEY,
+                InventoryAction.HOTBAR_SWAP, 40);
         listener.onInventoryClick(offhandSwap);
         assertTrue(offhandSwap.isCancelled(), "An off hand swap holding a staff tool should be blocked");
     }
@@ -381,315 +383,7 @@ class StaffModeListenerTest {
                 (proxy, method, args) -> {
                     if (method.getName().equals("getItem") && args != null && args.length == 1
                             && args[0] instanceof Integer) {
-            Integer slot = (Integer) lockedMessageCount != null) {
-                lockedMessageCount.incrementAndGet();
-            }
-        }
-
-        @Override
-        public StaffToolType resolveTool(ItemStack item) {
-            if (staffToolMaterial == null) {
-                return StaffToolType.VANISH;
-            }
-            if (item == null || item.getType() != staffToolMaterial) {
-                return null;
-            }
-            return StaffToolType.VANISH;
-        }
-
-        @Override
-        public boolean canUseVanish(Player player) {
-            return true;
-        }
-
-        @Override
-        public boolean toggleVanish(Player player) {
-            if (toggleCount != null) {
-                toggleCount.incrementAndGet();
-            }
-            return true;
-        }
-    }
-
-    @BeforeEach
-    void setUp() throws Exception {
-        playerUuid = UUID.randomUUID();
-        vanishToggleCount = new AtomicInteger(0);
-        toolLockedMessageCount = new AtomicInteger(0);
-        originalServer = Bukkit.getServer();
-        installMockServer();
-
-        Constructor<Object> objectConstructor = Object.class.getConstructor();
-        ReflectionFactory reflectionFactory = ReflectionFactory.getReflectionFactory();
-
-        Constructor<?> pluginConstructor = reflectionFactory.newConstructorForSerialization(
-                UltimateDonutSmp.class, objectConstructor
-        );
-        UltimateDonutSmp mockPlugin = (UltimateDonutSmp) pluginConstructor.newInstance();
-
-        Constructor<?> smmConstructor = reflectionFactory.newConstructorForSerialization(
-                TestStaffModeManager.class, objectConstructor
-        );
-        TestStaffModeManager mockStaffModeManager = (TestStaffModeManager) smmConstructor.newInstance();
-
-        setManagerField(mockStaffModeManager, "toggleCount", vanishToggleCount);
-        setManagerField(mockStaffModeManager, "lockedMessageCount", toolLockedMessageCount);
-
-        Field smmField = UltimateDonutSmp.class.getDeclaredField("staffModeManager");
-        smmField.setAccessible(true);
-        smmField.set(mockPlugin, mockStaffModeManager);
-
-        staffModeManager = mockStaffModeManager;
-        listener = new StaffModeListener(mockPlugin);
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-        setBukkitServer(originalServer);
-    }
-
-    @Test
-    void interactDebouncesRapidClicks() throws Exception {
-        Player mockPlayer = (Player) Proxy.newProxyInstance(
-                StaffModeListenerTest.class.getClassLoader(),
-                new Class<?>[]{Player.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("getUniqueId")) {
-                        return playerUuid;
-                    }
-                    return null;
-                }
-        );
-
-        ItemStack mockItem = new ItemStack(Material.FEATHER);
-
-        PlayerInteractEvent event1 = new PlayerInteractEvent(
-                mockPlayer,
-                Action.RIGHT_CLICK_BLOCK,
-                mockItem,
-                null,
-                null,
-                EquipmentSlot.HAND
-        );
-
-        PlayerInteractEvent event2 = new PlayerInteractEvent(
-                mockPlayer,
-                Action.RIGHT_CLICK_AIR,
-                mockItem,
-                null,
-                null,
-                EquipmentSlot.HAND
-        );
-
-        listener.onInteract(event1);
-        assertTrue(event1.isCancelled(), "First event should be cancelled");
-        assertEquals(1, vanishToggleCount.get(), "First click should trigger vanish toggle");
-
-        listener.onInteract(event2);
-        assertTrue(event2.isCancelled(), "Second event should still be cancelled");
-        assertEquals(1, vanishToggleCount.get(), "Rapid second click within 200ms should be debounced");
-
-        Thread.sleep(210);
-
-        PlayerInteractEvent event3 = new PlayerInteractEvent(
-                mockPlayer,
-                Action.RIGHT_CLICK_AIR,
-                mockItem,
-                null,
-                null,
-                EquipmentSlot.HAND
-        );
-
-        listener.onInteract(event3);
-        assertTrue(event3.isCancelled(), "Third event should be cancelled");
-        assertEquals(2, vanishToggleCount.get(), "Click after cooldown expires should trigger vanish toggle again");
-    }
-
-    @Test
-    void dropIsCancelledForStaffToolsOnly() throws Exception {
-        onlyStaffToolsAreTools();
-        Player player = mockPlayer(mockPlayerInventory(java.util.Collections.emptyMap(), null));
-
-        PlayerDropItemEvent toolDrop = new PlayerDropItemEvent(player, mockItemEntity(new ItemStack(STAFF_TOOL)));
-        listener.onDrop(toolDrop);
-        assertTrue(toolDrop.isCancelled(), "Dropping a staff tool should be blocked");
-        assertEquals(1, toolLockedMessageCount.get(), "Blocking a staff tool drop should explain why");
-
-        PlayerDropItemEvent normalDrop = new PlayerDropItemEvent(player, mockItemEntity(new ItemStack(NORMAL_ITEM)));
-        listener.onDrop(normalDrop);
-        assertFalse(normalDrop.isCancelled(), "Dropping a normal item should still be allowed");
-        assertEquals(1, toolLockedMessageCount.get(), "An allowed drop should not send the locked message");
-    }
-
-    @Test
-    void offhandSwapIsCancelledOnlyWhenAStaffToolIsInvolved() throws Exception {
-        onlyStaffToolsAreTools();
-        Player player = mockPlayer(mockPlayerInventory(java.util.Collections.emptyMap(), null));
-
-        PlayerSwapHandItemsEvent toolInMainHand = new PlayerSwapHandItemsEvent(
-                player, new ItemStack(NORMAL_ITEM), new ItemStack(STAFF_TOOL));
-        listener.onSwap(toolInMainHand);
-        assertTrue(toolInMainHand.isCancelled(), "Swapping a staff tool into the off hand should be blocked");
-
-        PlayerSwapHandItemsEvent toolInOffHand = new PlayerSwapHandItemsEvent(
-                player, new ItemStack(STAFF_TOOL), new ItemStack(NORMAL_ITEM));
-        listener.onSwap(toolInOffHand);
-        assertTrue(toolInOffHand.isCancelled(), "Swapping a staff tool out of the off hand should be blocked");
-
-        PlayerSwapHandItemsEvent normalSwap = new PlayerSwapHandItemsEvent(
-                player, new ItemStack(NORMAL_ITEM), new ItemStack(NORMAL_ITEM));
-        listener.onSwap(normalSwap);
-        assertFalse(normalSwap.isCancelled(), "Swapping two normal items should still be allowed");
-    }
-
-    @Test
-    void inventoryClickIsCancelledOnlyWhenAStaffToolIsInvolved() throws Exception {
-        onlyStaffToolsAreTools();
-        Player player = mockPlayer(mockPlayerInventory(java.util.Collections.emptyMap(), null));
-
-        InventoryClickEvent toolClick = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(STAFF_TOOL)); }}, null, 9, ClickType.LEFT,
-                InventoryAction.PICKUP_ALL, -1);
-        listener.onInventoryClick(toolClick);
-        assertTrue(toolClick.isCancelled(), "Picking a staff tool up in the inventory should be blocked");
-
-        InventoryClickEvent normalClick = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.LEFT,
-                InventoryAction.PICKUP_ALL, -1);
-        listener.onInventoryClick(normalClick);
-        assertFalse(normalClick.isCancelled(), "Moving a normal item around the inventory should be allowed");
-
-        InventoryClickEvent cursorClick = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, new ItemStack(STAFF_TOOL), 9, ClickType.LEFT,
-                InventoryAction.PLACE_ALL, -1);
-        listener.onInventoryClick(cursorClick);
-        assertTrue(cursorClick.isCancelled(), "Placing a staff tool held on the cursor should be blocked");
-    }
-
-    @Test
-    void hotbarAndOffhandSwapClicksSeeTheToolTheyWouldMove() throws Exception {
-        onlyStaffToolsAreTools();
-        PlayerInventory inventory = mockPlayerInventory(new java.util.LinkedHashMap(){{ put(3,  new ItemStack(STAFF_TOOL)); }}, new ItemStack(STAFF_TOOL));
-        Player player = mockPlayer(inventory);
-
-        InventoryClickEvent hotbarSwap = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.NUMBER_KEY,
-                InventoryAction.HOTBAR_SWAP, 3);
-        listener.onInventoryClick(hotbarSwap);
-        assertTrue(hotbarSwap.isCancelled(), "A number key that would move a staff tool should be blocked");
-
-        InventoryClickEvent emptyHotbarSwap = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.NUMBER_KEY,
-                InventoryAction.HOTBAR_SWAP, 5);
-        listener.onInventoryClick(emptyHotbarSwap);
-        assertFalse(emptyHotbarSwap.isCancelled(), "A number key aimed at a normal slot should be allowed");
-
-        InventoryClickEvent offhandSwap = mockClick(
-                player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}, null, 9, ClickType.SWAP_OFFHAND,
-                InventoryAction.HOTBAR_SWAP, -1);
-        listener.onInventoryClick(offhandSwap);
-        assertTrue(offhandSwap.isCancelled(), "An off hand swap holding a staff tool should be blocked");
-    }
-
-    @Test
-    void dragIsCancelledOnlyWhenItTouchesAStaffTool() throws Exception {
-        onlyStaffToolsAreTools();
-        Player player = mockPlayer(mockPlayerInventory(java.util.Collections.emptyMap(), null));
-
-        InventoryDragEvent toolDrag = new InventoryDragEvent(
-                mockView(player, java.util.Collections.emptyMap(), null),
-                null,
-                new ItemStack(STAFF_TOOL),
-                false,
-                new java.util.LinkedHashMap(){{ put(9,  new ItemStack(STAFF_TOOL)); }}
-        );
-        listener.onInventoryDrag(toolDrag);
-        assertTrue(toolDrag.isCancelled(), "Dragging a staff tool should be blocked");
-
-        InventoryDragEvent overToolDrag = new InventoryDragEvent(
-                mockView(player, new java.util.LinkedHashMap(){{ put(9,  new ItemStack(STAFF_TOOL)); }}, null),
-                null,
-                new ItemStack(NORMAL_ITEM),
-                false,
-                new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}
-        );
-        listener.onInventoryDrag(overToolDrag);
-        assertTrue(overToolDrag.isCancelled(), "Dragging onto a slot that holds a staff tool should be blocked");
-
-        InventoryDragEvent normalDrag = new InventoryDragEvent(
-                mockView(player, java.util.Collections.emptyMap(), null),
-                null,
-                new ItemStack(NORMAL_ITEM),
-                false,
-                new java.util.LinkedHashMap(){{ put(9,  new ItemStack(NORMAL_ITEM)); }}
-        );
-        listener.onInventoryDrag(normalDrag);
-        assertFalse(normalDrag.isCancelled(), "Dragging normal items around should be allowed");
-    }
-
-    private void onlyStaffToolsAreTools() throws Exception {
-        setManagerField(staffModeManager, "staffToolMaterial", STAFF_TOOL);
-    }
-
-    private void setManagerField(TestStaffModeManager manager, String name, Object value) throws Exception {
-        Field field = TestStaffModeManager.class.getDeclaredField(name);
-        field.setAccessible(true);
-        field.set(manager, value);
-    }
-
-    private void installMockServer() throws Exception {
-        Object scheduler = Proxy.newProxyInstance(
-                BukkitScheduler.class.getClassLoader(),
-                new Class<?>[]{BukkitScheduler.class},
-                (proxy, method, args) -> null
-        );
-        Server server = (Server) Proxy.newProxyInstance(
-                Server.class.getClassLoader(),
-                new Class<?>[]{Server.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("getScheduler")) {
-                        return scheduler;
-                    }
-                    if (method.getName().equals("getLogger")) {
-                        return java.util.logging.Logger.getLogger("StaffModeListenerTest");
-                    }
-                    return null;
-                }
-        );
-        setBukkitServer(server);
-    }
-
-    private void setBukkitServer(Server server) throws Exception {
-        Field serverField = Bukkit.class.getDeclaredField("server");
-        serverField.setAccessible(true);
-        serverField.set(null, server);
-    }
-
-    private Player mockPlayer(PlayerInventory inventory) {
-        return (Player) Proxy.newProxyInstance(
-                StaffModeListenerTest.class.getClassLoader(),
-                new Class<?>[]{Player.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("getUniqueId")) {
-                        return playerUuid;
-                    }
-                    if (method.getName().equals("getInventory")) {
-                        return inventory;
-                    }
-                    return null;
-                }
-        );
-    }
-
-    private PlayerInventory mockPlayerInventory(Map<Integer, ItemStack> slots, ItemStack offhand) {
-        Map<Integer, ItemStack> contents = new HashMap<>(slots);
-        return (PlayerInventory) Proxy.newProxyInstance(
-                StaffModeListenerTest.class.getClassLoader(),
-                new Class<?>[]{PlayerInventory.class},
-                (proxy, method, args) -> {
-                    if (method.getName().equals("getItem") && args != null && args.length == 1
-                            && args[0];
-                        return contents.get(slot);
+                        return contents.get((Integer) args[0]);
                     }
                     if (method.getName().equals("getItemInOffHand")) {
                         return offhand;
@@ -709,24 +403,77 @@ class StaffModeListenerTest {
 
     private InventoryView mockView(Player player, Map<Integer, ItemStack> rawSlots, ItemStack cursor) {
         Map<Integer, ItemStack> contents = new HashMap<>(rawSlots);
-        return (InventoryView) Proxy.newProxyInstance(
+        // InventoryView is an abstract class on 1.12.2 (only an interface from 1.21 on) whose
+        // getCursor(), convertSlot(int) and countSlots() are final, so only the abstract members
+        // plus the overridable getItem(int) are implemented here. The cursor reaches the event
+        // through the player - the final getCursor() reads getPlayer().getItemOnCursor() - and
+        // the inventory stand-ins only need a size for the final convertSlot/countSlots maths.
+        org.bukkit.inventory.Inventory topInventory = inventoryProxy(27);
+        org.bukkit.inventory.Inventory bottomInventory = inventoryProxy(27);
+        return new InventoryView() {
+            @Override
+            public org.bukkit.inventory.Inventory getTopInventory() {
+                return topInventory;
+            }
+
+            @Override
+            public org.bukkit.inventory.Inventory getBottomInventory() {
+                return bottomInventory;
+            }
+
+            @Override
+            public Player getPlayer() {
+                return player;
+            }
+
+            @Override
+            public org.bukkit.event.inventory.InventoryType getType() {
+                return org.bukkit.event.inventory.InventoryType.CHEST;
+            }
+
+            @Override
+            public ItemStack getItem(int slot) {
+                return contents.get(slot);
+            }
+        };
+    }
+
+    private org.bukkit.inventory.Inventory inventoryProxy(int size) {
+        return (org.bukkit.inventory.Inventory) Proxy.newProxyInstance(
                 StaffModeListenerTest.class.getClassLoader(),
-                new Class<?>[]{InventoryView.class},
-                (proxy, method, args) -> {
-                    switch (method.getName()) {
-                        case "getPlayer":
-                            return player;
-                        case "getCursor":
-                            return cursor;
-                        case "getItem":
-                            return contents.get((Integer) args[0]);
-                        case "convertSlot":
-                            return args[0];
-                        default:
-                            return method.getReturnType() == int.class ? 0 : null;
-                    }
-                }
+                new Class<?>[]{org.bukkit.inventory.Inventory.class},
+                (proxy, method, args) -> method.getName().equals("getSize") ? size : defaultValue(method)
         );
+    }
+
+    /**
+     * Wraps a mock player so it answers {@code getItemOnCursor()} with the given stack; every
+     * other call goes to the wrapped player. Needed because 1.12.2 {@code InventoryView#getCursor()}
+     * is final and reads the cursor off the player.
+     */
+    private Player playerWithCursor(Player player, ItemStack cursor) {
+        if (cursor == null) {
+            return player;
+        }
+        java.lang.reflect.InvocationHandler delegate = Proxy.getInvocationHandler(player);
+        return (Player) Proxy.newProxyInstance(
+                StaffModeListenerTest.class.getClassLoader(),
+                new Class<?>[]{Player.class},
+                (proxy, method, args) -> method.getName().equals("getItemOnCursor")
+                        ? cursor
+                        : delegate.invoke(player, method, args)
+        );
+    }
+
+    private static Object defaultValue(java.lang.reflect.Method method) {
+        Class<?> returnType = method.getReturnType();
+        if (returnType == boolean.class) {
+            return false;
+        }
+        if (returnType == int.class) {
+            return 0;
+        }
+        return null;
     }
 
     private InventoryClickEvent mockClick(Player player,
@@ -737,7 +484,7 @@ class StaffModeListenerTest {
                                           InventoryAction action,
                                           int hotbarButton) {
         return new InventoryClickEvent(
-                mockView(player, rawSlots, cursor),
+                mockView(playerWithCursor(player, cursor), rawSlots, cursor),
                 InventoryType.SlotType.CONTAINER,
                 rawSlot,
                 click,

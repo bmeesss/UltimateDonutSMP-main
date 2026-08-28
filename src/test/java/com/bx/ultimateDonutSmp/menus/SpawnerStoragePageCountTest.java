@@ -65,7 +65,7 @@ class SpawnerStoragePageCountTest {
                 0L,
                 0L
         );
-        instance.setStoredLootEntries(java.util.Collections.singletonList(entries));
+        instance.setStoredLootEntries(java.util.Arrays.asList(entries));
         return instance;
     }
 }

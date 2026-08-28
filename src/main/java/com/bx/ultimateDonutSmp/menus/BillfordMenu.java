@@ -48,7 +48,7 @@ public class BillfordMenu extends BaseMenu {
         clockSlot = config.getInt("GUI.COUNTDOWN_SLOT", 13);
         infoSlot = config.getInt("GUI.INFO_SLOT", 22);
         confirmSlot = config.getInt("GUI.CONFIRM_SLOT", 26);
-        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "STAINED_GLASS_PANE"));
+        fillerMaterial = ItemUtils.parseMaterial(config.getString("GUI.FILLER_MATERIAL", "STAINED_GLASS_PANE"), Material.STAINED_GLASS_PANE);
         closeOnSuccess = config.getBoolean("SETTINGS.CLOSE_MENU_ON_SUCCESS", true);
         reopenOnTradeChange = config.getBoolean("SETTINGS.REOPEN_ON_TRADE_CHANGE", true);
         allowedClickTypes = resolveAllowedClickTypes(config.getStringList("SETTINGS.ALLOWED_CLICK_TYPES"));
@@ -237,14 +237,14 @@ public class BillfordMenu extends BaseMenu {
         );
 
         set(infoSlot, ItemUtils.createItem(
-                ItemUtils.parseMaterial(getConfigString("GUI.INFO_MATERIAL", "BOOK")),
+                ItemUtils.parseMaterial(getConfigString("GUI.INFO_MATERIAL", "BOOK"), Material.BOOK),
                 getConfigString("GUI.INFO_NAME", "&6Trade Info"),
                 infoLore
         ));
 
         if (limitReached) {
             set(confirmSlot, ItemUtils.createItem(
-                    ItemUtils.parseMaterial(getConfigString("GUI.LIMIT_BUTTON.MATERIAL", "BARRIER")),
+                    ItemUtils.parseMaterial(getConfigString("GUI.LIMIT_BUTTON.MATERIAL", "BARRIER"), Material.BARRIER),
                     getConfigString("GUI.LIMIT_BUTTON.NAME", "&c&lLimit Reached"),
                     getConfigStringList(
                             "GUI.LIMIT_BUTTON.LORE",
@@ -259,7 +259,7 @@ public class BillfordMenu extends BaseMenu {
                     ItemUtils.parseMaterial(getMenuString(
                             "CONFIRM-TRADE-BUTTON.MATERIAL",
                             getConfigString("GUI.CONFIRM_BUTTON.MATERIAL", "EMERALD")
-                    )),
+                    ), Material.EMERALD),
                     getMenuString(
                             "CONFIRM-TRADE-BUTTON.NAME",
                             getConfigString("GUI.CONFIRM_BUTTON.NAME", "&a&lConfirm Trade")

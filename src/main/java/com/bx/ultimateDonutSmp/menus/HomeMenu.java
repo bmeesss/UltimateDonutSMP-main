@@ -346,7 +346,7 @@ public class HomeMenu extends BaseMenu {
     }
 
     private Material material(String path, Material fallback) {
-        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()));
+        return ItemUtils.parseMaterial(menus().getString(path, fallback.name()), fallback);
     }
 
     private String text(String path, String fallback, Map<String, String> placeholders) {
