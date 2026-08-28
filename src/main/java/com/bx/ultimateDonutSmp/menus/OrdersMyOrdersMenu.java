@@ -106,10 +106,15 @@ public class OrdersMyOrdersMenu extends BaseMenu {
             return orders;
         }
         String normalized = query.toLowerCase(Locale.ROOT);
+        // Same central resolution as the browse menu: a modern-name query finds the 1.12.2
+        // material the stored order keys actually use.
+        org.bukkit.Material searchMaterial = plugin.getOrdersManager().resolveSearchMaterial(query);
         return orders.stream()
                 .filter(order -> plugin.getOrdersManager().describeItem(order.requestedItem())
                         .toLowerCase(Locale.ROOT).contains(normalized)
-                        || order.requestedMaterialKey().toLowerCase(Locale.ROOT).contains(normalized))
+                        || order.requestedMaterialKey().toLowerCase(Locale.ROOT).contains(normalized)
+                        || (searchMaterial != null && order.requestedItem() != null
+                        && order.requestedItem().getType() == searchMaterial))
                 .collect(java.util.stream.Collectors.toList());
     }
 

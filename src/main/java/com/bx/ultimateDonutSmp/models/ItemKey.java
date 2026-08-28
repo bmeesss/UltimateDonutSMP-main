@@ -366,14 +366,14 @@ public final class ItemKey {
 
         if (s.contains("|POTION:")) {
             String[] split = s.split("\\|POTION:");
-            Material mat = Material.matchMaterial(split[0]);
+            Material mat = resolveStoredMaterial(split[0]);
             PotionType pType = PotionType.valueOf(split[1]);
             return new ItemKey(mat, pType, null);
         }
 
         if (s.contains("|ENCH:")) {
             String[] split = s.split("\\|ENCH:");
-            Material mat = Material.matchMaterial(split[0]);
+            Material mat = resolveStoredMaterial(split[0]);
             Map<String, Integer> map = new LinkedHashMap<>();
             if (split.length > 1 && !split[1].isEmpty()) {
                 for (String part : split[1].split(",")) {
@@ -388,8 +388,22 @@ public final class ItemKey {
             return new ItemKey(mat, null, map);
         }
 
-        Material mat = Material.matchMaterial(s);
-        return new ItemKey(mat, null, null);
+        return new ItemKey(resolveStoredMaterial(s), null, null);
+    }
+
+    /**
+     * Resolves a stored material-key name through the central 1.12.2 compatibility layer, so a
+     * {@code requested_material_key} written by the modern build (for example {@code OAK_LOG} or
+     * {@code NETHERITE_SWORD}) still maps to the material this server actually has. Unresolvable
+     * names yield {@code null}, which callers already treat as an unreadable item - they never
+     * become a fallback material.
+     */
+    private static Material resolveStoredMaterial(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        LegacyMaterialSupport.Icon resolved = com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.resolve(raw.trim());
+        return resolved == null ? null : resolved.material();
     }
 
     @Override

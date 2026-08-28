@@ -969,6 +969,10 @@ public class OrdersManager {
 
     public List<OrderCatalogEntry> getCatalogEntries(String categoryKey, OrderAlphaSort alphaSort, String search) {
         String normalizedSearch = normalizeSearchText(search);
+        // A query written with a modern (1.13+) name must find the entry it maps to; the entry
+        // text carries the 1.12.2 material name, so "oak_door" would otherwise only ever match
+        // "darkoakdoor" by substring. Resolving the query once fixes that centrally.
+        Material searchMaterial = resolveSearchMaterial(search);
         Comparator<OrderCatalogEntry> comparator = Comparator
                 .comparing(entry -> entry.displayName().toLowerCase(Locale.ROOT));
         if (alphaSort == OrderAlphaSort.Z_A) {
@@ -976,10 +980,25 @@ public class OrdersManager {
         }
         return getCatalogEntries(categoryKey).stream()
                 .filter(entry -> normalizedSearch.trim().isEmpty()
+                        || (searchMaterial != null && entry.material() == searchMaterial)
                         || normalizeSearchText(entry.searchText()).contains(normalizedSearch)
                         || normalizeSearchText(entry.displayName()).contains(normalizedSearch))
                 .sorted(comparator)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Resolves a search query to a single 1.12.2 material through the central compatibility
+     * layer, so both spellings ({@code OAK_DOOR} and {@code WOOD_DOOR}, {@code GRASS_BLOCK}
+     * and {@code GRASS}, &hellip;) find the same catalog entry and the same orders. Returns
+     * {@code null} for anything that is not one resolvable material name.
+     */
+    public Material resolveSearchMaterial(String rawQuery) {
+        if (rawQuery == null || rawQuery.trim().isEmpty()) {
+            return null;
+        }
+        LegacyMaterialSupport.Icon resolved = LegacyMaterialSupport.resolve(rawQuery.trim());
+        return resolved == null ? null : resolved.material();
     }
 
     public List<OrderCatalogEntry> searchCatalogEntries(String rawQuery) {

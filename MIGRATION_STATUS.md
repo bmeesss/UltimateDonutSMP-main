@@ -1341,3 +1341,55 @@ file. Repo-side JUnit coverage: `LegacyScoreboardTextTest`, `LegacyMaterialSuppo
 persisted player field). `mvn -q -DskipTests compile` / `mvn clean package -Dmaven.test.skip=true`
 must still be run where Maven and the Spigot 1.12.2 API are reachable; no real 1.12.2 server JAR
 was available here for a live test.
+
+## Continuation: full-tree 1.12.2 API audit, search fix, mechanized DB proof
+
+1. **Full-tree API audit (Task A).** All 149 distinct `org.bukkit.*` imports inventoried and
+   verified against the 1.12.2-R0.1 API: no `block.data`, no post-1.12.2 entity classes (the one
+   `entity.*` wildcard resolves only Entity/Item/Monster/Player), no modern inventory.meta (the
+   `Damageable` references were removed in the previous batch), `getClickedInventory()` was
+   verified present in 1.12.2 (not a modern API - do not "fix" it), `SoundCategory`,
+   `Player#sendTitle`, `Enchantment#getName` are all 1.12-era. Every `Material.*` constant used
+   anywhere in `src/main` (146 distinct) was checked against the genuine 1.12.2 enum constant
+   list extracted from the 1.12.2 javadoc: zero mismatches; likewise the Sound/Particle/Effect/
+   PotionType constants (all 1.12-era names). NMS/Adventure access is reflection-only
+   (TablistComponentUpdater's Paper route reflects `playerListName(Component)` and fails closed
+   to the now-sanitised `setPlayerListName` fallback), ProtocolLib paths catch `LinkageError`,
+   and `ScoreboardNumberHider` disables after one warning line. No PDC/Tag/Registry/loot API
+   is referenced.
+2. **Orders search root-cause completion (Tasks B/E).** `ItemKey.deserialize` still resolved
+   stored `requested_material_key` potion/enchanted/plain names with a bare
+   `Material.matchMaterial`, bypassing the central layer; it now resolves through
+   `LegacyMaterialSupport` (unresolvable stays null -> AIR, exactly as before, never a fallback
+   material). Search also failed for modern-name queries: catalog entries carry the 1.12.2
+   material name, so `/orders oak_door` only ever matched `DARK_OAK_DOOR_ITEM` by substring.
+   `OrdersManager.resolveSearchMaterial(query)` now resolves a query once through the central
+   layer and both search paths match by material equality: the catalog search
+   (`getCatalogEntries`) and the browse/my-orders board searches (`OrdersBrowseMenu`,
+   `OrdersMyOrdersMenu`). `/order` is an alias of `/orders` in plugin.yml and shares the same
+   `PluginCommand`/executor, so both reach the identical flow.
+3. **Mechanized SQLite proof (Task D).** `db_binding_check.py` parses the Java source and proves
+   mechanically: 62 columns = 62 placeholders; binding indexes are exactly 1..62 with no gaps
+   (the original bug had gaps at 39 and 49); every column's setter type matches the schema type;
+   `mapPlayerRow` reads every saved column and no unsaved column; and every binding expression
+   names the same PlayerData field the reader loads into that column (whitelisted intentional
+   asymmetry: `getTotalPlaytimeSeconds()` saves the live-inclusive total while the reader
+   restores the base `playtimeSeconds`; `uuid`/`username` are constructor arguments).
+4. **Boundary tests (Task F).** LegacyScoreboardText now has explicit exactly-32 / exactly-16 /
+   one-over / 31-chars-plus-code / 14-chars-plus-emoji boundary cases in both the sandbox suite
+   (42 checks green) and the repo JUnit test.
+5. **Eaglercraft/EaglerXServer (Task G).** No Eagler-specific code exists or is needed:
+   EaglerXServer presents Eagler clients as ordinary 1.12.2 protocol players. The only plugin
+   message channel is `BungeeCord` (maintenance lobby redirect) with a kick fallback; the join
+   flow is null-safe around `getAddress()`; every change made in this batch only constrains
+   strings and materials to what the vanilla 1.12.2 protocol accepts (scoreboard 32/16 limits,
+   tab-list 16 limit, real 1.12.2 materials), which is exactly what an Eaglercraft 1.12.2
+   client receives through EaglerXServer. Inventory GUIs, chat, commands, shops, orders,
+   auction house and persistence all ride the normal Bukkit API and are unchanged in shape.
+
+Validation rerun after these changes (Maven and all Maven repositories remain unreachable from
+this sandbox, so `mvn` could not be executed): 6 suites, 175 checks, all green - sandbox
+compiler runs of LegacyScoreboardText (42), LegacyMaterialSupport against a faithful 1.12.2
+enum stub (92), applyLineSpigot split guarantees (6), Orders search end-to-end against the
+shipped filter.yml (15), real-SQLite schema/migration/round-trip (13), and the mechanized
+savePlayer binding proof (7). Janino parse of all 16 touched files: 0 failures.

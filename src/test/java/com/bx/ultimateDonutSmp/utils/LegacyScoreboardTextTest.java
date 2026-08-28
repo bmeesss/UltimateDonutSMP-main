@@ -160,6 +160,43 @@ class LegacyScoreboardTextTest {
     }
 
     @Test
+    void exactBoundaryCasesAroundTheLimits() {
+        // Exactly 32 raw characters pass through unchanged.
+        StringBuilder exact = new StringBuilder("\u00A79\u00A7lEconomySMP title!!");
+        while (exact.length() < 32) {
+            exact.append('!');
+        }
+        assertEquals(32, exact.length());
+        assertEquals(exact.toString(), LegacyScoreboardText.sanitizeObjectiveName(exact.toString()));
+
+        // 33 visible characters become exactly 32.
+        assertEquals(32, LegacyScoreboardText.sanitizeObjectiveName("a".repeat(33)).length());
+
+        // 31 visible characters + a colour code (33 raw): the code colours nothing and is dropped.
+        String withCode = "b".repeat(31) + S + "c";
+        assertEquals(33, withCode.length());
+        String dropped = LegacyScoreboardText.sanitizeObjectiveName(withCode);
+        assertEquals(31, dropped.length());
+        assertTrue(dropped.endsWith("b"), dropped);
+
+        // Exactly 16 raw team-part characters stay whole; 17 cut safely.
+        String team16 = S + "a" + "x".repeat(14);
+        assertEquals(16, team16.length());
+        assertEquals(team16, LegacyScoreboardText.sanitize(team16, LegacyScoreboardText.MAX_TEAM_PART_LENGTH));
+        String team17 = S + "a" + "x".repeat(15);
+        String cut17 = LegacyScoreboardText.truncate(team17, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
+        assertEquals(16, cut17.length());
+        assertTrue(wellFormedLegacy(cut17, 16), cut17);
+
+        // 14 visible characters + one emoji (2 code units) fit exactly 16 and stay whole.
+        String dagger = new String(Character.toChars(0x1F5E1));
+        String emoji16 = "y".repeat(14) + dagger;
+        String emojiKept = LegacyScoreboardText.truncate(emoji16, LegacyScoreboardText.MAX_TEAM_PART_LENGTH);
+        assertEquals(16, emojiKept.length());
+        assertTrue(emojiKept.endsWith(dagger));
+    }
+
+    @Test
     void everySanitisedStringIsBoundedAndWellFormed() {
         String[] battery = {
                 "", "plain", S + "r", S + "0" + S + "1" + S + "2",

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -87,6 +88,28 @@ class LegacyMaterialSupportTest {
         assertEquals(15, LegacyMaterialSupport.resolve("WHITE_DYE").data());
         assertEquals(0, LegacyMaterialSupport.resolve("BLACK_DYE").data());
         assertEquals(Material.INK_SACK, material("WHITE_DYE"));
+    }
+
+    @Test
+    void orderSearchCornerCasesResolveTheRequestedMaterial() {
+        // The exact materials the order-search acceptance names.
+        assertEquals(Material.STONE, material("STONE"));
+        assertEquals(Material.DIAMOND, material("DIAMOND"));
+        assertEquals(Material.DIAMOND_SWORD, material("DIAMOND_SWORD"));
+
+        // A modern-name query and its legacy spelling reach the SAME material, so both
+        // /order oak_door and /order wood_door find the same catalog entry.
+        assertEquals(material("OAK_DOOR"), material("WOOD_DOOR"));
+        assertEquals(material("GRASS_BLOCK"), material("GRASS"));
+        assertEquals(material("NETHERITE_SWORD"), material("DIAMOND_SWORD"));
+        assertEquals(material("GOLDEN_AXE"), material("GOLD_AXE"));
+
+        // Random invalid input must not resolve at all - and definitely not to STONE.
+        String[] invalid = {"gibberish_xyz", "NOT_A_MATERIAL", "stone2", "129zvc", "", " ", "stone oak"};
+        for (String name : invalid) {
+            assertNull(material(name), name + " must not resolve");
+        }
+        assertNotSame(Material.STONE, material("gibberish_xyz"));
     }
 
     @Test
