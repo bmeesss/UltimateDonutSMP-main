@@ -24,7 +24,13 @@ class TablistComponentLegacyTextTest {
                 .decoration(TextDecoration.BOLD, true)
                 .append(Component.text(" Notch", NamedTextColor.GOLD));
 
-        assertEquals("\u00A7c\u00A7lOwner\u00A7e Notch", TablistComponentUpdater.componentToLegacyText(name));
+        // NamedTextColor.RED (#FF5555) and GOLD (#FFAA00) are byte-for-byte the legacy §c and
+        // §6 palette entries, so the nearest-colour collapse must be an identity mapping here.
+        // §e is YELLOW (#FFFF55), not GOLD - the original expectation had that backwards.
+        assertEquals("\u00A7c\u00A7lOwner\u00A76 Notch", TablistComponentUpdater.componentToLegacyText(name));
+
+        Component sunny = Component.text("sun", NamedTextColor.YELLOW);
+        assertEquals("\u00A7esun", TablistComponentUpdater.componentToLegacyText(sunny));
     }
 
     @Test
