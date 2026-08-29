@@ -20,14 +20,22 @@ SCOREBOARD:
     - '&#0069d6&lE&#0374da&lc&#067fdf&lo&#0a8be3&ln&#0d96e7&lo&#10a1ec&lm&#13acf0&ly&#17b8f4&lS&#1ac3f9&lM&#1dcefd&lP'
 
   # Dynamic line templates rendered on the scoreboard.
-  # Glyphs must stay inside the BMP (below U+FFFF): the 1.12.2 unicode font pages only cover
-  # the basic block plus its BMP symbol ranges, so astral characters (U+1F5E1 and up) render
-  # as blank boxes on legacy and EaglerCraft clients even though modern servers display them.
+  # Glyph coverage is decided by the CLIENT font textures, not the server: astral characters
+  # (U+1F5E1 and up) never render on 1.12.2-era clients at all, and beyond the BMP the two
+  # 1.12.2 font paths disagree on coverage - the vanilla client has full unicode pages plus
+  # unifont fallback, while an EaglerCraft build only ships the glyph set its font atlas was
+  # compiled with. A glyph missing from that atlas is not drawn as a box: the client gives it
+  # zero width, so the symbol simply vanishes (this is what made U+2694 'CROSSED SWORDS'
+  # disappear from the kills line on EaglerCraft while Java showed it).
+  # Icons that must be visible on BOTH clients therefore need to live in the guaranteed set
+  # every MC 1.12.2/Eagler font ships: printable ASCII plus Latin-1 (U+0020-U+007E, U+00A0-
+  # U+00FF, which includes × and ÷). Everything else below is legacy and renders where the
+  # server's own font pack provides the glyph.
   LINES:
     - ''
     - '&#00FC00&l$ &fMoney &#00FC00%economy_nicestMoney%     '
     - '&#A303F9★ &fShards &#A303F9%economy_shards%     '
-    - '&#FC0000⚔ &fKills &#FC0000%economy_kills%       '
+    - '&#FC0000× &fKills &#FC0000%economy_kills%       '
     - '&#F97603☠ &fDeaths &#F97603%economy_deaths%   '
     - '&#00A4FC⌛ &fKeyall &#00A4FC%economy_keyall_countdown%'
     - '&#FCE300⌚ &fPlaytime &#FCE300%economy_playtime%   '
