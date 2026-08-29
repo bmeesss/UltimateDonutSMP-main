@@ -1950,7 +1950,7 @@ public final class TablistComponentUpdater {
                 + ". Future skin refreshes will retry avatar packets.");
     }
 
-    private void disableHeaderFooterWithWarning(Exception exception) {
+    private void disableHeaderFooterWithWarning(Throwable exception) {
         if (headerFooterWarned) {
             return;
         }
