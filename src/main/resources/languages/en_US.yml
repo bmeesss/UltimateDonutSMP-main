@@ -2249,7 +2249,7 @@ CONFIG:
       KICK: '&cA season reset is starting. the server will restart shortly.'
   WORTH:
     DISPLAY:
-      FORMAT: '&7Worth: &a$${price}'
+      FORMAT: '&7Worth: &a${price}'
     BROWSER:
       TITLE: '&8Item prices'
       ITEM:

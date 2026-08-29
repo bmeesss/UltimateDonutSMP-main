@@ -1,7 +1,8 @@
 # Configuration section for Display.
 DISPLAY:
-  # The text or value for Format. Available options: Any valid string text
-  FORMAT: '&7Worth: &a$${price}'
+  # The text or value for Format. Available options: Any valid string text.
+  # {price} carries the bare compact number (no currency symbol), so the $ is written here.
+  FORMAT: '&7Worth: &a${price}'
 # Configuration section for Container.
 CONTAINER:
   # Determines whether Enabled is enabled or disabled. Available options: true, false

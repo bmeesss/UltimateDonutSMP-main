@@ -1251,7 +1251,7 @@ public class WorthManager {
     }
 
     private String getWorthLoreFormat() {
-        return plugin.getConfigManager().getWorth().getString("DISPLAY.FORMAT", "&7Worth: &a$${price}");
+        return plugin.getConfigManager().getWorth().getString("DISPLAY.FORMAT", "&7Worth: &a${price}");
     }
 
     private String replaceWorthPlaceholders(String format,

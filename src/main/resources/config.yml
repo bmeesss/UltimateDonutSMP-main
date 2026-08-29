@@ -367,12 +367,6 @@ FLY-SYSTEM:
   MIN-SPEED: 1
   # Maximum allowed flying speed (integer/decimal between 1 and 10)
   MAX-SPEED: 10
-# Configuration section for Worth Lore.
-WORTH-LORE:
-  # Determines whether Enabled is enabled or disabled. Available options: true, false
-  ENABLED: true
-  # The text or value for Format. Available options: Any valid string text
-  FORMAT: '&7Worth: &a$%price%'
 # The balance line players can switch on under /settings > Money Nametags. On 1.12.2 it is a
 # scoreboard team suffix, so the client draws it attached to the username itself: the name
 # stays untouched and the balance follows it wherever the name is visible. That is the same
