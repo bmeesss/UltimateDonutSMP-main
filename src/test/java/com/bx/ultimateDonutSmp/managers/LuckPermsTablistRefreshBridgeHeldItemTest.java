@@ -1,14 +1,13 @@
 package com.bx.ultimateDonutSmp.managers;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Regression tests for the Eaglercraft held-item flicker (bug B2).
@@ -37,7 +36,8 @@ public class LuckPermsTablistRefreshBridgeHeldItemTest {
 
     private static String readBridgeSource() throws Exception {
         File file = new File(SOURCE_ROOT + "LuckPermsTablistRefreshBridge.java");
-        assertTrue("bridge source must be readable for the contract check: " + file, file.isFile());
+        assertTrue(file.isFile(),
+                "bridge source must be readable for the contract check: " + file);
         String raw;
         try (FileInputStream in = new FileInputStream(file)) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -59,10 +59,10 @@ public class LuckPermsTablistRefreshBridgeHeldItemTest {
         // The permission/tablist refresh must not push inventory packets. Any
         // updateInventory() call in this file reintroduces the held-item flicker on
         // clients that re-animate held items on redundant window updates (Eaglercraft).
-        assertFalse("LuckPermsTablistRefreshBridge must not call updateInventory(); "
+        assertFalse(source.contains("updateInventory("),
+                "LuckPermsTablistRefreshBridge must not call updateInventory(); "
                         + "permission refreshes do not modify the inventory and the resync "
-                        + "caused continuous held-item updates (Eagler flicker).",
-                source.contains("updateInventory("));
+                        + "caused continuous held-item updates (Eagler flicker).");
     }
 
     @Test
@@ -71,9 +71,9 @@ public class LuckPermsTablistRefreshBridgeHeldItemTest {
         // Guard the other half of the contract: the fix removed the inventory resync but
         // must have kept the permission recalculation and tablist repaint this class exists
         // for (a future refactor must not "fix" the flicker by gutting the refresh instead).
-        assertTrue("bridge must still recalculate permissions",
-                source.contains("recalculatePermissions()"));
-        assertNotNull("bridge must still drive the tablist manager",
-                source.contains("getTablistManager()"));
+        assertTrue(source.contains("recalculatePermissions()"),
+                "bridge must still recalculate permissions");
+        assertTrue(source.contains("getTablistManager()"),
+                "bridge must still drive the tablist manager");
     }
 }
