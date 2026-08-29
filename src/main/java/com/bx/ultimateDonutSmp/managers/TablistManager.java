@@ -90,20 +90,50 @@ public class TablistManager {
             return;
         }
         // Keep this compatible with the 1.12 API without linking newer overloads.
+        if (setHeaderFooterViaBukkitApi(player, headerText, footerText)) {
+            lastHeaderFooterCache.put(player.getUniqueId(), key);
+            return;
+        }
+
+        // The String-based Bukkit header/footer methods above only exist on servers newer than
+        // 1.12.2; on this server's API they are simply absent, and the tab menu would then never
+        // show the configured header and footer at all. Send the legacy NMS packet instead -
+        // PacketPlayOutPlayerListHeaderFooter with IChatBaseComponent fields - built through the
+        // same component pipeline that colours the tab display names, so both the vanilla 1.12.2
+        // client and an Eaglercraft client behind EaglerXServer receive the identical legacy
+        // representation (hex colours flattened to the nearest legacy match). Only cache after
+        // a successful send, so a failure retries on the next cycle instead of pinning an
+        // empty tab menu.
+        if (componentUpdater.updateHeaderFooter(
+                player,
+                parseTabComponent(headerText, player),
+                parseTabComponent(footerText, player))) {
+            lastHeaderFooterCache.put(player.getUniqueId(), key);
+        }
+    }
+
+    /**
+     * Attempts the String-based player-list header/footer API. Returns false when the running
+     * Bukkit build does not expose those methods (any 1.12.2-era server), which is the signal
+     * for the caller to use the legacy packet route.
+     */
+    private boolean setHeaderFooterViaBukkitApi(Player player, String headerText, String footerText) {
         try {
             player.getClass().getMethod("setPlayerListHeaderFooter", String.class, String.class)
                     .invoke(player, parseTabText(headerText, player), parseTabText(footerText, player));
+            return true;
         } catch (ReflectiveOperationException ignored) {
-            try {
-                player.getClass().getMethod("setPlayerListHeader", String.class)
-                        .invoke(player, parseTabText(headerText, player));
-                player.getClass().getMethod("setPlayerListFooter", String.class)
-                        .invoke(player, parseTabText(footerText, player));
-            } catch (ReflectiveOperationException ignoredToo) {
-                return;
-            }
         }
-        lastHeaderFooterCache.put(player.getUniqueId(), key);
+
+        try {
+            player.getClass().getMethod("setPlayerListHeader", String.class)
+                    .invoke(player, parseTabText(headerText, player));
+            player.getClass().getMethod("setPlayerListFooter", String.class)
+                    .invoke(player, parseTabText(footerText, player));
+            return true;
+        } catch (ReflectiveOperationException ignored) {
+            return false;
+        }
     }
 
     public void updateAll() {

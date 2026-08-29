@@ -62,6 +62,24 @@ public final class TablistComponentUpdater {
         return NmsSupport.candidates(PLAYER_INFO_REMOVE_PACKET_CLASS_NAMES);
     }
 
+    private static final String[] HEADER_FOOTER_PACKET_CLASS_NAMES = {
+            "net.minecraft.network.protocol.game.ClientboundPlayerListHeaderFooterPacket",
+            "net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter"
+    };
+    private static final String[] HEADER_FOOTER_PACKET_LEGACY_NAMES = {
+            "PacketPlayOutPlayerListHeaderFooter"
+    };
+
+    /**
+     * Ordered candidate list for the modern + relocated player-list header/footer packet.
+     * On Spigot 1.12.2 only the relocated {@code net.minecraft.server.v1_12_R1} name exists;
+     * the fully qualified modern entries are never linked, just probed.
+     */
+    private static List<String> headerFooterPacketClassNames() {
+        return NmsSupport.candidates(HEADER_FOOTER_PACKET_CLASS_NAMES,
+                HEADER_FOOTER_PACKET_LEGACY_NAMES);
+    }
+
     /** Ordered candidate list for the modern + relocated chat component class. */
     private static List<String> nativeComponentClassNames() {
         return NmsSupport.candidates(NATIVE_COMPONENT_CLASS_NAMES, NATIVE_COMPONENT_LEGACY_NAMES);
@@ -73,6 +91,7 @@ public final class TablistComponentUpdater {
     private boolean avatarWarned;
     private boolean avatarDisabled;
     private boolean objectComponentWarned;
+    private boolean headerFooterWarned;
 
     public TablistComponentUpdater(UltimateDonutSmp plugin) {
         this.plugin = plugin;
@@ -968,6 +987,44 @@ public final class TablistComponentUpdater {
         }
     }
 
+    /**
+     * Sends the tab menu header and footer to a single viewer using the mechanism 1.12.2
+     * clients actually understand: {@code PacketPlayOutPlayerListHeaderFooter} carrying the
+     * optional {@code IChatBaseComponent} header and footer fields. The components go through
+     * the same rendering pipeline that colours tab display names, so configured hex colours
+     * flatten to their nearest legacy match identically for a vanilla 1.12.2 client and for an
+     * Eaglercraft client (EaglerXServer forwards this play packet verbatim and the client
+     * renders it exactly like vanilla 1.12.2 does - one legacy representation for both).
+     *
+     * <p>This route exists because the Bukkit String-based API
+     * ({@code setPlayerListHeader(String)}, {@code setPlayerListFooter(String)},
+     * {@code setPlayerListHeaderFooter(String, String)}) was introduced only after 1.12.2 and
+     * is absent on the target platform; without this fallback the configured header and footer
+     * would silently never reach the tab menu.
+     */
+    public boolean updateHeaderFooter(Player viewer, net.kyori.adventure.text.Component header,
+                                      net.kyori.adventure.text.Component footer) {
+        if (viewer == null || !viewer.isOnline() || (header == null && footer == null)) {
+            return false;
+        }
+
+        try {
+            Object nativeHeader = header == null ? null : toNativeComponent(header);
+            Object nativeFooter = footer == null ? null : toNativeComponent(footer);
+            if ((header != null && nativeHeader == null) || (footer != null && nativeFooter == null)) {
+                return false;
+            }
+
+            Class<?> packetClass = getFirstAvailableClass(headerFooterPacketClassNames());
+            Object packet = createHeaderFooterPacket(packetClass, nativeHeader, nativeFooter);
+            sendPacket(viewer, packet);
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError exception) {
+            disableHeaderFooterWithWarning(exception);
+            return false;
+        }
+    }
+
     private void scheduleAvatarAdd(UUID targetId, long delayTicks) {
         plugin.getSpigotScheduler().runGlobalLater(() -> {
             Player target = Bukkit.getPlayer(targetId);
@@ -1234,6 +1291,95 @@ public final class TablistComponentUpdater {
 
     private Object createDisplayNamePacket(Object handle) throws ReflectiveOperationException {
         return createDisplayNamePacket(handle, null);
+    }
+
+    /**
+     * Builds the legacy player-list header/footer packet. On 1.12.2 that is
+     * {@code PacketPlayOutPlayerListHeaderFooter} with a no-arg constructor plus two
+     * {@code IChatBaseComponent} fields in declaration order: {@code a} = header,
+     * {@code b} = footer. The constructor scan (and the single-component header
+     * constructor) keep the same route working if it ever runs against a different
+     * relocated NMS layout; resolution failures surface through the caller's warning.
+     */
+    private Object createHeaderFooterPacket(Class<?> packetClass, Object header, Object footer)
+            throws ReflectiveOperationException {
+        Constructor<?> emptyConstructor = null;
+        Constructor<?> headerConstructor = null;
+        Class<?> nativeComponentType = NmsSupport.findClass(
+                plugin.getServer().getClass().getClassLoader(), nativeComponentClassNames());
+
+        for (Constructor<?> constructor : packetClass.getDeclaredConstructors()) {
+            Class<?>[] parameters = constructor.getParameterTypes();
+            if (parameters.length == 0) {
+                emptyConstructor = constructor;
+            } else if (parameters.length == 1 && isChatComponentLike(parameters[0], nativeComponentType)) {
+                headerConstructor = constructor;
+            }
+        }
+
+        Object packet;
+        boolean headerFilled;
+        if (emptyConstructor != null) {
+            emptyConstructor.setAccessible(true);
+            packet = emptyConstructor.newInstance();
+            headerFilled = false;
+        } else if (headerConstructor != null && header != null) {
+            headerConstructor.setAccessible(true);
+            packet = headerConstructor.newInstance(header);
+            headerFilled = true;
+        } else {
+            throw new NoSuchMethodException("usable " + packetClass.getSimpleName() + " constructor");
+        }
+
+        setHeaderFooterFields(packet, header, footer, headerFilled, nativeComponentType);
+        return packet;
+    }
+
+    private void setHeaderFooterFields(
+            Object packet,
+            Object header,
+            Object footer,
+            boolean skipHeader,
+            Class<?> nativeComponentType
+    ) throws ReflectiveOperationException {
+        List<Field> componentFields = new ArrayList<>();
+        for (Class<?> current = packet.getClass();
+             current != null && current != Object.class;
+             current = current.getSuperclass()) {
+            for (Field field : current.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers())
+                        && isChatComponentLike(field.getType(), nativeComponentType)) {
+                    componentFields.add(field);
+                }
+            }
+        }
+
+        int index = 0;
+        if (!skipHeader) {
+            if (header != null && index < componentFields.size()) {
+                Field field = componentFields.get(index);
+                field.setAccessible(true);
+                field.set(packet, header);
+            }
+            index++;
+        }
+        if (footer != null && index < componentFields.size()) {
+            Field field = componentFields.get(index);
+            field.setAccessible(true);
+            field.set(packet, footer);
+        }
+    }
+
+    private static boolean isChatComponentLike(Class<?> type, Class<?> nativeComponentType) {
+        if (nativeComponentType != null && nativeComponentType.isAssignableFrom(type)) {
+            return true;
+        }
+
+        String name = type.getName();
+        return name.endsWith("IChatBaseComponent")
+                || name.endsWith("chat.Component")
+                || name.endsWith(".Component")
+                || name.endsWith("ChatComponentText");
     }
 
     private Object createDisplayNamePacket(Object handle, Object displayName) throws ReflectiveOperationException {
@@ -1802,6 +1948,17 @@ public final class TablistComponentUpdater {
         plugin.getLogger().warning("[Tablist] Unable to refresh tablist skin avatars on this Spigot build: "
                 + cause.getClass().getSimpleName() + ": " + cause.getMessage()
                 + ". Future skin refreshes will retry avatar packets.");
+    }
+
+    private void disableHeaderFooterWithWarning(Exception exception) {
+        if (headerFooterWarned) {
+            return;
+        }
+        headerFooterWarned = true;
+        Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+        plugin.getLogger().warning("[Tablist] Unable to send tab header/footer packets on this Spigot build: "
+                + cause.getClass().getSimpleName() + ": " + cause.getMessage()
+                + ". Header/footer updates will keep retrying.");
     }
 
     private static final class PacketSender {
