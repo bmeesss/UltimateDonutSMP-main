@@ -60,7 +60,11 @@ public final class PingManager implements Listener {
                     Player player = event.getPlayer();
                     try {
                         PacketContainer packet = event.getPacket();
-                        if (packet.getLongs().size() > 0) {
+                        // Spigot 1.12.2 serialises the keep-alive id as a long, but forks and
+                        // the 1.8-style packets send it as an int. Either way the send time is
+                        // what the reply is matched against, so accept both layouts; refusing
+                        // the int layout left every 1.12.2 player pinned at the 1 ms fallback.
+                        if (packet.getLongs().size() > 0 || packet.getIntegers().size() > 0) {
                             long now = System.currentTimeMillis();
                             pendingKeepAlives.put(player.getUniqueId(), now);
                         }
@@ -153,16 +157,22 @@ public final class PingManager implements Listener {
             Object handle = getHandle.invoke(player);
             if (handle == null) return;
 
+            // The field is EntityPlayer#latency on modern servers and EntityPlayer#ping on
+            // 1.12.2; writing it keeps the vanilla tablist signal icon in sync with the value
+            // the scoreboard shows.
             Class<?> clazz = handle.getClass();
             while (clazz != null && clazz != Object.class) {
-                try {
-                    Field f = clazz.getDeclaredField("latency");
-                    f.setAccessible(true);
-                    f.set(handle, latency);
-                    return;
-                } catch (NoSuchFieldException ignored) {
-                    clazz = clazz.getSuperclass();
+                for (String name : new String[]{"latency", "ping"}) {
+                    try {
+                        Field f = clazz.getDeclaredField(name);
+                        f.setAccessible(true);
+                        f.set(handle, latency);
+                        return;
+                    } catch (NoSuchFieldException ignored) {
+                        // try the next candidate / superclass
+                    }
                 }
+                clazz = clazz.getSuperclass();
             }
         } catch (Throwable ignored) {
             // Quiet fallback if NMS field is not accessible or named differently

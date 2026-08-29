@@ -115,7 +115,7 @@ TYPES:
       - 0
       - 0
       - 1
-      MATERIAL: AMETHYST_BLOCK
+      MATERIAL: PURPLE_CONCRETE_POWDER
     - OFFSET:
       - 1
       - 0
@@ -509,7 +509,7 @@ TYPES:
       - 0
       - 0
       - 0
-      MATERIAL: AMETHYST_BLOCK
+      MATERIAL: PURPLE_CONCRETE_POWDER
     - OFFSET:
       - 1
       - 0

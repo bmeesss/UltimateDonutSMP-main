@@ -1785,7 +1785,7 @@ AFK-MENU:
   SIZE: 54
   RANDOM-BUTTON:
     SLOT: 49
-    MATERIAL: AMETHYST_BLOCK
+    MATERIAL: PURPLE_CONCRETE_POWDER
     DISPLAY-NAME: '&#A303F9AFK'
     LORE:
     - '&fClick to teleport to a random afk area'

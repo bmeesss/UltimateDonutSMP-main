@@ -598,6 +598,19 @@ public class TablistManager {
                 || text.contains("%team%");
     }
 
+    /**
+     * The resolved rank prefix for a player (LuckPerms first, then the PAPI expansion), exactly
+     * as the tablist uses it. Exposed so nametags can carry the same prefix the tab shows; the
+     * caller is responsible for legacy conversion and the 16-character team-part limit.
+     */
+    public String nametagRankPrefix(Player player) {
+        if (player == null) {
+            return "";
+        }
+        String prefix = resolvePrefix(player);
+        return prefix == null ? "" : prefix;
+    }
+
     private String resolvePrefix(Player player) {
         String luckPermsPrefix = resolveLuckPermsPrefix(player);
         if (luckPermsPrefix != null && !luckPermsPrefix.trim().isEmpty()) {

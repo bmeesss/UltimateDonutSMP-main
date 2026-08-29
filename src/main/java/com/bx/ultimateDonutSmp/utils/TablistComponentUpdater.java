@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.utils;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -148,10 +149,128 @@ public final class TablistComponentUpdater {
             return direct;
         }
 
+        // Neither the Paper bridge nor the JSON routes produced anything - the situation on a
+        // stock 1.12.2 Spigot server, where ChatSerializer only knows the sixteen named colours
+        // and the static literal factories appeared with 1.16. Flatten the tree into a legacy
+        // string and let CraftBukkit's own ChatComponentText bridge wrap it.
+        if (!hasObjectComponent) {
+            Object legacy = toNativeComponentViaLegacyText(adventureComponent);
+            if (legacy != null) {
+                return legacy;
+            }
+        }
+
         if (hasObjectComponent) {
             warnObjectComponentUnsupported();
         }
         return null;
+    }
+
+    /**
+     * Converts a text-only adventure component into a native chat component by way of a legacy
+     * {@code §}-coded string. Hex colours are reduced to their nearest legacy match, which is
+     * the best any 1.12.2-era client can do anyway; the result feeds CraftBukkit's
+     * {@code CraftChatMessage.toComponent(String)} (or, failing that, the relocated
+     * {@code ChatComponentText(String)} constructor), neither of which needs JSON parsing.
+     */
+    private Object toNativeComponentViaLegacyText(net.kyori.adventure.text.Component adventureComponent) {
+        String legacy;
+        try {
+            legacy = componentToLegacyText(adventureComponent);
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+        if (legacy == null || legacy.isEmpty()) {
+            return null;
+        }
+
+        ClassLoader loader = plugin.getServer().getClass().getClassLoader();
+        for (String className : craftChatMessageClassNames()) {
+            Class<?> type;
+            try {
+                type = Class.forName(className, false, loader);
+            } catch (ClassNotFoundException ignored) {
+                continue;
+            }
+            for (Method method : type.getDeclaredMethods()) {
+                if (!Modifier.isStatic(method.getModifiers())
+                        || !"toComponent".equals(method.getName())
+                        || method.getParameterCount() != 1
+                        || method.getParameterTypes()[0] != String.class
+                        || method.getReturnType() == void.class
+                        || method.getReturnType() == String.class) {
+                    continue;
+                }
+                try {
+                    method.setAccessible(true);
+                    Object component = method.invoke(null, legacy);
+                    if (component != null && !component.getClass().isArray()) {
+                        return component;
+                    }
+                } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+                    // try the next candidate
+                }
+            }
+        }
+
+        try {
+            Class<?> textType = NmsSupport.findClass(loader,
+                    "net.minecraft.network.chat.ChatComponentText",
+                    "ChatComponentText");
+            if (textType != null && !textType.isInterface() && !textType.isEnum()) {
+                Object component = textType.getConstructor(String.class).newInstance(legacy);
+                if (textType.isInstance(component)) {
+                    return component;
+                }
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+            // fall through
+        }
+        return null;
+    }
+
+    /**
+     * Flattens a text-only adventure component to a legacy {@code §}-coded string: hex
+     * colours collapse to their nearest sixteen-colour match and styling becomes the familiar
+     * legacy codes. Visible to tests because the conversion is pure logic and the reflective
+     * CraftBukkit lookup around it is not.
+     */
+    static String componentToLegacyText(net.kyori.adventure.text.Component component) {
+        StringBuilder raw = new StringBuilder();
+        appendLegacyText(component, raw);
+        return LegacyScoreboardText.toLegacyColors(raw.toString());
+    }
+
+    private static void appendLegacyText(net.kyori.adventure.text.Component component, StringBuilder out) {
+        TextColor color = component.color();
+        if (color != null) {
+            out.append("&#").append(String.format("%06X", color.value() & 0xFFFFFF));
+        }
+        appendLegacyDecoration(component, TextDecoration.BOLD, 'l', out);
+        appendLegacyDecoration(component, TextDecoration.ITALIC, 'o', out);
+        appendLegacyDecoration(component, TextDecoration.UNDERLINED, 'n', out);
+        appendLegacyDecoration(component, TextDecoration.STRIKETHROUGH, 'm', out);
+        appendLegacyDecoration(component, TextDecoration.OBFUSCATED, 'k', out);
+        if (component instanceof TextComponent) {
+            out.append(((TextComponent) component).content());
+        }
+        for (net.kyori.adventure.text.Component child : component.children()) {
+            appendLegacyText(child, out);
+        }
+    }
+
+    private static void appendLegacyDecoration(
+            net.kyori.adventure.text.Component component,
+            TextDecoration decoration,
+            char code,
+            StringBuilder out
+    ) {
+        TextDecoration.State state = component.decorations().get(decoration);
+        if (state == TextDecoration.State.TRUE) {
+            out.append('\u00A7').append(code);
+        } else if (state == TextDecoration.State.FALSE) {
+            out.append('\u00A7').append('r');
+        }
     }
 
     private boolean containsObjectComponent(net.kyori.adventure.text.Component component) {
@@ -940,7 +1059,10 @@ public final class TablistComponentUpdater {
                     }
                     method.setAccessible(true);
                     Object value = unwrapOptional(method.invoke(null, json));
-                    if (value != null) {
+                    // CraftChatMessage.fromJSON(String) on 1.12.2 answers with
+                    // IChatBaseComponent[]; only a single component can label a player, so
+                    // reject arrays here and let the next candidate (fromJSONOrNull) produce one.
+                    if (value != null && !value.getClass().isArray()) {
                         return value;
                     }
                 }

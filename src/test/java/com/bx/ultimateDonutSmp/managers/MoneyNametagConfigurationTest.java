@@ -55,6 +55,8 @@ class MoneyNametagConfigurationTest {
         assertEquals("&a${balance}", config.getString("MONEY-NAMETAGS.FORMAT"));
         assertTrue(config.getBoolean("MONEY-NAMETAGS.SHORT-FORMAT"));
         assertEquals(10, config.getInt("MONEY-NAMETAGS.UPDATE-INTERVAL-TICKS"));
+        // Rank prefixes ride the team prefix field next to the money suffix.
+        assertTrue(config.getBoolean("MONEY-NAMETAGS.RANK-PREFIX"));
 
         // The client decides where the line goes, so nothing here tries to place it.
         assertFalse(config.contains("MONEY-NAMETAGS.LINE-GAP"));

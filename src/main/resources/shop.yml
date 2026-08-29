@@ -287,6 +287,9 @@ NETHER-MENU:
     - '&fBuy price: &a$35'
   # Configuration section for Crying Obsidian Item.
   CRYING-OBSIDIAN-ITEM:
+    # No 1.12.2 equivalent exists for this item; the entry stays disabled so the shop menu
+    # and its warnings stay clean. Enable it again on a 1.13+ server.
+    ENABLED: false
     # The text or value for Currency. Available options: Any valid string text
     CURRENCY: MONEY
     MATERIAL: CRYING_OBSIDIAN
@@ -333,6 +336,9 @@ GEAR-MENU:
     - '&fBuy price: &a$350'
   # Configuration section for Respawn Anchor Item.
   RESPAWN-ANCHOR-ITEM:
+    # No 1.12.2 equivalent exists for this item; the entry stays disabled so the shop menu
+    # and its warnings stay clean. Enable it again on a 1.13+ server.
+    ENABLED: false
     # The text or value for Currency. Available options: Any valid string text
     CURRENCY: MONEY
     MATERIAL: RESPAWN_ANCHOR
@@ -415,6 +421,9 @@ FOOD-MENU:
     - '&fBuy price: &a$75'
   # Configuration section for Sweet Berries Item.
   SWEET-BERRIES-ITEM:
+    # No 1.12.2 equivalent exists for this item; the entry stays disabled so the shop menu
+    # and its warnings stay clean. Enable it again on a 1.13+ server.
+    ENABLED: false
     # The text or value for Currency. Available options: Any valid string text
     CURRENCY: MONEY
     MATERIAL: SWEET_BERRIES

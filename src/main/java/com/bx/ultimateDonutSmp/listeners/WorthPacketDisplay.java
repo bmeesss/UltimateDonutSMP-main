@@ -317,8 +317,36 @@ public class WorthPacketDisplay implements Listener {
                 suppressedMaterials.remove(uuid);
             }
             if (openInventories.contains(uuid) && plugin.getWorthManager().canResendOpenInventory(player)) {
-                player.updateInventory();
+                resyncCursorSlot(player);
             }
         }, 1L);
+    }
+
+    /**
+     * Re-renders the item on the cursor after a click without touching the rest of the window.
+     *
+     * <p>Packet mode never stores worth in the real items, but the client keeps whatever copy it
+     * last received for the cursor slot (slot {@code -1}); only an explicit resend re-renders it.
+     * A full {@code updateInventory()} achieves that, yet on 1.12.2 it also re-sends the held
+     * item and every window slot, which makes the stack in the player's hand visibly flash on
+     * each click. Sending one SET_SLOT for the cursor achieves the same refresh on its own; the
+     * outgoing render listener decorates it on the way to the client, so the raw cursor stack is
+     * all this packet needs to carry. Any layout surprise (non-1.12.2 ProtocolLib field order,
+     * unsupported packet) falls back to the old full resync, never to a silently stale cursor.</p>
+     */
+    private void resyncCursorSlot(Player player) {
+        try {
+            PacketContainer packet = protocolManager.createPacket(PacketType.Play.Server.SET_SLOT);
+            packet.getIntegers().write(0, 0); // 1.12.2 window id
+            packet.getShorts().write(0, (short) -1); // slot -1 == cursor
+            ItemStack cursor = player.getItemOnCursor();
+            packet.getItemModifier().write(0,
+                    cursor == null || cursor.getType() == Material.AIR
+                            ? new ItemStack(Material.AIR)
+                            : cursor);
+            protocolManager.sendServerPacket(player, packet);
+        } catch (Throwable fallback) {
+            player.updateInventory();
+        }
     }
 }

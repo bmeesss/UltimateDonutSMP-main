@@ -36,7 +36,16 @@ import java.util.Set;
 
 public class WorthManager {
 
-    private static final String WORTH_LORE_MARKER = "\u00A70\u00A7rWORTH:";
+    /**
+     * Detection marker prepended to the worth lore line. It must carry no visible text: the
+     * line's own formatting codes are what the player reads, so the marker is reduced to pure
+     * formatting. The three resets keep the run invisible even in resource packs that paint
+     * unstyled text, while staying a distinctive byte sequence no ordinary config line holds.
+     */
+    private static final String WORTH_LORE_MARKER = "\u00A70\u00A7r\u00A7r\u00A7r";
+
+    /** Markers older builds wrote into saved items; still stripped, never re-added. */
+    private static final String[] LEGACY_WORTH_LORE_MARKERS = { "\u00A70\u00A7rWORTH:" };
     private static final Set<String> FISH_CATEGORY_OVERRIDE_NAMES = new HashSet<>(Arrays.asList(
             "COD", "COOKED_COD", "SALMON", "COOKED_SALMON", "TROPICAL_FISH", "PUFFERFISH",
             "COD_BUCKET", "SALMON_BUCKET", "TROPICAL_FISH_BUCKET", "PUFFERFISH_BUCKET", "AXOLOTL_BUCKET",
@@ -349,6 +358,13 @@ public class WorthManager {
             return;
         }
 
+        // Packet mode renders worth into copies of the outgoing items and never stores lore in
+        // the real inventory; syncing real items alongside it would rewrite held stacks and
+        // force a full window resync (the visible flicker) for work that is never needed.
+        if (packetDisplayActive) {
+            return;
+        }
+
         boolean enabled = isWorthDisplayEnabled(player);
         syncInventoryWorthDisplay(player.getInventory(), enabled);
 
@@ -369,6 +385,9 @@ public class WorthManager {
 
     public void syncWorthDisplay(Player player, Inventory inventory, boolean forceUpdate) {
         if (player == null) {
+            return;
+        }
+        if (packetDisplayActive) {
             return;
         }
         syncInventoryWorthDisplay(inventory, isWorthDisplayEnabled(player));
@@ -1076,7 +1095,11 @@ public class WorthManager {
             }
             com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.Icon icon =
                     com.bx.ultimateDonutSmp.utils.LegacyMaterialSupport.resolve(key);
-            if (icon == null || icon.material() == null) {
+            if (icon == null || icon.material() == null || !icon.isExact()) {
+                // A visual approximation (netherite block rendered as glowstone, deepslate ore
+                // as the surface ore, ...) may decorate a menu, but the 1.12.2 item it borrows
+                // is a different item in an inventory. Aliasing worth through it would price a
+                // $3 glowstone stack at the netherite-block worth.
                 continue;
             }
             String aliasTarget = icon.material().name() + ":" + icon.data();
@@ -1343,7 +1366,15 @@ public class WorthManager {
         if (line == null) {
             return false;
         }
-        return line.contains(WORTH_LORE_MARKER);
+        if (line.contains(WORTH_LORE_MARKER)) {
+            return true;
+        }
+        for (String legacy : LEGACY_WORTH_LORE_MARKERS) {
+            if (line.contains(legacy)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String markWorthLore(String loreLine) {

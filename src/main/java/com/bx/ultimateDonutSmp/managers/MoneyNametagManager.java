@@ -63,6 +63,27 @@ public class MoneyNametagManager {
     }
 
     /**
+     * The rank prefix side of a team line. Mirrors {@link #fitTeamSuffix}: legacy colours only
+     * and bounded to the 16-character team-part budget. The prefix colour bleeds into the name
+     * that follows it on a 1.12.2 client, so an explicit reset is appended when the rank prefix
+     * does not already carry one.
+     */
+    static String fitTeamPrefix(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        String legacy = LegacyScoreboardText.sanitize(
+                text, LegacyScoreboardText.MAX_TEAM_PART_LENGTH - 2);
+        if (legacy.isEmpty()) {
+            return "";
+        }
+        if (!legacy.endsWith("\u00A7r")) {
+            legacy = legacy + "\u00A7r";
+        }
+        return legacy;
+    }
+
+    /**
      * Fits the rendered balance into the suffix of a 1.12.2 nametag team: at most sixteen raw
      * characters, legacy colours only, never cut through a colour code, and one leading space so
      * the text does not run into the username.
@@ -174,6 +195,27 @@ public class MoneyNametagManager {
         }
     }
 
+    /** Whether MONEY-NAMETAGS.RANK-PREFIX asks for the tab rank prefix on the nametag. */
+    private boolean rankPrefixEnabled() {
+        return config().getBoolean("MONEY-NAMETAGS.RANK-PREFIX", true);
+    }
+
+    /** The target's rank prefix, legacy-coloured and fitted for the team prefix field. */
+    private String rankPrefixFor(Player target) {
+        if (plugin.getTablistManager() == null) {
+            return "";
+        }
+        try {
+            String raw = plugin.getTablistManager().nametagRankPrefix(target);
+            if (raw == null || raw.trim().isEmpty()) {
+                return "";
+            }
+            return fitTeamPrefix(ColorUtils.colorize(raw, target));
+        } catch (Throwable unavailable) {
+            return "";
+        }
+    }
+
     private void push(Player viewer) {
         if (viewer == null || !viewer.isOnline()) {
             return;
@@ -193,7 +235,13 @@ public class MoneyNametagManager {
             MoneyNametagState.Entry entry = state.entryFor(viewerId, targetId);
             String memberName = target.getName();
             String text = fitTeamSuffix(ColorUtils.colorize(currentText(target), target));
-            if (entry.currentlyShows(text, memberName) && board.getTeam(entry.teamName) != null) {
+            // The rank prefix shown in the tab belongs on the nametag too: on 1.12.2 a team
+            // renders prefix + name + suffix together, so both parts coexist without stealing
+            // each other's 16 characters. Rank changes must refresh the team, so the prefix is
+            // part of the tracked state, not just the money text.
+            String prefix = rankPrefixEnabled() ? rankPrefixFor(target) : "";
+            String tracked = prefix.isEmpty() ? text : prefix + "\u0000" + text;
+            if (entry.currentlyShows(tracked, memberName) && board.getTeam(entry.teamName) != null) {
                 continue;
             }
             Team team = board.getTeam(entry.teamName);
@@ -207,9 +255,9 @@ public class MoneyNametagManager {
                 if (!team.hasEntry(memberName)) {
                     team.addEntry(memberName);
                 }
-                team.setPrefix("");
+                team.setPrefix(prefix);
                 team.setSuffix(text);
-                entry.text = text;
+                entry.text = tracked;
                 entry.memberName = memberName;
             } catch (IllegalStateException | IllegalArgumentException unavailable) {
                 // The board or the team was replaced under us (a reload rebuilt the board). Drop
