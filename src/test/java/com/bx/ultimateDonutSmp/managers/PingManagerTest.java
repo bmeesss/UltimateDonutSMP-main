@@ -115,7 +115,7 @@ class PingManagerTest {
         // cadence); no new per-tick ping task may appear.
         assertEquals(1, source.split("runGlobalTimer", -1).length - 1,
                 "exactly one scheduled refresh loop expected");
-        assertTrue(source.contains("20L, 100L"), "refresh cadence must stay at 5 s (100 ticks)");
+        assertTrue(source.contains("100L, 100L"), "refresh cadence must stay at 5 s (100 ticks)");
     }
 
     // ---------------------------------------------------------------- scoreboard UI
