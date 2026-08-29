@@ -3,6 +3,7 @@ package com.bx.ultimateDonutSmp.utils;
 import com.bx.ultimateDonutSmp.UltimateDonutSmp;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -61,6 +62,24 @@ public final class TablistComponentUpdater {
         return NmsSupport.candidates(PLAYER_INFO_REMOVE_PACKET_CLASS_NAMES);
     }
 
+    private static final String[] HEADER_FOOTER_PACKET_CLASS_NAMES = {
+            "net.minecraft.network.protocol.game.ClientboundPlayerListHeaderFooterPacket",
+            "net.minecraft.network.protocol.game.PacketPlayOutPlayerListHeaderFooter"
+    };
+    private static final String[] HEADER_FOOTER_PACKET_LEGACY_NAMES = {
+            "PacketPlayOutPlayerListHeaderFooter"
+    };
+
+    /**
+     * Ordered candidate list for the modern + relocated player-list header/footer packet.
+     * On Spigot 1.12.2 only the relocated {@code net.minecraft.server.v1_12_R1} name exists;
+     * the fully qualified modern entries are never linked, just probed.
+     */
+    private static List<String> headerFooterPacketClassNames() {
+        return NmsSupport.candidates(HEADER_FOOTER_PACKET_CLASS_NAMES,
+                HEADER_FOOTER_PACKET_LEGACY_NAMES);
+    }
+
     /** Ordered candidate list for the modern + relocated chat component class. */
     private static List<String> nativeComponentClassNames() {
         return NmsSupport.candidates(NATIVE_COMPONENT_CLASS_NAMES, NATIVE_COMPONENT_LEGACY_NAMES);
@@ -72,6 +91,7 @@ public final class TablistComponentUpdater {
     private boolean avatarWarned;
     private boolean avatarDisabled;
     private boolean objectComponentWarned;
+    private boolean headerFooterWarned;
 
     public TablistComponentUpdater(UltimateDonutSmp plugin) {
         this.plugin = plugin;
@@ -148,10 +168,128 @@ public final class TablistComponentUpdater {
             return direct;
         }
 
+        // Neither the Paper bridge nor the JSON routes produced anything - the situation on a
+        // stock 1.12.2 Spigot server, where ChatSerializer only knows the sixteen named colours
+        // and the static literal factories appeared with 1.16. Flatten the tree into a legacy
+        // string and let CraftBukkit's own ChatComponentText bridge wrap it.
+        if (!hasObjectComponent) {
+            Object legacy = toNativeComponentViaLegacyText(adventureComponent);
+            if (legacy != null) {
+                return legacy;
+            }
+        }
+
         if (hasObjectComponent) {
             warnObjectComponentUnsupported();
         }
         return null;
+    }
+
+    /**
+     * Converts a text-only adventure component into a native chat component by way of a legacy
+     * {@code §}-coded string. Hex colours are reduced to their nearest legacy match, which is
+     * the best any 1.12.2-era client can do anyway; the result feeds CraftBukkit's
+     * {@code CraftChatMessage.toComponent(String)} (or, failing that, the relocated
+     * {@code ChatComponentText(String)} constructor), neither of which needs JSON parsing.
+     */
+    private Object toNativeComponentViaLegacyText(net.kyori.adventure.text.Component adventureComponent) {
+        String legacy;
+        try {
+            legacy = componentToLegacyText(adventureComponent);
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+        if (legacy == null || legacy.isEmpty()) {
+            return null;
+        }
+
+        ClassLoader loader = plugin.getServer().getClass().getClassLoader();
+        for (String className : craftChatMessageClassNames()) {
+            Class<?> type;
+            try {
+                type = Class.forName(className, false, loader);
+            } catch (ClassNotFoundException ignored) {
+                continue;
+            }
+            for (Method method : type.getDeclaredMethods()) {
+                if (!Modifier.isStatic(method.getModifiers())
+                        || !"toComponent".equals(method.getName())
+                        || method.getParameterCount() != 1
+                        || method.getParameterTypes()[0] != String.class
+                        || method.getReturnType() == void.class
+                        || method.getReturnType() == String.class) {
+                    continue;
+                }
+                try {
+                    method.setAccessible(true);
+                    Object component = method.invoke(null, legacy);
+                    if (component != null && !component.getClass().isArray()) {
+                        return component;
+                    }
+                } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+                    // try the next candidate
+                }
+            }
+        }
+
+        try {
+            Class<?> textType = NmsSupport.findClass(loader,
+                    "net.minecraft.network.chat.ChatComponentText",
+                    "ChatComponentText");
+            if (textType != null && !textType.isInterface() && !textType.isEnum()) {
+                Object component = textType.getConstructor(String.class).newInstance(legacy);
+                if (textType.isInstance(component)) {
+                    return component;
+                }
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+            // fall through
+        }
+        return null;
+    }
+
+    /**
+     * Flattens a text-only adventure component to a legacy {@code §}-coded string: hex
+     * colours collapse to their nearest sixteen-colour match and styling becomes the familiar
+     * legacy codes. Visible to tests because the conversion is pure logic and the reflective
+     * CraftBukkit lookup around it is not.
+     */
+    static String componentToLegacyText(net.kyori.adventure.text.Component component) {
+        StringBuilder raw = new StringBuilder();
+        appendLegacyText(component, raw);
+        return LegacyScoreboardText.toLegacyColors(raw.toString());
+    }
+
+    private static void appendLegacyText(net.kyori.adventure.text.Component component, StringBuilder out) {
+        TextColor color = component.color();
+        if (color != null) {
+            out.append("&#").append(String.format("%06X", color.value() & 0xFFFFFF));
+        }
+        appendLegacyDecoration(component, TextDecoration.BOLD, 'l', out);
+        appendLegacyDecoration(component, TextDecoration.ITALIC, 'o', out);
+        appendLegacyDecoration(component, TextDecoration.UNDERLINED, 'n', out);
+        appendLegacyDecoration(component, TextDecoration.STRIKETHROUGH, 'm', out);
+        appendLegacyDecoration(component, TextDecoration.OBFUSCATED, 'k', out);
+        if (component instanceof TextComponent) {
+            out.append(((TextComponent) component).content());
+        }
+        for (net.kyori.adventure.text.Component child : component.children()) {
+            appendLegacyText(child, out);
+        }
+    }
+
+    private static void appendLegacyDecoration(
+            net.kyori.adventure.text.Component component,
+            TextDecoration decoration,
+            char code,
+            StringBuilder out
+    ) {
+        TextDecoration.State state = component.decorations().get(decoration);
+        if (state == TextDecoration.State.TRUE) {
+            out.append('\u00A7').append(code);
+        } else if (state == TextDecoration.State.FALSE) {
+            out.append('\u00A7').append('r');
+        }
     }
 
     private boolean containsObjectComponent(net.kyori.adventure.text.Component component) {
@@ -849,6 +987,44 @@ public final class TablistComponentUpdater {
         }
     }
 
+    /**
+     * Sends the tab menu header and footer to a single viewer using the mechanism 1.12.2
+     * clients actually understand: {@code PacketPlayOutPlayerListHeaderFooter} carrying the
+     * optional {@code IChatBaseComponent} header and footer fields. The components go through
+     * the same rendering pipeline that colours tab display names, so configured hex colours
+     * flatten to their nearest legacy match identically for a vanilla 1.12.2 client and for an
+     * Eaglercraft client (EaglerXServer forwards this play packet verbatim and the client
+     * renders it exactly like vanilla 1.12.2 does - one legacy representation for both).
+     *
+     * <p>This route exists because the Bukkit String-based API
+     * ({@code setPlayerListHeader(String)}, {@code setPlayerListFooter(String)},
+     * {@code setPlayerListHeaderFooter(String, String)}) was introduced only after 1.12.2 and
+     * is absent on the target platform; without this fallback the configured header and footer
+     * would silently never reach the tab menu.
+     */
+    public boolean updateHeaderFooter(Player viewer, net.kyori.adventure.text.Component header,
+                                      net.kyori.adventure.text.Component footer) {
+        if (viewer == null || !viewer.isOnline() || (header == null && footer == null)) {
+            return false;
+        }
+
+        try {
+            Object nativeHeader = header == null ? null : toNativeComponent(header);
+            Object nativeFooter = footer == null ? null : toNativeComponent(footer);
+            if ((header != null && nativeHeader == null) || (footer != null && nativeFooter == null)) {
+                return false;
+            }
+
+            Class<?> packetClass = getFirstAvailableClass(headerFooterPacketClassNames());
+            Object packet = createHeaderFooterPacket(packetClass, nativeHeader, nativeFooter);
+            sendPacket(viewer, packet);
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError exception) {
+            disableHeaderFooterWithWarning(exception);
+            return false;
+        }
+    }
+
     private void scheduleAvatarAdd(UUID targetId, long delayTicks) {
         plugin.getSpigotScheduler().runGlobalLater(() -> {
             Player target = Bukkit.getPlayer(targetId);
@@ -940,7 +1116,10 @@ public final class TablistComponentUpdater {
                     }
                     method.setAccessible(true);
                     Object value = unwrapOptional(method.invoke(null, json));
-                    if (value != null) {
+                    // CraftChatMessage.fromJSON(String) on 1.12.2 answers with
+                    // IChatBaseComponent[]; only a single component can label a player, so
+                    // reject arrays here and let the next candidate (fromJSONOrNull) produce one.
+                    if (value != null && !value.getClass().isArray()) {
                         return value;
                     }
                 }
@@ -1112,6 +1291,95 @@ public final class TablistComponentUpdater {
 
     private Object createDisplayNamePacket(Object handle) throws ReflectiveOperationException {
         return createDisplayNamePacket(handle, null);
+    }
+
+    /**
+     * Builds the legacy player-list header/footer packet. On 1.12.2 that is
+     * {@code PacketPlayOutPlayerListHeaderFooter} with a no-arg constructor plus two
+     * {@code IChatBaseComponent} fields in declaration order: {@code a} = header,
+     * {@code b} = footer. The constructor scan (and the single-component header
+     * constructor) keep the same route working if it ever runs against a different
+     * relocated NMS layout; resolution failures surface through the caller's warning.
+     */
+    private Object createHeaderFooterPacket(Class<?> packetClass, Object header, Object footer)
+            throws ReflectiveOperationException {
+        Constructor<?> emptyConstructor = null;
+        Constructor<?> headerConstructor = null;
+        Class<?> nativeComponentType = NmsSupport.findClass(
+                plugin.getServer().getClass().getClassLoader(), nativeComponentClassNames());
+
+        for (Constructor<?> constructor : packetClass.getDeclaredConstructors()) {
+            Class<?>[] parameters = constructor.getParameterTypes();
+            if (parameters.length == 0) {
+                emptyConstructor = constructor;
+            } else if (parameters.length == 1 && isChatComponentLike(parameters[0], nativeComponentType)) {
+                headerConstructor = constructor;
+            }
+        }
+
+        Object packet;
+        boolean headerFilled;
+        if (emptyConstructor != null) {
+            emptyConstructor.setAccessible(true);
+            packet = emptyConstructor.newInstance();
+            headerFilled = false;
+        } else if (headerConstructor != null && header != null) {
+            headerConstructor.setAccessible(true);
+            packet = headerConstructor.newInstance(header);
+            headerFilled = true;
+        } else {
+            throw new NoSuchMethodException("usable " + packetClass.getSimpleName() + " constructor");
+        }
+
+        setHeaderFooterFields(packet, header, footer, headerFilled, nativeComponentType);
+        return packet;
+    }
+
+    private void setHeaderFooterFields(
+            Object packet,
+            Object header,
+            Object footer,
+            boolean skipHeader,
+            Class<?> nativeComponentType
+    ) throws ReflectiveOperationException {
+        List<Field> componentFields = new ArrayList<>();
+        for (Class<?> current = packet.getClass();
+             current != null && current != Object.class;
+             current = current.getSuperclass()) {
+            for (Field field : current.getDeclaredFields()) {
+                if (!Modifier.isStatic(field.getModifiers())
+                        && isChatComponentLike(field.getType(), nativeComponentType)) {
+                    componentFields.add(field);
+                }
+            }
+        }
+
+        int index = 0;
+        if (!skipHeader) {
+            if (header != null && index < componentFields.size()) {
+                Field field = componentFields.get(index);
+                field.setAccessible(true);
+                field.set(packet, header);
+            }
+            index++;
+        }
+        if (footer != null && index < componentFields.size()) {
+            Field field = componentFields.get(index);
+            field.setAccessible(true);
+            field.set(packet, footer);
+        }
+    }
+
+    private static boolean isChatComponentLike(Class<?> type, Class<?> nativeComponentType) {
+        if (nativeComponentType != null && nativeComponentType.isAssignableFrom(type)) {
+            return true;
+        }
+
+        String name = type.getName();
+        return name.endsWith("IChatBaseComponent")
+                || name.endsWith("chat.Component")
+                || name.endsWith(".Component")
+                || name.endsWith("ChatComponentText");
     }
 
     private Object createDisplayNamePacket(Object handle, Object displayName) throws ReflectiveOperationException {
@@ -1680,6 +1948,17 @@ public final class TablistComponentUpdater {
         plugin.getLogger().warning("[Tablist] Unable to refresh tablist skin avatars on this Spigot build: "
                 + cause.getClass().getSimpleName() + ": " + cause.getMessage()
                 + ". Future skin refreshes will retry avatar packets.");
+    }
+
+    private void disableHeaderFooterWithWarning(Throwable exception) {
+        if (headerFooterWarned) {
+            return;
+        }
+        headerFooterWarned = true;
+        Throwable cause = exception.getCause() == null ? exception : exception.getCause();
+        plugin.getLogger().warning("[Tablist] Unable to send tab header/footer packets on this Spigot build: "
+                + cause.getClass().getSimpleName() + ": " + cause.getMessage()
+                + ". Header/footer updates will keep retrying.");
     }
 
     private static final class PacketSender {

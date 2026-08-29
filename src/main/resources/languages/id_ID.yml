@@ -2140,7 +2140,7 @@ CONFIG:
       KICK: "Penyetelan ulang musim &ca dimulai. server akan segera restart."
   WORTH:
     DISPLAY:
-      FORMAT: '&7Bernilai: &a$${price}'
+      FORMAT: '&7Bernilai: &a${price}'
     BROWSER:
       TITLE: '&8Harga barang'
       ITEM:

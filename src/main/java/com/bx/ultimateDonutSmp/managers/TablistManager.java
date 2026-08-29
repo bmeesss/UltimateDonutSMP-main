@@ -90,20 +90,50 @@ public class TablistManager {
             return;
         }
         // Keep this compatible with the 1.12 API without linking newer overloads.
+        if (setHeaderFooterViaBukkitApi(player, headerText, footerText)) {
+            lastHeaderFooterCache.put(player.getUniqueId(), key);
+            return;
+        }
+
+        // The String-based Bukkit header/footer methods above only exist on servers newer than
+        // 1.12.2; on this server's API they are simply absent, and the tab menu would then never
+        // show the configured header and footer at all. Send the legacy NMS packet instead -
+        // PacketPlayOutPlayerListHeaderFooter with IChatBaseComponent fields - built through the
+        // same component pipeline that colours the tab display names, so both the vanilla 1.12.2
+        // client and an Eaglercraft client behind EaglerXServer receive the identical legacy
+        // representation (hex colours flattened to the nearest legacy match). Only cache after
+        // a successful send, so a failure retries on the next cycle instead of pinning an
+        // empty tab menu.
+        if (componentUpdater.updateHeaderFooter(
+                player,
+                parseTabComponent(headerText, player),
+                parseTabComponent(footerText, player))) {
+            lastHeaderFooterCache.put(player.getUniqueId(), key);
+        }
+    }
+
+    /**
+     * Attempts the String-based player-list header/footer API. Returns false when the running
+     * Bukkit build does not expose those methods (any 1.12.2-era server), which is the signal
+     * for the caller to use the legacy packet route.
+     */
+    private boolean setHeaderFooterViaBukkitApi(Player player, String headerText, String footerText) {
         try {
             player.getClass().getMethod("setPlayerListHeaderFooter", String.class, String.class)
                     .invoke(player, parseTabText(headerText, player), parseTabText(footerText, player));
+            return true;
         } catch (ReflectiveOperationException ignored) {
-            try {
-                player.getClass().getMethod("setPlayerListHeader", String.class)
-                        .invoke(player, parseTabText(headerText, player));
-                player.getClass().getMethod("setPlayerListFooter", String.class)
-                        .invoke(player, parseTabText(footerText, player));
-            } catch (ReflectiveOperationException ignoredToo) {
-                return;
-            }
         }
-        lastHeaderFooterCache.put(player.getUniqueId(), key);
+
+        try {
+            player.getClass().getMethod("setPlayerListHeader", String.class)
+                    .invoke(player, parseTabText(headerText, player));
+            player.getClass().getMethod("setPlayerListFooter", String.class)
+                    .invoke(player, parseTabText(footerText, player));
+            return true;
+        } catch (ReflectiveOperationException ignored) {
+            return false;
+        }
     }
 
     public void updateAll() {
@@ -598,26 +628,62 @@ public class TablistManager {
                 || text.contains("%team%");
     }
 
+    /**
+     * The resolved rank prefix for a player, through the same source chain the tablist and the
+     * chat use (LuckPerms metadata, PAPI rank placeholders, Vault chat). Exposed so nametags
+     * carry the same prefix the tab shows; the caller is responsible for legacy conversion and
+     * the 16-character team-part limit.
+     */
+    public String nametagRankPrefix(Player player) {
+        if (player == null) {
+            return "";
+        }
+        String prefix = resolvePrefix(player);
+        return prefix == null ? "" : prefix;
+    }
+
     private String resolvePrefix(Player player) {
         String luckPermsPrefix = resolveLuckPermsPrefix(player);
         if (luckPermsPrefix != null && !luckPermsPrefix.trim().isEmpty()) {
             return luckPermsPrefix;
         }
 
-        if (!ColorUtils.hasPAPI()) {
-            return "";
+        if (ColorUtils.hasPAPI()) {
+            // Same placeholder tiers and the same unresolved-placeholder guard as the chat
+            // pipeline (ChatListener#resolvePrefix): a tier yielding nothing, whitespace or a
+            // literal %name% (expansion not installed) falls through to the next source.
+            // Servers that define ranks through Vault/Essentials rather than LuckPerms meta
+            // resolve there; stopping after the LuckPerms tiers here left tab entries and
+            // nametags without a rank while chat still showed one.
+            for (String placeholder : new String[]{
+                    "%luckperms_prefix%", "%vault_prefix%", "%prefix%"}) {
+                try {
+                    String prefix = me.clip.placeholderapi.PlaceholderAPI
+                            .setPlaceholders(player, placeholder);
+                    if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
+                        return prefix;
+                    }
+                } catch (Exception ignored) {
+                    // Tier unavailable; the next one may still know the rank.
+                }
+            }
         }
 
-        try {
-            String prefix = me.clip.placeholderapi.PlaceholderAPI
-                    .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.trim().isEmpty() || prefix.startsWith("%")) {
-                return "";
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.chat.Chat> rsp =
+                        Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+                if (rsp != null && rsp.getProvider() != null) {
+                    String prefix = rsp.getProvider().getPlayerPrefix(player);
+                    if (prefix != null && !prefix.trim().isEmpty()) {
+                        return prefix;
+                    }
+                }
+            } catch (Throwable unavailable) {
+                // Vault chat missing or misbehaving: no prefix beats an exception per tab pass.
             }
-            return prefix;
-        } catch (Exception ignored) {
-            return "";
         }
+        return "";
     }
 
     private String getMultilineText(String path) {

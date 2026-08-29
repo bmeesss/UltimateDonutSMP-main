@@ -1,0 +1,172 @@
+name: Arena Verify Build
+
+on:
+  push:
+    branches:
+      - 'arena/**'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
+          cache: 'maven'
+
+      # No `|| true` anywhere: every Maven step records its real exit code to a file and the
+      # Gate step at the bottom turns those codes into the run's conclusion. Logs are still
+      # echoed to the console so the step output stays readable on its own.
+
+      - name: Compile
+        run: |
+          set +e
+          mvn -B -DskipTests compile > /tmp/compile.log 2>&1
+          echo "$?" > /tmp/rc-compile
+          tail -n 40 /tmp/compile.log
+
+      - name: Test
+        run: |
+          set +e
+          mvn -B clean test > /tmp/test.log 2>&1
+          echo "$?" > /tmp/rc-test
+          grep -E "Tests run|BUILD" /tmp/test.log | tail -n 6
+
+      - name: Package
+        run: |
+          set +e
+          mvn -B clean package "-Dmaven.test.skip=true" > /tmp/package.log 2>&1
+          echo "$?" > /tmp/rc-package
+          grep -E "BUILD|ERROR" /tmp/package.log | head -n 6
+
+      - name: Jar audit
+        if: always()
+        run: |
+          set +e
+          {
+            JAR=$(ls target/*.jar 2>/dev/null | head -1)
+            if [ -z "$JAR" ]; then
+              echo "NO JAR PRODUCED"
+            else
+              echo "JAR: $JAR"
+              unzip -l "$JAR" | tail -1
+              echo "== modern-API reference scan in plugin classes =="
+              rm -rf /tmp/jarscan
+              mkdir -p /tmp/jarscan
+              if unzip -qo "$GITHUB_WORKSPACE/$JAR" 'com/bx/*' -d /tmp/jarscan; then
+                matches=$(grep -rl "org/bukkit/block/data\|Damageable\|PersistentDataContainer\|WrappedNumberFormat" /tmp/jarscan/com 2>/dev/null | head -n 20)
+                if [ -n "$matches" ]; then
+                  printf '%s\n' "$matches"
+                else
+                  echo "no obvious modern refs in com/bx"
+                fi
+              else
+                echo "AUDIT SKIPPED: the jar could not be unpacked"
+              fi
+            fi
+          } > /tmp/audit.log 2>&1
+          cat /tmp/audit.log
+
+      - name: Collect result
+        if: always()
+        run: |
+          set +e
+          read_rc() {
+            if [ -f "/tmp/rc-$1" ]; then
+              cat "/tmp/rc-$1"
+            else
+              echo MISSING
+            fi
+          }
+          C=$(read_rc compile)
+          T=$(read_rc test)
+          P=$(read_rc package)
+          {
+            echo "### Verify run @ $(date -u +%FT%TZ) on commit $GITHUB_SHA"
+            echo
+            if [ "$C" = "0" ] && [ "$T" = "0" ] && [ "$P" = "0" ]; then
+              echo "RESULT: PASS"
+            else
+              echo "RESULT: FAIL"
+            fi
+            echo "exit codes: compile=$C test=$T package=$P"
+            echo
+            echo "#### tests summary"
+            grep -E "Tests run:" /tmp/test.log 2>/dev/null | tail -n 3
+            echo
+            echo "#### test log errors"
+            grep -E "\[ERROR\]" /tmp/test.log 2>/dev/null | head -n 40
+            echo "#### compile log tail"
+            tail -n 40 /tmp/compile.log 2>/dev/null
+            echo "#### package log tail"
+            grep -E "BUILD|ERROR" /tmp/package.log 2>/dev/null | head -n 10
+            echo "#### jar audit"
+            cat /tmp/audit.log 2>/dev/null
+          } > ci-result.md
+          cp ci-result.md /tmp/ci-result.md
+
+      - name: Commit result back
+        if: always()
+        run: |
+          set +e
+          SHORT=$(git rev-parse --short HEAD)
+          mkdir -p ci
+          mv ci-result.md "ci/verify-$SHORT.md" 2>/dev/null || echo "RESULT MISSING" > "ci/verify-$SHORT.md"
+          git config user.name "arena-ci[bot]"
+          git config user.email "arena-ci@users.noreply.github.com"
+          git add -f "ci/verify-$SHORT.md"
+          git commit -m "ci: verify result for $SHORT [skip ci]"
+          git push origin "HEAD:${{ github.ref_name }}"
+          if [ "$?" != "0" ]; then
+            echo "::warning::the result file could not be pushed; its contents follow"
+            cat "ci/verify-$SHORT.md"
+          fi
+        continue-on-error: true
+
+      - name: Commit status
+        if: always()
+        run: |
+          if grep -q "^RESULT: PASS" /tmp/ci-result.md 2>/dev/null; then
+            STATE=success
+          else
+            STATE=failure
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/$GITHUB_REPOSITORY/statuses/$GITHUB_SHA" \
+            -d "{\"state\":\"$STATE\",\"context\":\"arena/verify\",\"description\":\"maven compile+test+package\"}" || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Fails the job iff a recorded Maven exit code says so. Without this step a run could
+      # conclude "success" (the old behaviour: every fallible command ended in `|| true`)
+      # while the committed result file said FAIL.
+      - name: Gate
+        if: always()
+        run: |
+          fail=0
+          for name in compile test package; do
+            f="/tmp/rc-$name"
+            if [ ! -f "$f" ]; then
+              echo "$name: exit code was never recorded"
+              fail=1
+              continue
+            fi
+            rc=$(cat "$f")
+            if [ "$rc" != "0" ]; then
+              echo "$name failed with exit code $rc"
+              fail=1
+            fi
+          done
+          exit "$fail"

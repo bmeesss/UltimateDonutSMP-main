@@ -50,6 +50,14 @@ public class MoneyNametagManager {
     private final MoneyNametagState state = new MoneyNametagState();
     /** The scoreboard each viewer's teams were last written to, so they can be removed again. */
     private final Map<UUID, Scoreboard> viewerBoards = new ConcurrentHashMap<>();
+    /**
+     * One resolved rank prefix per target per pass: {@link #updateAll()} runs {@link #push(Player)}
+     * for every viewer, but the rank belongs to the target, so it is looked up once per pass
+     * instead of once per viewer x target. The memo is dropped at the start of every pass, so a
+     * rank change is picked up by the next one without any relog, and a direct refreshViewer
+     * call is at most one pass stale.
+     */
+    private final Map<UUID, String> rankPrefixMemo = new ConcurrentHashMap<>();
     private boolean warnedBoardUnavailable;
 
     public MoneyNametagManager(UltimateDonutSmp plugin) {
@@ -60,6 +68,27 @@ public class MoneyNametagManager {
     public static String render(String format, double balance, boolean shortFormat) {
         String amount = shortFormat ? NumberUtils.formatNice(balance) : NumberUtils.format(balance);
         return format == null ? amount : format.replace(BALANCE_PLACEHOLDER, amount);
+    }
+
+    /**
+     * The rank prefix side of a team line. Mirrors {@link #fitTeamSuffix}: legacy colours only
+     * and bounded to the 16-character team-part budget. The prefix colour bleeds into the name
+     * that follows it on a 1.12.2 client, so an explicit reset is appended when the rank prefix
+     * does not already carry one.
+     */
+    static String fitTeamPrefix(String text) {
+        if (text == null || text.isEmpty()) {
+            return "";
+        }
+        String legacy = LegacyScoreboardText.sanitize(
+                text, LegacyScoreboardText.MAX_TEAM_PART_LENGTH - 2);
+        if (legacy.isEmpty()) {
+            return "";
+        }
+        if (!legacy.endsWith("\u00A7r")) {
+            legacy = legacy + "\u00A7r";
+        }
+        return legacy;
     }
 
     /**
@@ -99,6 +128,8 @@ public class MoneyNametagManager {
             clearAll();
             return;
         }
+        // Fresh rank resolution for this pass; one lookup per target, shared by all viewers.
+        rankPrefixMemo.clear();
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             if (isEnabledFor(viewer)) {
                 push(viewer);
@@ -140,6 +171,7 @@ public class MoneyNametagManager {
             }
         }
         state.forgetTarget(playerUuid);
+        rankPrefixMemo.remove(playerUuid);
         clearViewerState(playerUuid);
     }
 
@@ -148,6 +180,7 @@ public class MoneyNametagManager {
             clearViewer(viewer);
         }
         state.clear();
+        rankPrefixMemo.clear();
     }
 
     public void reload() {
@@ -174,6 +207,37 @@ public class MoneyNametagManager {
         }
     }
 
+    /** Whether MONEY-NAMETAGS.RANK-PREFIX asks for the tab rank prefix on the nametag. */
+    private boolean rankPrefixEnabled() {
+        return config().getBoolean("MONEY-NAMETAGS.RANK-PREFIX", true);
+    }
+
+    /** The target's rank prefix, legacy-coloured and fitted for the team prefix field. */
+    private String rankPrefixFor(Player target) {
+        String cached = rankPrefixMemo.get(target.getUniqueId());
+        if (cached != null) {
+            return cached;
+        }
+        String fitted = resolveRankPrefix(target);
+        rankPrefixMemo.put(target.getUniqueId(), fitted);
+        return fitted;
+    }
+
+    private String resolveRankPrefix(Player target) {
+        if (plugin.getTablistManager() == null) {
+            return "";
+        }
+        try {
+            String raw = plugin.getTablistManager().nametagRankPrefix(target);
+            if (raw == null || raw.trim().isEmpty()) {
+                return "";
+            }
+            return fitTeamPrefix(ColorUtils.colorize(raw, target));
+        } catch (Throwable unavailable) {
+            return "";
+        }
+    }
+
     private void push(Player viewer) {
         if (viewer == null || !viewer.isOnline()) {
             return;
@@ -193,7 +257,13 @@ public class MoneyNametagManager {
             MoneyNametagState.Entry entry = state.entryFor(viewerId, targetId);
             String memberName = target.getName();
             String text = fitTeamSuffix(ColorUtils.colorize(currentText(target), target));
-            if (entry.currentlyShows(text, memberName) && board.getTeam(entry.teamName) != null) {
+            // The rank prefix shown in the tab belongs on the nametag too: on 1.12.2 a team
+            // renders prefix + name + suffix together, so both parts coexist without stealing
+            // each other's 16 characters. Rank changes must refresh the team, so the prefix is
+            // part of the tracked state, not just the money text.
+            String prefix = rankPrefixEnabled() ? rankPrefixFor(target) : "";
+            String tracked = prefix.isEmpty() ? text : prefix + "\u0000" + text;
+            if (entry.currentlyShows(tracked, memberName) && board.getTeam(entry.teamName) != null) {
                 continue;
             }
             Team team = board.getTeam(entry.teamName);
@@ -207,9 +277,9 @@ public class MoneyNametagManager {
                 if (!team.hasEntry(memberName)) {
                     team.addEntry(memberName);
                 }
-                team.setPrefix("");
+                team.setPrefix(prefix);
                 team.setSuffix(text);
-                entry.text = text;
+                entry.text = tracked;
                 entry.memberName = memberName;
             } catch (IllegalStateException | IllegalArgumentException unavailable) {
                 // The board or the team was replaced under us (a reload rebuilt the board). Drop

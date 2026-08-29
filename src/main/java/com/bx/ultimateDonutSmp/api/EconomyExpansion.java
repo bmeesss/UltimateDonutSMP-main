@@ -124,8 +124,9 @@ public class EconomyExpansion extends PlaceholderExpansion {
 
         // Ping (online only)
         if (params.equalsIgnoreCase("ping")) {
-            if (offlinePlayer == null || !offlinePlayer.isOnline()) return "0";
-            return String.valueOf(plugin.getPingManager().getPing(offlinePlayer.getPlayer()));
+            if (offlinePlayer == null || !offlinePlayer.isOnline()) return "?";
+            return com.bx.ultimateDonutSmp.managers.PingManager.formatPing(
+                    plugin.getPingManager().getPing(offlinePlayer.getPlayer()));
         }
 
         // Username

@@ -108,6 +108,10 @@ public final class LegacyMaterialSupport {
         Map<String, String> renames = new HashMap<String, String>();
         // 1.13+ renames of items/blocks that exist unchanged (bar the name) on 1.12.2.
         renames.put("GRASS_BLOCK", "GRASS");
+        renames.put("MAGMA_BLOCK", "MAGMA");
+        renames.put("POPPED_CHORUS_FRUIT", "CHORUS_FRUIT_POPPED");
+        renames.put("POPPY", "RED_ROSE");
+        renames.put("DANDELION", "YELLOW_FLOWER");
         renames.put("DIRT_PATH", "GRASS_PATH");
         renames.put("IRON_BARS", "IRON_FENCE");
         renames.put("PISTON", "PISTON_BASE");
@@ -231,11 +235,27 @@ public final class LegacyMaterialSupport {
         private final Material material;
         private final short data;
         private final String configuredName;
+        private final boolean exact;
 
         private Icon(Material material, short data, String configuredName) {
+            this(material, data, configuredName, true);
+        }
+
+        private Icon(Material material, short data, String configuredName, boolean exact) {
             this.material = material;
             this.data = data;
             this.configuredName = configuredName;
+            this.exact = exact;
+        }
+
+        /**
+         * Whether {@link #material()} is the very material {@link #configuredName()} names on a
+         * 1.12.2 server (a true rename such as {@code POPPY -> RED_ROSE}, or a colour family
+         * member), as opposed to a visual stand-in chosen because no equivalent exists. Item
+         * matching and worth aliasing must only trust exact icons; GUIs may render either.
+         */
+        public boolean isExact() {
+            return exact;
         }
 
         /** The Material to build the item with. Never {@code null}. */
@@ -298,7 +318,17 @@ public final class LegacyMaterialSupport {
         if (material == null) {
             return null;
         }
-        return new Icon(material, (short) 0, material.name());
+        return new Icon(material, (short) 0, material.name(), true);
+    }
+
+    /**
+     * An icon for a modern material that has no 1.12.2 equivalent and is shown through a visual
+     * approximation (netherite armour as diamond armour, deepslate ore as the surface ore, …).
+     * Such icons are safe for GUI display, but must never be treated as the material they stand
+     * in for — item matching, worth aliasing and shop lookups rely on {@link Icon#isExact()}.
+     */
+    private static Icon ofApprox(Material material, String configuredName) {
+        return new Icon(material, (short) 0, configuredName, false);
     }
 
     /** {@code true} when the value names a 1.13+ stained glass pane colour. */
@@ -326,7 +356,7 @@ public final class LegacyMaterialSupport {
         if (data == null) {
             return null;
         }
-        return new Icon(PANE_MATERIAL, data.shortValue(), color + PANE_SUFFIX);
+        return new Icon(PANE_MATERIAL, data.shortValue(), color + PANE_SUFFIX, true);
     }
 
     /**
@@ -364,7 +394,7 @@ public final class LegacyMaterialSupport {
         if (renamed != null) {
             Material renamedMaterial = Material.matchMaterial(renamed);
             if (renamedMaterial != null) {
-                return new Icon(renamedMaterial, (short) 0, name);
+                return new Icon(renamedMaterial, (short) 0, name, true);
             }
         }
         Material material;
@@ -390,10 +420,10 @@ public final class LegacyMaterialSupport {
             return of(Material.SIGN_POST);
         }
         if ("DRAGON_HEAD".equals(name)) {
-            return new Icon(Material.SKULL_ITEM, (short) 5, name);
+            return new Icon(Material.SKULL_ITEM, (short) 5, name, true);
         }
         if ("ENCHANTED_GOLDEN_APPLE".equals(name)) {
-            return new Icon(Material.GOLDEN_APPLE, (short) 1, name);
+            return new Icon(Material.GOLDEN_APPLE, (short) 1, name, true);
         }
         if ("FIREWORK_ROCKET".equals(name)) {
             return of(Material.FIREWORK);
@@ -402,58 +432,58 @@ public final class LegacyMaterialSupport {
         // closest item that actually exists in the 1.12.2 Bukkit enum.
         if ("DIAMOND_SHOVEL".equals(name)) return of(Material.DIAMOND_SPADE);
         if (name.startsWith("NETHERITE_")) {
-            if (name.endsWith("HELMET")) return of(Material.DIAMOND_HELMET);
-            if (name.endsWith("CHESTPLATE")) return of(Material.DIAMOND_CHESTPLATE);
-            if (name.endsWith("LEGGINGS")) return of(Material.DIAMOND_LEGGINGS);
-            if (name.endsWith("BOOTS")) return of(Material.DIAMOND_BOOTS);
-            if (name.endsWith("SWORD")) return of(Material.DIAMOND_SWORD);
-            if (name.endsWith("AXE")) return of(Material.DIAMOND_AXE);
-            if (name.endsWith("PICKAXE")) return of(Material.DIAMOND_PICKAXE);
-            if (name.endsWith("SHOVEL")) return of(Material.DIAMOND_SPADE);
-            if ("NETHERITE_INGOT".equals(name) || "NETHERITE_SCRAP".equals(name)) return of(Material.DIAMOND);
-            if ("NETHERITE_UPGRADE_SMITHING_TEMPLATE".equals(name)) return of(Material.DIAMOND);
+            if (name.endsWith("HELMET")) return ofApprox(Material.DIAMOND_HELMET, name);
+            if (name.endsWith("CHESTPLATE")) return ofApprox(Material.DIAMOND_CHESTPLATE, name);
+            if (name.endsWith("LEGGINGS")) return ofApprox(Material.DIAMOND_LEGGINGS, name);
+            if (name.endsWith("BOOTS")) return ofApprox(Material.DIAMOND_BOOTS, name);
+            if (name.endsWith("SWORD")) return ofApprox(Material.DIAMOND_SWORD, name);
+            if (name.endsWith("AXE")) return ofApprox(Material.DIAMOND_AXE, name);
+            if (name.endsWith("PICKAXE")) return ofApprox(Material.DIAMOND_PICKAXE, name);
+            if (name.endsWith("SHOVEL")) return ofApprox(Material.DIAMOND_SPADE, name);
+            if ("NETHERITE_INGOT".equals(name) || "NETHERITE_SCRAP".equals(name)) return ofApprox(Material.DIAMOND, name);
+            if ("NETHERITE_UPGRADE_SMITHING_TEMPLATE".equals(name)) return ofApprox(Material.DIAMOND, name);
         }
-        if ("CROSSBOW".equals(name)) return of(Material.BOW);
-        if ("MACE".equals(name)) return of(Material.DIAMOND_AXE);
+        if ("CROSSBOW".equals(name)) return ofApprox(Material.BOW, name);
+        if ("MACE".equals(name)) return ofApprox(Material.DIAMOND_AXE, name);
         // SpawnStash structures use these flattened block names; retain their closest 1.12.2 role.
         if ("DEEPSLATE".equals(name) || "BUDDING_AMETHYST".equals(name)) {
-            return of(Material.STONE);
+            return ofApprox(Material.STONE, name);
         }
         if ("DEEPSLATE_TILES".equals(name) || "DEEPSLATE_BRICKS".equals(name)) {
-            return of(Material.SMOOTH_BRICK);
+            return ofApprox(Material.SMOOTH_BRICK, name);
         }
         if ("COBBLED_DEEPSLATE".equals(name) || "POLISHED_DEEPSLATE".equals(name)
-                || "CHISELED_DEEPSLATE".equals(name)) return of(Material.STONE);
+                || "CHISELED_DEEPSLATE".equals(name)) return ofApprox(Material.STONE, name);
         if ("POLISHED_BLACKSTONE_BRICKS".equals(name) || "REINFORCED_DEEPSLATE".equals(name)) {
-            return of(Material.SMOOTH_BRICK);
+            return ofApprox(Material.SMOOTH_BRICK, name);
         }
         if ("AMETHYST_CLUSTER".equals(name)) {
-            return of(Material.QUARTZ_BLOCK);
+            return ofApprox(Material.QUARTZ_BLOCK, name);
         }
         if ("ECHO_SHARD".equals(name)) {
-            return of(Material.PRISMARINE_SHARD);
+            return ofApprox(Material.PRISMARINE_SHARD, name);
         }
         if ("DEEPSLATE_REDSTONE_ORE".equals(name)) {
-            return of(Material.REDSTONE_ORE);
+            return ofApprox(Material.REDSTONE_ORE, name);
         }
         if ("DEEPSLATE_GOLD_ORE".equals(name)) {
-            return of(Material.GOLD_ORE);
+            return ofApprox(Material.GOLD_ORE, name);
         }
         if ("DEEPSLATE_IRON_ORE".equals(name)) {
-            return of(Material.IRON_ORE);
+            return ofApprox(Material.IRON_ORE, name);
         }
         if ("PURPLE_SHULKER_BOX".equals(name)) {
-            return of(Material.CHEST);
+            return ofApprox(Material.CHEST, name);
         }
-        if ("LANTERN".equals(name)) return of(Material.TORCH);
-        if ("GOAT_HORN".equals(name) || "BREEZE_ROD".equals(name)) return of(Material.BLAZE_ROD);
-        if ("AXOLOTL_BUCKET".equals(name) || "FROGSPAWN".equals(name)) return of(Material.WATER_BUCKET);
+        if ("LANTERN".equals(name)) return ofApprox(Material.TORCH, name);
+        if ("GOAT_HORN".equals(name) || "BREEZE_ROD".equals(name)) return ofApprox(Material.BLAZE_ROD, name);
+        if ("AXOLOTL_BUCKET".equals(name) || "FROGSPAWN".equals(name)) return ofApprox(Material.WATER_BUCKET, name);
         if ("SNIFFER_EGG".equals(name) || "SNIFFER_SPAWN_EGG".equals(name)
-                || "CAMEL_SPAWN_EGG".equals(name)) return of(Material.MONSTER_EGG);
-        if (name.endsWith("_SPAWN_EGG")) return of(Material.MONSTER_EGG);
+                || "CAMEL_SPAWN_EGG".equals(name)) return ofApprox(Material.MONSTER_EGG, name);
+        if (name.endsWith("_SPAWN_EGG")) return ofApprox(Material.MONSTER_EGG, name);
         if ("NETHERITE_BLOCK".equals(name) || "SHROOMLIGHT".equals(name)
                 || "OCHRE_FROGLIGHT".equals(name) || "PEARLESCENT_FROGLIGHT".equals(name)
-                || "VERDANT_FROGLIGHT".equals(name)) return of(Material.GLOWSTONE);
+                || "VERDANT_FROGLIGHT".equals(name)) return ofApprox(Material.GLOWSTONE, name);
         // Families the 1.13 flattening turned into one material plus a colour/wood prefix.
         Icon family = resolveColorFamily(name);
         if (family != null) {

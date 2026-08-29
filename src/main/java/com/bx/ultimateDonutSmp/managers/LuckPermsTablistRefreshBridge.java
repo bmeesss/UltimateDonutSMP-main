@@ -270,11 +270,18 @@ public final class LuckPermsTablistRefreshBridge {
             );
         }
 
-        try {
-            player.updateInventory();
-        } catch (RuntimeException | LinkageError ignored) {
-        }
-
+        // Do NOT resync the player's inventory here. This method refreshes only
+        // permission-derived chat/tablist state (recalculatePermissions + HideManager
+        // enforcement + tablist entry); nothing in it touches PlayerInventory. The
+        // unconditional player.updateInventory() that previously ran at the end of every
+        // refresh re-sent the full window - including the held-item slot - on every
+        // LuckPerms UserDataRecalculateEvent (periodic user-cache recalculation, which
+        // this plugin's tablist/nametag lookups trigger). Vanilla 1.12.2 clients absorb
+        // the redundant WINDOW_ITEMS/SET_SLOT packet silently; Eaglercraft restarts the
+        // held-item equip animation on every window/equipment update, which surfaced as
+        // a continuous held-item refresh (flicker) for Eagler players. Genuine inventory
+        // changes still resync at their own call sites (menus, drops, staff mode, invsee
+        // write-back, item corrections) - one-shot, after the change that needs them.
         if (plugin.getTablistManager() == null) {
             return;
         }

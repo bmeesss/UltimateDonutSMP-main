@@ -34,7 +34,8 @@ public class PingCommand implements CommandExecutor {
                             "PING.SELF",
                             "&7Your ping is &b%ping%ms",
                             "%ping%",
-                            String.valueOf(plugin.getPingManager().getPing(player))
+                            com.bx.ultimateDonutSmp.managers.PingManager.formatPing(
+                                    plugin.getPingManager().getPing(player))
                     ),
                     player
             ));
@@ -54,7 +55,8 @@ public class PingCommand implements CommandExecutor {
                         "%player%",
                         plugin.getHideManager().publicName(target),
                         "%ping%",
-                        String.valueOf(plugin.getPingManager().getPing(target))
+                        com.bx.ultimateDonutSmp.managers.PingManager.formatPing(
+                                plugin.getPingManager().getPing(target))
                 )
         ));
         return true;

@@ -656,7 +656,9 @@ final class HideProtocolLibBridge implements HidePacketBridge {
     ) {
         return new PlayerInfoData(
                 target.getUniqueId(),
-                plugin.getPingManager().getPing(target),
+                // PlayerInfoData requires a non-negative int; an unmeasured ping maps to the
+                // protocol's "not yet sampled" 0 instead of leaking the internal -1 sentinel.
+                Math.max(0, plugin.getPingManager().getPing(target)),
                 true,
                 EnumWrappers.NativeGameMode.fromBukkit(target.getGameMode()),
                 profile,

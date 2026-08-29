@@ -2007,7 +2007,7 @@ CONFIG:
         sous peu."
   WORTH:
     DISPLAY:
-      FORMAT: "&7Valeur : &a$${price}"
+      FORMAT: "&7Valeur : &a${price}"
     BROWSER:
       TITLE: '&8Prix des articles'
       ITEM:
