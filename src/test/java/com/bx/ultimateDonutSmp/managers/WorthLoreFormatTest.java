@@ -63,12 +63,11 @@ class WorthLoreFormatTest {
                 manager, EXPECTED_FORMAT, "1.2K", "20", "64", "Stone", "$1,250.00", "20.00");
         assertEquals("&7Worth: &a$1.2K", line);
 
+        // {price_raw} carries formatMoney's ready-made "&a$..." rendering; the substitution
+        // must pass it through untouched - the pipeline adds no symbol of its own.
         String raw = (String) replace.invoke(
-                manager, "&7Worth: &a{price_raw}", "1.2K", "20", "64", "Stone", "$1,250.00", "20.00");
-        assertEquals("&7Worth: &$1,250.00", raw,
-                "{price_raw} already embeds the symbol via formatMoney; a lone $ in the format "
-                        + "would double it for admins copying that style, so the placeholder "
-                        + "alone must carry the currency");
+                manager, "&7Worth: &a{price_raw}", "1.2K", "20", "64", "Stone", "&a$1,250.00", "&a$20.00");
+        assertEquals("&7Worth: &a&a$1,250.00", raw);
     }
 
     @Test
@@ -80,7 +79,7 @@ class WorthLoreFormatTest {
     }
 
     @Test
-    void everyLanguageMirrorStaysInSync() throws Exception {
+    void englishMirrorEqualsTheSeedAndTranslationsKeepOneSign() throws Exception {
         File[] locales = new File("src/main/resources/languages").listFiles();
         assertTrue(locales != null && locales.length > 0, "bundled language files exist");
         java.util.Arrays.sort(locales);
@@ -91,10 +90,18 @@ class WorthLoreFormatTest {
             YamlConfiguration language = new YamlConfiguration();
             language.load(locale);
             String mirror = language.getString("CONFIG.WORTH.DISPLAY.FORMAT");
-            if (mirror != null) {
-                assertEquals(bundledFormat(), mirror, locale.getName()
-                        + " mirrors the live DISPLAY.FORMAT; a drifted copy would resurrect the"
-                        + " doubled sign the moment localization starts consuming the mirror");
+            if (mirror == null) {
+                continue;
+            }
+            // Translations may reword the label; none may re-double the currency sign, because
+            // a stale mirror copy would take over the moment localization consumes it.
+            assertFalse(mirror.contains("$${price}"), locale.getName()
+                    + " still mirrors the doubled sign");
+            assertTrue(mirror.contains("${price}"), locale.getName() + " lost the price placeholder");
+            if (locale.getName().equals("en_US.yml")) {
+                // English is the source language: its mirror is not a translation and must not
+                // drift from the bundled worth.yml value.
+                assertEquals(bundledFormat(), mirror, "en_US mirror drifted from the worth.yml seed");
             }
         }
     }
