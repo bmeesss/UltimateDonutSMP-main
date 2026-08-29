@@ -1999,7 +1999,7 @@ CONFIG:
       KICK: "&cA赛季重置即将开始。服务器将很快重新启动。"
   WORTH:
     DISPLAY:
-      FORMAT: "&7价值：&a$${price}"
+      FORMAT: "&7价值：&a${price}"
     BROWSER:
       TITLE: "&8商品价格"
       ITEM:

@@ -80,13 +80,35 @@ class WorthLoreFormatTest {
     }
 
     @Test
-    void englishLanguageMirrorStaysInSync() throws Exception {
-        YamlConfiguration english = new YamlConfiguration();
-        english.load(new File("src/main/resources/languages/en_US.yml"));
-        String mirror = english.getString("CONFIG.WORTH.DISPLAY.FORMAT");
-        if (mirror != null) {
-            assertEquals(bundledFormat(), mirror,
-                    "the language mirror of the live DISPLAY.FORMAT must equal the seed");
+    void everyLanguageMirrorStaysInSync() throws Exception {
+        File[] locales = new File("src/main/resources/languages").listFiles();
+        assertTrue(locales != null && locales.length > 0, "bundled language files exist");
+        java.util.Arrays.sort(locales);
+        for (File locale : locales) {
+            if (!locale.getName().endsWith(".yml")) {
+                continue;
+            }
+            YamlConfiguration language = new YamlConfiguration();
+            language.load(locale);
+            String mirror = language.getString("CONFIG.WORTH.DISPLAY.FORMAT");
+            if (mirror != null) {
+                assertEquals(bundledFormat(), mirror, locale.getName()
+                        + " mirrors the live DISPLAY.FORMAT; a drifted copy would resurrect the"
+                        + " doubled sign the moment localization starts consuming the mirror");
+            }
+        }
+    }
+
+    @Test
+    void noBundledResourceKeepsTheDoubledSign() throws Exception {
+        try (java.util.stream.Stream<java.nio.file.Path> paths =
+                     Files.walk(java.nio.file.Paths.get("src/main/resources"))) {
+            for (java.nio.file.Path path : (Iterable<java.nio.file.Path>) paths
+                    .filter(p -> p.toString().endsWith(".yml"))::iterator) {
+                String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                assertFalse(content.contains("$${price}"),
+                        path + " still ships the doubled currency sign");
+            }
         }
     }
 

@@ -2142,7 +2142,7 @@ CONFIG:
       KICK: "Der saison-reset &ca beginnt. der server wird in kürze neu gestartet."
   WORTH:
     DISPLAY:
-      FORMAT: '&7Wert: &a$${price}'
+      FORMAT: '&7Wert: &a${price}'
     BROWSER:
       TITLE: '&8Artikelpreise'
       ITEM:

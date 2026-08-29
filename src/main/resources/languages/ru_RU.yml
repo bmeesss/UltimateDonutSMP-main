@@ -2004,7 +2004,7 @@ CONFIG:
       KICK: "&cA начинается сброс сезона. сервер будет перезапущен в ближайшее время."
   WORTH:
     DISPLAY:
-      FORMAT: "&7Стоимость: &a$${price}"
+      FORMAT: "&7Стоимость: &a${price}"
     BROWSER:
       TITLE: "&8Цены на предметы"
       ITEM:
