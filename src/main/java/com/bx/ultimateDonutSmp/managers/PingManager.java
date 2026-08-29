@@ -28,6 +28,11 @@ import java.util.logging.Level;
  */
 public final class PingManager implements Listener {
 
+    /** Sentinel for "no measurement exists yet"; displays must render it as {@link #UNKNOWN_DISPLAY}. */
+    public static final int UNKNOWN = -1;
+    /** The honest text shown wherever an unmeasured ping would otherwise pretend to be a number. */
+    public static final String UNKNOWN_DISPLAY = "?";
+
     private final UltimateDonutSmp plugin;
     private final Map<UUID, Integer> pingCache = new ConcurrentHashMap<>();
     private final Map<UUID, Long> pendingKeepAlives = new ConcurrentHashMap<>();
@@ -78,11 +83,15 @@ public final class PingManager implements Listener {
                     UUID uuid = player.getUniqueId();
                     Long sentTime = pendingKeepAlives.remove(uuid);
                     if (sentTime != null) {
-                        long elapsed = System.currentTimeMillis() - sentTime;
+                        long elapsed = System.currentTimeMillis() - sentTime.longValue();
                         if (elapsed >= 0 && elapsed < 10000) {
-                            int ping = (int) elapsed;
-                            pingCache.put(uuid, ping);
-                            setNmsLatency(player, ping);
+                            // Monitor-only supplement: the server's own EntityPlayer#ping
+                            // average stays authoritative; this cache exists so servers with
+                            // exotic connection layouts (a proxy answering keep-alives) still
+                            // have a measured sample, and so a 0 ms hop is reported as measured
+                            // instead of unknown. Writing the NMS field here would fight the
+                            // server's own moving average - deliberately not done.
+                            pingCache.put(uuid, (int) elapsed);
                         }
                     }
                 }
@@ -124,59 +133,89 @@ public final class PingManager implements Listener {
 
     /**
      * Resolves the real ping for a player.
+     *
+     * <p>Return contract: any positive value is a measured latency in milliseconds;
+     * {@code 0} is the no-player sentinel (kept for callers/tests that pass null or offline
+     * handles); {@link #UNKNOWN} means "not measured yet" and must never be shown as a number.
      */
     public int getPing(Player player) {
         if (player == null || !player.isOnline()) {
             return 0;
         }
-        UUID uuid = player.getUniqueId();
 
-        // Spigot 1.12 has no Player#getPing; use the native-server fallback below.
-
-        // 3. Check measured/cached ping
-        Integer cached = pingCache.get(uuid);
-        if (cached != null && cached > 0) {
-            setNmsLatency(player, cached);
-            return cached;
+        // 1. The server's own connection latency. Spigot 1.12.2's PlayerConnection already
+        //    measures every keep-alive reply and folds it into EntityPlayer#ping as a moving
+        //    average (modern servers expose the same value as Player#getPing()). That is the
+        //    authoritative number for both a direct Java client and an Eaglercraft session,
+        //    and it is what the vanilla tab signal bars are built from - reading it instead of
+        //    writing to it keeps scoreboard and tab in sync by construction.
+        int measured = readServerLatency(player);
+        if (measured > 0) {
+            return measured;
         }
 
-        // 4. Fallback ping (1ms) while initial calculation is pending
-        int fallback = 1;
-        setNmsLatency(player, fallback);
-        return fallback;
+        // 2. The ProtocolLib keep-alive monitor's own sample. A cached sample is authoritative
+        //    even when it is 0 (a proxy on the same machine genuinely measures 0ms - reporting
+        //    it is honest, hiding it would not be).
+        Integer probed = pingCache.get(player.getUniqueId());
+        if (probed != null && probed >= 0) {
+            return probed;
+        }
+
+        // 3. Nothing measured yet (the first keep-alive exchange lands within ~20 s of the
+        //    join). Report "unknown"; never a stand-in number. The previous 1 ms fallback made
+        //    every player look like a perfect LAN connection and, once also written into the
+        //    NMS field, overwrote the real values the tab bars were showing.
+        return UNKNOWN;
     }
 
     /**
-     * Updates the underlying NMS ServerPlayer.latency field so player.getPing() and
-     * server tablist packets reflect the updated ping value across all server systems.
+     * Formats a ping measurement for display. Only ever yields the real number or a question
+     * mark - no invented latencies.
      */
-    private void setNmsLatency(Player player, int latency) {
-        if (player == null) return;
-        try {
-            Method getHandle = player.getClass().getMethod("getHandle");
-            Object handle = getHandle.invoke(player);
-            if (handle == null) return;
+    public static String formatPing(int ping) {
+        return ping >= 0 ? String.valueOf(ping) : UNKNOWN_DISPLAY;
+    }
 
-            // The field is EntityPlayer#latency on modern servers and EntityPlayer#ping on
-            // 1.12.2; writing it keeps the vanilla tablist signal icon in sync with the value
-            // the scoreboard shows.
-            Class<?> clazz = handle.getClass();
-            while (clazz != null && clazz != Object.class) {
-                for (String name : new String[]{"latency", "ping"}) {
-                    try {
-                        Field f = clazz.getDeclaredField(name);
-                        f.setAccessible(true);
-                        f.set(handle, latency);
-                        return;
-                    } catch (NoSuchFieldException ignored) {
-                        // try the next candidate / superclass
+    /** Reads the server-side latency value for this connection, or {@link #UNKNOWN}. */
+    private int readServerLatency(Player player) {
+        try {
+            // Modern API first (Player#getPing exists from 1.16 on); looked up reflectively so
+            // the plugin still compiles and runs against the 1.12.2 API jar.
+            Method modern = player.getClass().getMethod("getPing");
+            Object value = modern.invoke(player);
+            if (value instanceof Integer && (Integer) value > 0) {
+                return (Integer) value;
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+            // 1.12.2 does not have the method; the NMS field below is the source there.
+        }
+
+        try {
+            Object handle = player.getClass().getMethod("getHandle").invoke(player);
+            if (handle != null) {
+                for (Class<?> clazz = handle.getClass(); clazz != null && clazz != Object.class;
+                        clazz = clazz.getSuperclass()) {
+                    for (String name : new String[]{"ping", "latency"}) {
+                        try {
+                            Field field = clazz.getDeclaredField(name);
+                            if (field.getType() == int.class) {
+                                field.setAccessible(true);
+                                int value = field.getInt(handle);
+                                if (value > 0) {
+                                    return value;
+                                }
+                            }
+                        } catch (NoSuchFieldException ignored) {
+                            // try the next candidate / superclass
+                        }
                     }
                 }
-                clazz = clazz.getSuperclass();
             }
-        } catch (Throwable ignored) {
-            // Quiet fallback if NMS field is not accessible or named differently
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError ignored) {
+            // No readable field on this build; the caller falls back to the measured cache.
         }
+        return UNKNOWN;
     }
 
     public boolean isProtocolLibEnabled() {
