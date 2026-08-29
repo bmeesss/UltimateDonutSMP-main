@@ -50,6 +50,14 @@ public class MoneyNametagManager {
     private final MoneyNametagState state = new MoneyNametagState();
     /** The scoreboard each viewer's teams were last written to, so they can be removed again. */
     private final Map<UUID, Scoreboard> viewerBoards = new ConcurrentHashMap<>();
+    /**
+     * One resolved rank prefix per target per pass: {@link #updateAll()} runs {@link #push(Player)}
+     * for every viewer, but the rank belongs to the target, so it is looked up once per pass
+     * instead of once per viewer x target. The memo is dropped at the start of every pass, so a
+     * rank change is picked up by the next one without any relog, and a direct refreshViewer
+     * call is at most one pass stale.
+     */
+    private final Map<UUID, String> rankPrefixMemo = new ConcurrentHashMap<>();
     private boolean warnedBoardUnavailable;
 
     public MoneyNametagManager(UltimateDonutSmp plugin) {
@@ -120,6 +128,8 @@ public class MoneyNametagManager {
             clearAll();
             return;
         }
+        // Fresh rank resolution for this pass; one lookup per target, shared by all viewers.
+        rankPrefixMemo.clear();
         for (Player viewer : Bukkit.getOnlinePlayers()) {
             if (isEnabledFor(viewer)) {
                 push(viewer);
@@ -161,6 +171,7 @@ public class MoneyNametagManager {
             }
         }
         state.forgetTarget(playerUuid);
+        rankPrefixMemo.remove(playerUuid);
         clearViewerState(playerUuid);
     }
 
@@ -169,6 +180,7 @@ public class MoneyNametagManager {
             clearViewer(viewer);
         }
         state.clear();
+        rankPrefixMemo.clear();
     }
 
     public void reload() {
@@ -202,6 +214,16 @@ public class MoneyNametagManager {
 
     /** The target's rank prefix, legacy-coloured and fitted for the team prefix field. */
     private String rankPrefixFor(Player target) {
+        String cached = rankPrefixMemo.get(target.getUniqueId());
+        if (cached != null) {
+            return cached;
+        }
+        String fitted = resolveRankPrefix(target);
+        rankPrefixMemo.put(target.getUniqueId(), fitted);
+        return fitted;
+    }
+
+    private String resolveRankPrefix(Player target) {
         if (plugin.getTablistManager() == null) {
             return "";
         }

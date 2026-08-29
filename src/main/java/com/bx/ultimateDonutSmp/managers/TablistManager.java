@@ -629,9 +629,10 @@ public class TablistManager {
     }
 
     /**
-     * The resolved rank prefix for a player (LuckPerms first, then the PAPI expansion), exactly
-     * as the tablist uses it. Exposed so nametags can carry the same prefix the tab shows; the
-     * caller is responsible for legacy conversion and the 16-character team-part limit.
+     * The resolved rank prefix for a player, through the same source chain the tablist and the
+     * chat use (LuckPerms metadata, PAPI rank placeholders, Vault chat). Exposed so nametags
+     * carry the same prefix the tab shows; the caller is responsible for legacy conversion and
+     * the 16-character team-part limit.
      */
     public String nametagRankPrefix(Player player) {
         if (player == null) {
@@ -647,20 +648,42 @@ public class TablistManager {
             return luckPermsPrefix;
         }
 
-        if (!ColorUtils.hasPAPI()) {
-            return "";
+        if (ColorUtils.hasPAPI()) {
+            // Same placeholder tiers and the same unresolved-placeholder guard as the chat
+            // pipeline (ChatListener#resolvePrefix): a tier yielding nothing, whitespace or a
+            // literal %name% (expansion not installed) falls through to the next source.
+            // Servers that define ranks through Vault/Essentials rather than LuckPerms meta
+            // resolve there; stopping after the LuckPerms tiers here left tab entries and
+            // nametags without a rank while chat still showed one.
+            for (String placeholder : new String[]{
+                    "%luckperms_prefix%", "%vault_prefix%", "%prefix%"}) {
+                try {
+                    String prefix = me.clip.placeholderapi.PlaceholderAPI
+                            .setPlaceholders(player, placeholder);
+                    if (prefix != null && !prefix.trim().isEmpty() && !prefix.startsWith("%")) {
+                        return prefix;
+                    }
+                } catch (Exception ignored) {
+                    // Tier unavailable; the next one may still know the rank.
+                }
+            }
         }
 
-        try {
-            String prefix = me.clip.placeholderapi.PlaceholderAPI
-                    .setPlaceholders(player, "%luckperms_prefix%");
-            if (prefix == null || prefix.trim().isEmpty() || prefix.startsWith("%")) {
-                return "";
+        if (Bukkit.getPluginManager().isPluginEnabled("Vault")) {
+            try {
+                org.bukkit.plugin.RegisteredServiceProvider<net.milkbowl.vault.chat.Chat> rsp =
+                        Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.chat.Chat.class);
+                if (rsp != null && rsp.getProvider() != null) {
+                    String prefix = rsp.getProvider().getPlayerPrefix(player);
+                    if (prefix != null && !prefix.trim().isEmpty()) {
+                        return prefix;
+                    }
+                }
+            } catch (Throwable unavailable) {
+                // Vault chat missing or misbehaving: no prefix beats an exception per tab pass.
             }
-            return prefix;
-        } catch (Exception ignored) {
-            return "";
         }
+        return "";
     }
 
     private String getMultilineText(String path) {

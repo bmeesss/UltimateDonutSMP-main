@@ -386,8 +386,10 @@ MONEY-NAMETAGS:
   # Determines whether balances are shortened to 1.1K, 1.1M, 1.1B and so on instead of
   # being written out as 1,100,000. Available options: true, false
   SHORT-FORMAT: true
-  # Determines whether the rank prefix from the tab list (LuckPerms via PlaceholderAPI) is
-  # also shown in front of the name on nametags. The prefix holds at most 16 raw characters;
+  # Determines whether the rank prefix from the tab list is also shown in front of the name on
+  # nametags. It is resolved through the same sources the chat uses (LuckPerms metadata, the
+  # PlaceholderAPI rank placeholders, Vault chat), so a rank that shows in chat also shows here.
+  # The prefix holds at most 16 raw characters;
   # it never shortens the money suffix, both are rendered together.
   # Available options: true, false
   RANK-PREFIX: true
